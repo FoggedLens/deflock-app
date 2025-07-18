@@ -1,0 +1,82 @@
+# ───────────────────────────────
+# Flutter / Dart
+# ───────────────────────────────
+.dart_tool/
+.metadata
+.packages
+.melange/
+# Generated plugin registrant (Flutter <3.16)
+.flutter-plugins
+.flutter-plugins-dependencies
+
+# Build outputs
+build/
+# Opaque pub cache files; keep pubspec.lock in VCS
+.pub-cache/
+
+# ───────────────────────────────
+# Android
+# ───────────────────────────────
+android/.gradle/
+android/.idea/
+android/local.properties
+android/app/debug/
+android/app/profile/
+android/app/release/
+*.iml
+
+# ───────────────────────────────
+# iOS / macOS
+# ───────────────────────────────
+ios/Flutter/App.framework
+ios/Flutter/Flutter.framework
+ios/Pods/
+ios/.generated/
+ios/.idea/
+ios/Runner.xcworkspace/
+macos/Pods/
+macos/.generated/
+macos/Flutter/ephemeral/
+# CocoaPods – commit Podfile.lock if you need reproducible iOS builds
+Podfile.lock
+Pods/
+
+# Xcode user data & build artifacts
+*.xcworkspace
+*.xcuserstate
+*.xcuserdatad
+DerivedData/
+
+# ───────────────────────────────
+# Linux / Windows / Fuchsia (optional)
+# ───────────────────────────────
+linux/build/
+windows/build/
+fuchsia/build/
+
+# ───────────────────────────────
+# Web (optional)
+# ───────────────────────────────
+web/build/
+
+# ───────────────────────────────
+# IDE / Editor Settings
+# ───────────────────────────────
+.idea/
+.idea/**/workspace.xml
+.idea/**/tasks.xml
+.vscode/
+# Swap files
+*.swp
+*.swo
+
+# ───────────────────────────────
+# Misc / System
+# ───────────────────────────────
+.DS_Store
+Thumbs.db
+*.orig           # merge conflict backups
+# Secrets or signing keys (add if used)
+*.keystore
+.env
+

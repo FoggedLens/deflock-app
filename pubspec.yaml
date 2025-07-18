@@ -1,0 +1,25 @@
+name: flock_map_app
+description: Simple OSM camera-mapping client
+publish_to: "none"
+version: 0.2.0
+
+environment:
+  sdk: ">=3.3.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  provider: ^6.1.2
+  flutter_map: ^6.1.0
+  latlong2: ^0.9.0
+  geolocator: ^10.1.0
+  http: ^1.2.1   # <- NEW for Overpass requests
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+flutter:
+  uses-material-design: true
+
