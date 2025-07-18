@@ -73,15 +73,29 @@ class _MapViewState extends State<MapView> {
   }
 
   Future<void> _refreshCameras(AppState appState) async {
-    final bounds = _controller.camera.visibleBounds;
+    LatLngBounds? bounds;
+    try {
+      bounds = _controller.camera.visibleBounds;
+    } catch (_) {
+      return; // controller not ready yet
+    }
     final cams = await _overpass.fetchCameras(bounds, appState.enabledProfiles);
     if (mounted) setState(() => _cameras = cams);
+  }
+
+  double _safeZoom() {
+    try {
+      return _controller.camera.zoom;
+    } catch (_) {
+      return 15.0;
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final appState = context.watch<AppState>();
     final session = appState.session;
+    final zoom = _safeZoom();
 
     final markers = <Marker>[
       if (_currentLatLng != null)
@@ -103,12 +117,10 @@ class _MapViewState extends State<MapView> {
 
     final overlays = <Polygon>[
       if (session != null && session.target != null)
-        _buildCone(session.target!, session.directionDegrees),
+        _buildCone(session.target!, session.directionDegrees, zoom),
       ..._cameras
-          .where((n) => n.hasDirection)
-          .map(
-            (n) => _buildCone(n.coord, n.directionDeg!),
-          ),
+          .where((n) => n.hasDirection && n.directionDeg != null)
+          .map((n) => _buildCone(n.coord, n.directionDeg!, zoom)),
     ];
 
     return Stack(
@@ -129,7 +141,8 @@ class _MapViewState extends State<MapView> {
           ),
           children: [
             TileLayer(
-              urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+              urlTemplate:
+                  'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
               userAgentPackageName: 'com.example.flock_map_app',
             ),
             PolygonLayer(polygons: overlays),
@@ -146,9 +159,9 @@ class _MapViewState extends State<MapView> {
     );
   }
 
-  Polygon _buildCone(LatLng origin, double bearingDeg) {
+  Polygon _buildCone(LatLng origin, double bearingDeg, double zoom) {
     const halfAngle = 15.0;
-    const length = 0.08; // ~80 m
+    final length = 0.002 * math.pow(2, 15 - zoom);
 
     LatLng _project(double deg) {
       final rad = deg * math.pi / 180;

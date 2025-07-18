@@ -11,8 +11,12 @@ class OsmCameraNode {
     required this.tags,
   });
 
-  bool get hasDirection => tags.containsKey('direction');
-  double? get directionDeg =>
-      hasDirection ? double.tryParse(tags['direction']!) : null;
+  bool get hasDirection =>
+      tags.containsKey('direction') || tags.containsKey('camera:direction');
+
+  double? get directionDeg {
+    final val = tags['direction'] ?? tags['camera:direction'];
+    return double.tryParse(val ?? '');
+  }
 }
 
