@@ -13,7 +13,7 @@ import 'package:http/http.dart' as http;
 ///   ‑ Redirect URI: flockmap://auth
 /// • Put that client ID below (replace 'flockmap').
 class AuthService {
-  static const _clientId = 'flockmap';          // ← replace with your ID
+  static const _clientId = 'lzEr2zjBGZ2TvJWr3QGxNcKxigp-mQ6pRWIUhI_Bqx8';
   static const _redirect = 'flockmap://auth';
 
   late final OAuth2Helper _helper;

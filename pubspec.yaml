@@ -1,7 +1,6 @@
 name: flock_map_app
 description: Simple OSM camera‑mapping client
 publish_to: "none"
-
 version: 0.5.0
 
 environment:
@@ -26,3 +25,5 @@ dependencies:
   # Persistence
   shared_preferences: ^2.2.2
 
+flutter:
+  uses-material-design: true
