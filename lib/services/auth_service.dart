@@ -7,9 +7,7 @@ import 'package:http/http.dart' as http;
 
 /// Handles PKCE OAuth login with OpenStreetMap.
 class AuthService {
-  /// Paste the **client ID** shown on the OSM OAuth2 application page
-  /// (it can be alphanumeric like ‘lzEr2zjBGZ2…’).
-  static const String _clientId = 'lzEr2zjBGZ2TvJWr3QGxNcKxigp-mQ6pRWIUhI_Bqx8';
+  static const String _clientId = 'HNbRD_Twxf0_lpkm-BmMB7-zb-v63VLdf_bVlNyU9qs';
   static const _redirect = 'flockmap://auth';
 
   late final OAuth2Helper _helper;
