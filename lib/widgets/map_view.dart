@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'dart:math' as math;
+import 'dart:io';
 
+import 'package:http/io_client.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
@@ -96,16 +98,14 @@ class _MapViewState extends State<MapView> {
     final appState = context.watch<AppState>();
     final session = appState.session;
 
-    // If we just entered add‑mode and no target yet, seed it with current map center.
+    // Seed add‑mode target once, after first controller center is available.
     if (session != null && session.target == null) {
       try {
         final center = _controller.camera.center;
         WidgetsBinding.instance.addPostFrameCallback(
           (_) => appState.updateSession(target: center),
         );
-      } catch (_) {
-        // controller not ready yet; will update onPositionChanged soon
-      }
+      } catch (_) {/* controller not ready yet */}
     }
 
     final zoom = _safeZoom();
@@ -155,12 +155,37 @@ class _MapViewState extends State<MapView> {
           children: [
             TileLayer(
               urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+              tileProvider: NetworkTileProvider(
+                headers: {
+                  'User-Agent':
+                      'FlockMap/0.4 (+https://github.com/yourrepo)',
+                },
+                httpClient: IOClient(
+                  HttpClient()..maxConnectionsPerHost = 4,
+                ),
+              ),
               userAgentPackageName: 'com.example.flock_map_app',
             ),
             PolygonLayer(polygons: overlays),
             MarkerLayer(markers: markers),
           ],
         ),
+
+        // Attribution overlay
+        Positioned(
+          bottom: 8,
+          right: 8,
+          child: Container(
+            color: Colors.white70,
+            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+            child: const Text(
+              '© OpenStreetMap contributors',
+              style: TextStyle(fontSize: 11),
+            ),
+          ),
+        ),
+
+        // Fixed pin when adding camera
         if (session != null)
           const IgnorePointer(
             child: Center(
@@ -173,7 +198,7 @@ class _MapViewState extends State<MapView> {
 
   Polygon _buildCone(LatLng origin, double bearingDeg, double zoom) {
     const halfAngle = 15.0;
-    final length = 0.002 * math.pow(2, 15 - zoom); // scale with zoom
+    final length = 0.002 * math.pow(2, 15 - zoom);
 
     LatLng _project(double deg) {
       final rad = deg * math.pi / 180;
