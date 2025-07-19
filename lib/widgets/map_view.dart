@@ -198,7 +198,7 @@ class _MapViewState extends State<MapView> {
 
   Polygon _buildCone(LatLng origin, double bearingDeg, double zoom) {
     const halfAngle = 15.0;
-    final length = 0.002 * math.pow(2, 15 - zoom);
+    final length = 0.0012 * math.pow(2, 15 - zoom);
 
     LatLng _project(double deg) {
       final rad = deg * math.pi / 180;

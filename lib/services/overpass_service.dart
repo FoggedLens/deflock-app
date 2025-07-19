@@ -31,7 +31,7 @@ class OverpassService {
           (${bbox.southWest.latitude},${bbox.southWest.longitude},
            ${bbox.northEast.latitude},${bbox.northEast.longitude});
       );
-      out body 100;
+      out body 250;
     ''';
 
     try {
