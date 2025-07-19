@@ -13,34 +13,25 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   bool _followMe = true;
 
-  Future<void> _startAddCamera(BuildContext context) async {
+  void _openAddCameraSheet() {
     final appState = context.read<AppState>();
     appState.startAddSession();
+    final session = appState.session!;          // guaranteed non‑null now
 
-    final submitted = await showModalBottomSheet<bool>(
-      context: context,
-      isScrollControlled: true,
-      enableDrag: false,
-      isDismissible: false,
-      builder: (_) => const AddCameraSheet(),
+    _scaffoldKey.currentState!.showBottomSheet(
+      (ctx) => AddCameraSheet(session: session),
     );
-
-    if (submitted == true) {
-      appState.commitSession();
-      if (mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(const SnackBar(content: Text('Camera queued')));
-      }
-    } else {
-      appState.cancelSession();
-    }
   }
 
   @override
   Widget build(BuildContext context) {
+    final appState = context.watch<AppState>();
+
     return Scaffold(
+      key: _scaffoldKey,
       appBar: AppBar(
         title: const Text('Flock Map'),
         actions: [
@@ -61,11 +52,13 @@ class _HomeScreenState extends State<HomeScreen> {
           if (_followMe) setState(() => _followMe = false);
         },
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => _startAddCamera(context),
-        icon: const Icon(Icons.add_location_alt),
-        label: const Text('Tag Camera'),
-      ),
+      floatingActionButton: appState.session == null
+          ? FloatingActionButton.extended(
+              onPressed: _openAddCameraSheet,
+              icon: const Icon(Icons.add_location_alt),
+              label: const Text('Tag Camera'),
+            )
+          : null,
     );
   }
 }

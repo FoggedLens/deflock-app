@@ -1,45 +1,52 @@
 plugins {
     id("com.android.application")
     id("kotlin-android")
-    // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
+    // Flutter plugin *must* be applied last.
     id("dev.flutter.flutter-gradle-plugin")
 }
 
 android {
     namespace = "com.example.flock_map_app"
-    compileSdk = flutter.compileSdkVersion
-//    ndkVersion = flutter.ndkVersion
+
+    // Matches current stable Flutter (compileSdk 34 as of July 2025)
+    compileSdk = 35
+
+    // NDK only needed if you build native plugins; keep your pinned version
     ndkVersion = "27.0.12077973"
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
-
     kotlinOptions {
         jvmTarget = JavaVersion.VERSION_11.toString()
     }
 
     defaultConfig {
-        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
+        // Application ID (package name)
         applicationId = "com.example.flock_map_app"
-        // You can update the following values to match your application needs.
-        // For more information, see: https://flutter.dev/to/review-gradle-config.
-        minSdk = flutter.minSdkVersion
-        targetSdk = flutter.targetSdkVersion
+
+        // ────────────────────────────────────────────────────────────
+        // oauth2_client 4.x & flutter_web_auth_2 5.x require minSdk 23
+        // ────────────────────────────────────────────────────────────
+        minSdk = 23
+        targetSdk = 34
+
+        // Flutter tool injects these during `flutter build`
         versionCode = flutter.versionCode
         versionName = flutter.versionName
     }
 
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
+            // Using debug signing so `flutter run --release` works out‑of‑box.
             signingConfig = signingConfigs.getByName("debug")
         }
     }
 }
 
 flutter {
+    // Path up to the Flutter project directory
     source = "../.."
 }
+

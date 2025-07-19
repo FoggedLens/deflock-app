@@ -15,11 +15,30 @@ class SettingsScreen extends StatelessWidget {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          SwitchListTile(
-            title: const Text('Logged in to OSM (OAuth – coming soon)'),
-            value: appState.isLoggedIn,
-            onChanged: null, // disabled for now
+          ListTile(
+            leading: Icon(
+              appState.isLoggedIn ? Icons.person : Icons.login,
+              color: appState.isLoggedIn ? Colors.green : null,
+            ),
+            title: Text(appState.isLoggedIn
+                ? 'Logged in as ${appState.username}'
+                : 'Log in to OpenStreetMap'),
+            onTap: () async {
+              if (appState.isLoggedIn) {
+                await appState.logout();
+              } else {
+                await appState.login();
+              }
+            },
           ),
+          if (appState.isLoggedIn)
+            ListTile(
+              leading: const Icon(Icons.cloud_upload),
+              title: const Text('Test upload'),
+              onTap: () => ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Upload will run soon...')),
+              ),
+            ),
           const Divider(),
           const Text('Camera Profiles',
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
@@ -29,6 +48,11 @@ class SettingsScreen extends StatelessWidget {
               value: appState.isEnabled(p),
               onChanged: (v) => appState.toggleProfile(p, v),
             ),
+          ),
+          const Divider(),
+          ListTile(
+            leading: const Icon(Icons.sync),
+            title: Text('Pending uploads: ${appState.pendingCount}'),
           ),
         ],
       ),
