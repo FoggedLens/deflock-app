@@ -173,13 +173,13 @@ class _MapViewState extends State<MapView> {
 
         // Attribution overlay
         Positioned(
-          bottom: 8,
-          right: 8,
+          bottom: 20,
+          left: 10,
           child: Container(
             color: Colors.white70,
             padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
             child: const Text(
-              '© OpenStreetMap contributors',
+              '© OpenStreetMap and contributors',
               style: TextStyle(fontSize: 11),
             ),
           ),

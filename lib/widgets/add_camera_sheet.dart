@@ -5,19 +5,26 @@ import '../app_state.dart';
 import '../models/camera_profile.dart';
 
 class AddCameraSheet extends StatelessWidget {
-  const AddCameraSheet({super.key});
+  const AddCameraSheet({super.key, required this.session});
+
+  final AddCameraSession session;
 
   @override
   Widget build(BuildContext context) {
     final appState = context.watch<AppState>();
-    final session = appState.session;
 
-    // If the session was cleared before this frame, bail safely.
-    if (session == null) {
-      return const SizedBox.shrink();
+    void _commit() {
+      appState.commitSession();
+      Navigator.pop(context);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Camera queued for upload')),
+      );
     }
 
-    final profiles = appState.profiles;
+    void _cancel() {
+      appState.cancelSession();
+      Navigator.pop(context);
+    }
 
     return Padding(
       padding:
@@ -39,7 +46,7 @@ class AddCameraSheet extends StatelessWidget {
             title: const Text('Profile'),
             trailing: DropdownButton<CameraProfile>(
               value: session.profile,
-              items: profiles
+              items: appState.profiles
                   .map((p) => DropdownMenuItem(value: p, child: Text(p.name)))
                   .toList(),
               onChanged: (p) =>
@@ -64,14 +71,14 @@ class AddCameraSheet extends StatelessWidget {
               children: [
                 Expanded(
                   child: OutlinedButton(
-                    onPressed: () => Navigator.pop(context, false),
+                    onPressed: _cancel,
                     child: const Text('Cancel'),
                   ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
                   child: ElevatedButton(
-                    onPressed: () => Navigator.pop(context, true),
+                    onPressed: _commit,
                     child: const Text('Submit'),
                   ),
                 ),

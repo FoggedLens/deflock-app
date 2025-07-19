@@ -7,8 +7,8 @@
     <application
         android:name="${applicationName}"
         android:label="flock_map_app"
-        android:icon="@mipmap/ic_launcher">
-
+        android:icon="@mipmap/ic_launcher"
+        android:enableOnBackInvokedCallback="true">
         <!-- Main Flutter activity -->
         <activity
             android:name=".MainActivity"

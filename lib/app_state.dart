@@ -83,9 +83,21 @@ class AppState extends ChangeNotifier {
     LatLng? target,
   }) {
     if (_session == null) return;
-    if (directionDeg != null) _session!.directionDegrees = directionDeg;
-    if (profile != null) _session!.profile = profile;
-    if (target != null) _session!.target = target;
+
+    bool dirty = false;
+    if (directionDeg != null && directionDeg != _session!.directionDegrees) {
+      _session!.directionDegrees = directionDeg;
+      dirty = true;
+    }
+    if (profile != null && profile != _session!.profile) {
+      _session!.profile = profile;
+      dirty = true;
+    }
+    if (target != null) {
+      _session!.target = target;
+      dirty = true;
+    }
+    if (dirty) notifyListeners();   // <-- slider & map update
   }
 
   void cancelSession() {
