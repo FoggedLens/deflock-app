@@ -27,7 +27,6 @@ class _HomeScreenState extends State<HomeScreen> {
       builder: (_) => const AddCameraSheet(),
     );
 
-    // null == closed via system back (treat as cancel)
     if (submitted == true) {
       appState.commitSession();
       if (mounted) {

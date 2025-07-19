@@ -15,8 +15,20 @@ class OsmCameraNode {
       tags.containsKey('direction') || tags.containsKey('camera:direction');
 
   double? get directionDeg {
-    final val = tags['direction'] ?? tags['camera:direction'];
-    return double.tryParse(val ?? '');
+    final raw = tags['direction'] ?? tags['camera:direction'];
+    if (raw == null) return null;
+
+    // Keep digits, optional dot, optional leading sign.
+    final match = RegExp(r'[-+]?\d*\.?\d+').firstMatch(raw);
+    if (match == null) return null;
+
+    final numStr = match.group(0);
+    final val = double.tryParse(numStr ?? '');
+    if (val == null) return null;
+
+    // Normalize: wrap negative or >360 into 0‑359 range.
+    final normalized = ((val % 360) + 360) % 360;
+    return normalized;
   }
 }
 

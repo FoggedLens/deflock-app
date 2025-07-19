@@ -95,6 +95,19 @@ class _MapViewState extends State<MapView> {
   Widget build(BuildContext context) {
     final appState = context.watch<AppState>();
     final session = appState.session;
+
+    // If we just entered add‑mode and no target yet, seed it with current map center.
+    if (session != null && session.target == null) {
+      try {
+        final center = _controller.camera.center;
+        WidgetsBinding.instance.addPostFrameCallback(
+          (_) => appState.updateSession(target: center),
+        );
+      } catch (_) {
+        // controller not ready yet; will update onPositionChanged soon
+      }
+    }
+
     final zoom = _safeZoom();
 
     final markers = <Marker>[
@@ -141,8 +154,7 @@ class _MapViewState extends State<MapView> {
           ),
           children: [
             TileLayer(
-              urlTemplate:
-                  'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+              urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
               userAgentPackageName: 'com.example.flock_map_app',
             ),
             PolygonLayer(polygons: overlays),
@@ -161,7 +173,7 @@ class _MapViewState extends State<MapView> {
 
   Polygon _buildCone(LatLng origin, double bearingDeg, double zoom) {
     const halfAngle = 15.0;
-    final length = 0.002 * math.pow(2, 15 - zoom);
+    final length = 0.002 * math.pow(2, 15 - zoom); // scale with zoom
 
     LatLng _project(double deg) {
       final rad = deg * math.pi / 180;
@@ -175,9 +187,11 @@ class _MapViewState extends State<MapView> {
     final right = _project(bearingDeg + halfAngle);
 
     return Polygon(
-      points: [origin, left, right],
+      points: [origin, left, right, origin],
+      isFilled: true,
       color: Colors.redAccent.withOpacity(0.25),
-      borderStrokeWidth: 0,
+      borderColor: Colors.redAccent,
+      borderStrokeWidth: 1,
     );
   }
 }
