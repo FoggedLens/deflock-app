@@ -11,6 +11,8 @@ class Uploader {
 
   Future<bool> upload(PendingUpload p) async {
     try {
+      print('Uploader: Starting upload for camera at ${p.coord.latitude}, ${p.coord.longitude}');
+      
       // 1. open changeset
       final csXml = '''
         <osm>
@@ -19,9 +21,15 @@ class Uploader {
             <tag k="comment" v="Add surveillance camera"/>
           </changeset>
         </osm>''';
-      final csResp = await _post('/api/0.6/changeset/create', csXml);
-      if (csResp.statusCode != 200) return false;
-      final csId = csResp.body;
+      print('Uploader: Creating changeset...');
+      final csResp = await _put('/api/0.6/changeset/create', csXml);
+      print('Uploader: Changeset response: ${csResp.statusCode} - ${csResp.body}');
+      if (csResp.statusCode != 200) {
+        print('Uploader: Failed to create changeset');
+        return false;
+      }
+      final csId = csResp.body.trim();
+      print('Uploader: Created changeset ID: $csId');
 
       // 2. create node
       final nodeXml = '''
@@ -33,15 +41,26 @@ class Uploader {
             <tag k="direction" v="${p.direction.round()}"/>
           </node>
         </osm>''';
+      print('Uploader: Creating node...');
       final nodeResp = await _put('/api/0.6/node/create', nodeXml);
-      if (nodeResp.statusCode != 200) return false;
+      print('Uploader: Node response: ${nodeResp.statusCode} - ${nodeResp.body}');
+      if (nodeResp.statusCode != 200) {
+        print('Uploader: Failed to create node');
+        return false;
+      }
+      final nodeId = nodeResp.body.trim();
+      print('Uploader: Created node ID: $nodeId');
 
       // 3. close changeset
-      await _put('/api/0.6/changeset/$csId/close', '');
+      print('Uploader: Closing changeset...');
+      final closeResp = await _put('/api/0.6/changeset/$csId/close', '');
+      print('Uploader: Close response: ${closeResp.statusCode}');
 
+      print('Uploader: Upload successful!');
       onSuccess();
       return true;
-    } catch (_) {
+    } catch (e) {
+      print('Uploader: Upload failed with error: $e');
       return false;
     }
   }

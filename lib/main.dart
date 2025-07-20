@@ -3,7 +3,6 @@ import 'package:provider/provider.dart';
 
 import 'app_state.dart';
 import 'screens/home_screen.dart';
-import 'screens/add_camera_screen.dart';
 import 'screens/settings_screen.dart';
 
 void main() {
@@ -28,7 +27,6 @@ class FlockMapApp extends StatelessWidget {
       ),
       routes: {
         '/': (context) => const HomeScreen(),
-        '/add': (context) => const AddCameraScreen(),
         '/settings': (context) => const SettingsScreen(),
       },
       initialRoute: '/',

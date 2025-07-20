@@ -24,6 +24,7 @@ dependencies:
 
   # Persistence
   shared_preferences: ^2.2.2
+  uuid: ^4.0.0
 
 flutter:
   uses-material-design: true
