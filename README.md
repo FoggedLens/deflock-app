@@ -22,6 +22,7 @@ If you discover a bug that causes bad behavior w/rt OSM API, you might want to r
 - Camera point details popup (tap to view full details, edit if user-submitted)
 - One-time popup about "this app trusts the user to know what they are doing" + credits/attributions
 - Optional height tag for cameras
+- Direction should be optional actually (for things like gunshot detectors) - maybe a profile setting?
 - More (unspecified items)
 
 ### FUTURE (Post-Beta)
