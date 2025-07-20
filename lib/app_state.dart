@@ -141,6 +141,16 @@ class AppState extends ChangeNotifier {
     notifyListeners();
   }
 
+  // Validate current token/credentials
+  Future<bool> validateToken() async {
+    try {
+      return await _auth.isLoggedIn();
+    } catch (e) {
+      print('AppState: Token validation error: $e');
+      return false;
+    }
+  }
+
   // ---------- Profiles ----------
   List<CameraProfile> get profiles => List.unmodifiable(_profiles);
   bool isEnabled(CameraProfile p) => _enabled.contains(p);
@@ -216,6 +226,10 @@ class AppState extends ChangeNotifier {
     );
     _saveQueue();
     _session = null;
+    
+    // Restart uploader when new items are added
+    _startUploader();
+    
     notifyListeners();
   }
 
@@ -305,4 +319,3 @@ class AppState extends ChangeNotifier {
     notifyListeners();
   }
 }
-

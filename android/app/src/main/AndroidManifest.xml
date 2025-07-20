@@ -1,5 +1,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <!-- Internet permission for map tiles and API calls -->
+    <uses-permission android:name="android.permission.INTERNET"/>
+    
     <!-- Location permissions for blue‑dot positioning -->
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
@@ -69,4 +72,3 @@
         </intent>
     </queries>
 </manifest>
-

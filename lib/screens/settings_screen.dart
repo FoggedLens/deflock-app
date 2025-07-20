@@ -18,6 +18,7 @@ class SettingsScreen extends StatelessWidget {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
+          // Authentication section
           ListTile(
             leading: Icon(
               appState.isLoggedIn ? Icons.person : Icons.login,
@@ -28,57 +29,48 @@ class SettingsScreen extends StatelessWidget {
                 : 'Log in to OpenStreetMap'),
             subtitle: appState.isLoggedIn 
                 ? const Text('Tap to logout')
-                : const Text('Tap to login'),
+                : const Text('Required to submit camera data'),
             onTap: () async {
               if (appState.isLoggedIn) {
                 await appState.logout();
               } else {
-                await appState.login();
+                await appState.forceLogin(); // Use force login as the primary method
               }
-            },
-          ),
-          ListTile(
-            leading: const Icon(Icons.refresh),
-            title: const Text('Refresh Login Status'),
-            subtitle: const Text('Check if you\'re already logged in'),
-            onTap: () async {
-              await appState.refreshAuthState();
               if (context.mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
                     content: Text(appState.isLoggedIn 
                         ? 'Logged in as ${appState.username}'
-                        : 'Not logged in'),
+                        : 'Logged out'),
+                    backgroundColor: appState.isLoggedIn ? Colors.green : Colors.grey,
                   ),
                 );
               }
             },
           ),
-          ListTile(
-            leading: const Icon(Icons.login_outlined),
-            title: const Text('Force Fresh Login'),
-            subtitle: const Text('Clear stored tokens and login again'),
-            onTap: () async {
-              await appState.forceLogin();
-              if (context.mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(appState.isLoggedIn 
-                        ? 'Fresh login successful: ${appState.username}'
-                        : 'Fresh login failed'),
-                    backgroundColor: appState.isLoggedIn ? Colors.green : Colors.red,
-                  ),
-                );
-              }
-            },
-          ),
+          // Test connection (only when logged in)
           if (appState.isLoggedIn)
             ListTile(
-              leading: const Icon(Icons.cloud_upload),
-              title: const Text('Test upload'),
-              onTap: () => ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Upload will run soon...')),
-              ),
+              leading: const Icon(Icons.wifi_protected_setup),
+              title: const Text('Test Connection'),
+              subtitle: const Text('Verify OSM credentials are working'),
+              onTap: () async {
+                final isValid = await appState.validateToken();
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(isValid
+                          ? 'Connection OK - credentials are valid'
+                          : 'Connection failed - please re-login'),
+                      backgroundColor: isValid ? Colors.green : Colors.red,
+                    ),
+                  );
+                }
+                if (!isValid) {
+                  // Auto-logout if token is invalid
+                  await appState.logout();
+                }
+              },
             ),
           const Divider(),
           Row(
@@ -289,4 +281,3 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 }
-
