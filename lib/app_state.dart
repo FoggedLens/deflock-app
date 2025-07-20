@@ -28,6 +28,15 @@ class AppState extends ChangeNotifier {
 
   late final List<CameraProfile> _profiles = [CameraProfile.alpr()];
   final Set<CameraProfile> _enabled = {};
+  
+  // Test mode - prevents actual uploads to OSM
+  bool _testMode = false;
+  bool get testMode => _testMode;
+  void setTestMode(bool enabled) {
+    _testMode = enabled;
+    print('AppState: Test mode ${enabled ? 'enabled' : 'disabled'}');
+    notifyListeners();
+  }
 
   AddCameraSession? _session;
   AddCameraSession? get session => _session;
@@ -216,13 +225,30 @@ class AppState extends ChangeNotifier {
       if (access == null) return; // not logged in
 
       final item = _queue.first;
-      final up = Uploader(access, () {
+      
+      bool ok;
+      if (_testMode) {
+        // Test mode - simulate successful upload without actually calling OSM API
+        print('AppState: Test mode - simulating upload for ${item.coord}');
+        await Future.delayed(const Duration(seconds: 1)); // Simulate network delay
+        ok = true;
+        print('AppState: Test mode - simulated upload successful');
+      } else {
+        // Real upload
+        final up = Uploader(access, () {
+          _queue.remove(item);
+          _saveQueue();
+          notifyListeners();
+        });
+        ok = await up.upload(item);
+      }
+      
+      if (ok && _testMode) {
+        // In test mode, manually remove from queue since Uploader callback won't be called
         _queue.remove(item);
         _saveQueue();
         notifyListeners();
-      });
-
-      final ok = await up.upload(item);
+      }
       if (!ok) {
         item.attempts++;
         if (item.attempts >= 3) {
@@ -237,5 +263,21 @@ class AppState extends ChangeNotifier {
 
   // ---------- Exposed getters ----------
   int get pendingCount => _queue.length;
+  List<PendingUpload> get pendingUploads => List.unmodifiable(_queue);
+  
+  // ---------- Queue management ----------
+  void clearQueue() {
+    print('AppState: Clearing upload queue (${_queue.length} items)');
+    _queue.clear();
+    _saveQueue();
+    notifyListeners();
+  }
+  
+  void removeFromQueue(PendingUpload upload) {
+    print('AppState: Removing upload from queue: ${upload.coord}');
+    _queue.remove(upload);
+    _saveQueue();
+    notifyListeners();
+  }
 }
 
