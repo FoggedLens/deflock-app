@@ -8,6 +8,7 @@ import 'models/camera_profile.dart';
 import 'models/pending_upload.dart';
 import 'services/auth_service.dart';
 import 'services/uploader.dart';
+import 'services/profile_service.dart';
 
 // ------------------ AddCameraSession ------------------
 class AddCameraSession {
@@ -26,7 +27,7 @@ class AppState extends ChangeNotifier {
   final _auth = AuthService();
   String? _username;
 
-  late final List<CameraProfile> _profiles = [CameraProfile.alpr()];
+  final List<CameraProfile> _profiles = [];
   final Set<CameraProfile> _enabled = {};
   
   // Test mode - prevents actual uploads to OSM
@@ -49,7 +50,11 @@ class AppState extends ChangeNotifier {
 
   // ---------- Init ----------
   Future<void> _init() async {
+    // Initialize profiles: built-in + custom
+    _profiles.add(CameraProfile.alpr());
+    _profiles.addAll(await ProfileService().load());
     _enabled.addAll(_profiles);
+
     await _loadQueue();
     
     // Check if we're already logged in and get username
@@ -143,6 +148,26 @@ class AppState extends ChangeNotifier {
       _profiles.where(isEnabled).toList(growable: false);
   void toggleProfile(CameraProfile p, bool e) {
     e ? _enabled.add(p) : _enabled.remove(p);
+    notifyListeners();
+  }
+
+  void addOrUpdateProfile(CameraProfile p) {
+    final idx = _profiles.indexWhere((x) => x.id == p.id);
+    if (idx >= 0) {
+      _profiles[idx] = p;
+    } else {
+      _profiles.add(p);
+      _enabled.add(p);
+    }
+    ProfileService().save(_profiles);
+    notifyListeners();
+  }
+
+  void deleteProfile(CameraProfile p) {
+    if (p.builtin) return;
+    _enabled.remove(p);
+    _profiles.removeWhere((x) => x.id == p.id);
+    ProfileService().save(_profiles);
     notifyListeners();
   }
 

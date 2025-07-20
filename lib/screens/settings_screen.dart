@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:uuid/uuid.dart';
 
 import '../app_state.dart';
+import '../models/camera_profile.dart';
+import 'profile_editor.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -78,13 +81,73 @@ class SettingsScreen extends StatelessWidget {
               ),
             ),
           const Divider(),
-          const Text('Camera Profiles',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text('Camera Profiles',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+              TextButton.icon(
+                onPressed: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => ProfileEditor(
+                      profile: CameraProfile(
+                        id: const Uuid().v4(),
+                        name: '',
+                        tags: const {},
+                      ),
+                    ),
+                  ),
+                ),
+                icon: const Icon(Icons.add),
+                label: const Text('New Profile'),
+              ),
+            ],
+          ),
           ...appState.profiles.map(
-            (p) => SwitchListTile(
+            (p) => ListTile(
+              leading: Checkbox(
+                value: appState.isEnabled(p),
+                onChanged: (v) => appState.toggleProfile(p, v ?? false),
+              ),
               title: Text(p.name),
-              value: appState.isEnabled(p),
-              onChanged: (v) => appState.toggleProfile(p, v),
+              subtitle: Text(p.builtin ? 'Built-in' : 'Custom'),
+              trailing: p.builtin ? null : PopupMenuButton(
+                itemBuilder: (context) => [
+                  PopupMenuItem(
+                    value: 'edit',
+                    child: const Row(
+                      children: [
+                        Icon(Icons.edit),
+                        SizedBox(width: 8),
+                        Text('Edit'),
+                      ],
+                    ),
+                  ),
+                  PopupMenuItem(
+                    value: 'delete',
+                    child: const Row(
+                      children: [
+                        Icon(Icons.delete, color: Colors.red),
+                        SizedBox(width: 8),
+                        Text('Delete', style: TextStyle(color: Colors.red)),
+                      ],
+                    ),
+                  ),
+                ],
+                onSelected: (value) {
+                  if (value == 'edit') {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => ProfileEditor(profile: p),
+                      ),
+                    );
+                  } else if (value == 'delete') {
+                    _showDeleteProfileDialog(context, appState, p);
+                  }
+                },
+              ),
             ),
           ),
           const Divider(),
@@ -139,6 +202,33 @@ class SettingsScreen extends StatelessWidget {
                 );
               },
             ),
+        ],
+      ),
+    );
+  }
+
+  void _showDeleteProfileDialog(BuildContext context, AppState appState, CameraProfile profile) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Delete Profile'),
+        content: Text('Are you sure you want to delete "${profile.name}"?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              appState.deleteProfile(profile);
+              Navigator.pop(context);
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Profile deleted')),
+              );
+            },
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('Delete'),
+          ),
         ],
       ),
     );

@@ -7,15 +7,25 @@ Forks should register for their own oauth2 client id from OSM: https://www.opens
 These are hardcoded in lib/services/auth_service.dart for each app.
 If you discover a bug that causes bad behavior w/rt OSM API, you might want to register a new one for the patched version to distinguish them. You can also then delete the old version from OSM to prevent new people from using the old version.
 
+## TODO for Beta/RC Release
 
-## Platform setup notes
-### iOS
-Add location permission strings to `ios/Runner/Info.plist`:
-```xml
-<key>NSLocationWhenInUseUsageDescription</key>
-<string>This app needs your location to show nearby cameras.</string>
-```
+### COMPLETED
+- Queue view/retry/clear - Implemented with test mode support
+- Fix login not opening browser - Fixed OAuth scope and client ID issues
+- Add "new profile" text to button in settings - Enhanced profile management UI
+- Profile management (create/edit/delete) - Full CRUD operations integrated
 
+### 🔄 REMAINING FOR BETA/RC
+- Better icons for cameras, prettier/wider FOV cones
+- North up mode, satellite view mode  
+- Error handling when clicking "add camera" but no profiles enabled
+- Camera point details popup (tap to view full details, edit if user-submitted)
+- One-time popup about "this app trusts the user to know what they are doing" + credits/attributions
+- Optional height tag for cameras
+- More (unspecified items)
+
+### FUTURE (Post-Beta)
+- Wayfinding to avoid cameras
 
 ## Stuff for build env
 # Install from GUI:
