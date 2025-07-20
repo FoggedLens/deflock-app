@@ -42,22 +42,88 @@ class AppState extends ChangeNotifier {
   Future<void> _init() async {
     _enabled.addAll(_profiles);
     await _loadQueue();
-    if (await _auth.isLoggedIn()) {
-      _username = await _auth.login();
+    
+    // Check if we're already logged in and get username
+    try {
+      if (await _auth.isLoggedIn()) {
+        print('AppState: User appears to be logged in, fetching username...');
+        _username = await _auth.login();
+        if (_username != null) {
+          print('AppState: Successfully retrieved username: $_username');
+        } else {
+          print('AppState: Failed to retrieve username despite being logged in');
+        }
+      } else {
+        print('AppState: User is not logged in');
+      }
+    } catch (e) {
+      print('AppState: Error during auth initialization: $e');
     }
+    
     _startUploader();
     notifyListeners();
   }
 
   // ---------- Auth ----------
   Future<void> login() async {
-    _username = await _auth.login();
+    try {
+      print('AppState: Starting login process...');
+      _username = await _auth.login();
+      if (_username != null) {
+        print('AppState: Login successful for user: $_username');
+      } else {
+        print('AppState: Login failed - no username returned');
+      }
+    } catch (e) {
+      print('AppState: Login error: $e');
+      _username = null;
+    }
     notifyListeners();
   }
 
   Future<void> logout() async {
     await _auth.logout();
     _username = null;
+    notifyListeners();
+  }
+
+  // Add method to refresh auth state
+  Future<void> refreshAuthState() async {
+    try {
+      print('AppState: Refreshing auth state...');
+      if (await _auth.isLoggedIn()) {
+        print('AppState: Token exists, fetching username...');
+        _username = await _auth.login();
+        if (_username != null) {
+          print('AppState: Auth refresh successful: $_username');
+        } else {
+          print('AppState: Auth refresh failed - no username');
+        }
+      } else {
+        print('AppState: No valid token found');
+        _username = null;
+      }
+    } catch (e) {
+      print('AppState: Auth refresh error: $e');
+      _username = null;
+    }
+    notifyListeners();
+  }
+
+  // Force a completely fresh login (clears stored tokens)
+  Future<void> forceLogin() async {
+    try {
+      print('AppState: Starting forced fresh login...');
+      _username = await _auth.forceLogin();
+      if (_username != null) {
+        print('AppState: Forced login successful: $_username');
+      } else {
+        print('AppState: Forced login failed - no username returned');
+      }
+    } catch (e) {
+      print('AppState: Forced login error: $e');
+      _username = null;
+    }
     notifyListeners();
   }
 

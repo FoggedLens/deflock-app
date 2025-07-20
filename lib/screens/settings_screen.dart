@@ -21,13 +21,51 @@ class SettingsScreen extends StatelessWidget {
               color: appState.isLoggedIn ? Colors.green : null,
             ),
             title: Text(appState.isLoggedIn
-                ? 'Logged in as ${appState.username}'
-                : 'Log in to OpenStreetMap'),
+                ? 'Logged in as ${appState.username}'
+                : 'Log in to OpenStreetMap'),
+            subtitle: appState.isLoggedIn 
+                ? const Text('Tap to logout')
+                : const Text('Tap to login'),
             onTap: () async {
               if (appState.isLoggedIn) {
                 await appState.logout();
               } else {
                 await appState.login();
+              }
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.refresh),
+            title: const Text('Refresh Login Status'),
+            subtitle: const Text('Check if you\'re already logged in'),
+            onTap: () async {
+              await appState.refreshAuthState();
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(appState.isLoggedIn 
+                        ? 'Logged in as ${appState.username}'
+                        : 'Not logged in'),
+                  ),
+                );
+              }
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.login_outlined),
+            title: const Text('Force Fresh Login'),
+            subtitle: const Text('Clear stored tokens and login again'),
+            onTap: () async {
+              await appState.forceLogin();
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(appState.isLoggedIn 
+                        ? 'Fresh login successful: ${appState.username}'
+                        : 'Fresh login failed'),
+                    backgroundColor: appState.isLoggedIn ? Colors.green : Colors.red,
+                  ),
+                );
               }
             },
           ),
