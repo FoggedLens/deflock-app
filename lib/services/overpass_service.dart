@@ -15,21 +15,18 @@ class OverpassService {
   ) async {
     if (profiles.isEmpty) return [];
 
-    // Build regex of surveillance:type values from enabled profiles
-    final types = profiles
-        .map((p) => p.tags['surveillance:type'])
-        .whereType<String>()
-        .toSet();
-    final regex = types.join('|');
+    // Build one node query per enabled profile (each with all its tags required)
+    final nodeClauses = profiles.map((profile) {
+      final tagFilters = profile.tags.entries
+          .map((e) => '["${e.key}"="${e.value}"]')
+          .join('\n          ');
+      return '''node\n          $tagFilters\n          (${bbox.southWest.latitude},${bbox.southWest.longitude},\n           ${bbox.northEast.latitude},${bbox.northEast.longitude});''';
+    }).join('\n      ');
 
     final query = '''
       [out:json][timeout:25];
       (
-        node
-          ["man_made"="surveillance"]
-          ["surveillance:type"~"^(${regex})\$"]
-          (${bbox.southWest.latitude},${bbox.southWest.longitude},
-           ${bbox.northEast.latitude},${bbox.northEast.longitude});
+        $nodeClauses
       );
       out body 250;
     ''';

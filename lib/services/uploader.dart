@@ -32,13 +32,16 @@ class Uploader {
       print('Uploader: Created changeset ID: $csId');
 
       // 2. create node
+      // Merge tags: direction in PendingUpload should always be present,
+      // and override any in the profile for upload purposes
+      final mergedTags = Map<String, String>.from(p.profile.tags)
+        ..['direction'] = p.direction.round().toString();
+      final tagsXml = mergedTags.entries.map((e) =>
+        '<tag k="${e.key}" v="${e.value}"/>').join('\n            ');
       final nodeXml = '''
         <osm>
           <node changeset="$csId" lat="${p.coord.latitude}" lon="${p.coord.longitude}">
-            <tag k="man_made" v="surveillance"/>
-            <tag k="surveillance:type" v="ALPR"/>
-            <tag k="camera:type" v="fixed"/>
-            <tag k="direction" v="${p.direction.round()}"/>
+            $tagsXml
           </node>
         </osm>''';
       print('Uploader: Creating node...');
