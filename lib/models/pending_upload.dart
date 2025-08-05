@@ -18,14 +18,16 @@ class PendingUpload {
         'lat': coord.latitude,
         'lon': coord.longitude,
         'dir': direction,
-        'profile': profile.name,
+        'profile': profile.toJson(),
         'attempts': attempts,
       };
 
   factory PendingUpload.fromJson(Map<String, dynamic> j) => PendingUpload(
         coord: LatLng(j['lat'], j['lon']),
         direction: j['dir'],
-        profile: CameraProfile.alpr(), // only built‑in for now
+        profile: j['profile'] is Map<String, dynamic>
+            ? CameraProfile.fromJson(j['profile'])
+            : CameraProfile.alpr(), // fallback for legacy, more logic can be added
         attempts: j['attempts'] ?? 0,
       );
 }

@@ -46,7 +46,7 @@ class AddCameraSheet extends StatelessWidget {
             title: const Text('Profile'),
             trailing: DropdownButton<CameraProfile>(
               value: session.profile,
-              items: appState.profiles
+              items: appState.enabledProfiles
                   .map((p) => DropdownMenuItem(value: p, child: Text(p.name)))
                   .toList(),
               onChanged: (p) =>
