@@ -13,6 +13,7 @@ import '../app_state.dart';
 import '../services/overpass_service.dart';
 import '../models/osm_camera_node.dart';
 import 'debouncer.dart';
+import 'camera_tag_sheet.dart';
 
 class MapView extends StatefulWidget {
   const MapView({
@@ -123,7 +124,16 @@ class _MapViewState extends State<MapView> {
           point: n.coord,
           width: 24,
           height: 24,
-          child: const Icon(Icons.videocam, color: Colors.orange),
+          child: GestureDetector(
+            onTap: () {
+              showModalBottomSheet(
+                context: context,
+                builder: (_) => CameraTagSheet(node: n),
+                showDragHandle: true, // for better UX on Material3
+              );
+            },
+            child: const Icon(Icons.videocam, color: Colors.orange),
+          ),
         ),
       ),
     ];

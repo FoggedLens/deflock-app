@@ -29,12 +29,16 @@ class AppState extends ChangeNotifier {
 
   final List<CameraProfile> _profiles = [];
   final Set<CameraProfile> _enabled = {};
+  static const String _enabledPrefsKey = 'enabled_profiles';
   
   // Test mode - prevents actual uploads to OSM
   bool _testMode = false;
+  static const String _testModePrefsKey = 'test_mode';
   bool get testMode => _testMode;
-  void setTestMode(bool enabled) {
+  Future<void> setTestMode(bool enabled) async {
     _testMode = enabled;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_testModePrefsKey, enabled);
     print('AppState: Test mode ${enabled ? 'enabled' : 'disabled'}');
     notifyListeners();
   }
@@ -53,7 +57,18 @@ class AppState extends ChangeNotifier {
     // Initialize profiles: built-in + custom
     _profiles.add(CameraProfile.alpr());
     _profiles.addAll(await ProfileService().load());
-    _enabled.addAll(_profiles);
+
+    // Load enabled profile IDs and test mode from prefs
+    final prefs = await SharedPreferences.getInstance();
+    final enabledIds = prefs.getStringList(_enabledPrefsKey);
+    if (enabledIds != null && enabledIds.isNotEmpty) {
+      // Restore enabled profiles by id
+      _enabled.addAll(_profiles.where((p) => enabledIds.contains(p.id)));
+    } else {
+      // By default, all are enabled
+      _enabled.addAll(_profiles);
+    }
+    _testMode = prefs.getBool(_testModePrefsKey) ?? false;
 
     await _loadQueue();
     
@@ -158,6 +173,7 @@ class AppState extends ChangeNotifier {
       _profiles.where(isEnabled).toList(growable: false);
   void toggleProfile(CameraProfile p, bool e) {
     e ? _enabled.add(p) : _enabled.remove(p);
+    _saveEnabledProfiles();
     notifyListeners();
   }
 
@@ -168,6 +184,7 @@ class AppState extends ChangeNotifier {
     } else {
       _profiles.add(p);
       _enabled.add(p);
+      _saveEnabledProfiles();
     }
     ProfileService().save(_profiles);
     notifyListeners();
@@ -177,8 +194,18 @@ class AppState extends ChangeNotifier {
     if (p.builtin) return;
     _enabled.remove(p);
     _profiles.removeWhere((x) => x.id == p.id);
+    _saveEnabledProfiles();
     ProfileService().save(_profiles);
     notifyListeners();
+  }
+
+  // Save enabled profile IDs to disk
+  Future<void> _saveEnabledProfiles() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList(
+      _enabledPrefsKey,
+      _enabled.map((p) => p.id).toList(),
+    );
   }
 
   // ---------- Add‑camera session ----------
