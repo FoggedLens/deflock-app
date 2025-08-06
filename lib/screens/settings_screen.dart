@@ -143,22 +143,59 @@ class SettingsScreen extends StatelessWidget {
             ),
           ),
           const Divider(),
-          // Test mode toggle
-          SwitchListTile(
-            secondary: const Icon(Icons.bug_report),
-            title: const Text('Test Mode'),
-            subtitle: const Text('Simulate uploads without sending to OSM'),
-            value: appState.testMode,
-            onChanged: (value) => appState.setTestMode(value),
+          // Upload mode selector - Production/Sandbox/Simulate
+          ListTile(
+            leading: const Icon(Icons.cloud_upload),
+            title: const Text('Upload Destination'),
+            subtitle: const Text('Choose where cameras are uploaded'),
+            trailing: DropdownButton<UploadMode>(
+              value: appState.uploadMode,
+              items: const [
+                DropdownMenuItem(
+                  value: UploadMode.production,
+                  child: Text('Production'),
+                ),
+                DropdownMenuItem(
+                  value: UploadMode.sandbox,
+                  child: Text('Sandbox'),
+                ),
+                DropdownMenuItem(
+                  value: UploadMode.simulate,
+                  child: Text('Simulate'),
+                ),
+              ],
+              onChanged: (mode) {
+                if (mode != null) appState.setUploadMode(mode);
+              },
+            ),
+          ),
+          // Help text
+          Padding(
+            padding: const EdgeInsets.only(left: 56, top: 2, right: 16, bottom: 12),
+            child: Builder(
+              builder: (context) {
+                switch (appState.uploadMode) {
+                  case UploadMode.production:
+                    return const Text('Upload to the live OSM database (visible to all users)', style: TextStyle(fontSize: 12, color: Colors.black87));
+                  case UploadMode.sandbox:
+                    return const Text('Upload to the OSM Sandbox (safe for testing, data resets regularly)', style: TextStyle(fontSize: 12, color: Colors.orange));
+                  case UploadMode.simulate:
+                  default:
+                    return const Text('Simulate uploads (does not contact OSM servers)', style: TextStyle(fontSize: 12, color: Colors.deepPurple));
+                }
+              },
+            ),
           ),
           const Divider(),
           // Queue management
           ListTile(
             leading: const Icon(Icons.queue),
             title: Text('Pending uploads: ${appState.pendingCount}'),
-            subtitle: appState.testMode 
-                ? const Text('Test mode enabled - uploads simulated')
-                : const Text('Tap to view queue'),
+            subtitle: appState.uploadMode == UploadMode.simulate
+                ? const Text('Simulate mode enabled – uploads simulated')
+                : appState.uploadMode == UploadMode.sandbox
+                    ? const Text('Sandbox mode – uploads go to OSM Sandbox')
+                    : const Text('Tap to view queue'),
             onTap: appState.pendingCount > 0 ? () {
               _showQueueDialog(context, appState);
             } : null,

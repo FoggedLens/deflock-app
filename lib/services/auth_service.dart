@@ -7,31 +7,39 @@ import 'package:oauth2_client/oauth2_helper.dart';
 import 'package:http/http.dart' as http;
 
 /// Handles PKCE OAuth login with OpenStreetMap.
+import '../app_state.dart';
+
 class AuthService {
   static const String _clientId = 'Js6Fn3NR3HEGaD0ZIiHBQlV9LrVcHmsOsDmApHtSyuY';
   static const _redirect = 'flockmap://auth';
 
-  late final OAuth2Helper _helper;
+  late OAuth2Helper _helper;
   String? _displayName;
+  UploadMode _mode = UploadMode.production;
 
-  AuthService() {
+  AuthService({UploadMode mode = UploadMode.production}) {
+    setUploadMode(mode);
+  }
+
+  void setUploadMode(UploadMode mode) {
+    _mode = mode;
+    final isSandbox = (mode == UploadMode.sandbox);
+    final authBase = isSandbox
+      ? 'https://master.apis.dev.openstreetmap.org' // sandbox auth
+      : 'https://www.openstreetmap.org';
     final client = OAuth2Client(
-      authorizeUrl: 'https://www.openstreetmap.org/oauth2/authorize',
-      tokenUrl: 'https://www.openstreetmap.org/oauth2/token',
+      authorizeUrl: '$authBase/oauth2/authorize',
+      tokenUrl: '$authBase/oauth2/token',
       redirectUri: _redirect,
       customUriScheme: 'flockmap',
     );
-
     _helper = OAuth2Helper(
       client,
       clientId: _clientId,
       scopes: ['read_prefs', 'write_api'],
       enablePKCE: true,
     );
-    
-    print('AuthService: Initialized with scopes: [read_prefs, write_api]');
-    print('AuthService: Client ID: $_clientId');
-    print('AuthService: Redirect URI: $_redirect');
+    print('AuthService: Initialized for $mode with $authBase');
   }
 
   Future<bool> isLoggedIn() async =>
@@ -81,13 +89,19 @@ class AuthService {
 
   /* ───────── helper ───────── */
 
+  String get _apiHost {
+    return _mode == UploadMode.sandbox
+      ? 'https://api06.dev.openstreetmap.org'
+      : 'https://api.openstreetmap.org';
+  }
+
   Future<String?> _fetchUsername(String accessToken) async {
     try {
-      print('AuthService: Fetching username from OSM API...');
+      print('AuthService: Fetching username from OSM API ($_apiHost) ...');
       print('AuthService: Access token (first 20 chars): ${accessToken.substring(0, math.min(20, accessToken.length))}...');
       
       final resp = await http.get(
-        Uri.parse('https://api.openstreetmap.org/api/0.6/user/details.json'),
+        Uri.parse('$_apiHost/api/0.6/user/details.json'),
         headers: {'Authorization': 'Bearer $accessToken'},
       );
       print('AuthService: OSM API response status: ${resp.statusCode}');
@@ -101,7 +115,7 @@ class AuthService {
         try {
           print('AuthService: Checking token permissions...');
           final permResp = await http.get(
-            Uri.parse('https://api.openstreetmap.org/api/0.6/permissions.json'),
+            Uri.parse('$_apiHost/api/0.6/permissions.json'),
             headers: {'Authorization': 'Bearer $accessToken'},
           );
           print('AuthService: Permissions response ${permResp.statusCode}: ${permResp.body}');

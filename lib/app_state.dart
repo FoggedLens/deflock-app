@@ -10,6 +10,9 @@ import 'services/auth_service.dart';
 import 'services/uploader.dart';
 import 'services/profile_service.dart';
 
+// Enum for upload mode (Production, OSM Sandbox, Simulate)
+enum UploadMode { production, sandbox, simulate }
+
 // ------------------ AddCameraSession ------------------
 class AddCameraSession {
   AddCameraSession({required this.profile, this.directionDegrees = 0});
@@ -17,6 +20,7 @@ class AddCameraSession {
   double directionDegrees;
   LatLng? target;
 }
+
 
 // ------------------ AppState ------------------
 class AppState extends ChangeNotifier {
@@ -30,22 +34,26 @@ class AppState extends ChangeNotifier {
   final List<CameraProfile> _profiles = [];
   final Set<CameraProfile> _enabled = {};
   static const String _enabledPrefsKey = 'enabled_profiles';
-  
-  // Test mode - prevents actual uploads to OSM
-  bool _testMode = false;
-  static const String _testModePrefsKey = 'test_mode';
-  bool get testMode => _testMode;
-  Future<void> setTestMode(bool enabled) async {
-    _testMode = enabled;
+
+  // Upload mode: production, sandbox, or simulate (in-memory, no uploads)
+  UploadMode _uploadMode = UploadMode.production;
+  static const String _uploadModePrefsKey = 'upload_mode';
+  UploadMode get uploadMode => _uploadMode;
+  Future<void> setUploadMode(UploadMode mode) async {
+    _uploadMode = mode;
+    // Update AuthService to match new mode
+    _auth.setUploadMode(mode);
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool(_testModePrefsKey, enabled);
-    print('AppState: Test mode ${enabled ? 'enabled' : 'disabled'}');
+    await prefs.setInt(_uploadModePrefsKey, mode.index);
+    print('AppState: Upload mode set to $mode');
     notifyListeners();
   }
 
+  // For legacy bool test mode
+  static const String _legacyTestModePrefsKey = 'test_mode';
+
   AddCameraSession? _session;
   AddCameraSession? get session => _session;
-
   final List<PendingUpload> _queue = [];
   Timer? _uploadTimer;
 
@@ -58,7 +66,7 @@ class AppState extends ChangeNotifier {
     _profiles.add(CameraProfile.alpr());
     _profiles.addAll(await ProfileService().load());
 
-    // Load enabled profile IDs and test mode from prefs
+    // Load enabled profile IDs and upload/test mode from prefs
     final prefs = await SharedPreferences.getInstance();
     final enabledIds = prefs.getStringList(_enabledPrefsKey);
     if (enabledIds != null && enabledIds.isNotEmpty) {
@@ -68,7 +76,21 @@ class AppState extends ChangeNotifier {
       // By default, all are enabled
       _enabled.addAll(_profiles);
     }
-    _testMode = prefs.getBool(_testModePrefsKey) ?? false;
+    // Upload mode loading (including migration from old test_mode bool)
+    if (prefs.containsKey(_uploadModePrefsKey)) {
+      final idx = prefs.getInt(_uploadModePrefsKey) ?? 0;
+      if (idx >= 0 && idx < UploadMode.values.length) {
+        _uploadMode = UploadMode.values[idx];
+      }
+    } else if (prefs.containsKey(_legacyTestModePrefsKey)) {
+      // migrate legacy test_mode (true->simulate, false->prod)
+      final legacy = prefs.getBool(_legacyTestModePrefsKey) ?? false;
+      _uploadMode = legacy ? UploadMode.simulate : UploadMode.production;
+      await prefs.remove(_legacyTestModePrefsKey);
+      await prefs.setInt(_uploadModePrefsKey, _uploadMode.index);
+    }
+    // Ensure AuthService follows loaded mode
+    _auth.setUploadMode(_uploadMode);
 
     await _loadQueue();
     
@@ -287,30 +309,30 @@ class AppState extends ChangeNotifier {
     _uploadTimer = Timer.periodic(const Duration(seconds: 10), (t) async {
       if (_queue.isEmpty) return;
 
+      // Retrieve access after every tick (accounts for re-login)
       final access = await _auth.getAccessToken();
       if (access == null) return; // not logged in
 
       final item = _queue.first;
-      
       bool ok;
-      if (_testMode) {
-        // Test mode - simulate successful upload without actually calling OSM API
-        print('AppState: Test mode - simulating upload for ${item.coord}');
+      if (_uploadMode == UploadMode.simulate) {
+        // Simulate successful upload without calling real API
+        print('AppState: UploadMode.simulate - simulating upload for ${item.coord}');
         await Future.delayed(const Duration(seconds: 1)); // Simulate network delay
         ok = true;
-        print('AppState: Test mode - simulated upload successful');
+        print('AppState: Simulated upload successful');
       } else {
-        // Real upload
+        // Real upload -- pass uploadMode so uploader can switch between prod and sandbox
         final up = Uploader(access, () {
           _queue.remove(item);
           _saveQueue();
           notifyListeners();
-        });
+        }, uploadMode: _uploadMode);
         ok = await up.upload(item);
       }
-      
-      if (ok && _testMode) {
-        // In test mode, manually remove from queue since Uploader callback won't be called
+
+      if (ok && _uploadMode == UploadMode.simulate) {
+        // Remove manually for simulate mode
         _queue.remove(item);
         _saveQueue();
         notifyListeners();
