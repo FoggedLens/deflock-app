@@ -20,7 +20,9 @@ class CameraProfile {
         name: 'Generic Flock',
         tags: const {
           'man_made': 'surveillance',
-          'surveillance:type': 'ALPR',
+          'surveillance': 'public',
+          'surveillance:zone': 'traffic',
+          'surveillance:type': 'ALPR', // left for backward compatibility — you may want to revisit per OSM best practice
           'camera:type': 'fixed',
           'manufacturer': 'Flock Safety',
           'manufacturer:wikidata': 'Q108485435',

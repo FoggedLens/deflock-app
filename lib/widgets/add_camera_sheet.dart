@@ -26,6 +26,9 @@ class AddCameraSheet extends StatelessWidget {
       Navigator.pop(context);
     }
 
+    final customProfiles = appState.enabledProfiles.where((p) => !p.builtin).toList();
+    final allowSubmit = customProfiles.isNotEmpty && !session.profile.builtin;
+
     return Padding(
       padding:
           EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
@@ -64,6 +67,38 @@ class AddCameraSheet extends StatelessWidget {
               onChanged: (v) => appState.updateSession(directionDeg: v),
             ),
           ),
+          if (customProfiles.isEmpty)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+              child: Row(
+                children: const [
+                  Icon(Icons.info_outline, color: Colors.red, size: 20),
+                  SizedBox(width: 6),
+                  Expanded(
+                    child: Text(
+                      'Enable or create a custom profile in Settings to submit new cameras.',
+                      style: TextStyle(color: Colors.red, fontSize: 13),
+                    ),
+                  ),
+                ],
+              ),
+            )
+          else if (session.profile.builtin)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+              child: Row(
+                children: const [
+                  Icon(Icons.info_outline, color: Colors.orange, size: 20),
+                  SizedBox(width: 6),
+                  Expanded(
+                    child: Text(
+                      'The built-in profile is for map viewing only. Please select a custom profile to submit new cameras.',
+                      style: TextStyle(color: Colors.orange, fontSize: 13),
+                    ),
+                  ),
+                ],
+              ),
+            ),
           const SizedBox(height: 8),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -78,7 +113,7 @@ class AddCameraSheet extends StatelessWidget {
                 const SizedBox(width: 12),
                 Expanded(
                   child: ElevatedButton(
-                    onPressed: _commit,
+                    onPressed: allowSubmit ? _commit : null,
                     child: const Text('Submit'),
                   ),
                 ),

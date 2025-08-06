@@ -82,7 +82,11 @@ class _MapViewState extends State<MapView> {
     } catch (_) {
       return; // controller not ready yet
     }
-    final cams = await _overpass.fetchCameras(bounds, appState.enabledProfiles);
+    final cams = await _overpass.fetchCameras(
+      bounds, 
+      appState.enabledProfiles, 
+      uploadMode: appState.uploadMode,
+    );
     if (mounted) setState(() => _cameras = cams);
   }
 
@@ -98,6 +102,12 @@ class _MapViewState extends State<MapView> {
   Widget build(BuildContext context) {
     final appState = context.watch<AppState>();
     final session = appState.session;
+
+    // Always watch for changes on uploadMode/profiles and refresh if needed
+    // (debounced, to avoid flooding when quickly toggling)
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _debounce(() => _refreshCameras(appState));
+    });
 
     // Seed add‑mode target once, after first controller center is available.
     if (session != null && session.target == null) {
@@ -180,6 +190,36 @@ class _MapViewState extends State<MapView> {
             MarkerLayer(markers: markers),
           ],
         ),
+
+        // MODE INDICATOR badge (top-right)
+        if (appState.uploadMode == UploadMode.sandbox || appState.uploadMode == UploadMode.simulate)
+          Positioned(
+            top: 18,
+            right: 14,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              decoration: BoxDecoration(
+                color: appState.uploadMode == UploadMode.sandbox
+                    ? Colors.orange.withOpacity(0.90)
+                    : Colors.deepPurple.withOpacity(0.80),
+                borderRadius: BorderRadius.circular(8),
+                boxShadow: [
+                  BoxShadow(color: Colors.black26, blurRadius: 5, offset: Offset(0,2)),
+                ],
+              ),
+              child: Text(
+                appState.uploadMode == UploadMode.sandbox
+                  ? 'SANDBOX MODE'
+                  : 'SIMULATE',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 13,
+                  letterSpacing: 1.1,
+                ),
+              ),
+            ),
+          ),
 
         // Attribution overlay
         Positioned(

@@ -2,10 +2,32 @@
 
 A minimal Flutter scaffold for mapping and tagging Flock‑style ALPR cameras in OpenStreetMap.
 
-# NOTE:
-Forks should register for their own oauth2 client id from OSM: https://www.openstreetmap.org/oauth2/applications
-These are hardcoded in lib/services/auth_service.dart for each app.
-If you discover a bug that causes bad behavior w/rt OSM API, you might want to register a new one for the patched version to distinguish them. You can also then delete the old version from OSM to prevent new people from using the old version.
+# OAuth Setup
+
+Before you can upload to OpenStreetMap (production **or sandbox**), you must register your own OAuth2 application on each OSM API you wish to support:
+- [Production OSM register page](https://www.openstreetmap.org/oauth2/applications)
+- [Sandbox OSM register page](https://master.apis.dev.openstreetmap.org/oauth2/applications)
+
+Copy your generated client IDs into a new file:
+
+```dart
+// lib/keys.dart
+const String kOsmProdClientId = 'YOUR_PROD_CLIENT_ID_HERE';
+const String kOsmSandboxClientId = 'YOUR_SANDBOX_CLIENT_ID_HERE';
+```
+
+For open source: use `lib/keys.dart.example` as a template and do **not** commit your real secrets.
+
+If you discover a bug that causes bad behavior w/rt OSM API, register a new OAuth client to distinguish patched versions and, if needed, delete the old app to prevent misuse.
+
+# Upload Modes
+
+In Settings, you can now choose your "Upload Destination":
+- **Production**: Live OSM database (visible to all users).
+- **Sandbox**: OSM's dedicated test database; safe for development/testing. [More info](https://wiki.openstreetmap.org/wiki/Sandbox).
+- **Simulate**: Does not contact any server. Actions are fully offline for testing UI/flows.
+
+---
 
 ## TODO for Beta/RC Release
 

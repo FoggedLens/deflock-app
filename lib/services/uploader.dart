@@ -3,11 +3,14 @@ import 'package:http/http.dart' as http;
 
 import '../models/pending_upload.dart';
 
+import '../app_state.dart';
+
 class Uploader {
-  Uploader(this.accessToken, this.onSuccess);
+  Uploader(this.accessToken, this.onSuccess, {this.uploadMode = UploadMode.production});
 
   final String accessToken;
   final void Function() onSuccess;
+  final UploadMode uploadMode;
 
   Future<bool> upload(PendingUpload p) async {
     try {
@@ -68,14 +71,24 @@ class Uploader {
     }
   }
 
+  String get _host {
+    switch (uploadMode) {
+      case UploadMode.sandbox:
+        return 'api06.dev.openstreetmap.org';
+      case UploadMode.production:
+      default:
+        return 'api.openstreetmap.org';
+    }
+  }
+
   Future<http.Response> _post(String path, String body) => http.post(
-        Uri.https('api.openstreetmap.org', path),
+        Uri.https(_host, path),
         headers: _headers,
         body: body,
       );
 
   Future<http.Response> _put(String path, String body) => http.put(
-        Uri.https('api.openstreetmap.org', path),
+        Uri.https(_host, path),
         headers: _headers,
         body: body,
       );
