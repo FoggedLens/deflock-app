@@ -20,9 +20,13 @@ class _ProfileEditorState extends State<ProfileEditor> {
 
   static const _defaultTags = [
     MapEntry('man_made', 'surveillance'),
+    MapEntry('surveillance', 'public'),
+    MapEntry('surveillance:zone', 'traffic'),
     MapEntry('surveillance:type', 'ALPR'),
     MapEntry('camera:type', 'fixed'),
+    MapEntry('camera:mount', ''),
     MapEntry('manufacturer', ''),
+    MapEntry('manufacturer:wikidata', ''),
   ];
 
   @override

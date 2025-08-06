@@ -178,7 +178,20 @@ class SettingsScreen extends StatelessWidget {
                   case UploadMode.production:
                     return const Text('Upload to the live OSM database (visible to all users)', style: TextStyle(fontSize: 12, color: Colors.black87));
                   case UploadMode.sandbox:
-                    return const Text('Upload to the OSM Sandbox (safe for testing, data resets regularly)', style: TextStyle(fontSize: 12, color: Colors.orange));
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Uploads go to the OSM Sandbox (safe for testing, resets regularly).',
+                          style: TextStyle(fontSize: 12, color: Colors.orange),
+                        ),
+                        SizedBox(height: 2),
+                        Text(
+                          'NOTE: Due to OpenStreetMap limitations, cameras submitted to the sandbox will NOT appear on the map in this app.',
+                          style: TextStyle(fontSize: 11, color: Colors.redAccent),
+                        ),
+                      ],
+                    );
                   case UploadMode.simulate:
                   default:
                     return const Text('Simulate uploads (does not contact OSM servers)', style: TextStyle(fontSize: 12, color: Colors.deepPurple));

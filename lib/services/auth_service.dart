@@ -9,8 +9,10 @@ import 'package:http/http.dart' as http;
 /// Handles PKCE OAuth login with OpenStreetMap.
 import '../app_state.dart';
 
+import '../keys.dart';
+
 class AuthService {
-  static const String _clientId = 'Js6Fn3NR3HEGaD0ZIiHBQlV9LrVcHmsOsDmApHtSyuY';
+  // Both client IDs from keys.dart
   static const _redirect = 'flockmap://auth';
 
   late OAuth2Helper _helper;
@@ -27,6 +29,7 @@ class AuthService {
     final authBase = isSandbox
       ? 'https://master.apis.dev.openstreetmap.org' // sandbox auth
       : 'https://www.openstreetmap.org';
+    final clientId = isSandbox ? kOsmSandboxClientId : kOsmProdClientId;
     final client = OAuth2Client(
       authorizeUrl: '$authBase/oauth2/authorize',
       tokenUrl: '$authBase/oauth2/token',
@@ -35,11 +38,11 @@ class AuthService {
     );
     _helper = OAuth2Helper(
       client,
-      clientId: _clientId,
+      clientId: clientId,
       scopes: ['read_prefs', 'write_api'],
       enablePKCE: true,
     );
-    print('AuthService: Initialized for $mode with $authBase');
+    print('AuthService: Initialized for $mode with $authBase and clientId $clientId');
   }
 
   Future<bool> isLoggedIn() async =>
