@@ -5,6 +5,7 @@ import 'package:uuid/uuid.dart';
 import '../app_state.dart';
 import '../models/camera_profile.dart';
 import 'profile_editor.dart';
+import '../services/offline_area_service.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -18,7 +19,7 @@ class SettingsScreen extends StatelessWidget {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          // Authentication section
+          // 1. Authentication section
           ListTile(
             leading: Icon(
               appState.isLoggedIn ? Icons.person : Icons.login,
@@ -27,7 +28,7 @@ class SettingsScreen extends StatelessWidget {
             title: Text(appState.isLoggedIn
                 ? 'Logged in as ${appState.username}'
                 : 'Log in to OpenStreetMap'),
-            subtitle: appState.isLoggedIn 
+            subtitle: appState.isLoggedIn
                 ? const Text('Tap to logout')
                 : const Text('Required to submit camera data'),
             onTap: () async {
@@ -39,7 +40,7 @@ class SettingsScreen extends StatelessWidget {
               if (context.mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                    content: Text(appState.isLoggedIn 
+                    content: Text(appState.isLoggedIn
                         ? 'Logged in as ${appState.username}'
                         : 'Logged out'),
                     backgroundColor: appState.isLoggedIn ? Colors.green : Colors.grey,
@@ -48,7 +49,7 @@ class SettingsScreen extends StatelessWidget {
               }
             },
           ),
-          // Test connection (only when logged in)
+          // 1.5 Test connection (only when logged in)
           if (appState.isLoggedIn)
             ListTile(
               leading: const Icon(Icons.wifi_protected_setup),
@@ -73,6 +74,109 @@ class SettingsScreen extends StatelessWidget {
               },
             ),
           const Divider(),
+          // 2. Upload mode selector
+          ListTile(
+            leading: const Icon(Icons.cloud_upload),
+            title: const Text('Upload Destination'),
+            subtitle: const Text('Choose where cameras are uploaded'),
+            trailing: DropdownButton<UploadMode>(
+              value: appState.uploadMode,
+              items: const [
+                DropdownMenuItem(
+                  value: UploadMode.production,
+                  child: Text('Production'),
+                ),
+                DropdownMenuItem(
+                  value: UploadMode.sandbox,
+                  child: Text('Sandbox'),
+                ),
+                DropdownMenuItem(
+                  value: UploadMode.simulate,
+                  child: Text('Simulate'),
+                ),
+              ],
+              onChanged: (mode) {
+                if (mode != null) appState.setUploadMode(mode);
+              },
+            ),
+          ),
+          // Help text
+          Padding(
+            padding: const EdgeInsets.only(left: 56, top: 2, right: 16, bottom: 12),
+            child: Builder(
+              builder: (context) {
+                switch (appState.uploadMode) {
+                  case UploadMode.production:
+                    return const Text('Upload to the live OSM database (visible to all users)', style: TextStyle(fontSize: 12, color: Colors.black87));
+                  case UploadMode.sandbox:
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Uploads go to the OSM Sandbox (safe for testing, resets regularly).',
+                          style: TextStyle(fontSize: 12, color: Colors.orange),
+                        ),
+                        SizedBox(height: 2),
+                        Text(
+                          'NOTE: Due to OpenStreetMap limitations, cameras submitted to the sandbox will NOT appear on the map in this app.',
+                          style: TextStyle(fontSize: 11, color: Colors.redAccent),
+                        ),
+                      ],
+                    );
+                  case UploadMode.simulate:
+                  default:
+                    return const Text('Simulate uploads (does not contact OSM servers)', style: TextStyle(fontSize: 12, color: Colors.deepPurple));
+                }
+              },
+            ),
+          ),
+          const Divider(),
+          // 3. Queue management
+          ListTile(
+            leading: const Icon(Icons.queue),
+            title: Text('Pending uploads: ${appState.pendingCount}'),
+            subtitle: appState.uploadMode == UploadMode.simulate
+                ? const Text('Simulate mode enabled – uploads simulated')
+                : appState.uploadMode == UploadMode.sandbox
+                    ? const Text('Sandbox mode – uploads go to OSM Sandbox')
+                    : const Text('Tap to view queue'),
+            onTap: appState.pendingCount > 0 ? () {
+              _showQueueDialog(context, appState);
+            } : null,
+          ),
+          if (appState.pendingCount > 0)
+            ListTile(
+              leading: const Icon(Icons.clear_all),
+              title: const Text('Clear Upload Queue'),
+              subtitle: Text('Remove all ${appState.pendingCount} pending uploads'),
+              onTap: () {
+                showDialog(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    title: const Text('Clear Queue'),
+                    content: Text('Remove all ${appState.pendingCount} pending uploads?'),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: const Text('Cancel'),
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          appState.clearQueue();
+                          Navigator.pop(context);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Queue cleared')),
+                          );
+                        },
+                        child: const Text('Clear'),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
+          const Divider(),
+          // 4. Camera Profiles
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -143,107 +247,38 @@ class SettingsScreen extends StatelessWidget {
             ),
           ),
           const Divider(),
-          // Upload mode selector - Production/Sandbox/Simulate
-          ListTile(
-            leading: const Icon(Icons.cloud_upload),
-            title: const Text('Upload Destination'),
-            subtitle: const Text('Choose where cameras are uploaded'),
-            trailing: DropdownButton<UploadMode>(
-              value: appState.uploadMode,
-              items: const [
-                DropdownMenuItem(
-                  value: UploadMode.production,
-                  child: Text('Production'),
-                ),
-                DropdownMenuItem(
-                  value: UploadMode.sandbox,
-                  child: Text('Sandbox'),
-                ),
-                DropdownMenuItem(
-                  value: UploadMode.simulate,
-                  child: Text('Simulate'),
-                ),
-              ],
-              onChanged: (mode) {
-                if (mode != null) appState.setUploadMode(mode);
-              },
-            ),
+          // 5. --- Offline Areas Section ---
+          const Padding(
+            padding: EdgeInsets.only(bottom: 8.0),
+            child: Text('Offline Areas', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
           ),
-          // Help text
-          Padding(
-            padding: const EdgeInsets.only(left: 56, top: 2, right: 16, bottom: 12),
-            child: Builder(
-              builder: (context) {
-                switch (appState.uploadMode) {
-                  case UploadMode.production:
-                    return const Text('Upload to the live OSM database (visible to all users)', style: TextStyle(fontSize: 12, color: Colors.black87));
-                  case UploadMode.sandbox:
-                    return Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'Uploads go to the OSM Sandbox (safe for testing, resets regularly).',
-                          style: TextStyle(fontSize: 12, color: Colors.orange),
-                        ),
-                        SizedBox(height: 2),
-                        Text(
-                          'NOTE: Due to OpenStreetMap limitations, cameras submitted to the sandbox will NOT appear on the map in this app.',
-                          style: TextStyle(fontSize: 11, color: Colors.redAccent),
-                        ),
-                      ],
-                    );
-                  case UploadMode.simulate:
-                  default:
-                    return const Text('Simulate uploads (does not contact OSM servers)', style: TextStyle(fontSize: 12, color: Colors.deepPurple));
-                }
-              },
-            ),
-          ),
+          _OfflineAreasSection(),
           const Divider(),
-          // Queue management
+          // 6. About/info button
           ListTile(
-            leading: const Icon(Icons.queue),
-            title: Text('Pending uploads: ${appState.pendingCount}'),
-            subtitle: appState.uploadMode == UploadMode.simulate
-                ? const Text('Simulate mode enabled – uploads simulated')
-                : appState.uploadMode == UploadMode.sandbox
-                    ? const Text('Sandbox mode – uploads go to OSM Sandbox')
-                    : const Text('Tap to view queue'),
-            onTap: appState.pendingCount > 0 ? () {
-              _showQueueDialog(context, appState);
-            } : null,
-          ),
-          if (appState.pendingCount > 0)
-            ListTile(
-              leading: const Icon(Icons.clear_all),
-              title: const Text('Clear Upload Queue'),
-              subtitle: Text('Remove all ${appState.pendingCount} pending uploads'),
-              onTap: () {
-                showDialog(
-                  context: context,
-                  builder: (context) => AlertDialog(
-                    title: const Text('Clear Queue'),
-                    content: Text('Remove all ${appState.pendingCount} pending uploads?'),
-                    actions: [
-                      TextButton(
-                        onPressed: () => Navigator.pop(context),
-                        child: const Text('Cancel'),
-                      ),
-                      TextButton(
-                        onPressed: () {
-                          appState.clearQueue();
-                          Navigator.pop(context);
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Queue cleared')),
-                          );
-                        },
-                        child: const Text('Clear'),
-                      ),
-                    ],
+            leading: const Icon(Icons.info_outline),
+            title: const Text('About / Info'),
+            onTap: () async {
+              // show dialog with text (replace with file contents as needed)
+              showDialog(
+                context: context,
+                builder: (context) => AlertDialog(
+                  title: const Text('About This App'),
+                  content: SingleChildScrollView(
+                    child: Text(
+                      'Flock Map App\n\nBuilt with Flutter.\n\nOffline areas, privacy-respecting, designed for OpenStreetMap camera tagging.\n\n(Replace this with info.txt contents.)',
+                    ),
                   ),
-                );
-              },
-            ),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: const Text('OK'),
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
         ],
       ),
     );
@@ -328,6 +363,92 @@ class SettingsScreen extends StatelessWidget {
             ),
         ],
       ),
+    );
+  }
+}
+
+// --- Offline Areas UI section ---
+
+class _OfflineAreasSection extends StatefulWidget {
+  @override
+  State<_OfflineAreasSection> createState() => _OfflineAreasSectionState();
+}
+
+class _OfflineAreasSectionState extends State<_OfflineAreasSection> {
+  final OfflineAreaService service = OfflineAreaService();
+
+  @override
+  void initState() {
+    super.initState();
+    // Polling for now; can improve with ChangeNotifier or Streams pattern later.
+    Future.doWhile(() async {
+      await Future.delayed(const Duration(seconds: 1));
+      if (!mounted) return false;
+      setState(() {});
+      return true;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final areas = service.offlineAreas;
+    if (areas.isEmpty) {
+      return const ListTile(
+        leading: Icon(Icons.download_for_offline),
+        title: Text('No offline areas'),
+        subtitle: Text('Download a map area for offline use.'),
+      );
+    }
+    return Column(
+      children: areas.map((area) {
+        String subtitle =
+            'Z${area.minZoom}-${area.maxZoom}\n' +
+                'Lat: ${area.bounds.southWest.latitude.toStringAsFixed(3)}, ${area.bounds.southWest.longitude.toStringAsFixed(3)}\n' +
+                'Lat: ${area.bounds.northEast.latitude.toStringAsFixed(3)}, ${area.bounds.northEast.longitude.toStringAsFixed(3)}';
+        if (area.status == OfflineAreaStatus.complete) {
+          subtitle += '\nCameras cached: ${area.cameras.length}';
+        }
+        return Card(
+          child: ListTile(
+            leading: Icon(area.status == OfflineAreaStatus.complete
+                ? Icons.cloud_done
+                : area.status == OfflineAreaStatus.error
+                    ? Icons.error
+                    : Icons.download_for_offline),
+            title: Text('Area ${area.id.substring(0, 6)}...'),
+            subtitle: Text(subtitle),
+            isThreeLine: true,
+            trailing: area.status == OfflineAreaStatus.downloading
+                ? SizedBox(
+                    width: 64,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        LinearProgressIndicator(value: area.progress),
+                        Text(
+                          '${(area.progress * 100).toStringAsFixed(0)}%',
+                          style: const TextStyle(fontSize: 12),
+                        )
+                      ],
+                    ),
+                  )
+                : IconButton(
+                    icon: const Icon(Icons.delete, color: Colors.red),
+                    tooltip: 'Delete offline area',
+                    onPressed: () async {
+                      service.deleteArea(area.id);
+                      setState(() {});
+                    },
+                  ),
+            onLongPress: area.status == OfflineAreaStatus.downloading
+                ? () {
+                    service.cancelDownload(area.id);
+                    setState(() {});
+                  }
+                : null,
+          ),
+        );
+      }).toList(),
     );
   }
 }
