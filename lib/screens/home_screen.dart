@@ -52,13 +52,108 @@ class _HomeScreenState extends State<HomeScreen> {
           if (_followMe) setState(() => _followMe = false);
         },
       ),
-      floatingActionButton: appState.session == null
-          ? FloatingActionButton.extended(
-              onPressed: _openAddCameraSheet,
-              icon: const Icon(Icons.add_location_alt),
-              label: const Text('Tag Camera'),
-            )
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () => showDialog(
+          context: context,
+          builder: (ctx) => const DownloadAreaDialog(),
+        ),
+        icon: const Icon(Icons.download_for_offline),
+        label: const Text('Download'),
+        heroTag: 'download_fab',
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+      persistentFooterButtons: appState.session == null
+          ? [
+              FloatingActionButton.extended(
+                onPressed: _openAddCameraSheet,
+                icon: const Icon(Icons.add_location_alt),
+                label: const Text('Tag Camera'),
+                heroTag: 'tag_camera_fab',
+              ),
+            ]
           : null,
+    );
+  }
+}
+
+// --- Download area dialog ---
+
+class DownloadAreaDialog extends StatefulWidget {
+  const DownloadAreaDialog({super.key});
+
+  @override
+  State<DownloadAreaDialog> createState() => _DownloadAreaDialogState();
+}
+
+class _DownloadAreaDialogState extends State<DownloadAreaDialog> {
+  double _zoom = 15;
+
+  // Fake estimation: about 0.5 MB per zoom per km² for now
+  String get _storageEstimate {
+    // This can be improved later to use map bounds
+    final estMb = (0.5 * (_zoom - 11)).clamp(1, 50);
+    return 'Est: ${estMb.toStringAsFixed(1)} MB';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Row(
+        children: const [
+          Icon(Icons.download_for_offline),
+          SizedBox(width: 10),
+          Text("Download Map Area"),
+        ],
+      ),
+      content: SizedBox(
+        width: 350,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text('Max zoom level'),
+                Text('Z${_zoom.toStringAsFixed(0)}'),
+              ],
+            ),
+            Slider(
+              min: 12,
+              max: 19,
+              divisions: 7,
+              label: 'Z${_zoom.toStringAsFixed(0)}',
+              value: _zoom,
+              onChanged: (v) => setState(() => _zoom = v),
+            ),
+            const SizedBox(height: 8),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text('Storage estimate:'),
+                Text(_storageEstimate),
+              ],
+            ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Cancel'),
+        ),
+        ElevatedButton(
+          onPressed: () {
+            // Real download to be implemented in later stages.
+            Navigator.pop(context);
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Download started (stub only)'),
+              ),
+            );
+          },
+          child: const Text('Download'),
+        ),
+      ],
     );
   }
 }
