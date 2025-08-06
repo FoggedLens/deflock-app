@@ -38,6 +38,22 @@ class _MapViewState extends State<MapView> {
   LatLng? _currentLatLng;
 
   List<OsmCameraNode> _cameras = [];
+  List<String> _lastProfileIds = [];
+  UploadMode? _lastUploadMode;
+
+  void _maybeRefreshCameras(AppState appState) {
+    final currProfileIds = appState.enabledProfiles.map((p) => p.id).toList();
+    final currMode = appState.uploadMode;
+    if (_lastProfileIds.isEmpty ||
+        currProfileIds.length != _lastProfileIds.length ||
+        !_lastProfileIds.asMap().entries.every((entry) => currProfileIds[entry.key] == entry.value) ||
+        _lastUploadMode != currMode) {
+      // If this is first load, or list/ids/mode changed, refetch
+      _debounce(() => _refreshCameras(appState));
+      _lastProfileIds = List.from(currProfileIds);
+      _lastUploadMode = currMode;
+    }
+  }
 
   @override
   void initState() {
@@ -103,11 +119,10 @@ class _MapViewState extends State<MapView> {
     final appState = context.watch<AppState>();
     final session = appState.session;
 
-    // Always watch for changes on uploadMode/profiles and refresh if needed
-    // (debounced, to avoid flooding when quickly toggling)
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _debounce(() => _refreshCameras(appState));
-    });
+    // Refetch only if profiles or mode changed
+    // This avoids repeated fetches on every build
+    // We track last seen values (local to the State class)
+    _maybeRefreshCameras(appState);
 
     // Seed add‑mode target once, after first controller center is available.
     if (session != null && session.target == null) {

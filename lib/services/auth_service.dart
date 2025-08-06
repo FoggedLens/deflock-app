@@ -5,6 +5,7 @@ import 'dart:math' as math;
 import 'package:oauth2_client/oauth2_client.dart';
 import 'package:oauth2_client/oauth2_helper.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
 /// Handles PKCE OAuth login with OpenStreetMap.
 import '../app_state.dart';
@@ -23,11 +24,23 @@ class AuthService {
     setUploadMode(mode);
   }
 
+  String get _tokenKey {
+    switch (_mode) {
+      case UploadMode.production:
+        return 'osm_token_prod';
+      case UploadMode.sandbox:
+        return 'osm_token_sandbox';
+      case UploadMode.simulate:
+      default:
+        return 'osm_token_simulate';
+    }
+  }
+
   void setUploadMode(UploadMode mode) {
     _mode = mode;
     final isSandbox = (mode == UploadMode.sandbox);
     final authBase = isSandbox
-      ? 'https://master.apis.dev.openstreetmap.org' // sandbox auth
+      ? 'https://master.apis.dev.openstreetmap.org'
       : 'https://www.openstreetmap.org';
     final clientId = isSandbox ? kOsmSandboxClientId : kOsmProdClientId;
     final client = OAuth2Client(
@@ -41,16 +54,39 @@ class AuthService {
       clientId: clientId,
       scopes: ['read_prefs', 'write_api'],
       enablePKCE: true,
+      // tokenStorageKey: _tokenKey, // not supported by this package version
     );
-    print('AuthService: Initialized for $mode with $authBase and clientId $clientId');
+    print('AuthService: Initialized for $mode with $authBase, clientId $clientId [manual token storage as needed]');
   }
 
-  Future<bool> isLoggedIn() async =>
-      (await _helper.getTokenFromStorage())?.isExpired() == false;
+  Future<bool> isLoggedIn() async {
+    if (_mode == UploadMode.simulate) {
+      // In simulate, a login is faked by writing to shared prefs
+      final prefs = await SharedPreferences.getInstance();
+      return prefs.getBool('sim_user_logged_in') ?? false;
+    }
+    // Manually check for mode-specific token
+    final prefs = await SharedPreferences.getInstance();
+    final tokenJson = prefs.getString(_tokenKey);
+    if (tokenJson == null) return false;
+    try {
+      final data = jsonDecode(tokenJson);
+      return data['accessToken'] != null && data['accessToken'].toString().isNotEmpty;
+    } catch (_) {
+      return false;
+    }
+  }
 
   String? get displayName => _displayName;
 
   Future<String?> login() async {
+    if (_mode == UploadMode.simulate) {
+      print('AuthService: Simulate login (no OAuth)');
+      final prefs = await SharedPreferences.getInstance();
+      _displayName = 'Demo User';
+      await prefs.setBool('sim_user_logged_in', true);
+      return _displayName;
+    }
     try {
       print('AuthService: Starting OAuth login...');
       final token = await _helper.getToken();
@@ -59,6 +95,13 @@ class AuthService {
         log('OAuth error: token null or missing accessToken');
         return null;
       }
+      final tokenMap = {
+        'accessToken': token!.accessToken,
+        'refreshToken': token.refreshToken,
+      };
+      final tokenJson = jsonEncode(tokenMap);
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(_tokenKey, tokenJson); // Save token for current mode
       print('AuthService: Got access token, fetching username...');
       _displayName = await _fetchUsername(token!.accessToken!);
       if (_displayName != null) {
@@ -75,6 +118,14 @@ class AuthService {
   }
 
   Future<void> logout() async {
+    if (_mode == UploadMode.simulate) {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove('sim_user_logged_in');
+      _displayName = null;
+      return;
+    }
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_tokenKey);
     await _helper.removeAllTokens();
     _displayName = null;
   }
@@ -87,8 +138,20 @@ class AuthService {
     return await login();
   }
 
-  Future<String?> getAccessToken() async =>
-      (await _helper.getTokenFromStorage())?.accessToken;
+  Future<String?> getAccessToken() async {
+    if (_mode == UploadMode.simulate) {
+      return 'sim-user-token';
+    }
+    final prefs = await SharedPreferences.getInstance();
+    final tokenJson = prefs.getString(_tokenKey);
+    if (tokenJson == null) return null;
+    try {
+      final data = jsonDecode(tokenJson);
+      return data['accessToken'];
+    } catch (_) {
+      return null;
+    }
+  }
 
   /* ───────── helper ───────── */
 

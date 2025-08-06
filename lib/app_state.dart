@@ -43,6 +43,31 @@ class AppState extends ChangeNotifier {
     _uploadMode = mode;
     // Update AuthService to match new mode
     _auth.setUploadMode(mode);
+    // Refresh user display for active mode, validating token
+    try {
+      if (await _auth.isLoggedIn()) {
+        print('AppState: Switching mode, token exists; validating...');
+        final isValid = await validateToken();
+        if (isValid) {
+          print('AppState: Switching mode; fetching username for $mode...');
+          _username = await _auth.login();
+          if (_username != null) {
+            print('AppState: Switched mode, now logged in as $_username');
+          } else {
+            print('AppState: Switched mode but failed to retrieve username');
+          }
+        } else {
+          print('AppState: Switching mode, token invalid—auto-logout.');
+          await logout(); // This clears _username also.
+        }
+      } else {
+        _username = null;
+        print('AppState: Mode change: not logged in in $mode');
+      }
+    } catch (e) {
+      _username = null;
+      print('AppState: Mode change user restoration error: $e');
+    }
     final prefs = await SharedPreferences.getInstance();
     await prefs.setInt(_uploadModePrefsKey, mode.index);
     print('AppState: Upload mode set to $mode');
