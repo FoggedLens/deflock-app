@@ -52,26 +52,31 @@ class _HomeScreenState extends State<HomeScreen> {
           if (_followMe) setState(() => _followMe = false);
         },
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => showDialog(
-          context: context,
-          builder: (ctx) => const DownloadAreaDialog(),
-        ),
-        icon: const Icon(Icons.download_for_offline),
-        label: const Text('Download'),
-        heroTag: 'download_fab',
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
-      persistentFooterButtons: appState.session == null
-          ? [
-              FloatingActionButton.extended(
-                onPressed: _openAddCameraSheet,
-                icon: const Icon(Icons.add_location_alt),
-                label: const Text('Tag Camera'),
-                heroTag: 'tag_camera_fab',
-              ),
-            ]
+      floatingActionButton: appState.session == null
+          ? Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                FloatingActionButton.extended(
+                  onPressed: _openAddCameraSheet,
+                  icon: const Icon(Icons.add_location_alt),
+                  label: const Text('Tag Camera'),
+                  heroTag: 'tag_camera_fab',
+                ),
+                const SizedBox(height: 12),
+                FloatingActionButton.extended(
+                  onPressed: () => showDialog(
+                    context: context,
+                    builder: (ctx) => const DownloadAreaDialog(),
+                  ),
+                  icon: const Icon(Icons.download_for_offline),
+                  label: const Text('Download'),
+                  heroTag: 'download_fab',
+                ),
+              ],
+            )
           : null,
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
     );
   }
 }
