@@ -406,12 +406,19 @@ class _OfflineAreasSectionState extends State<_OfflineAreasSection> {
     }
     return Column(
       children: areas.map((area) {
+        String diskStr = area.sizeBytes > 0
+            ? area.sizeBytes > 1024 * 1024
+                ? "${(area.sizeBytes / (1024 * 1024)).toStringAsFixed(2)} MB"
+                : "${(area.sizeBytes / 1024).toStringAsFixed(1)} KB"
+            : '--';
         String subtitle =
             'Z${area.minZoom}-${area.maxZoom}\n' +
                 'Lat: ${area.bounds.southWest.latitude.toStringAsFixed(3)}, ${area.bounds.southWest.longitude.toStringAsFixed(3)}\n' +
                 'Lat: ${area.bounds.northEast.latitude.toStringAsFixed(3)}, ${area.bounds.northEast.longitude.toStringAsFixed(3)}';
+        subtitle += '\nTiles: ${area.tilesTotal}';
+        subtitle += ' | Size: $diskStr';
         if (area.status == OfflineAreaStatus.complete) {
-          subtitle += '\nCameras cached: ${area.cameras.length}';
+          subtitle += ' | Cameras: ${area.cameras.length}';
         }
         return Card(
           child: ListTile(
@@ -420,7 +427,63 @@ class _OfflineAreasSectionState extends State<_OfflineAreasSection> {
                 : area.status == OfflineAreaStatus.error
                     ? Icons.error
                     : Icons.download_for_offline),
-            title: Text('Area ${area.id.substring(0, 6)}...'),
+            title: Row(
+              children: [
+                Expanded(
+                  child: Text(area.name.isNotEmpty
+                      ? area.name
+                      : 'Area ${area.id.substring(0, 6)}...'),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.edit, size: 20),
+                  tooltip: 'Rename area',
+                  onPressed: () async {
+                    String? newName = await showDialog<String>(
+                      context: context,
+                      builder: (ctx) {
+                        final ctrl = TextEditingController(text: area.name);
+                        return AlertDialog(
+                          title: const Text('Rename Offline Area'),
+                          content: TextField(
+                            controller: ctrl,
+                            maxLength: 40,
+                            decoration: const InputDecoration(labelText: 'Area Name'),
+                            autofocus: true,
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.pop(ctx),
+                              child: const Text('Cancel'),
+                            ),
+                            ElevatedButton(
+                              onPressed: () {
+                                Navigator.pop(ctx, ctrl.text.trim());
+                              },
+                              child: const Text('Rename'),
+                            ),
+                          ],
+                        );
+                      },
+                    );
+                    if (newName != null && newName.trim().isNotEmpty) {
+                      setState(() {
+                        area.name = newName.trim();
+                        service.saveAreasToDisk();
+                      });
+                    }
+                  },
+                ),
+                if (area.status != OfflineAreaStatus.downloading)
+                  IconButton(
+                    icon: const Icon(Icons.delete, color: Colors.red),
+                    tooltip: 'Delete offline area',
+                    onPressed: () async {
+                      service.deleteArea(area.id);
+                      setState(() {});
+                    },
+                  ),
+              ],
+            ),
             subtitle: Text(subtitle),
             isThreeLine: true,
             trailing: area.status == OfflineAreaStatus.downloading
@@ -437,14 +500,7 @@ class _OfflineAreasSectionState extends State<_OfflineAreasSection> {
                       ],
                     ),
                   )
-                : IconButton(
-                    icon: const Icon(Icons.delete, color: Colors.red),
-                    tooltip: 'Delete offline area',
-                    onPressed: () async {
-                      service.deleteArea(area.id);
-                      setState(() {});
-                    },
-                  ),
+                : null,
             onLongPress: area.status == OfflineAreaStatus.downloading
                 ? () {
                     service.cancelDownload(area.id);

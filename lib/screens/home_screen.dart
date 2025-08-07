@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:latlong2/latlong.dart';
 
 import '../app_state.dart';
 import '../widgets/map_view.dart';
@@ -107,7 +108,27 @@ class _DownloadAreaDialogState extends State<DownloadAreaDialog> {
   }
 
   void _recomputeEstimates() {
-    final bounds = widget.controller.camera.visibleBounds;
+    var bounds = widget.controller.camera.visibleBounds;
+    // If the visible area is nearly zero, nudge the bounds for estimation
+    const double epsilon = 0.0002;
+    final latSpan = (bounds.north - bounds.south).abs();
+    final lngSpan = (bounds.east - bounds.west).abs();
+    if (latSpan < epsilon && lngSpan < epsilon) {
+      bounds = LatLngBounds(
+        LatLng(bounds.southWest.latitude - epsilon, bounds.southWest.longitude - epsilon),
+        LatLng(bounds.northEast.latitude + epsilon, bounds.northEast.longitude + epsilon)
+      );
+    } else if (latSpan < epsilon) {
+      bounds = LatLngBounds(
+        LatLng(bounds.southWest.latitude - epsilon, bounds.southWest.longitude),
+        LatLng(bounds.northEast.latitude + epsilon, bounds.northEast.longitude)
+      );
+    } else if (lngSpan < epsilon) {
+      bounds = LatLngBounds(
+        LatLng(bounds.southWest.latitude, bounds.southWest.longitude - epsilon),
+        LatLng(bounds.northEast.latitude, bounds.northEast.longitude + epsilon)
+      );
+    }
     final minZoom = OfflineAreaService().findDynamicMinZoom(bounds);
     final maxZoom = _zoom.toInt();
     final allTiles = OfflineAreaService().computeTileList(bounds, minZoom, maxZoom);

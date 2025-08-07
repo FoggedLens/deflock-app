@@ -13,6 +13,7 @@ enum OfflineAreaStatus { downloading, complete, error, cancelled }
 
 class OfflineArea {
   final String id;
+  String name;
   final LatLngBounds bounds;
   final int minZoom;
   final int maxZoom;
@@ -22,9 +23,11 @@ class OfflineArea {
   int tilesDownloaded;
   int tilesTotal;
   List<OsmCameraNode> cameras;
+  int sizeBytes; // Disk size in bytes
 
   OfflineArea({
     required this.id,
+    this.name = '',
     required this.bounds,
     required this.minZoom,
     required this.maxZoom,
@@ -34,10 +37,12 @@ class OfflineArea {
     this.tilesDownloaded = 0,
     this.tilesTotal = 0,
     this.cameras = const [],
+    this.sizeBytes = 0,
   });
 
   Map<String, dynamic> toJson() => {
     'id': id,
+    'name': name,
     'bounds': {
       'sw': {'lat': bounds.southWest.latitude, 'lng': bounds.southWest.longitude},
       'ne': {'lat': bounds.northEast.latitude, 'lng': bounds.northEast.longitude},
@@ -50,6 +55,7 @@ class OfflineArea {
     'tilesDownloaded': tilesDownloaded,
     'tilesTotal': tilesTotal,
     'cameras': cameras.map((c) => c.toJson()).toList(),
+    'sizeBytes': sizeBytes,
   };
 
   static OfflineArea fromJson(Map<String, dynamic> json) {
@@ -59,6 +65,7 @@ class OfflineArea {
     );
     return OfflineArea(
       id: json['id'],
+      name: json['name'] ?? '',
       bounds: bounds,
       minZoom: json['minZoom'],
       maxZoom: json['maxZoom'],
@@ -70,12 +77,31 @@ class OfflineArea {
       tilesTotal: json['tilesTotal'] ?? 0,
       cameras: (json['cameras'] as List? ?? [])
           .map((e) => OsmCameraNode.fromJson(e)).toList(),
+      sizeBytes: json['sizeBytes'] ?? 0,
     );
   }
 }
 
 /// Service for managing download, storage, and retrieval of offline map areas and cameras.
 class OfflineAreaService {
+  // Public wrapper to allow UI code to persist area changes
+  // Wrapper removed; see implementation at line 204
+  /// Compute area disk usage (recursive)
+  Future<int> getAreaSizeBytes(OfflineArea area) async {
+    int total = 0;
+    final dir = Directory(area.directory);
+    if (await dir.exists()) {
+      await for (var fse in dir.list(recursive: true)) {
+        if (fse is File) {
+          total += await fse.length();
+        }
+      }
+    }
+    area.sizeBytes = total;
+    await saveAreasToDisk();
+    return total;
+  }
+
   static final OfflineAreaService _instance = OfflineAreaService._();
   factory OfflineAreaService() => _instance;
   OfflineAreaService._() {
@@ -111,16 +137,18 @@ class OfflineAreaService {
     required String directory,
     void Function(double progress)? onProgress,
     void Function(OfflineAreaStatus status)? onComplete,
+    String? name,
   }) async {
     final area = OfflineArea(
       id: id,
+      name: name ?? '',
       bounds: bounds,
       minZoom: minZoom,
       maxZoom: maxZoom,
       directory: directory,
     );
     _areas.add(area);
-    await _saveAreasToDisk();
+    await saveAreasToDisk();
 
     try {
       // STEP 1: Tiles (incl. global z=1..4)
@@ -137,21 +165,23 @@ class OfflineAreaService {
         area.tilesDownloaded = done;
         area.progress = done / area.tilesTotal;
         if (onProgress != null) onProgress(area.progress);
-        await _saveAreasToDisk();
+        await getAreaSizeBytes(area); // Update size as we download
+        await saveAreasToDisk();
       }
 
       // STEP 2: Fetch cameras for this bbox (all, not limited!)
       final cameras = await _downloadAllCameras(bounds);
       area.cameras = cameras;
       await _saveCameras(cameras, directory);
+      await getAreaSizeBytes(area);
 
       area.status = OfflineAreaStatus.complete;
       area.progress = 1.0;
-      await _saveAreasToDisk();
+      await saveAreasToDisk();
       if (onComplete != null) onComplete(area.status);
     } catch (e) {
       area.status = OfflineAreaStatus.error;
-      await _saveAreasToDisk();
+      await saveAreasToDisk();
       if (onComplete != null) onComplete(area.status);
     }
   }
@@ -159,19 +189,22 @@ class OfflineAreaService {
   void cancelDownload(String id) {
     final area = _areas.firstWhere((a) => a.id == id, orElse: () => throw 'Area not found');
     area.status = OfflineAreaStatus.cancelled;
-    _saveAreasToDisk();
+    saveAreasToDisk();
   }
 
   void deleteArea(String id) async {
     final area = _areas.firstWhere((a) => a.id == id, orElse: () => throw 'Area not found');
-    await Directory(area.directory).delete(recursive: true);
+    final dir = Directory(area.directory);
+    if (await dir.exists()) {
+      await dir.delete(recursive: true);
+    }
     _areas.remove(area);
-    await _saveAreasToDisk();
+    await saveAreasToDisk();
   }
 
   // --- PERSISTENCE LOGIC ---
 
-  Future<void> _saveAreasToDisk() async {
+  Future<void> saveAreasToDisk() async {
     try {
       final file = await _getMetadataPath();
       final content = jsonEncode(_areas.map((a) => a.toJson()).toList());
@@ -193,6 +226,9 @@ class OfflineAreaService {
         // Check if directory still exists; adjust status if not
         if (!Directory(area.directory).existsSync()) {
           area.status = OfflineAreaStatus.error;
+        } else {
+          // Update sizeBytes async
+          getAreaSizeBytes(area);
         }
         _areas.add(area);
       }
@@ -205,16 +241,29 @@ class OfflineAreaService {
 
   /// Returns set of [z, x, y] tuples needed to cover [bounds] at [zMin]..[zMax].
   Set<List<int>> computeTileList(LatLngBounds bounds, int zMin, int zMax) {
-    // Now a public method to support dialog estimation.
     Set<List<int>> tiles = {};
+    const double epsilon = 1e-7;
+    double latMin = min(bounds.southWest.latitude, bounds.northEast.latitude);
+    double latMax = max(bounds.southWest.latitude, bounds.northEast.latitude);
+    double lonMin = min(bounds.southWest.longitude, bounds.northEast.longitude);
+    double lonMax = max(bounds.southWest.longitude, bounds.northEast.longitude);
+    // Expand degenerate/flat areas a hair
+    if ((latMax - latMin).abs() < epsilon) {
+      latMin -= epsilon;
+      latMax += epsilon;
+    }
+    if ((lonMax - lonMin).abs() < epsilon) {
+      lonMin -= epsilon;
+      lonMax += epsilon;
+    }
     for (int z = zMin; z <= zMax; z++) {
-      // Lower bounds: .floor(), upper bounds: .ceil()-1 for inclusivity
-      final minTile = _latLonToTile(bounds.southWest.latitude, bounds.southWest.longitude, z);
-      final neTileRaw = _latLonToTileRaw(bounds.northEast.latitude, bounds.northEast.longitude, z);
-      final maxX = neTileRaw[0].ceil() - 1;
-      final maxY = neTileRaw[1].ceil() - 1;
-      final minX = minTile[0];
-      final minY = minTile[1];
+      // Convert both corners and clamp
+      final minTile = _latLonToTile(latMin, lonMin, z);
+      final maxTile = _latLonToTile(latMax, lonMax, z);
+      final minX = min(minTile[0], maxTile[0]);
+      final maxX = max(minTile[0], maxTile[0]);
+      final minY = min(minTile[1], maxTile[1]);
+      final maxY = max(minTile[1], maxTile[1]);
       for (int x = minX; x <= maxX; x++) {
         for (int y = minY; y <= maxY; y++) {
           tiles.add([z, x, y]);
