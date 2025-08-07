@@ -250,6 +250,11 @@ class AppState extends ChangeNotifier {
     if (p.builtin) return;
     _enabled.remove(p);
     _profiles.removeWhere((x) => x.id == p.id);
+    // Safety: Always have at least one enabled profile
+    if (_enabled.isEmpty) {
+      final builtIn = _profiles.firstWhere((profile) => profile.builtin, orElse: () => _profiles.first);
+      _enabled.add(builtIn);
+    }
     _saveEnabledProfiles();
     ProfileService().save(_profiles);
     notifyListeners();
