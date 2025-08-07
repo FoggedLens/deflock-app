@@ -487,18 +487,31 @@ class _OfflineAreasSectionState extends State<_OfflineAreasSection> {
             subtitle: Text(subtitle),
             isThreeLine: true,
             trailing: area.status == OfflineAreaStatus.downloading
-                ? SizedBox(
-                    width: 64,
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        LinearProgressIndicator(value: area.progress),
-                        Text(
-                          '${(area.progress * 100).toStringAsFixed(0)}%',
-                          style: const TextStyle(fontSize: 12),
-                        )
-                      ],
-                    ),
+                ? Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      SizedBox(
+                        width: 64,
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            LinearProgressIndicator(value: area.progress),
+                            Text(
+                              '${(area.progress * 100).toStringAsFixed(0)}%',
+                              style: const TextStyle(fontSize: 12),
+                            )
+                          ],
+                        ),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.cancel, color: Colors.orange),
+                        tooltip: 'Cancel download',
+                        onPressed: () {
+                          service.cancelDownload(area.id);
+                          setState(() {});
+                        },
+                      )
+                    ],
                   )
                 : null,
             onLongPress: area.status == OfflineAreaStatus.downloading
