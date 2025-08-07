@@ -131,10 +131,7 @@ class _DownloadAreaDialogState extends State<DownloadAreaDialog> {
     }
     final minZoom = OfflineAreaService().findDynamicMinZoom(bounds);
     final maxZoom = _zoom.toInt();
-    final allTiles = OfflineAreaService().computeTileList(bounds, minZoom, maxZoom);
-    final worldTiles = OfflineAreaService().computeTileList(
-        OfflineAreaService().globalWorldBounds(), 1, 4);
-    final nTiles = allTiles.length + worldTiles.length;
+    final nTiles = OfflineAreaService().computeTileList(bounds, minZoom, maxZoom).length;
     const kbPerTile = 6.5; // Empirically ~6.5kB average for OSM tiles at z=1-19
     final totalMb = (nTiles * kbPerTile) / 1024.0;
     setState(() {

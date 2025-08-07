@@ -193,10 +193,13 @@ class OfflineAreaService {
     await saveAreasToDisk();
 
     try {
-      // STEP 1: Tiles (incl. global z=1..4)
-      final tileTasks = computeTileList(bounds, minZoom, maxZoom);
-      final globalTiles = computeTileList(globalWorldBounds(), 1, 4);
-      final allTiles = {...tileTasks, ...globalTiles};
+      // STEP 1: Tiles: user areas get only their bbox/zooms; world area gets only global z=1..4
+      Set<List<int>> allTiles;
+      if (area.isPermanent) {
+        allTiles = computeTileList(globalWorldBounds(), 1, 4);
+      } else {
+        allTiles = computeTileList(bounds, minZoom, maxZoom);
+      }
       area.tilesTotal = allTiles.length;
 
       int done = 0;
