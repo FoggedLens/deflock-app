@@ -106,6 +106,8 @@ class _MapViewState extends State<MapView> {
   @override
   void initState() {
     super.initState();
+    // Kick off offline area loading as soon as map loads
+    OfflineAreaService();
     _controller = widget.controller;
     _initLocation();
   }

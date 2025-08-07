@@ -380,7 +380,7 @@ class _OfflineAreasSection extends StatefulWidget {
 }
 
 class _OfflineAreasSectionState extends State<_OfflineAreasSection> {
-  final OfflineAreaService service = OfflineAreaService();
+  OfflineAreaService get service => OfflineAreaService();
 
   @override
   void initState() {

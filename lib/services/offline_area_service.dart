@@ -121,34 +121,33 @@ class OfflineAreaService {
     for (final a in _areas) {
       if (a.isPermanent) { world = a; break; }
     }
-    if (world == null) {
-      world = OfflineArea(
-        id: 'permanent_world_z1_4',
-        name: 'World (zoom 1-4)',
-        bounds: worldBounds,
-        minZoom: 1,
-        maxZoom: 4,
-        directory: worldDir,
-        status: OfflineAreaStatus.downloading,
-        progress: 0.0,
-        isPermanent: true,
-      );
-      _areas.insert(0, world);
-      await saveAreasToDisk();
-      // Start download automatically
-      downloadArea(
-        id: world.id,
-        bounds: world.bounds,
-        minZoom: world.minZoom,
-        maxZoom: world.maxZoom,
-        directory: world.directory,
-        name: world.name,
-        onProgress: null,
-        onComplete: null,
-      );
-    } else if (world.tilesDownloaded < world.tilesTotal || world.tilesTotal == 0) {
-      // Area present but not fully downloaded—auto-kick off download
-      if (world.status != OfflineAreaStatus.downloading) {
+    final Set<List<int>> expectedTiles = computeTileList(worldBounds, 1, 4);
+    debugPrint('DEBUG: World area expectedTiles count: \\${expectedTiles.length}');
+    if (expectedTiles.isNotEmpty) {
+      var zooms = expectedTiles.map((e) => e[0]).toSet().toList()..sort();
+      debugPrint('DEBUG: World area zoom levels: \\${zooms.join(", ")}');
+      var byZoom = {for (var z in zooms) z: expectedTiles.where((e) => e[0] == z).length};
+      debugPrint('DEBUG: Tile counts by zoom: \\${byZoom.toString()}');
+      debugPrint('DEBUG: Sample tiles: \\${expectedTiles.take(10).toList().toString()}');
+    }
+    // Recount actual files if world area exists (can be slow but only on launch or change)
+    if (world != null) {
+      int filesFound = 0;
+      for (final tile in expectedTiles) {
+        final f = File('${world.directory}/tiles/${tile[0]}/${tile[1]}/${tile[2]}.png');
+        if (f.existsSync()) filesFound++;
+      }
+      debugPrint('DEBUG: World area found \\${filesFound} of expected \\${expectedTiles.length} tiles on disk.');
+      world.tilesTotal = expectedTiles.length;
+      world.tilesDownloaded = filesFound;
+      world.progress = (world.tilesTotal == 0) ? 0.0 : (filesFound / world.tilesTotal);
+      if (filesFound == world.tilesTotal) {
+        world.status = OfflineAreaStatus.complete;
+        await saveAreasToDisk();
+        return;
+      } else {
+        world.status = OfflineAreaStatus.downloading;
+        await saveAreasToDisk();
         downloadArea(
           id: world.id,
           bounds: world.bounds,
@@ -159,8 +158,35 @@ class OfflineAreaService {
           onProgress: null,
           onComplete: null,
         );
+        return;
       }
     }
+    // If not present, create and start download
+    world = OfflineArea(
+      id: 'permanent_world_z1_4',
+      name: 'World (zoom 1-4)',
+      bounds: worldBounds,
+      minZoom: 1,
+      maxZoom: 4,
+      directory: worldDir,
+      status: OfflineAreaStatus.downloading,
+      progress: 0.0,
+      isPermanent: true,
+      tilesTotal: expectedTiles.length,
+      tilesDownloaded: 0,
+    );
+    _areas.insert(0, world);
+    await saveAreasToDisk();
+    downloadArea(
+      id: world.id,
+      bounds: world.bounds,
+      minZoom: world.minZoom,
+      maxZoom: world.maxZoom,
+      directory: world.directory,
+      name: world.name,
+      onProgress: null,
+      onComplete: null,
+    );
   }
 
   final List<OfflineArea> _areas = [];
@@ -334,36 +360,45 @@ class OfflineAreaService {
 
   /// Returns set of [z, x, y] tuples needed to cover [bounds] at [zMin]..[zMax].
   Set<List<int>> computeTileList(LatLngBounds bounds, int zMin, int zMax) {
-    Set<List<int>> tiles = {};
-    const double epsilon = 1e-7;
-    double latMin = min(bounds.southWest.latitude, bounds.northEast.latitude);
-    double latMax = max(bounds.southWest.latitude, bounds.northEast.latitude);
-    double lonMin = min(bounds.southWest.longitude, bounds.northEast.longitude);
-    double lonMax = max(bounds.southWest.longitude, bounds.northEast.longitude);
-    // Expand degenerate/flat areas a hair
-    if ((latMax - latMin).abs() < epsilon) {
-      latMin -= epsilon;
-      latMax += epsilon;
+  Set<List<int>> tiles = {};
+  const double epsilon = 1e-7;
+  double latMin = min(bounds.southWest.latitude, bounds.northEast.latitude);
+  double latMax = max(bounds.southWest.latitude, bounds.northEast.latitude);
+  double lonMin = min(bounds.southWest.longitude, bounds.northEast.longitude);
+  double lonMax = max(bounds.southWest.longitude, bounds.northEast.longitude);
+  // Expand degenerate/flat areas a hair
+  if ((latMax - latMin).abs() < epsilon) {
+    latMin -= epsilon;
+    latMax += epsilon;
+  }
+  if ((lonMax - lonMin).abs() < epsilon) {
+    lonMin -= epsilon;
+    lonMax += epsilon;
+  }
+for (int z = zMin; z <= zMax; z++) {
+  final n = pow(2, z).toInt();
+  final minTile = _latLonToTile(latMin, lonMin, z);
+  final maxTile = _latLonToTile(latMax, lonMax, z);
+  final minX = min(minTile[0], maxTile[0]);
+  final maxX = max(minTile[0], maxTile[0]);
+  final minY = min(minTile[1], maxTile[1]);
+  final maxY = max(minTile[1], maxTile[1]);
+
+  // New diagnostics!
+  debugPrint('DEBUG: ANALYSIS z=\$z, n=\$n');
+  debugPrint('  world SW lat/lon: -85.0511, -180  => tile: ' + _latLonToTile(-85.0511, -180, z).toString());
+  debugPrint('  world NE lat/lon:  85.0511, 180   => tile: ' + _latLonToTile(85.0511, 180, z).toString());
+  debugPrint('  bounds SW: \$latMin, \$lonMin      => tile: \$minTile');
+  debugPrint('  bounds NE: \$latMax, \$lonMax      => tile: \$maxTile');
+  debugPrint('  minX=\$minX, maxX=\$maxX, minY=\$minY, maxY=\$maxY');
+  for (int x = minX; x <= maxX; x++) {
+    for (int y = minY; y <= maxY; y++) {
+      tiles.add([z, x, y]);
     }
-    if ((lonMax - lonMin).abs() < epsilon) {
-      lonMin -= epsilon;
-      lonMax += epsilon;
-    }
-    for (int z = zMin; z <= zMax; z++) {
-      // Convert both corners and clamp
-      final minTile = _latLonToTile(latMin, lonMin, z);
-      final maxTile = _latLonToTile(latMax, lonMax, z);
-      final minX = min(minTile[0], maxTile[0]);
-      final maxX = max(minTile[0], maxTile[0]);
-      final minY = min(minTile[1], maxTile[1]);
-      final maxY = max(minTile[1], maxTile[1]);
-      for (int x = minX; x <= maxX; x++) {
-        for (int y = minY; y <= maxY; y++) {
-          tiles.add([z, x, y]);
-        }
-      }
-    }
-    return tiles;
+  }
+  debugPrint('DEBUG: For zoom \$z, added \${(maxX-minX+1)*(maxY-minY+1)} tiles');
+}
+  return tiles;
   }
 
   // Returns x, y as double for NE corners
@@ -396,7 +431,8 @@ class OfflineAreaService {
   }
 
   LatLngBounds globalWorldBounds() {
-    return LatLngBounds(LatLng(-85.0511, -180.0), LatLng(85.0511, 180.0));
+    // Use slightly shrunken bounds to avoid tile index overflow at extreme coordinates
+    return LatLngBounds(LatLng(-85.0, -179.9), LatLng(85.0, 179.9));
   }
 
   Future<void> _downloadTile(int z, int x, int y, String baseDir) async {
