@@ -1,6 +1,36 @@
-# Flock Map App (Stage 1)
+# Flock Map App
 
-A minimal Flutter scaffold for mapping and tagging Flock‑style ALPR cameras in OpenStreetMap.
+A Flutter app for mapping and tagging ALPR-style cameras (and other surveillance nodes) for OpenStreetMap. Recently expanded with robust profile and upload management, and now with in-progress OFFLINE MAP AREA support.
+
+# User Experience
+
+## Map View
+- View OSM map with online tiles and camera overlays.
+- Main actions: "Tag Camera" to add a node; "Download" to save an offline map area (in progress).
+
+## Camera Tagging & Profiles
+- Add cameras by dropping a pin, setting direction/angle, and selecting a camera profile.
+- Manage camera profiles in Settings: create, edit, delete, and enable/disable for tagging.
+
+## Upload Destinations
+- Select from Production OSM, OSM Sandbox, or Simulate (offline/test) in Settings.
+- Upload queue visible in Settings, with clear/retry.
+- Full OAuth flow for user authentication to OSM.
+
+## Offline Areas *(IN PROGRESS)*
+- Download any map area for offline use! Uses OSM raster tile cache and Overpass-surveillance cameras.
+- Each area download:
+  - Selects the current map region with a dynamic minimum zoom.
+  - Lets user pick the max zoom, shows real tile/storage estimate.
+  - Always includes world tiles for zoom 1–4 for seamless context.
+  - Downloads **all** camera points in area (not just top 250) for offline visibility.
+- Status, progress, and detailed area management appear in Settings:
+  - Cancel, retry, and delete areas (in UI now)
+  - Storage/camera breakdown per area (coming soon)
+- After area download: future updates will allow full offline map and camera viewing/queuing.
+
+---
+
 
 # OAuth Setup
 
@@ -29,26 +59,32 @@ In Settings, you can now choose your "Upload Destination":
 
 ---
 
-## TODO for Beta/RC Release
+## Roadmap and Progress (Beta, Summer–Fall 2025)
 
-### COMPLETED
-- Queue view/retry/clear - Implemented with test mode support
-- Fix login not opening browser - Fixed OAuth scope and client ID issues
-- Add "new profile" text to button in settings - Enhanced profile management UI
-- Profile management (create/edit/delete) - Full CRUD operations integrated
+### **COMPLETE**
+- Full queue management: view/cancel/retry/clear all uploads (incl. simulated/test modes)
+- OAuth and upload destination management (choose prod, sandbox, offline/sim)
+- Flexible profile system for cameras (full CRUD, enable/disable, per-camera tagging)
+- Polished map experience: fixed FAB UX, dialogs, overlays
 
-### 🔄 REMAINING FOR BETA/RC
-- Better icons for cameras, prettier/wider FOV cones
-- North up mode, satellite view mode  
-- Error handling when clicking "add camera" but no profiles enabled
-- Camera point details popup (tap to view full details, edit if user-submitted)
-- One-time popup about "this app trusts the user to know what they are doing" + credits/attributions
-- Optional height tag for cameras
-- Direction should be optional actually (for things like gunshot detectors) - maybe a profile setting?
-- More (unspecified items)
+### **IN PROGRESS – OFFLINE MAP AREAS**
+- Dynamic min-zoom and tile/storage estimate in the Download dialog
+- Settings: new section listing offline areas with progress, camera count, and management (delete/cancel)
+- Tiles for world zooms 1-4 always included for context
+- Backend downloads all camera points in area for full offline mapping (already working)
+- Area downloads correctly resumed/cancelled (UI feedback working)
+- **NEXT:**
+    - Persist area index/restores after restart
+    - Tile loading from disk (offline-viewable map)
+    - True offline/cached camera overlays
+    - Polished error/retry flow & final UX fit & finish
 
-### FUTURE (Post-Beta)
-- Wayfinding to avoid cameras
+### **REMAINING/LATER**
+- Fancier camera tag/cone icons
+- Satellite/North-up map options
+- Settings polish, more informative error/credits flow
+- Misc polish, final bugfixes
+- Future: post-beta/offline wayfinding
 
 ## Stuff for build env
 # Install from GUI:
