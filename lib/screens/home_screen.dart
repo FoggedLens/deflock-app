@@ -132,7 +132,7 @@ class _DownloadAreaDialogState extends State<DownloadAreaDialog> {
     final minZoom = OfflineAreaService().findDynamicMinZoom(bounds);
     final maxZoom = _zoom.toInt();
     final nTiles = OfflineAreaService().computeTileList(bounds, minZoom, maxZoom).length;
-    const kbPerTile = 6.5; // Empirically ~6.5kB average for OSM tiles at z=1-19
+    const kbPerTile = 25.0; // Empirically ~6.5kB average for OSM tiles at z=1-19
     final totalMb = (nTiles * kbPerTile) / 1024.0;
     setState(() {
       _minZoom = minZoom;
