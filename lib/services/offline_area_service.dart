@@ -109,30 +109,57 @@ class OfflineAreaService {
   static final OfflineAreaService _instance = OfflineAreaService._();
   factory OfflineAreaService() => _instance;
   OfflineAreaService._() {
-    _initPermanentWorldArea();
-    _loadAreasFromDisk();
+    _loadAreasFromDisk().then((_) => _ensureAndAutoDownloadWorldArea());
   }
 
-  // Ensure permanent world area exists at all times
-  Future<void> _initPermanentWorldArea() async {
+  // Ensure permanent world area exists and auto-download if tiles missing
+  Future<void> _ensureAndAutoDownloadWorldArea() async {
     final dir = await getOfflineAreaDir();
     final worldDir = "${dir.path}/world_z1_4";
     final LatLngBounds worldBounds = globalWorldBounds();
-    // Check if already present
-    final existing = _areas.where((a) => a.isPermanent).toList();
-    if (existing.isEmpty) {
-      _areas.insert(0, OfflineArea(
+    OfflineArea? world;
+    for (final a in _areas) {
+      if (a.isPermanent) { world = a; break; }
+    }
+    if (world == null) {
+      world = OfflineArea(
         id: 'permanent_world_z1_4',
         name: 'World (zoom 1-4)',
         bounds: worldBounds,
         minZoom: 1,
         maxZoom: 4,
         directory: worldDir,
-        status: OfflineAreaStatus.complete, // Assume complete until proven otherwise on next app run
-        progress: 1.0,
+        status: OfflineAreaStatus.downloading,
+        progress: 0.0,
         isPermanent: true,
-      ));
+      );
+      _areas.insert(0, world);
       await saveAreasToDisk();
+      // Start download automatically
+      downloadArea(
+        id: world.id,
+        bounds: world.bounds,
+        minZoom: world.minZoom,
+        maxZoom: world.maxZoom,
+        directory: world.directory,
+        name: world.name,
+        onProgress: null,
+        onComplete: null,
+      );
+    } else if (world.tilesDownloaded < world.tilesTotal || world.tilesTotal == 0) {
+      // Area present but not fully downloaded—auto-kick off download
+      if (world.status != OfflineAreaStatus.downloading) {
+        downloadArea(
+          id: world.id,
+          bounds: world.bounds,
+          minZoom: world.minZoom,
+          maxZoom: world.maxZoom,
+          directory: world.directory,
+          name: world.name,
+          onProgress: null,
+          onComplete: null,
+        );
+      }
     }
   }
 
@@ -243,8 +270,12 @@ class OfflineAreaService {
     if (await dir.exists()) {
       await dir.delete(recursive: true);
     }
-    _areas.remove(area);
+    _areas.remove(area); // always remove, world will get recreated/refetched as needed
     await saveAreasToDisk();
+    if (area.isPermanent) {
+      // Immediately recreate and auto-download world area
+      _ensureAndAutoDownloadWorldArea();
+    }
   }
 
   void deleteArea(String id) async {
