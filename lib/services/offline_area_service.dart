@@ -258,16 +258,45 @@ class OfflineAreaService {
       }
       area.tilesTotal = allTiles.length;
 
-      int done = 0;
-      for (final tile in allTiles) {
-        if (area.status == OfflineAreaStatus.cancelled) break;
-        await _downloadTile(tile[0], tile[1], tile[2], directory);
-        done++;
-        area.tilesDownloaded = done;
-        area.progress = done / area.tilesTotal;
-        if (onProgress != null) onProgress(area.progress);
+      // NEW ROBUST MULTI-PASS DOWNLOAD
+      // Will try up to 3 passes, only downloading what's still missing each time;
+      // area marked error (and non-permanent ones deleted) if incomplete after 3 passes
+      const int maxPasses = 3;
+      int pass = 0;
+      Set<List<int>> allTilesSet = allTiles.toSet();
+      Set<List<int>> tilesToFetch = allTilesSet;
+      bool success = false;
+      int totalDone = 0; // cumulative
+      while (pass < maxPasses && tilesToFetch.isNotEmpty) {
+        pass++;
+        int doneThisPass = 0;
+        debugPrint('DownloadArea: pass #$pass for area $id. Need \\${tilesToFetch.length} tiles.');
+        for (final tile in tilesToFetch) {
+          if (area.status == OfflineAreaStatus.cancelled) break;
+          try {
+            await _downloadTile(tile[0], tile[1], tile[2], directory);
+            totalDone++;
+            doneThisPass++;
+            area.tilesDownloaded = totalDone;
+            area.progress = area.tilesTotal == 0 ? 0.0 : ((area.tilesDownloaded) / area.tilesTotal);
+          } catch (e) {
+            debugPrint('Tile download failed for z=\\${tile[0]}, x=\\${tile[1]}, y=\\${tile[2]}: \\$e');
+          }
+          if (onProgress != null) onProgress(area.progress);
+        }
         await getAreaSizeBytes(area); // Update size as we download
         await saveAreasToDisk();
+        // After a pass, check for missing tiles
+        Set<List<int>> missingTiles = {};
+        for (final tile in allTilesSet) {
+          final f = File('$directory/tiles/${tile[0]}/${tile[1]}/${tile[2]}.png');
+          if (!f.existsSync()) missingTiles.add(tile);
+        }
+        if (missingTiles.isEmpty) {
+          success = true;
+          break;
+        }
+        tilesToFetch = missingTiles;
       }
 
       // STEP 2: Fetch cameras for this bbox (all, not limited!)
@@ -280,8 +309,22 @@ class OfflineAreaService {
       }
       await getAreaSizeBytes(area);
 
-      area.status = OfflineAreaStatus.complete;
-      area.progress = 1.0;
+      if (success) {
+        area.status = OfflineAreaStatus.complete;
+        area.progress = 1.0;
+        debugPrint('Area $id: all tiles accounted for and area marked complete.');
+      } else {
+        area.status = OfflineAreaStatus.error;
+        debugPrint('Area $id: MISSING tiles after $maxPasses passes. First 10: \\${tilesToFetch.toList().take(10)}');
+        // Clean up area if not permanent
+        if (!area.isPermanent) {
+          final dirObj = Directory(area.directory);
+          if (await dirObj.exists()) {
+            await dirObj.delete(recursive: true);
+          }
+          _areas.remove(area);
+        }
+      }
       await saveAreasToDisk();
       if (onComplete != null) onComplete(area.status);
     } catch (e) {
@@ -439,11 +482,27 @@ for (int z = zMin; z <= zMax; z++) {
     await dir.create(recursive: true);
     final file = File('${dir.path}/$y.png');
     if (await file.exists()) return; // already downloaded
-    final resp = await http.get(Uri.parse(url));
-    if (resp.statusCode == 200) {
-      await file.writeAsBytes(resp.bodyBytes);
-    } else {
-      throw Exception('Failed to download tile $z/$x/$y');
+    const int maxAttempts = 3;
+    int attempt = 0;
+    int delayMs = 500;
+    while (true) {
+      attempt++;
+      try {
+        final resp = await http.get(Uri.parse(url));
+        if (resp.statusCode == 200) {
+          await file.writeAsBytes(resp.bodyBytes);
+          return;
+        } else {
+          throw Exception('Failed to download tile $z/$x/$y (status ${resp.statusCode})');
+        }
+      } catch (e) {
+        if (attempt >= maxAttempts) {
+          throw Exception('Failed to download tile $z/$x/$y after $attempt attempts: $e');
+        }
+        debugPrint('Retrying tile $z/$x/$y after failure (attempt $attempt): $e');
+        await Future.delayed(Duration(milliseconds: delayMs));
+        delayMs *= 2;
+      }
     }
   }
 
