@@ -1,91 +1,67 @@
 # Flock Map App
 
-A Flutter app for mapping and tagging ALPR-style cameras (and other surveillance nodes) for OpenStreetMap. Recently expanded with robust profile and upload management, and now with in-progress OFFLINE MAP AREA support.
-
-# User Experience
-
-## Map View
-- View OSM map with online tiles and camera overlays.
-- Main actions: "Tag Camera" to add a node; "Download" to save an offline map area (in progress).
-
-## Camera Tagging & Profiles
-- Add cameras by dropping a pin, setting direction/angle, and selecting a camera profile.
-- Manage camera profiles in Settings: create, edit, delete, and enable/disable for tagging.
-
-## Upload Destinations
-- Select from Production OSM, OSM Sandbox, or Simulate (offline/test) in Settings.
-- Upload queue visible in Settings, with clear/retry.
-- Full OAuth flow for user authentication to OSM.
-
-## Offline Areas *(IN PROGRESS)*
-- Download any map area for offline use! Uses OSM raster tile cache and Overpass-surveillance cameras.
-- Each area download:
-  - Selects the current map region with a dynamic minimum zoom (calculated as the highest zoom level at which a single tile covers the selected area)
-  - Lets user pick the max zoom, shows real tile/storage estimate.
-  - Always includes world tiles for zoom 1–4 for seamless context.
-  - Downloads **all** camera points in area (not just top 250) for offline visibility.
-- Status, progress, and detailed area management appear in Settings:
-  - Cancel, retry, and delete areas (in UI now)
-  - Storage/camera breakdown per area (coming soon)
+A Flutter app for mapping and tagging ALPR-style cameras (and other surveillance nodes) for OpenStreetMap, with advanced offline support, robust camera profile management, and a pro-grade UX.
 
 ---
 
+## User Experience & Features
 
-# OAuth Setup
+### Map View
+- **Explore the Map:** View OSM raster tiles, live camera overlays, and a visual scale bar and zoom indicator in the lower left.
+- **Tag Cameras:** Add a camera by dropping a pin, setting direction, and choosing a camera profile. Camera tap/double-tap is smart—double-tap always zooms, single-tap opens camera info.
+- **Location:** Blue GPS dot shows your current location, always on top of map icons.
 
-Before you can upload to OpenStreetMap (production **or sandbox**), you must register your own OAuth2 application on each OSM API you wish to support:
-- [Production OSM register page](https://www.openstreetmap.org/oauth2/applications)
-- [Sandbox OSM register page](https://master.apis.dev.openstreetmap.org/oauth2/applications)
+### Camera Profiles
+- **Flexible, Private Profiles:** Enable/disable, create, edit, or delete camera types in Settings. At least one profile must be enabled at all times.
+- If the last enabled profile is disabled, the generic profile will be auto-enabled so the app always works.
 
-Copy your generated client IDs into a new file:
+### Upload Destinations/Queue
+- **Full OSM OAuth2 Integration:** Upload to live OSM, OSM Sandbox for testing, or keep your changes private in simulate mode.
+- **Queue Management:** Settings screen shows a queue of pending uploads—clear or retry them as you wish.
 
-```dart
-// lib/keys.dart
-const String kOsmProdClientId = 'YOUR_PROD_CLIENT_ID_HERE';
-const String kOsmSandboxClientId = 'YOUR_SANDBOX_CLIENT_ID_HERE';
-```
+### Offline Map Areas
+- **Download Any Region, Any Zoom:** Save the current map area at any zoom for true offline viewing.
+- **Intelligent Tile Management:** World tiles at zooms 1–4 are permanently available (via a protected offline area). All downloads include accurate tile and storage estimates.
+- **No Duplicates:** Only one world area; can be re-downloaded (refreshed) but never deleted or renamed.
+- **Camera Cache:** Download areas keep camera points in sync for full offline visibility—except the global area, which never attempts to fetch all world cameras.
+- **Settings Management:** Cancel, refresh, or remove downloads as needed. Progress, tile count, storage consumption, and cached camera count always displayed.
 
-For open source: use `lib/keys.dart.example` as a template and do **not** commit your real secrets.
-
-If you discover a bug that causes bad behavior w/rt OSM API, register a new OAuth client to distinguish patched versions and, if needed, delete the old app to prevent misuse.
-
-# Upload Modes
-
-In Settings, you can now choose your "Upload Destination":
-- **Production**: Live OSM database (visible to all users).
-- **Sandbox**: OSM's dedicated test database; safe for development/testing. [More info](https://wiki.openstreetmap.org/wiki/Sandbox).
-- **Simulate**: Does not contact any server. Actions are fully offline for testing UI/flows.
+### Polished UX Features
+- **Permanent global base map:** Coverage for the entire world at zooms 1–4, always present.
+- **Smooth map gestures:** Double-tap to zoom even on markers; pinch zoom; camera popups distinguished from zoom.
+- **Order-preserving overlays:** Your location is always drawn on top for easy visibility.
+- **No more dead ends:** Disabling all profiles is impossible; canceling downloads is clean and instant.
 
 ---
 
-## Roadmap and Progress (Beta, Summer–Fall 2025)
+## OAuth & Build Setup
 
-### **COMPLETE**
-- Full queue management: view/cancel/retry/clear all uploads (incl. simulated/test modes)
-- OAuth and upload destination management (choose prod, sandbox, offline/sim)
-- Flexible profile system for cameras (full CRUD, enable/disable, per-camera tagging)
-- Polished map experience: fixed FAB UX, dialogs, overlays
+**Before uploading to OSM:**
+- Register OAuth2 applications on both [Production OSM](https://www.openstreetmap.org/oauth2/applications) and [Sandbox OSM](https://master.apis.dev.openstreetmap.org/oauth2/applications).
+- Copy generated client IDs to `lib/keys.dart` (see template `.example` file).
 
-### **IN PROGRESS – OFFLINE MAP AREAS**
-- Dynamic min-zoom and tile/storage estimate in the Download dialog
-- Settings: new section listing offline areas with progress, camera count, and management (delete/cancel)
-- Tiles for world zooms 1-4 always included for context
-- Backend downloads all camera points in area for full offline mapping (already working)
-- Area downloads correctly resumed/cancelled (UI feedback working)
-- **NEXT:**
-    - Persist area index/restores after restart
-    - Tile loading from disk (offline-viewable map)
-    - True offline/cached camera overlays
-    - Polished error/retry flow & final UX fit & finish
+### Build Environment Notes
+- Requires Xcode, Android Studio, and standard Flutter dependencies. See notes at the end of this file for CLI setup details.
 
-### **REMAINING/LATER**
-- Fancier camera tag/cone icons
-- Satellite/North-up map options
-- Settings polish, more informative error/credits flow
-- Misc polish, final bugfixes
-- Future: post-beta/offline wayfinding
+---
 
-## Stuff for build env
+## Roadmap
+
+- **COMPLETE**:  
+  - Offline map area download/storage/camera overlay; cancel/retry; fast tile/camera/size estimates.
+  - Pro-grade map UX (zoom bar, marker tap/double-tap, robust FABs).
+- **SOON**:  
+  - Resumable/robust interrupted downloads.
+  - Further polish for edge cases (queue, error states).
+- **LATER**:
+  - Satellite base layers, north-up/satellite-mode.
+  - Offline wayfinding or routing.
+  - Fancier icons and overlays.
+
+---
+
+## Build Environment Quick Setup
+
 # Install from GUI:
 Xcode, Android Studio.
 Xcode cmdline tools
@@ -102,7 +78,6 @@ gem install cocoapods
 sdkmanager --install "ndk;27.0.12077973"
 
 export PATH="/Users/bob/.gem/ruby/3.4.0/bin:$PATH"
-
 export PATH=$HOME/development/flutter/bin:$PATH
 
 flutter clean
