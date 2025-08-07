@@ -484,24 +484,26 @@ for (int z = zMin; z <= zMax; z++) {
     if (await file.exists()) return; // already downloaded
     const int maxAttempts = 3;
     int attempt = 0;
-    int delayMs = 500;
+    final random = Random();
+    // Backoff schedule in ms: 0 (immediate), 3000±500 (3s+/-), 10000±2000 (10s+/-)
+    final delays = [0, 3000 + random.nextInt(1000) - 500, 10000 + random.nextInt(4000) - 2000];
     while (true) {
-      attempt++;
       try {
+        attempt++;
         final resp = await http.get(Uri.parse(url));
         if (resp.statusCode == 200) {
           await file.writeAsBytes(resp.bodyBytes);
           return;
         } else {
-          throw Exception('Failed to download tile $z/$x/$y (status ${resp.statusCode})');
+          throw Exception('Failed to download tile $z/$x/$y (status \\${resp.statusCode})');
         }
       } catch (e) {
         if (attempt >= maxAttempts) {
           throw Exception('Failed to download tile $z/$x/$y after $attempt attempts: $e');
         }
-        debugPrint('Retrying tile $z/$x/$y after failure (attempt $attempt): $e');
-        await Future.delayed(Duration(milliseconds: delayMs));
-        delayMs *= 2;
+        final delay = delays[attempt-1].clamp(0, 60000);
+        debugPrint('Retrying tile $z/$x/$y after failure (attempt $attempt, delaying \\${delay}ms): $e');
+        await Future.delayed(Duration(milliseconds: delay));
       }
     }
   }
