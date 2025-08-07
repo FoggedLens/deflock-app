@@ -16,8 +16,10 @@ import 'debouncer.dart';
 import 'camera_tag_sheet.dart';
 
 class MapView extends StatefulWidget {
+  final MapController controller;
   const MapView({
     super.key,
+    required this.controller,
     required this.followMe,
     required this.onUserGesture,
   });
@@ -30,7 +32,7 @@ class MapView extends StatefulWidget {
 }
 
 class _MapViewState extends State<MapView> {
-  final MapController _controller = MapController();
+  late final MapController _controller;
   final OverpassService _overpass = OverpassService();
   final Debouncer _debounce = Debouncer(const Duration(milliseconds: 500));
 
@@ -58,6 +60,7 @@ class _MapViewState extends State<MapView> {
   @override
   void initState() {
     super.initState();
+    _controller = widget.controller;
     _initLocation();
   }
 

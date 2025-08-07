@@ -20,14 +20,13 @@ A Flutter app for mapping and tagging ALPR-style cameras (and other surveillance
 ## Offline Areas *(IN PROGRESS)*
 - Download any map area for offline use! Uses OSM raster tile cache and Overpass-surveillance cameras.
 - Each area download:
-  - Selects the current map region with a dynamic minimum zoom.
+  - Selects the current map region with a dynamic minimum zoom (calculated as the highest zoom level at which a single tile covers the selected area)
   - Lets user pick the max zoom, shows real tile/storage estimate.
   - Always includes world tiles for zoom 1–4 for seamless context.
   - Downloads **all** camera points in area (not just top 250) for offline visibility.
 - Status, progress, and detailed area management appear in Settings:
   - Cancel, retry, and delete areas (in UI now)
   - Storage/camera breakdown per area (coming soon)
-- After area download: future updates will allow full offline map and camera viewing/queuing.
 
 ---
 

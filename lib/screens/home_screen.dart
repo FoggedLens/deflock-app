@@ -3,6 +3,8 @@ import 'package:provider/provider.dart';
 
 import '../app_state.dart';
 import '../widgets/map_view.dart';
+import 'package:flutter_map/flutter_map.dart';
+import '../services/offline_area_service.dart';
 import '../widgets/add_camera_sheet.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -14,6 +16,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  final MapController _mapController = MapController();
   bool _followMe = true;
 
   void _openAddCameraSheet() {
@@ -47,6 +50,7 @@ class _HomeScreenState extends State<HomeScreen> {
         ],
       ),
       body: MapView(
+        controller: _mapController,
         followMe: _followMe,
         onUserGesture: () {
           if (_followMe) setState(() => _followMe = false);
@@ -67,7 +71,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 FloatingActionButton.extended(
                   onPressed: () => showDialog(
                     context: context,
-                    builder: (ctx) => const DownloadAreaDialog(),
+                    builder: (ctx) => DownloadAreaDialog(controller: _mapController),
                   ),
                   icon: const Icon(Icons.download_for_offline),
                   label: const Text('Download'),
@@ -82,9 +86,9 @@ class _HomeScreenState extends State<HomeScreen> {
 }
 
 // --- Download area dialog ---
-
 class DownloadAreaDialog extends StatefulWidget {
-  const DownloadAreaDialog({super.key});
+  final MapController controller;
+  const DownloadAreaDialog({super.key, required this.controller});
 
   @override
   State<DownloadAreaDialog> createState() => _DownloadAreaDialogState();
@@ -147,19 +151,47 @@ class _DownloadAreaDialogState extends State<DownloadAreaDialog> {
           child: const Text('Cancel'),
         ),
         ElevatedButton(
-          onPressed: () {
-            // Real download to be implemented in later stages.
-            Navigator.pop(context);
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Download started (stub only)'),
-              ),
-            );
+          onPressed: () async {
+            try {
+              final bounds = widget.controller.camera.visibleBounds;
+              final maxZoom = _zoom.toInt();
+              final minZoom = _findDynamicMinZoom(bounds);
+              final id = DateTime.now().toIso8601String().replaceAll(':', '-');
+              final dir = '/tmp/offline_areas/$id';
+
+              await OfflineAreaService().downloadArea(
+                id: id,
+                bounds: bounds,
+                minZoom: minZoom,
+                maxZoom: maxZoom,
+                directory: dir,
+                onProgress: (progress) {},
+                onComplete: (status) {},
+              );
+              Navigator.pop(context);
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Download started!'),
+                ),
+              );
+            } catch (e) {
+              Navigator.pop(context);
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Failed to start download: $e'),
+                ),
+              );
+            }
           },
           child: const Text('Download'),
         ),
       ],
     );
+  }
+
+  int _findDynamicMinZoom(LatLngBounds bounds) {
+    // For now, just pick 12 as min; can implement dynamic min‑zoom by area
+    return 12;
   }
 }
 
