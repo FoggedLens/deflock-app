@@ -212,9 +212,13 @@ class OfflineAreaService {
       }
 
       // STEP 2: Fetch cameras for this bbox (all, not limited!)
-      final cameras = await _downloadAllCameras(bounds);
-      area.cameras = cameras;
-      await _saveCameras(cameras, directory);
+      if (!area.isPermanent) {
+        final cameras = await _downloadAllCameras(bounds);
+        area.cameras = cameras;
+        await _saveCameras(cameras, directory);
+      } else {
+        area.cameras = [];
+      }
       await getAreaSizeBytes(area);
 
       area.status = OfflineAreaStatus.complete;

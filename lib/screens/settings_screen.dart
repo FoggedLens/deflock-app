@@ -421,7 +421,9 @@ class _OfflineAreasSectionState extends State<_OfflineAreasSection> {
           subtitle += '\nTiles: ${area.tilesTotal}';
         }
         subtitle += '\nSize: $diskStr';
-        subtitle += '\nCameras: ${area.cameras.length}';
+        if (!area.isPermanent) {
+          subtitle += '\nCameras: ${area.cameras.length}';
+        }
         return Card(
           child: ListTile(
             leading: Icon(area.status == OfflineAreaStatus.complete
@@ -436,46 +438,47 @@ class _OfflineAreasSectionState extends State<_OfflineAreasSection> {
                       ? area.name
                       : 'Area ${area.id.substring(0, 6)}...'),
                 ),
-                IconButton(
-                  icon: const Icon(Icons.edit, size: 20),
-                  tooltip: 'Rename area',
-                  onPressed: () async {
-                    String? newName = await showDialog<String>(
-                      context: context,
-                      builder: (ctx) {
-                        final ctrl = TextEditingController(text: area.name);
-                        return AlertDialog(
-                          title: const Text('Rename Offline Area'),
-                          content: TextField(
-                            controller: ctrl,
-                            maxLength: 40,
-                            decoration: const InputDecoration(labelText: 'Area Name'),
-                            autofocus: true,
-                          ),
-                          actions: [
-                            TextButton(
-                              onPressed: () => Navigator.pop(ctx),
-                              child: const Text('Cancel'),
+                if (!area.isPermanent)
+                  IconButton(
+                    icon: const Icon(Icons.edit, size: 20),
+                    tooltip: 'Rename area',
+                    onPressed: () async {
+                      String? newName = await showDialog<String>(
+                        context: context,
+                        builder: (ctx) {
+                          final ctrl = TextEditingController(text: area.name);
+                          return AlertDialog(
+                            title: const Text('Rename Offline Area'),
+                            content: TextField(
+                              controller: ctrl,
+                              maxLength: 40,
+                              decoration: const InputDecoration(labelText: 'Area Name'),
+                              autofocus: true,
                             ),
-                            ElevatedButton(
-                              onPressed: () {
-                                Navigator.pop(ctx, ctrl.text.trim());
-                              },
-                              child: const Text('Rename'),
-                            ),
-                          ],
-                        );
-                      },
-                    );
-                    if (newName != null && newName.trim().isNotEmpty) {
-                      setState(() {
-                        area.name = newName.trim();
-                        service.saveAreasToDisk();
-                      });
-                    }
-                  },
-                ),
-                if (area.isPermanent)
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.pop(ctx),
+                                child: const Text('Cancel'),
+                              ),
+                              ElevatedButton(
+                                onPressed: () {
+                                  Navigator.pop(ctx, ctrl.text.trim());
+                                },
+                                child: const Text('Rename'),
+                              ),
+                            ],
+                          );
+                        },
+                      );
+                      if (newName != null && newName.trim().isNotEmpty) {
+                        setState(() {
+                          area.name = newName.trim();
+                          service.saveAreasToDisk();
+                        });
+                      }
+                    },
+                  ),
+                if (area.isPermanent && area.status != OfflineAreaStatus.downloading)
                   IconButton(
                     icon: const Icon(Icons.refresh, color: Colors.blue),
                     tooltip: 'Refresh/re-download world tiles',
@@ -494,7 +497,7 @@ class _OfflineAreasSectionState extends State<_OfflineAreasSection> {
                       setState(() {});
                     },
                   )
-                else if (area.status != OfflineAreaStatus.downloading)
+                else if (!area.isPermanent && area.status != OfflineAreaStatus.downloading)
                   IconButton(
                     icon: const Icon(Icons.delete, color: Colors.red),
                     tooltip: 'Delete offline area',
