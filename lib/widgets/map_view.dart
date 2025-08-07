@@ -11,10 +11,10 @@ import 'package:provider/provider.dart';
 
 import '../app_state.dart';
 import '../services/overpass_service.dart';
+import '../services/offline_area_service.dart';
 import '../models/osm_camera_node.dart';
 import 'debouncer.dart';
 import 'camera_tag_sheet.dart';
-// (removed flutter_map_scalebar: using built-in Scalebar from flutter_map)
 
 // --- Smart marker widget for camera with single/double tap distinction
 class _CameraMapMarker extends StatefulWidget {

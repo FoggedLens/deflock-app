@@ -122,22 +122,25 @@ class OfflineAreaService {
       if (a.isPermanent) { world = a; break; }
     }
     final Set<List<int>> expectedTiles = computeTileList(worldBounds, 1, 4);
-    debugPrint('DEBUG: World area expectedTiles count: \\${expectedTiles.length}');
-    if (expectedTiles.isNotEmpty) {
-      var zooms = expectedTiles.map((e) => e[0]).toSet().toList()..sort();
-      debugPrint('DEBUG: World area zoom levels: \\${zooms.join(", ")}');
-      var byZoom = {for (var z in zooms) z: expectedTiles.where((e) => e[0] == z).length};
-      debugPrint('DEBUG: Tile counts by zoom: \\${byZoom.toString()}');
-      debugPrint('DEBUG: Sample tiles: \\${expectedTiles.take(10).toList().toString()}');
-    }
+
     // Recount actual files if world area exists (can be slow but only on launch or change)
     if (world != null) {
       int filesFound = 0;
+      List<List<int>> missingTiles = [];
       for (final tile in expectedTiles) {
         final f = File('${world.directory}/tiles/${tile[0]}/${tile[1]}/${tile[2]}.png');
-        if (f.existsSync()) filesFound++;
+        if (f.existsSync()) {
+          filesFound++;
+        } else if (missingTiles.length < 10) {
+          missingTiles.add(tile);
+        }
       }
-      debugPrint('DEBUG: World area found \\${filesFound} of expected \\${expectedTiles.length} tiles on disk.');
+      if (filesFound != expectedTiles.length) {
+        debugPrint('World area: missing \\${expectedTiles.length - filesFound} tiles. First few: \\$missingTiles');
+      } else {
+        debugPrint('World area: all tiles accounted for.');
+      }
+
       world.tilesTotal = expectedTiles.length;
       world.tilesDownloaded = filesFound;
       world.progress = (world.tilesTotal == 0) ? 0.0 : (filesFound / world.tilesTotal);
@@ -385,18 +388,13 @@ for (int z = zMin; z <= zMax; z++) {
   final maxY = max(minTile[1], maxTile[1]);
 
   // New diagnostics!
-  debugPrint('DEBUG: ANALYSIS z=\$z, n=\$n');
-  debugPrint('  world SW lat/lon: -85.0511, -180  => tile: ' + _latLonToTile(-85.0511, -180, z).toString());
-  debugPrint('  world NE lat/lon:  85.0511, 180   => tile: ' + _latLonToTile(85.0511, 180, z).toString());
-  debugPrint('  bounds SW: \$latMin, \$lonMin      => tile: \$minTile');
-  debugPrint('  bounds NE: \$latMax, \$lonMax      => tile: \$maxTile');
-  debugPrint('  minX=\$minX, maxX=\$maxX, minY=\$minY, maxY=\$maxY');
+    // Removed verbose debugPrint analysis outputs
   for (int x = minX; x <= maxX; x++) {
     for (int y = minY; y <= maxY; y++) {
       tiles.add([z, x, y]);
     }
   }
-  debugPrint('DEBUG: For zoom \$z, added \${(maxX-minX+1)*(maxY-minY+1)} tiles');
+    // Removed verbose debugPrint tile add outputs
 }
   return tiles;
   }
