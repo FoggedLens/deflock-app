@@ -16,6 +16,52 @@ import 'debouncer.dart';
 import 'camera_tag_sheet.dart';
 // (removed flutter_map_scalebar: using built-in Scalebar from flutter_map)
 
+// --- Smart marker widget for camera with single/double tap distinction
+class _CameraMapMarker extends StatefulWidget {
+  final OsmCameraNode node;
+  final MapController mapController;
+  const _CameraMapMarker({required this.node, required this.mapController, Key? key}) : super(key: key);
+
+  @override
+  State<_CameraMapMarker> createState() => _CameraMapMarkerState();
+}
+
+class _CameraMapMarkerState extends State<_CameraMapMarker> {
+  Timer? _tapTimer;
+  static const Duration tapTimeout = Duration(milliseconds: 250);
+
+  void _onTap() {
+    _tapTimer = Timer(tapTimeout, () {
+      showModalBottomSheet(
+        context: context,
+        builder: (_) => CameraTagSheet(node: widget.node),
+        showDragHandle: true,
+      );
+    });
+  }
+
+  void _onDoubleTap() {
+    _tapTimer?.cancel();
+    final c = widget.mapController.camera;
+    widget.mapController.move(c.center, c.zoom + 1);
+  }
+
+  @override
+  void dispose() {
+    _tapTimer?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: _onTap,
+      onDoubleTap: _onDoubleTap,
+      child: const Icon(Icons.videocam, color: Colors.orange),
+    );
+  }
+}
+
 class MapView extends StatefulWidget {
   final MapController controller;
   const MapView({
@@ -140,7 +186,16 @@ class _MapViewState extends State<MapView> {
 
     final zoom = _safeZoom();
 
-    final markers = <Marker>[
+    // Camera markers first, then GPS dot, so blue dot is always on top
+    final markers = <Marker>[ 
+      ..._cameras.map(
+        (n) => Marker(
+          point: n.coord,
+          width: 24,
+          height: 24,
+          child: _CameraMapMarker(node: n, mapController: _controller),
+        ),
+      ),
       if (_currentLatLng != null)
         Marker(
           point: _currentLatLng!,
@@ -148,23 +203,6 @@ class _MapViewState extends State<MapView> {
           height: 16,
           child: const Icon(Icons.my_location, color: Colors.blue),
         ),
-      ..._cameras.map(
-        (n) => Marker(
-          point: n.coord,
-          width: 24,
-          height: 24,
-          child: GestureDetector(
-            onTap: () {
-              showModalBottomSheet(
-                context: context,
-                builder: (_) => CameraTagSheet(node: n),
-                showDragHandle: true, // for better UX on Material3
-              );
-            },
-            child: const Icon(Icons.videocam, color: Colors.orange),
-          ),
-        ),
-      ),
     ];
 
     final overlays = <Polygon>[

@@ -219,7 +219,16 @@ class AppState extends ChangeNotifier {
   List<CameraProfile> get enabledProfiles =>
       _profiles.where(isEnabled).toList(growable: false);
   void toggleProfile(CameraProfile p, bool e) {
-    e ? _enabled.add(p) : _enabled.remove(p);
+    if (e) {
+      _enabled.add(p);
+    } else {
+      _enabled.remove(p);
+      // Safety: Always have at least one enabled profile
+      if (_enabled.isEmpty) {
+        final builtIn = _profiles.firstWhere((profile) => profile.builtin, orElse: () => _profiles.first);
+        _enabled.add(builtIn);
+      }
+    }
     _saveEnabledProfiles();
     notifyListeners();
   }
