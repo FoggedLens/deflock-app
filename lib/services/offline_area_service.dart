@@ -186,10 +186,16 @@ class OfflineAreaService {
     }
   }
 
-  void cancelDownload(String id) {
+  void cancelDownload(String id) async {
     final area = _areas.firstWhere((a) => a.id == id, orElse: () => throw 'Area not found');
     area.status = OfflineAreaStatus.cancelled;
-    saveAreasToDisk();
+    // Delete partial files as on standard delete
+    final dir = Directory(area.directory);
+    if (await dir.exists()) {
+      await dir.delete(recursive: true);
+    }
+    _areas.remove(area);
+    await saveAreasToDisk();
   }
 
   void deleteArea(String id) async {

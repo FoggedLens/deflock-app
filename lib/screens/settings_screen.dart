@@ -415,7 +415,11 @@ class _OfflineAreasSectionState extends State<_OfflineAreasSection> {
             'Z${area.minZoom}-${area.maxZoom}\n' +
                 'Lat: ${area.bounds.southWest.latitude.toStringAsFixed(3)}, ${area.bounds.southWest.longitude.toStringAsFixed(3)}\n' +
                 'Lat: ${area.bounds.northEast.latitude.toStringAsFixed(3)}, ${area.bounds.northEast.longitude.toStringAsFixed(3)}';
-        subtitle += '\nTiles: ${area.tilesTotal}';
+        if (area.status == OfflineAreaStatus.downloading) {
+          subtitle += '\nTiles: ${area.tilesDownloaded} / ${area.tilesTotal}';
+        } else {
+          subtitle += '\nTiles: ${area.tilesTotal}';
+        }
         subtitle += ' | Size: $diskStr';
         if (area.status == OfflineAreaStatus.complete) {
           subtitle += ' | Cameras: ${area.cameras.length}';
