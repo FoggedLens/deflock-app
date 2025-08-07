@@ -14,6 +14,7 @@ import '../services/overpass_service.dart';
 import '../models/osm_camera_node.dart';
 import 'debouncer.dart';
 import 'camera_tag_sheet.dart';
+// (removed flutter_map_scalebar: using built-in Scalebar from flutter_map)
 
 class MapView extends StatefulWidget {
   final MapController controller;
@@ -179,8 +180,8 @@ class _MapViewState extends State<MapView> {
         FlutterMap(
           mapController: _controller,
           options: MapOptions(
-            center: _currentLatLng ?? LatLng(37.7749, -122.4194),
-            zoom: 15,
+            initialCenter: _currentLatLng ?? LatLng(37.7749, -122.4194),
+            initialZoom: 15,
             maxZoom: 19,
             onPositionChanged: (pos, gesture) {
               if (gesture) widget.onUserGesture();
@@ -206,6 +207,15 @@ class _MapViewState extends State<MapView> {
             ),
             PolygonLayer(polygons: overlays),
             MarkerLayer(markers: markers),
+            // Built-in scale bar from flutter_map 
+            Scalebar(
+              alignment: Alignment.bottomLeft,
+              padding: EdgeInsets.only(left: 8, bottom: 54), // above attribution
+              textStyle: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+              lineColor: Colors.black,
+              strokeWidth: 3,
+              // backgroundColor removed in flutter_map >=8 (wrap in Container if needed)
+            ),
           ],
         ),
 
@@ -239,6 +249,31 @@ class _MapViewState extends State<MapView> {
             ),
           ),
 
+        // Zoom indicator, positioned above scale bar
+        Positioned(
+          left: 10,
+          bottom: 92,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+            decoration: BoxDecoration(
+              color: Colors.black.withOpacity(0.52),
+              borderRadius: BorderRadius.circular(7),
+            ),
+            child: Builder(
+              builder: (context) {
+                final zoom = _controller.camera.zoom;
+                return Text(
+                  'Zoom: ${zoom.toStringAsFixed(2)}',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                  ),
+                );
+              },
+            ),
+          ),
+        ),
         // Attribution overlay
         Positioned(
           bottom: 20,
@@ -281,7 +316,6 @@ class _MapViewState extends State<MapView> {
 
     return Polygon(
       points: [origin, left, right, origin],
-      isFilled: true,
       color: Colors.redAccent.withOpacity(0.25),
       borderColor: Colors.redAccent,
       borderStrokeWidth: 1,

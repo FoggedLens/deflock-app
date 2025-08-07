@@ -212,7 +212,9 @@ class _DownloadAreaDialogState extends State<DownloadAreaDialog> {
               final id = DateTime.now().toIso8601String().replaceAll(':', '-');
               final appDocDir = await OfflineAreaService().getOfflineAreaDir();
               final dir = "${appDocDir.path}/$id";
-              await OfflineAreaService().downloadArea(
+              // Fire and forget: don't await download, so dialog closes immediately
+              // ignore: unawaited_futures
+              OfflineAreaService().downloadArea(
                 id: id,
                 bounds: bounds,
                 minZoom: _minZoom ?? 12,

@@ -41,6 +41,22 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.0.6"
+  dart_earcut:
+    dependency: transitive
+    description:
+      name: dart_earcut
+      sha256: e485001bfc05dcbc437d7bfb666316182e3522d4c3f9668048e004d0eb2ce43b
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.2.0"
+  dart_polylabel2:
+    dependency: transitive
+    description:
+      name: dart_polylabel2
+      sha256: "7eeab15ce72894e4bdba6a8765712231fc81be0bd95247de4ad9966abc57adc6"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.0"
   desktop_webview_window:
     dependency: transitive
     description:
@@ -82,10 +98,10 @@ packages:
     dependency: "direct main"
     description:
       name: flutter_map
-      sha256: "87cc8349b8fa5dccda5af50018c7374b6645334a0d680931c1fe11bce88fa5bb"
+      sha256: df33e784b09fae857c6261a5521dd42bd4d3342cb6200884bb70730638af5fd5
       url: "https://pub.dev"
     source: hosted
-    version: "6.2.1"
+    version: "8.2.1"
   flutter_secure_storage:
     dependency: "direct main"
     description:
@@ -207,10 +223,10 @@ packages:
     dependency: "direct main"
     description:
       name: http
-      sha256: "2c11f3f94c687ee9bad77c171151672986360b2b001d109814ee7140b2cf261b"
+      sha256: "85ab0074f9bf2b24625906d8382bbec84d3d6919d285ba9c106b07b65791fb99"
       url: "https://pub.dev"
     source: hosted
-    version: "1.4.0"
+    version: "1.5.0-beta.2"
   http_parser:
     dependency: transitive
     description:
@@ -363,14 +379,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.1.8"
-  polylabel:
-    dependency: transitive
-    description:
-      name: polylabel
-      sha256: "41b9099afb2aa6c1730bdd8a0fab1400d287694ec7615dd8516935fa3144214b"
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.0.1"
   proj4dart:
     dependency: transitive
     description:

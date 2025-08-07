@@ -12,7 +12,8 @@ dependencies:
 
   # UI & Map
   provider: ^6.1.2
-  flutter_map: ^6.2.1
+  flutter_map: ^8.2.1
+  # (removed: using built-in Scalebar from flutter_map >= v6)
   latlong2: ^0.9.0
   geolocator: ^10.1.0
   http: ^1.2.1
