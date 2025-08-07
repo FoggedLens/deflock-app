@@ -262,19 +262,24 @@ class SettingsScreen extends StatelessWidget {
               // show dialog with text (replace with file contents as needed)
               showDialog(
                 context: context,
-                builder: (context) => AlertDialog(
-                  title: const Text('About This App'),
-                  content: SingleChildScrollView(
-                    child: Text(
-                      'Flock Map App\n\nBuilt with Flutter.\n\nOffline areas, privacy-respecting, designed for OpenStreetMap camera tagging.\n\n(Replace this with info.txt contents.)',
+                builder: (context) => FutureBuilder<String>(
+                  future: DefaultAssetBundle.of(context).loadString('assets/info.txt'),
+                  builder: (context, snapshot) => AlertDialog(
+                    title: const Text('About This App'),
+                    content: SingleChildScrollView(
+                      child: Text(
+                        snapshot.connectionState == ConnectionState.done
+                          ? (snapshot.data ?? 'No info available.')
+                          : 'Loading...',
+                      ),
                     ),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: const Text('OK'),
+                      ),
+                    ],
                   ),
-                  actions: [
-                    TextButton(
-                      onPressed: () => Navigator.pop(context),
-                      child: const Text('OK'),
-                    ),
-                  ],
                 ),
               );
             },

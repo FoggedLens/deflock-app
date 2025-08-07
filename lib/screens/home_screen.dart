@@ -96,16 +96,38 @@ class DownloadAreaDialog extends StatefulWidget {
 
 class _DownloadAreaDialogState extends State<DownloadAreaDialog> {
   double _zoom = 15;
+  int? _minZoom;
+  int? _tileCount;
+  double? _mbEstimate;
 
-  // Fake estimation: about 0.5 MB per zoom per km² for now
-  String get _storageEstimate {
-    // This can be improved later to use map bounds
-    final estMb = (0.5 * (_zoom - 11)).clamp(1, 50);
-    return 'Est: ${estMb.toStringAsFixed(1)} MB';
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _recomputeEstimates());
+  }
+
+  void _recomputeEstimates() {
+    final bounds = widget.controller.camera.visibleBounds;
+    final minZoom = OfflineAreaService().findDynamicMinZoom(bounds);
+    final maxZoom = _zoom.toInt();
+    final allTiles = OfflineAreaService().computeTileList(bounds, minZoom, maxZoom);
+    final worldTiles = OfflineAreaService().computeTileList(
+        OfflineAreaService().globalWorldBounds(), 1, 4);
+    final nTiles = allTiles.length + worldTiles.length;
+    const kbPerTile = 25; // Average PNG tile size
+    final totalMb = (nTiles * kbPerTile) / 1024.0;
+    setState(() {
+      _minZoom = minZoom;
+      _tileCount = nTiles;
+      _mbEstimate = totalMb;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
+    final bounds = widget.controller.camera.visibleBounds;
+    final maxZoom = _zoom.toInt();
+    // We recompute estimates when the zoom slider changes
     return AlertDialog(
       title: Row(
         children: const [
@@ -132,16 +154,29 @@ class _DownloadAreaDialogState extends State<DownloadAreaDialog> {
               divisions: 7,
               label: 'Z${_zoom.toStringAsFixed(0)}',
               value: _zoom,
-              onChanged: (v) => setState(() => _zoom = v),
+              onChanged: (v) {
+                setState(() => _zoom = v);
+                WidgetsBinding.instance.addPostFrameCallback((_) => _recomputeEstimates());
+              },
             ),
             const SizedBox(height: 8),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 const Text('Storage estimate:'),
-                Text(_storageEstimate),
+                Text(_mbEstimate == null
+                    ? '…'
+                    : '${_tileCount} tiles, ${_mbEstimate!.toStringAsFixed(1)} MB'),
               ],
             ),
+            if (_minZoom != null)
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text('Min zoom:'),
+                  Text('Z$_minZoom'),
+                ],
+              )
           ],
         ),
       ),
@@ -153,16 +188,13 @@ class _DownloadAreaDialogState extends State<DownloadAreaDialog> {
         ElevatedButton(
           onPressed: () async {
             try {
-              final bounds = widget.controller.camera.visibleBounds;
-              final maxZoom = _zoom.toInt();
-              final minZoom = _findDynamicMinZoom(bounds);
               final id = DateTime.now().toIso8601String().replaceAll(':', '-');
-              final dir = '/tmp/offline_areas/$id';
-
+              final appDocDir = await OfflineAreaService().getOfflineAreaDir();
+              final dir = "${appDocDir.path}/$id";
               await OfflineAreaService().downloadArea(
                 id: id,
                 bounds: bounds,
-                minZoom: minZoom,
+                minZoom: _minZoom ?? 12,
                 maxZoom: maxZoom,
                 directory: dir,
                 onProgress: (progress) {},
@@ -187,11 +219,6 @@ class _DownloadAreaDialogState extends State<DownloadAreaDialog> {
         ),
       ],
     );
-  }
-
-  int _findDynamicMinZoom(LatLngBounds bounds) {
-    // For now, just pick 12 as min; can implement dynamic min‑zoom by area
-    return 12;
   }
 }
 

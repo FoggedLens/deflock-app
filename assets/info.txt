@@ -1,0 +1,7 @@
+Flock Map App
+
+Built with Flutter.
+
+Offline areas, privacy-respecting, designed for OpenStreetMap camera tagging.
+
+This text is loaded from assets/info.txt.

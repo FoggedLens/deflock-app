@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:latlong2/latlong.dart';
 import 'package:flutter_map/flutter_map.dart' show LatLngBounds;
+import 'package:path_provider/path_provider.dart';
 import '../models/osm_camera_node.dart';
 
 /// Model for an offline area
@@ -34,15 +35,69 @@ class OfflineArea {
     this.tilesTotal = 0,
     this.cameras = const [],
   });
+
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'bounds': {
+      'sw': {'lat': bounds.southWest.latitude, 'lng': bounds.southWest.longitude},
+      'ne': {'lat': bounds.northEast.latitude, 'lng': bounds.northEast.longitude},
+    },
+    'minZoom': minZoom,
+    'maxZoom': maxZoom,
+    'directory': directory,
+    'status': status.name,
+    'progress': progress,
+    'tilesDownloaded': tilesDownloaded,
+    'tilesTotal': tilesTotal,
+    'cameras': cameras.map((c) => c.toJson()).toList(),
+  };
+
+  static OfflineArea fromJson(Map<String, dynamic> json) {
+    final bounds = LatLngBounds(
+      LatLng(json['bounds']['sw']['lat'], json['bounds']['sw']['lng']),
+      LatLng(json['bounds']['ne']['lat'], json['bounds']['ne']['lng']),
+    );
+    return OfflineArea(
+      id: json['id'],
+      bounds: bounds,
+      minZoom: json['minZoom'],
+      maxZoom: json['maxZoom'],
+      directory: json['directory'],
+      status: OfflineAreaStatus.values.firstWhere(
+        (e) => e.name == json['status'], orElse: () => OfflineAreaStatus.error),
+      progress: (json['progress'] ?? 0).toDouble(),
+      tilesDownloaded: json['tilesDownloaded'] ?? 0,
+      tilesTotal: json['tilesTotal'] ?? 0,
+      cameras: (json['cameras'] as List? ?? [])
+          .map((e) => OsmCameraNode.fromJson(e)).toList(),
+    );
+  }
 }
 
 /// Service for managing download, storage, and retrieval of offline map areas and cameras.
 class OfflineAreaService {
   static final OfflineAreaService _instance = OfflineAreaService._();
   factory OfflineAreaService() => _instance;
-  OfflineAreaService._();
+  OfflineAreaService._() {
+    _loadAreasFromDisk();
+  }
 
   final List<OfflineArea> _areas = [];
+
+  /// Where offline area data/metadata lives
+  Future<Directory> getOfflineAreaDir() async {
+    final dir = await getApplicationDocumentsDirectory();
+    final areaRoot = Directory("${dir.path}/offline_areas");
+    if (!areaRoot.existsSync()) {
+      areaRoot.createSync(recursive: true);
+    }
+    return areaRoot;
+  }
+
+  Future<File> _getMetadataPath() async {
+    final dir = await getOfflineAreaDir();
+    return File("${dir.path}/offline_areas.json");
+  }
 
   List<OfflineArea> get offlineAreas => List.unmodifiable(_areas);
 
@@ -65,11 +120,12 @@ class OfflineAreaService {
       directory: directory,
     );
     _areas.add(area);
+    await _saveAreasToDisk();
 
     try {
       // STEP 1: Tiles (incl. global z=1..4)
-      final tileTasks = _computeTileList(bounds, minZoom, maxZoom);
-      final globalTiles = _computeTileList(_globalWorldBounds(), 1, 4);
+      final tileTasks = computeTileList(bounds, minZoom, maxZoom);
+      final globalTiles = computeTileList(globalWorldBounds(), 1, 4);
       final allTiles = {...tileTasks, ...globalTiles};
       area.tilesTotal = allTiles.length;
 
@@ -81,6 +137,7 @@ class OfflineAreaService {
         area.tilesDownloaded = done;
         area.progress = done / area.tilesTotal;
         if (onProgress != null) onProgress(area.progress);
+        await _saveAreasToDisk();
       }
 
       // STEP 2: Fetch cameras for this bbox (all, not limited!)
@@ -90,9 +147,11 @@ class OfflineAreaService {
 
       area.status = OfflineAreaStatus.complete;
       area.progress = 1.0;
+      await _saveAreasToDisk();
       if (onComplete != null) onComplete(area.status);
     } catch (e) {
       area.status = OfflineAreaStatus.error;
+      await _saveAreasToDisk();
       if (onComplete != null) onComplete(area.status);
     }
   }
@@ -100,29 +159,90 @@ class OfflineAreaService {
   void cancelDownload(String id) {
     final area = _areas.firstWhere((a) => a.id == id, orElse: () => throw 'Area not found');
     area.status = OfflineAreaStatus.cancelled;
+    _saveAreasToDisk();
   }
 
   void deleteArea(String id) async {
     final area = _areas.firstWhere((a) => a.id == id, orElse: () => throw 'Area not found');
-    Directory(area.directory).delete(recursive: true);
+    await Directory(area.directory).delete(recursive: true);
     _areas.remove(area);
+    await _saveAreasToDisk();
+  }
+
+  // --- PERSISTENCE LOGIC ---
+
+  Future<void> _saveAreasToDisk() async {
+    try {
+      final file = await _getMetadataPath();
+      final content = jsonEncode(_areas.map((a) => a.toJson()).toList());
+      await file.writeAsString(content);
+    } catch (e) {
+      debugPrint('Failed to save offline areas: $e');
+    }
+  }
+
+  Future<void> _loadAreasFromDisk() async {
+    try {
+      final file = await _getMetadataPath();
+      if (!(await file.exists())) return;
+      final str = await file.readAsString();
+      final data = jsonDecode(str);
+      _areas.clear();
+      for (final areaJson in (data as List)) {
+        final area = OfflineArea.fromJson(areaJson);
+        // Check if directory still exists; adjust status if not
+        if (!Directory(area.directory).existsSync()) {
+          area.status = OfflineAreaStatus.error;
+        }
+        _areas.add(area);
+      }
+    } catch (e) {
+      debugPrint('Failed to load offline areas: $e');
+    }
   }
 
   // --- TILE LOGIC ---
 
   /// Returns set of [z, x, y] tuples needed to cover [bounds] at [zMin]..[zMax].
-  Set<List<int>> _computeTileList(LatLngBounds bounds, int zMin, int zMax) {
+  Set<List<int>> computeTileList(LatLngBounds bounds, int zMin, int zMax) {
+    // Now a public method to support dialog estimation.
     Set<List<int>> tiles = {};
     for (int z = zMin; z <= zMax; z++) {
+      // Lower bounds: .floor(), upper bounds: .ceil()-1 for inclusivity
       final minTile = _latLonToTile(bounds.southWest.latitude, bounds.southWest.longitude, z);
-      final maxTile = _latLonToTile(bounds.northEast.latitude, bounds.northEast.longitude, z);
-      for (int x = minTile[0]; x <= maxTile[0]; x++) {
-        for (int y = minTile[1]; y <= maxTile[1]; y++) {
+      final neTileRaw = _latLonToTileRaw(bounds.northEast.latitude, bounds.northEast.longitude, z);
+      final maxX = neTileRaw[0].ceil() - 1;
+      final maxY = neTileRaw[1].ceil() - 1;
+      final minX = minTile[0];
+      final minY = minTile[1];
+      for (int x = minX; x <= maxX; x++) {
+        for (int y = minY; y <= maxY; y++) {
           tiles.add([z, x, y]);
         }
       }
     }
     return tiles;
+  }
+
+  // Returns x, y as double for NE corners
+  List<double> _latLonToTileRaw(double lat, double lon, int zoom) {
+    final n = pow(2.0, zoom);
+    final xtile = (lon + 180.0) / 360.0 * n;
+    final ytile = (1.0 - log(tan(lat * pi / 180.0) + 1.0 / cos(lat * pi / 180.0)) / pi) / 2.0 * n;
+    return [xtile, ytile];
+  }
+
+  /// Finds the minimum zoom at which a single tile covers [bounds].
+  /// Returns the highest z (up to [maxSearchZoom]) for which both corners are in the same tile.
+  int findDynamicMinZoom(LatLngBounds bounds, {int maxSearchZoom = 19}) {
+    for (int z = 1; z <= maxSearchZoom; z++) {
+      final swTile = _latLonToTile(bounds.southWest.latitude, bounds.southWest.longitude, z);
+      final neTile = _latLonToTile(bounds.northEast.latitude, bounds.northEast.longitude, z);
+      if (swTile[0] != neTile[0] || swTile[1] != neTile[1]) {
+        return z - 1 > 0 ? z - 1 : 1;
+      }
+    }
+    return maxSearchZoom;
   }
 
   /// Converts lat/lon+zoom to OSM tile xy as [x, y]
@@ -133,7 +253,7 @@ class OfflineAreaService {
     return [xtile, ytile];
   }
 
-  LatLngBounds _globalWorldBounds() {
+  LatLngBounds globalWorldBounds() {
     return LatLngBounds(LatLng(-85.0511, -180.0), LatLng(85.0511, 180.0));
   }
 
