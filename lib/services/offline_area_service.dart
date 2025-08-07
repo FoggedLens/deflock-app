@@ -24,6 +24,7 @@ class OfflineArea {
   int tilesTotal;
   List<OsmCameraNode> cameras;
   int sizeBytes; // Disk size in bytes
+  final bool isPermanent; // Not user-deletable if true
 
   OfflineArea({
     required this.id,
@@ -38,6 +39,7 @@ class OfflineArea {
     this.tilesTotal = 0,
     this.cameras = const [],
     this.sizeBytes = 0,
+    this.isPermanent = false,
   });
 
   Map<String, dynamic> toJson() => {
@@ -56,6 +58,7 @@ class OfflineArea {
     'tilesTotal': tilesTotal,
     'cameras': cameras.map((c) => c.toJson()).toList(),
     'sizeBytes': sizeBytes,
+    'isPermanent': isPermanent,
   };
 
   static OfflineArea fromJson(Map<String, dynamic> json) {
@@ -78,6 +81,7 @@ class OfflineArea {
       cameras: (json['cameras'] as List? ?? [])
           .map((e) => OsmCameraNode.fromJson(e)).toList(),
       sizeBytes: json['sizeBytes'] ?? 0,
+      isPermanent: json['isPermanent'] ?? false,
     );
   }
 }
@@ -105,7 +109,31 @@ class OfflineAreaService {
   static final OfflineAreaService _instance = OfflineAreaService._();
   factory OfflineAreaService() => _instance;
   OfflineAreaService._() {
+    _initPermanentWorldArea();
     _loadAreasFromDisk();
+  }
+
+  // Ensure permanent world area exists at all times
+  Future<void> _initPermanentWorldArea() async {
+    final dir = await getOfflineAreaDir();
+    final worldDir = "${dir.path}/world_z1_4";
+    final LatLngBounds worldBounds = globalWorldBounds();
+    // Check if already present
+    final existing = _areas.where((a) => a.isPermanent).toList();
+    if (existing.isEmpty) {
+      _areas.insert(0, OfflineArea(
+        id: 'permanent_world_z1_4',
+        name: 'World (zoom 1-4)',
+        bounds: worldBounds,
+        minZoom: 1,
+        maxZoom: 4,
+        directory: worldDir,
+        status: OfflineAreaStatus.complete, // Assume complete until proven otherwise on next app run
+        progress: 1.0,
+        isPermanent: true,
+      ));
+      await saveAreasToDisk();
+    }
   }
 
   final List<OfflineArea> _areas = [];
@@ -139,13 +167,27 @@ class OfflineAreaService {
     void Function(OfflineAreaStatus status)? onComplete,
     String? name,
   }) async {
-    final area = OfflineArea(
+    // If area with same id exists, replace its contents, else add.
+    OfflineArea? area;
+    for (final a in _areas) {
+      if (a.id == id) { area = a; break; }
+    }
+    if (area != null) {
+      // Remove area and its files before creating fresh
+      _areas.remove(area);
+      final dirObj = Directory(area.directory);
+      if (await dirObj.exists()) {
+        await dirObj.delete(recursive: true);
+      }
+    }
+    area = OfflineArea(
       id: id,
-      name: name ?? '',
+      name: name ?? area?.name ?? '',
       bounds: bounds,
       minZoom: minZoom,
       maxZoom: maxZoom,
       directory: directory,
+      isPermanent: area?.isPermanent ?? false,
     );
     _areas.add(area);
     await saveAreasToDisk();
@@ -225,9 +267,16 @@ class OfflineAreaService {
       final file = await _getMetadataPath();
       if (!(await file.exists())) return;
       final str = await file.readAsString();
-      final data = jsonDecode(str);
+      if (str.trim().isEmpty) return;
+      late final List data;
+      try {
+        data = jsonDecode(str);
+      } catch (e) {
+        debugPrint('Failed to parse offline areas json: $e');
+        return;
+      }
       _areas.clear();
-      for (final areaJson in (data as List)) {
+      for (final areaJson in data) {
         final area = OfflineArea.fromJson(areaJson);
         // Check if directory still exists; adjust status if not
         if (!Directory(area.directory).existsSync()) {

@@ -135,7 +135,7 @@ class _DownloadAreaDialogState extends State<DownloadAreaDialog> {
     final worldTiles = OfflineAreaService().computeTileList(
         OfflineAreaService().globalWorldBounds(), 1, 4);
     final nTiles = allTiles.length + worldTiles.length;
-    const kbPerTile = 25; // Average PNG tile size
+    const kbPerTile = 6.5; // Empirically ~6.5kB average for OSM tiles at z=1-19
     final totalMb = (nTiles * kbPerTile) / 1024.0;
     setState(() {
       _minZoom = minZoom;

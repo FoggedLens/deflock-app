@@ -420,10 +420,8 @@ class _OfflineAreasSectionState extends State<_OfflineAreasSection> {
         } else {
           subtitle += '\nTiles: ${area.tilesTotal}';
         }
-        subtitle += ' | Size: $diskStr';
-        if (area.status == OfflineAreaStatus.complete) {
-          subtitle += ' | Cameras: ${area.cameras.length}';
-        }
+        subtitle += '\nSize: $diskStr';
+        subtitle += '\nCameras: ${area.cameras.length}';
         return Card(
           child: ListTile(
             leading: Icon(area.status == OfflineAreaStatus.complete
@@ -477,7 +475,26 @@ class _OfflineAreasSectionState extends State<_OfflineAreasSection> {
                     }
                   },
                 ),
-                if (area.status != OfflineAreaStatus.downloading)
+                if (area.isPermanent)
+                  IconButton(
+                    icon: const Icon(Icons.refresh, color: Colors.blue),
+                    tooltip: 'Refresh/re-download world tiles',
+                    onPressed: () async {
+                      // Trigger re-download for permanent area
+                      await service.downloadArea(
+                        id: area.id,
+                        bounds: area.bounds,
+                        minZoom: area.minZoom,
+                        maxZoom: area.maxZoom,
+                        directory: area.directory,
+                        name: area.name,
+                        onProgress: (progress) {},
+                        onComplete: (status) {},
+                      );
+                      setState(() {});
+                    },
+                  )
+                else if (area.status != OfflineAreaStatus.downloading)
                   IconButton(
                     icon: const Icon(Icons.delete, color: Colors.red),
                     tooltip: 'Delete offline area',
