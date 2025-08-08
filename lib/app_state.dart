@@ -49,10 +49,10 @@ class AppState extends ChangeNotifier {
         print('AppState: Switching mode, token exists; validating...');
         final isValid = await validateToken();
         if (isValid) {
-          print('AppState: Switching mode; fetching username for $mode...');
+          print("AppState: Switching mode; fetching username for $mode...");
           _username = await _auth.login();
           if (_username != null) {
-            print('AppState: Switched mode, now logged in as $_username');
+            print("AppState: Switched mode, now logged in as $_username");
           } else {
             print('AppState: Switched mode but failed to retrieve username');
           }
@@ -62,15 +62,15 @@ class AppState extends ChangeNotifier {
         }
       } else {
         _username = null;
-        print('AppState: Mode change: not logged in in $mode');
+        print("AppState: Mode change: not logged in in $mode");
       }
     } catch (e) {
       _username = null;
-      print('AppState: Mode change user restoration error: $e');
+      print("AppState: Mode change user restoration error: $e");
     }
     final prefs = await SharedPreferences.getInstance();
     await prefs.setInt(_uploadModePrefsKey, mode.index);
-    print('AppState: Upload mode set to $mode');
+    print("AppState: Upload mode set to $mode");
     notifyListeners();
   }
 
@@ -125,7 +125,7 @@ class AppState extends ChangeNotifier {
         print('AppState: User appears to be logged in, fetching username...');
         _username = await _auth.login();
         if (_username != null) {
-          print('AppState: Successfully retrieved username: $_username');
+          print("AppState: Successfully retrieved username: $_username");
         } else {
           print('AppState: Failed to retrieve username despite being logged in');
         }
@@ -133,7 +133,7 @@ class AppState extends ChangeNotifier {
         print('AppState: User is not logged in');
       }
     } catch (e) {
-      print('AppState: Error during auth initialization: $e');
+      print("AppState: Error during auth initialization: $e");
     }
     
     _startUploader();
@@ -146,12 +146,12 @@ class AppState extends ChangeNotifier {
       print('AppState: Starting login process...');
       _username = await _auth.login();
       if (_username != null) {
-        print('AppState: Login successful for user: $_username');
+        print("AppState: Login successful for user: $_username");
       } else {
         print('AppState: Login failed - no username returned');
       }
     } catch (e) {
-      print('AppState: Login error: $e');
+      print("AppState: Login error: $e");
       _username = null;
     }
     notifyListeners();
@@ -171,7 +171,7 @@ class AppState extends ChangeNotifier {
         print('AppState: Token exists, fetching username...');
         _username = await _auth.login();
         if (_username != null) {
-          print('AppState: Auth refresh successful: $_username');
+          print("AppState: Auth refresh successful: $_username");
         } else {
           print('AppState: Auth refresh failed - no username');
         }
@@ -180,7 +180,7 @@ class AppState extends ChangeNotifier {
         _username = null;
       }
     } catch (e) {
-      print('AppState: Auth refresh error: $e');
+      print("AppState: Auth refresh error: $e");
       _username = null;
     }
     notifyListeners();
@@ -192,12 +192,12 @@ class AppState extends ChangeNotifier {
       print('AppState: Starting forced fresh login...');
       _username = await _auth.forceLogin();
       if (_username != null) {
-        print('AppState: Forced login successful: $_username');
+        print("AppState: Forced login successful: $_username");
       } else {
         print('AppState: Forced login failed - no username returned');
       }
     } catch (e) {
-      print('AppState: Forced login error: $e');
+      print("AppState: Forced login error: $e");
       _username = null;
     }
     notifyListeners();
@@ -208,7 +208,7 @@ class AppState extends ChangeNotifier {
     try {
       return await _auth.isLoggedIn();
     } catch (e) {
-      print('AppState: Token validation error: $e');
+    print("AppState: Token validation error: $e");
       return false;
     }
   }
@@ -356,7 +356,7 @@ class AppState extends ChangeNotifier {
       bool ok;
       if (_uploadMode == UploadMode.simulate) {
         // Simulate successful upload without calling real API
-        print('AppState: UploadMode.simulate - simulating upload for ${item.coord}');
+        print("AppState: UploadMode.simulate - simulating upload for ${item.coord}");
         await Future.delayed(const Duration(seconds: 1)); // Simulate network delay
         ok = true;
         print('AppState: Simulated upload successful');
@@ -394,14 +394,14 @@ class AppState extends ChangeNotifier {
   
   // ---------- Queue management ----------
   void clearQueue() {
-    print('AppState: Clearing upload queue (${_queue.length} items)');
+    print("AppState: Clearing upload queue (${_queue.length} items)");
     _queue.clear();
     _saveQueue();
     notifyListeners();
   }
   
   void removeFromQueue(PendingUpload upload) {
-    print('AppState: Removing upload from queue: ${upload.coord}');
+    print("AppState: Removing upload from queue: ${upload.coord}");
     _queue.remove(upload);
     _saveQueue();
     notifyListeners();

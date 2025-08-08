@@ -7,6 +7,7 @@ import '../widgets/map_view.dart';
 import 'package:flutter_map/flutter_map.dart';
 import '../services/offline_area_service.dart';
 import '../widgets/add_camera_sheet.dart';
+import '../services/offline_areas/offline_tile_utils.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -129,9 +130,9 @@ class _DownloadAreaDialogState extends State<DownloadAreaDialog> {
         LatLng(bounds.northEast.latitude, bounds.northEast.longitude + epsilon)
       );
     }
-    final minZoom = OfflineAreaService().findDynamicMinZoom(bounds);
+    final minZoom = findDynamicMinZoom(bounds);
     final maxZoom = _zoom.toInt();
-    final nTiles = OfflineAreaService().computeTileList(bounds, minZoom, maxZoom).length;
+    final nTiles = computeTileList(bounds, minZoom, maxZoom).length;
     const kbPerTile = 25.0; // Empirically ~6.5kB average for OSM tiles at z=1-19
     final totalMb = (nTiles * kbPerTile) / 1024.0;
     setState(() {

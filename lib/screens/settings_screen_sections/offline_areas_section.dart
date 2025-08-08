@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../services/offline_area_service.dart';
+import '../../services/offline_areas/offline_area_models.dart';
 
 class OfflineAreasSection extends StatefulWidget {
   const OfflineAreasSection({super.key});
