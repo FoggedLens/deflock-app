@@ -23,6 +23,7 @@ import 'camera_tag_sheet.dart';
 class DataProviderTileProvider extends TileProvider {
   @override
   ImageProvider getImage(TileCoordinates coords, TileLayer options) {
+    print('[DataProviderTileProvider] getImage called for \\${coords.z}/\\${coords.x}/\\${coords.y}');
     return DataProviderImage(coords, options);
   }
 }
@@ -51,9 +52,10 @@ class DataProviderImage extends ImageProvider<DataProviderImage> {
     final z = key.coords.z;
     final x = key.coords.x;
     final y = key.coords.y;
-
+    print('[_loadAsync] Called for $z/$x/$y');
     try {
       final bytes = await MapDataProvider().getTile(z: z, x: x, y: y);
+      print('[_loadAsync] Got bytes for $z/$x/$y: length=\\${bytes.length}');
       if (bytes.isEmpty) throw Exception("Empty image bytes for $z/$x/$y");
       return await decode(Uint8List.fromList(bytes));
     } catch (e) {
@@ -291,7 +293,7 @@ class _MapViewState extends State<MapView> {
           children: [
             TileLayer(
               tileProvider: DataProviderTileProvider(),
-              urlTemplate: '', // Not used by custom provider
+              urlTemplate: 'unused-{z}-{x}-{y}', // Required by flutter_map for tile addressing
               tileSize: 256,
               // Any other TileLayer customization as needed
             ),

@@ -53,6 +53,7 @@ class MapDataProvider {
     required int y,
     MapSource source = MapSource.auto,
   }) async {
+    print('[MapDataProvider] getTile called for $z/$x/$y');
     if (_offlineMode && source != MapSource.local) {
       throw OfflineModeException("Cannot fetch remote tiles in offline mode.");
     }

@@ -20,6 +20,7 @@ Future<List<int>> fetchOSMTile({
   ];
   while (true) {
     try {
+      print('[fetchOSMTile] FETCH $z/$x/$y');
       attempt++;
       final resp = await http.get(Uri.parse(url));
       if (resp.statusCode == 200) {
