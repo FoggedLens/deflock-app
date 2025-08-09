@@ -1,8 +1,13 @@
 import 'dart:math';
 import 'dart:io';
+import 'dart:async';
 import 'package:http/http.dart' as http;
+import 'package:flutter/foundation.dart';
 
-/// Fetches a tile from OSM, with in-memory retries/backoff.
+/// Global semaphore to limit simultaneous tile fetches
+final _tileFetchSemaphore = _SimpleSemaphore(4); // Max 4 concurrent
+
+/// Fetches a tile from OSM, with in-memory retries/backoff, and global concurrency limit.
 /// Returns tile image bytes, or throws on persistent failure.
 Future<List<int>> fetchOSMTile({
   required int z,
@@ -19,6 +24,7 @@ Future<List<int>> fetchOSMTile({
     10000 + random.nextInt(4000) - 2000
   ];
   while (true) {
+    await _tileFetchSemaphore.acquire();
     try {
       print('[fetchOSMTile] FETCH $z/$x/$y');
       attempt++;
@@ -40,6 +46,36 @@ Future<List<int>> fetchOSMTile({
       final delay = delays[attempt - 1].clamp(0, 60000);
       print("[fetchOSMTile] Attempt $attempt for $z/$x/$y failed: $e. Retrying in ${delay}ms.");
       await Future.delayed(Duration(milliseconds: delay));
+    } finally {
+      _tileFetchSemaphore.release();
+    }
+  }
+}
+
+/// Simple counting semaphore, suitable for single-thread Flutter concurrency
+class _SimpleSemaphore {
+  final int _max;
+  int _current = 0;
+  final List<VoidCallback> _queue = [];
+  _SimpleSemaphore(this._max);
+
+  Future<void> acquire() async {
+    if (_current < _max) {
+      _current++;
+      return;
+    } else {
+      final c = Completer<void>();
+      _queue.add(() => c.complete());
+      await c.future;
+    }
+  }
+
+  void release() {
+    if (_queue.isNotEmpty) {
+      final callback = _queue.removeAt(0);
+      callback();
+    } else {
+      _current--;
     }
   }
 }

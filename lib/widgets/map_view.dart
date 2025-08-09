@@ -86,6 +86,7 @@ class _MapViewState extends State<MapView> {
   late final MapController _controller;
   final MapDataProvider _mapDataProvider = MapDataProvider();
   final Debouncer _debounce = Debouncer(const Duration(milliseconds: 500));
+  Debouncer? _debounceTileLayerUpdate;
 
   StreamSubscription<Position>? _positionSub;
   LatLng? _currentLatLng;
@@ -111,6 +112,7 @@ class _MapViewState extends State<MapView> {
   @override
   void initState() {
     super.initState();
+    _debounceTileLayerUpdate = Debouncer(const Duration(milliseconds: 50),);
     // Kick off offline area loading as soon as map loads
     OfflineAreaService();
     _controller = widget.controller;
@@ -239,7 +241,9 @@ class _MapViewState extends State<MapView> {
           children: [
             TileLayer(
               tileProvider: TileProviderWithCache(
-                onTileCacheUpdated: () { if (mounted) setState(() {}); },
+                onTileCacheUpdated: () {
+                  if (_debounceTileLayerUpdate != null) _debounceTileLayerUpdate!(() { if (mounted) setState(() {}); });
+                },
               ),
               urlTemplate: 'unused-{z}-{x}-{y}',
               tileSize: 256,
