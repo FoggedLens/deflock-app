@@ -23,12 +23,16 @@ Future<List<int>> fetchOSMTile({
       print('[fetchOSMTile] FETCH $z/$x/$y');
       attempt++;
       final resp = await http.get(Uri.parse(url));
-      if (resp.statusCode == 200) {
+      print('[fetchOSMTile] HTTP ${resp.statusCode} for $z/$x/$y, length=${resp.bodyBytes.length}');
+      if (resp.statusCode == 200 && resp.bodyBytes.isNotEmpty) {
+        print('[fetchOSMTile] SUCCESS $z/$x/$y');
         return resp.bodyBytes;
       } else {
+        print('[fetchOSMTile] FAIL $z/$x/$y: code=${resp.statusCode}, bytes=${resp.bodyBytes.length}');
         throw HttpException('Failed to fetch tile $z/$x/$y: status ${resp.statusCode}');
       }
     } catch (e) {
+      print('[fetchOSMTile] Exception $z/$x/$y: $e');
       if (attempt >= maxAttempts) {
         print("[fetchOSMTile] Failed for $z/$x/$y after $attempt attempts: $e");
         rethrow;

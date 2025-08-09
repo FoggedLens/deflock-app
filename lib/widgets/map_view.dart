@@ -19,61 +19,7 @@ import '../services/offline_area_service.dart';
 import '../models/osm_camera_node.dart';
 import 'debouncer.dart';
 import 'camera_tag_sheet.dart';
-
-class DataProviderTileProvider extends TileProvider {
-  @override
-  ImageProvider getImage(TileCoordinates coords, TileLayer options) {
-    print('[DataProviderTileProvider] getImage called for \\${coords.z}/\\${coords.x}/\\${coords.y}');
-    return DataProviderImage(coords, options);
-  }
-}
-
-class DataProviderImage extends ImageProvider<DataProviderImage> {
-  final TileCoordinates coords;
-  final TileLayer options;
-  DataProviderImage(this.coords, this.options);
-
-  @override
-  Future<DataProviderImage> obtainKey(ImageConfiguration configuration) {
-    return SynchronousFuture<DataProviderImage>(this);
-  }
-
-  @override
-  ImageStreamCompleter load(
-      DataProviderImage key,
-      Future<ui.Codec> Function(Uint8List, {int? cacheWidth, int? cacheHeight}) decode) {
-    return MultiFrameImageStreamCompleter(
-      codec: _loadAsync(key, decode),
-      scale: 1.0,
-    );
-  }
-
-  Future<ui.Codec> _loadAsync(DataProviderImage key, Future<ui.Codec> Function(Uint8List, {int? cacheWidth, int? cacheHeight}) decode) async {
-    final z = key.coords.z;
-    final x = key.coords.x;
-    final y = key.coords.y;
-    print('[_loadAsync] Called for $z/$x/$y');
-    try {
-      final bytes = await MapDataProvider().getTile(z: z, x: x, y: y);
-      print('[_loadAsync] Got bytes for $z/$x/$y: length=\\${bytes.length}');
-      if (bytes.isEmpty) throw Exception("Empty image bytes for $z/$x/$y");
-      return await decode(Uint8List.fromList(bytes));
-    } catch (e) {
-      // Optionally: provide an error tile
-      print('[MapView] Failed to load OSM tile for $z/$x/$y: $e');
-      // Return a blank pixel or a fallback error tile of your design
-      return await decode(Uint8List.fromList(_transparentPng));
-    }
-  }
-
-  // A tiny 1x1 transparent PNG
-  static const List<int> _transparentPng = [
-    137,80,78,71,13,10,26,10,0,0,0,13,73,72,68,82,
-    0,0,0,1,0,0,0,1,8,6,0,0,0,31,21,196,137,
-    0,0,0,10,73,68,65,84,8,153,99,0,1,0,0,5,
-    0,1,13,10,42,100,0,0,0,0,73,69,78,68,174,66,
-    96,130];
-}
+import 'tile_provider_with_cache.dart';
 
 // --- Smart marker widget for camera with single/double tap distinction
 class _CameraMapMarker extends StatefulWidget {
@@ -292,10 +238,32 @@ class _MapViewState extends State<MapView> {
           ),
           children: [
             TileLayer(
-              tileProvider: DataProviderTileProvider(),
-              urlTemplate: 'unused-{z}-{x}-{y}', // Required by flutter_map for tile addressing
+              tileProvider: TileProviderWithCache(
+                onTileCacheUpdated: () { if (mounted) setState(() {}); },
+              ),
+              urlTemplate: 'unused-{z}-{x}-{y}',
               tileSize: 256,
-              // Any other TileLayer customization as needed
+              tileBuilder: (ctx, tileWidget, tileImage) {
+                try {
+                  final str = tileImage.toString();
+                  final regex = RegExp(r'TileCoordinate\((\d+), (\d+), (\d+)\)');
+                  final match = regex.firstMatch(str);
+                  if (match != null) {
+                    final x = match.group(1);
+                    final y = match.group(2);
+                    final z = match.group(3);
+                    final key = '$z/$x/$y';
+                    final bytes = TileProviderWithCache.tileCache[key];
+                    if (bytes != null && bytes.isNotEmpty) {
+                      return Image.memory(bytes, gaplessPlayback: true, fit: BoxFit.cover);
+                    }
+                  }
+                  return Image.asset('assets/transparent_1x1.png', gaplessPlayback: true, fit: BoxFit.cover);
+                } catch (e) {
+                  print('tileBuilder error: $e for tileImage: ${tileImage.toString()}');
+                  return tileWidget;
+                }
+              }
             ),
             PolygonLayer(polygons: overlays),
             MarkerLayer(markers: markers),
