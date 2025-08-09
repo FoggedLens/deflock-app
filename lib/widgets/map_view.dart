@@ -1,20 +1,77 @@
 import 'dart:async';
 import 'dart:math' as math;
 import 'dart:io';
+import 'dart:typed_data';
+import 'dart:ui' as ui;
 
 import 'package:http/io_client.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:provider/provider.dart';
 
 import '../app_state.dart';
-import '../services/overpass_service.dart';
+import '../services/map_data_provider.dart';
 import '../services/offline_area_service.dart';
 import '../models/osm_camera_node.dart';
 import 'debouncer.dart';
 import 'camera_tag_sheet.dart';
+
+class DataProviderTileProvider extends TileProvider {
+  @override
+  ImageProvider getImage(TileCoordinates coords, TileLayer options) {
+    return DataProviderImage(coords, options);
+  }
+}
+
+class DataProviderImage extends ImageProvider<DataProviderImage> {
+  final TileCoordinates coords;
+  final TileLayer options;
+  DataProviderImage(this.coords, this.options);
+
+  @override
+  Future<DataProviderImage> obtainKey(ImageConfiguration configuration) {
+    return SynchronousFuture<DataProviderImage>(this);
+  }
+
+  @override
+  ImageStreamCompleter load(
+      DataProviderImage key,
+      Future<ui.Codec> Function(Uint8List, {int? cacheWidth, int? cacheHeight}) decode) {
+    return MultiFrameImageStreamCompleter(
+      codec: _loadAsync(key, decode),
+      scale: 1.0,
+    );
+  }
+
+  Future<ui.Codec> _loadAsync(DataProviderImage key, Future<ui.Codec> Function(Uint8List, {int? cacheWidth, int? cacheHeight}) decode) async {
+    final z = key.coords.z;
+    final x = key.coords.x;
+    final y = key.coords.y;
+
+    try {
+      final bytes = await MapDataProvider().getTile(z: z, x: x, y: y);
+      if (bytes.isEmpty) throw Exception("Empty image bytes for $z/$x/$y");
+      return await decode(Uint8List.fromList(bytes));
+    } catch (e) {
+      // Optionally: provide an error tile
+      print('[MapView] Failed to load OSM tile for $z/$x/$y: $e');
+      // Return a blank pixel or a fallback error tile of your design
+      return await decode(Uint8List.fromList(_transparentPng));
+    }
+  }
+
+  // A tiny 1x1 transparent PNG
+  static const List<int> _transparentPng = [
+    137,80,78,71,13,10,26,10,0,0,0,13,73,72,68,82,
+    0,0,0,1,0,0,0,1,8,6,0,0,0,31,21,196,137,
+    0,0,0,10,73,68,65,84,8,153,99,0,1,0,0,5,
+    0,1,13,10,42,100,0,0,0,0,73,69,78,68,174,66,
+    96,130];
+}
 
 // --- Smart marker widget for camera with single/double tap distinction
 class _CameraMapMarker extends StatefulWidget {
@@ -79,7 +136,7 @@ class MapView extends StatefulWidget {
 
 class _MapViewState extends State<MapView> {
   late final MapController _controller;
-  final OverpassService _overpass = OverpassService();
+  final MapDataProvider _mapDataProvider = MapDataProvider();
   final Debouncer _debounce = Debouncer(const Duration(milliseconds: 500));
 
   StreamSubscription<Position>? _positionSub;
@@ -149,10 +206,11 @@ class _MapViewState extends State<MapView> {
     } catch (_) {
       return; // controller not ready yet
     }
-    final cams = await _overpass.fetchCameras(
-      bounds, 
-      appState.enabledProfiles, 
+    final cams = await _mapDataProvider.getCameras(
+      bounds: bounds,
+      profiles: appState.enabledProfiles,
       uploadMode: appState.uploadMode,
+      // MapSource.auto (default) will prefer Overpass for now
     );
     if (mounted) setState(() => _cameras = cams);
   }
@@ -232,17 +290,10 @@ class _MapViewState extends State<MapView> {
           ),
           children: [
             TileLayer(
-              urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-              tileProvider: NetworkTileProvider(
-                headers: {
-                  'User-Agent':
-                      'FlockMap/0.4 (+https://github.com/yourrepo)',
-                },
-                httpClient: IOClient(
-                  HttpClient()..maxConnectionsPerHost = 4,
-                ),
-              ),
-              userAgentPackageName: 'com.example.flock_map_app',
+              tileProvider: DataProviderTileProvider(),
+              urlTemplate: '', // Not used by custom provider
+              tileSize: 256,
+              // Any other TileLayer customization as needed
             ),
             PolygonLayer(polygons: overlays),
             MarkerLayer(markers: markers),
