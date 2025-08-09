@@ -19,9 +19,9 @@ Future<List<int>> fetchOSMTile({
   int attempt = 0;
   final random = Random();
   final delays = [
-    0,
-    3000 + random.nextInt(1000) - 500,
-    10000 + random.nextInt(4000) - 2000
+    4000 + random.nextInt(1000),         // 4-5s after 1st failure
+    15000 + random.nextInt(4000),       // 15-19s after 2nd
+    60000 + random.nextInt(5000),       // 60-65s after 3rd
   ];
   while (true) {
     await _tileFetchSemaphore.acquire();
