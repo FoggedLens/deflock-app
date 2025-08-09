@@ -28,6 +28,17 @@ class AppState extends ChangeNotifier {
     _init();
   }
 
+  // ------------------- Offline Mode -------------------
+  static const String _offlineModePrefsKey = 'offline_mode';
+  bool _offlineMode = false;
+  bool get offlineMode => _offlineMode;
+  Future<void> setOfflineMode(bool enabled) async {
+    _offlineMode = enabled;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_offlineModePrefsKey, enabled);
+    notifyListeners();
+  }
+
   final _auth = AuthService();
   String? _username;
 
@@ -113,6 +124,10 @@ class AppState extends ChangeNotifier {
       _uploadMode = legacy ? UploadMode.simulate : UploadMode.production;
       await prefs.remove(_legacyTestModePrefsKey);
       await prefs.setInt(_uploadModePrefsKey, _uploadMode.index);
+    }
+    // Offline mode loading
+    if (prefs.containsKey(_offlineModePrefsKey)) {
+      _offlineMode = prefs.getBool(_offlineModePrefsKey) ?? false;
     }
     // Ensure AuthService follows loaded mode
     _auth.setUploadMode(_uploadMode);
