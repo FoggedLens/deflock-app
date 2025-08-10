@@ -34,11 +34,6 @@ class TileProviderWithCache extends TileProvider {
   void _fetchAndCacheTile(TileCoordinates coords, String key, {MapSource source = MapSource.auto}) async {
     // Don't fire multiple fetches for the same tile simultaneously
     if (_tileCache.containsKey(key)) return;
-    // Only block REMOTE fetch in offline mode, but allow local/offline sources in the future.
-    if (AppState.instance.offlineMode && source != MapSource.local) {
-      print('[TileProviderWithCache] BLOCKED tile $key due to offline mode');
-      return;
-    }
     try {
       final bytes = await MapDataProvider().getTile(
         z: coords.z, x: coords.x, y: coords.y, source: source,
