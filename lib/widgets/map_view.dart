@@ -95,15 +95,16 @@ class _MapViewState extends State<MapView> {
   List<String> _lastProfileIds = [];
   UploadMode? _lastUploadMode;
 
-  void _maybeRefreshCameras(AppState appState) {
+  void _maybeRefreshCameras() {
+    final appState = context.read<AppState>();
     final currProfileIds = appState.enabledProfiles.map((p) => p.id).toList();
     final currMode = appState.uploadMode;
-    if (_lastProfileIds.isEmpty ||
+    if (_lastProfileIds.isEmpty || 
         currProfileIds.length != _lastProfileIds.length ||
         !_lastProfileIds.asMap().entries.every((entry) => currProfileIds[entry.key] == entry.value) ||
         _lastUploadMode != currMode) {
       // If this is first load, or list/ids/mode changed, refetch
-      _debounce(() => _refreshCameras(appState));
+      _debounce(_refreshCameras);
       _lastProfileIds = List.from(currProfileIds);
       _lastUploadMode = currMode;
     }
@@ -149,7 +150,8 @@ class _MapViewState extends State<MapView> {
     });
   }
 
-  Future<void> _refreshCameras(AppState appState) async {
+  Future<void> _refreshCameras() async {
+    final appState = context.read<AppState>();
     LatLngBounds? bounds;
     try {
       bounds = _controller.camera.visibleBounds;
@@ -181,7 +183,7 @@ class _MapViewState extends State<MapView> {
     // Refetch only if profiles or mode changed
     // This avoids repeated fetches on every build
     // We track last seen values (local to the State class)
-    _maybeRefreshCameras(appState);
+    _maybeRefreshCameras();
 
     // Seed add‑mode target once, after first controller center is available.
     if (session != null && session.target == null) {
@@ -235,7 +237,7 @@ class _MapViewState extends State<MapView> {
               if (session != null) {
                 appState.updateSession(target: pos.center);
               }
-              _debounce(() => _refreshCameras(appState));
+              _debounce(_refreshCameras);
             },
           ),
           children: [

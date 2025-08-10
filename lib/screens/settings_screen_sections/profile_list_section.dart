@@ -76,7 +76,7 @@ class ProfileListSection extends StatelessWidget {
                     ),
                   );
                 } else if (value == 'delete') {
-                  _showDeleteProfileDialog(context, appState, p);
+                  _showDeleteProfileDialog(context, p);
                 }
               },
             ),
@@ -86,30 +86,31 @@ class ProfileListSection extends StatelessWidget {
     );
   }
 
-  void _showDeleteProfileDialog(BuildContext context, AppState appState, CameraProfile profile) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Delete Profile'),
-        content: Text('Are you sure you want to delete "${profile.name}"?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () {
-              appState.deleteProfile(profile);
-              Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Profile deleted')),
-              );
-            },
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: const Text('Delete'),
-          ),
-        ],
-      ),
-    );
-  }
+void _showDeleteProfileDialog(BuildContext context, CameraProfile profile) {
+  final appState = context.read<AppState>();
+  showDialog(
+    context: context,
+    builder: (context) => AlertDialog(
+      title: const Text('Delete Profile'),
+      content: Text('Are you sure you want to delete "${profile.name}"?'),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Cancel'),
+        ),
+        TextButton(
+          onPressed: () {
+            appState.deleteProfile(profile);
+            Navigator.pop(context);
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Profile deleted')),
+            );
+          },
+          style: TextButton.styleFrom(foregroundColor: Colors.red),
+          child: const Text('Delete'),
+        ),
+      ],
+    ),
+  );
+}
 }

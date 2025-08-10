@@ -24,7 +24,9 @@ class AddCameraSession {
 
 // ------------------ AppState ------------------
 class AppState extends ChangeNotifier {
+  static late AppState instance;
   AppState() {
+    instance = this;
     _init();
   }
 

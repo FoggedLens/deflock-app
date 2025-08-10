@@ -247,7 +247,7 @@ class OfflineAreaService {
       if (!area.isPermanent) {
         final cameras = await camerasFromOverpass(
           bounds: bounds,
-          profiles: AppState().enabledProfiles,
+          profiles: AppState.instance.enabledProfiles,
         );
         area.cameras = cameras;
         await saveCameras(cameras, directory);

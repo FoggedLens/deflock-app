@@ -19,7 +19,7 @@ class QueueSection extends StatelessWidget {
                   ? const Text('Sandbox mode – uploads go to OSM Sandbox')
                   : const Text('Tap to view queue'),
           onTap: appState.pendingCount > 0
-              ? () => _showQueueDialog(context, appState)
+              ? () => _showQueueDialog(context)
               : null,
         ),
         if (appState.pendingCount > 0)
@@ -57,7 +57,8 @@ class QueueSection extends StatelessWidget {
     );
   }
 
-  void _showQueueDialog(BuildContext context, AppState appState) {
+  void _showQueueDialog(BuildContext context) {
+    final appState = context.read<AppState>();
     showDialog(
       context: context,
       builder: (context) => AlertDialog(

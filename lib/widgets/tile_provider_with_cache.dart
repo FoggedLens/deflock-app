@@ -4,13 +4,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter/scheduler.dart';
 import '../services/map_data_provider.dart';
+import '../app_state.dart';
 
 /// Singleton in-memory tile cache and async provider for custom tiles.
 class TileProviderWithCache extends TileProvider {
   static final Map<String, Uint8List> _tileCache = {};
   static Map<String, Uint8List> get tileCache => _tileCache;
   final VoidCallback? onTileCacheUpdated;
-
   TileProviderWithCache({this.onTileCacheUpdated});
 
   @override
@@ -29,7 +29,9 @@ class TileProviderWithCache extends TileProvider {
     // Don't fire multiple fetches for the same tile simultaneously
     if (_tileCache.containsKey(key)) return;
     try {
-      final bytes = await MapDataProvider().getTile(z: coords.z, x: coords.x, y: coords.y);
+      final bytes = await MapDataProvider().getTile(
+        z: coords.z, x: coords.x, y: coords.y,
+      );
       if (bytes.isNotEmpty) {
         _tileCache[key] = Uint8List.fromList(bytes);
         print('[TileProviderWithCache] Cached tile $key, bytes=${bytes.length}');
