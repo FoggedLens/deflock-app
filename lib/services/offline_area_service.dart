@@ -6,8 +6,11 @@ import 'package:flutter_map/flutter_map.dart' show LatLngBounds;
 import 'package:path_provider/path_provider.dart';
 import 'offline_areas/offline_area_models.dart';
 import 'offline_areas/offline_tile_utils.dart';
-import 'offline_areas/offline_area_service_tile_fetch.dart';
+import 'offline_areas/offline_area_service_tile_fetch.dart'; // Only used for file IO during area downloads.
 import '../models/osm_camera_node.dart';
+import '../app_state.dart';
+import 'map_data_provider.dart';
+import 'map_data_submodules/cameras_from_overpass.dart';
 
 /// Service for managing download, storage, and retrieval of offline map areas and cameras.
 class OfflineAreaService {
@@ -213,7 +216,11 @@ class OfflineAreaService {
         for (final tile in tilesToFetch) {
           if (area.status == OfflineAreaStatus.cancelled) break;
           try {
-            await downloadTile(tile[0], tile[1], tile[2], directory);
+            final bytes = await MapDataProvider().getTile(
+              z: tile[0], x: tile[1], y: tile[2], source: MapSource.remote);
+            if (bytes.isNotEmpty) {
+              await saveTileBytes(tile[0], tile[1], tile[2], directory, bytes);
+            }
             totalDone++;
             doneThisPass++;
             area.tilesDownloaded = totalDone;
@@ -238,7 +245,10 @@ class OfflineAreaService {
       }
 
       if (!area.isPermanent) {
-        final cameras = await downloadAllCameras(bounds);
+        final cameras = await camerasFromOverpass(
+          bounds: bounds,
+          profiles: AppState().enabledProfiles,
+        );
         area.cameras = cameras;
         await saveCameras(cameras, directory);
       } else {

@@ -21,10 +21,11 @@ class MapDataProvider {
   factory MapDataProvider() => _instance;
   MapDataProvider._();
 
-  bool _offlineMode = false;
-  bool get isOfflineMode => _offlineMode;
+  AppState get _appState => AppState(); // Use singleton for now
+
+  bool get isOfflineMode => _appState.offlineMode;
   void setOfflineMode(bool enabled) {
-    _offlineMode = enabled;
+    _appState.setOfflineMode(enabled);
   }
 
   /// Fetch cameras from OSM/Overpass or local storage, depending on source/offline mode.
@@ -34,8 +35,10 @@ class MapDataProvider {
     UploadMode uploadMode = UploadMode.production,
     MapSource source = MapSource.auto,
   }) async {
+    print('[MapDataProvider] getCameras called, source=$source, offlineMode=$isOfflineMode');
     // Resolve source:
-    if (_offlineMode && source != MapSource.local) {
+    if (isOfflineMode && source != MapSource.local) {
+      print('[MapDataProvider] BLOCKED by offlineMode for getCameras');
       throw OfflineModeException("Cannot fetch remote cameras in offline mode.");
     }
     if (source == MapSource.local) {
@@ -53,8 +56,9 @@ class MapDataProvider {
     required int y,
     MapSource source = MapSource.auto,
   }) async {
-    print('[MapDataProvider] getTile called for $z/$x/$y');
-    if (_offlineMode && source != MapSource.local) {
+    print('[MapDataProvider] getTile called for $z/$x/$y, source=$source, offlineMode=$isOfflineMode');
+    if (isOfflineMode && source != MapSource.local) {
+      print('[MapDataProvider] BLOCKED by offlineMode for $z/$x/$y');
       throw OfflineModeException("Cannot fetch remote tiles in offline mode.");
     }
     if (source == MapSource.local) {

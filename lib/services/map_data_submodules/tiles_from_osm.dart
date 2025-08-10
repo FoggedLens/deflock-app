@@ -9,11 +9,17 @@ final _tileFetchSemaphore = _SimpleSemaphore(4); // Max 4 concurrent
 
 /// Fetches a tile from OSM, with in-memory retries/backoff, and global concurrency limit.
 /// Returns tile image bytes, or throws on persistent failure.
+import '../../app_state.dart';
+
 Future<List<int>> fetchOSMTile({
   required int z,
   required int x,
   required int y,
 }) async {
+  if (AppState().offlineMode) {
+    print('[fetchOSMTile] BLOCKED by offline mode ($z/$x/$y)');
+    throw Exception('Offline mode enabled—cannot fetch OSM tile.');
+  }
   final url = 'https://tile.openstreetmap.org/$z/$x/$y.png';
   const int maxAttempts = 3;
   int attempt = 0;

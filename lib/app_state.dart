@@ -131,6 +131,7 @@ class AppState extends ChangeNotifier {
     }
     // Ensure AuthService follows loaded mode
     _auth.setUploadMode(_uploadMode);
+    print('AppState: AuthService mode now updated to $_uploadMode');
 
     await _loadQueue();
     
