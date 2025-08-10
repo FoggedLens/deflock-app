@@ -9,6 +9,7 @@ import 'models/pending_upload.dart';
 import 'services/auth_service.dart';
 import 'services/uploader.dart';
 import 'services/profile_service.dart';
+import 'widgets/tile_provider_with_cache.dart';
 
 // Enum for upload mode (Production, OSM Sandbox, Simulate)
 enum UploadMode { production, sandbox, simulate }
@@ -35,9 +36,14 @@ class AppState extends ChangeNotifier {
   bool _offlineMode = false;
   bool get offlineMode => _offlineMode;
   Future<void> setOfflineMode(bool enabled) async {
+    final wasOffline = _offlineMode;
     _offlineMode = enabled;
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(_offlineModePrefsKey, enabled);
+    if (wasOffline && !enabled) {
+      // Transitioning from offline to online: clear tile cache!
+      TileProviderWithCache.clearCache();
+    }
     notifyListeners();
   }
 

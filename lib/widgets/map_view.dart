@@ -250,6 +250,7 @@ class _MapViewState extends State<MapView> {
     return Stack(
       children: [
         FlutterMap(
+          key: ValueKey(appState.offlineMode),
           mapController: _controller,
           options: MapOptions(
             initialCenter: _currentLatLng ?? LatLng(37.7749, -122.4194),

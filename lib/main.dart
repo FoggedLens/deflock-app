@@ -5,7 +5,11 @@ import 'app_state.dart';
 import 'screens/home_screen.dart';
 import 'screens/settings_screen.dart';
 
-void main() {
+import 'widgets/tile_provider_with_cache.dart';
+
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
   runApp(
     ChangeNotifierProvider(
       create: (_) => AppState(),

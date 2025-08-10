@@ -62,12 +62,7 @@ class MapDataProvider {
     required int y,
     MapSource source = MapSource.auto,
   }) async {
-    final offline = AppState.instance.offlineMode;
-    print('[MapDataProvider] getTile called for $z/$x/$y, source=$source, offlineMode=$offline');
-    if (offline && source != MapSource.local) {
-      print('[MapDataProvider] BLOCKED by offlineMode for $z/$x/$y');
-      throw OfflineModeException("Cannot fetch remote tiles in offline mode.");
-    }
+    print('[MapDataProvider] getTile called for $z/$x/$y, source=$source');
     if (source == MapSource.local) {
       // TODO: implement local tile loading
       throw UnimplementedError('Local tile loading not yet implemented.');

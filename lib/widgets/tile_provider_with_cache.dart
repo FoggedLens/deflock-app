@@ -1,8 +1,8 @@
 import 'dart:typed_data';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter/scheduler.dart';
+import 'package:flutter/services.dart';
 import '../services/map_data_provider.dart';
 import '../app_state.dart';
 
@@ -15,23 +15,33 @@ class TileProviderWithCache extends TileProvider {
   TileProviderWithCache({this.onTileCacheUpdated});
 
   @override
-  ImageProvider getImage(TileCoordinates coords, TileLayer options) {
+  ImageProvider getImage(TileCoordinates coords, TileLayer options, {MapSource source = MapSource.auto}) {
     final key = '${coords.z}/${coords.x}/${coords.y}';
     if (_tileCache.containsKey(key)) {
       return MemoryImage(_tileCache[key]!);
     } else {
-      _fetchAndCacheTile(coords, key);
-      // Use asset (robust, cross-platform) for non-existing tiles.
+      _fetchAndCacheTile(coords, key, source: source);
+      // Always return a placeholder until the real tile is cached, regardless of source/offline/online.
       return const AssetImage('assets/transparent_1x1.png');
     }
   }
 
-  void _fetchAndCacheTile(TileCoordinates coords, String key) async {
+  static void clearCache() {
+    _tileCache.clear();
+    print('[TileProviderWithCache] Tile cache cleared');
+  }
+
+  void _fetchAndCacheTile(TileCoordinates coords, String key, {MapSource source = MapSource.auto}) async {
     // Don't fire multiple fetches for the same tile simultaneously
     if (_tileCache.containsKey(key)) return;
+    // Only block REMOTE fetch in offline mode, but allow local/offline sources in the future.
+    if (AppState.instance.offlineMode && source != MapSource.local) {
+      print('[TileProviderWithCache] BLOCKED tile $key due to offline mode');
+      return;
+    }
     try {
       final bytes = await MapDataProvider().getTile(
-        z: coords.z, x: coords.x, y: coords.y,
+        z: coords.z, x: coords.x, y: coords.y, source: source,
       );
       if (bytes.isNotEmpty) {
         _tileCache[key] = Uint8List.fromList(bytes);
@@ -40,10 +50,10 @@ class TileProviderWithCache extends TileProvider {
           SchedulerBinding.instance.addPostFrameCallback((_) => onTileCacheUpdated!());
         }
       }
-      // If bytes were empty, don't cache anything (will re-attempt next time)
+      // If bytes were empty, don't cache (will re-attempt next time)
     } catch (e) {
       print('[TileProviderWithCache] Error fetching tile $key: $e');
-      // Do NOT cache a failed/placeholder/empty tile!
+      // Do NOT cache a failed or empty tile! Placeholder tiles will be evicted on online transition.
     }
   }
 }
