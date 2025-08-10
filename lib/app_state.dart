@@ -9,6 +9,7 @@ import 'models/pending_upload.dart';
 import 'services/auth_service.dart';
 import 'services/uploader.dart';
 import 'services/profile_service.dart';
+import 'widgets/tile_provider_with_cache.dart';
 
 // Enum for upload mode (Production, OSM Sandbox, Simulate)
 enum UploadMode { production, sandbox, simulate }
@@ -24,16 +25,50 @@ class AddCameraSession {
 
 // ------------------ AppState ------------------
 class AppState extends ChangeNotifier {
+  static late AppState instance;
   AppState() {
+    instance = this;
     _init();
+  }
+
+  // ------------------- Offline Mode -------------------
+  static const String _offlineModePrefsKey = 'offline_mode';
+  bool _offlineMode = false;
+  bool get offlineMode => _offlineMode;
+  Future<void> setOfflineMode(bool enabled) async {
+    final wasOffline = _offlineMode;
+    _offlineMode = enabled;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_offlineModePrefsKey, enabled);
+    if (wasOffline && !enabled) {
+      // Transitioning from offline to online: clear tile cache!
+      TileProviderWithCache.clearCache();
+    }
+    notifyListeners();
   }
 
   final _auth = AuthService();
   String? _username;
 
+  bool _isInitialized = false;
+  bool get isInitialized => _isInitialized;
+
   final List<CameraProfile> _profiles = [];
   final Set<CameraProfile> _enabled = {};
   static const String _enabledPrefsKey = 'enabled_profiles';
+  static const String _maxCamerasPrefsKey = 'max_cameras';
+
+  // Maximum number of cameras fetched/drawn
+  int _maxCameras = 250;
+  int get maxCameras => _maxCameras;
+  set maxCameras(int n) {
+    if (n < 10) n = 10; // minimum
+    _maxCameras = n;
+    SharedPreferences.getInstance().then((prefs) {
+      prefs.setInt(_maxCamerasPrefsKey, n);
+    });
+    notifyListeners();
+  }
 
   // Upload mode: production, sandbox, or simulate (in-memory, no uploads)
   UploadMode _uploadMode = UploadMode.production;
@@ -114,8 +149,17 @@ class AppState extends ChangeNotifier {
       await prefs.remove(_legacyTestModePrefsKey);
       await prefs.setInt(_uploadModePrefsKey, _uploadMode.index);
     }
+    // Max cameras
+    if (prefs.containsKey(_maxCamerasPrefsKey)) {
+      _maxCameras = prefs.getInt(_maxCamerasPrefsKey) ?? 250;
+    }
+    // Offline mode loading
+    if (prefs.containsKey(_offlineModePrefsKey)) {
+      _offlineMode = prefs.getBool(_offlineModePrefsKey) ?? false;
+    }
     // Ensure AuthService follows loaded mode
     _auth.setUploadMode(_uploadMode);
+    print('AppState: AuthService mode now updated to $_uploadMode');
 
     await _loadQueue();
     
@@ -137,6 +181,7 @@ class AppState extends ChangeNotifier {
     }
     
     _startUploader();
+    _isInitialized = true;
     notifyListeners();
   }
 
