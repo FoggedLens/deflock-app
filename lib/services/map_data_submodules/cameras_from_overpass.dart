@@ -12,6 +12,7 @@ Future<List<OsmCameraNode>> camerasFromOverpass({
   required LatLngBounds bounds,
   required List<CameraProfile> profiles,
   UploadMode uploadMode = UploadMode.production,
+  int? maxCameras,
 }) async {
   if (profiles.isEmpty) return [];
 
@@ -24,12 +25,13 @@ Future<List<OsmCameraNode>> camerasFromOverpass({
 
   const String prodEndpoint = 'https://overpass-api.de/api/interpreter';
 
+  final limit = maxCameras ?? AppState.instance.maxCameras;
   final query = '''
     [out:json][timeout:25];
     (
       $nodeClauses
     );
-    out body 250;
+    out body $limit;
   ''';
 
   try {

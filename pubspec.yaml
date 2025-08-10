@@ -36,9 +36,8 @@ flutter:
 
   assets:
     - assets/info.txt
-    - assets/transparent_1x1.png
-    - assets/black_1x1.png
     - assets/app_icon.png
+    - assets/transparent_1x1.png
 
 flutter_native_splash:
   color: "#202020"

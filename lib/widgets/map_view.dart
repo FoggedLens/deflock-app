@@ -158,13 +158,33 @@ class _MapViewState extends State<MapView> {
     } catch (_) {
       return; // controller not ready yet
     }
-    final cams = await _mapDataProvider.getCameras(
-      bounds: bounds,
-      profiles: appState.enabledProfiles,
-      uploadMode: appState.uploadMode,
-      // MapSource.auto (default) will prefer Overpass for now
-    );
-    if (mounted) setState(() => _cameras = cams);
+    // If too zoomed out, do NOT fetch cameras; show info
+    final zoom = _controller.camera.zoom;
+    if (zoom < 10) {
+      if (mounted) setState(() => _cameras = []);
+      // Show a snackbar-style bubble, if desired
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Cameras not drawn below zoom level 10'),
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+      return;
+    }
+    try {
+      final cams = await _mapDataProvider.getCameras(
+        bounds: bounds,
+        profiles: appState.enabledProfiles,
+        uploadMode: appState.uploadMode,
+        // MapSource.auto (default) will prefer Overpass for now
+      );
+      if (mounted) setState(() => _cameras = cams);
+    } on OfflineModeException catch (_) {
+      // Swallow the error in offline mode
+      if (mounted) setState(() => _cameras = []);
+    }
   }
 
   double _safeZoom() {
@@ -199,14 +219,15 @@ class _MapViewState extends State<MapView> {
 
     // Camera markers first, then GPS dot, so blue dot is always on top
     final markers = <Marker>[ 
-      ..._cameras.map(
-        (n) => Marker(
+      ..._cameras
+        .where((n) => n.coord.latitude != 0 || n.coord.longitude != 0)
+        .where((n) => n.coord.latitude.abs() <= 90 && n.coord.longitude.abs() <= 180)
+        .map((n) => Marker(
           point: n.coord,
           width: 24,
           height: 24,
           child: _CameraMapMarker(node: n, mapController: _controller),
-        ),
-      ),
+        )),
       if (_currentLatLng != null)
         Marker(
           point: _currentLatLng!,
@@ -221,6 +242,8 @@ class _MapViewState extends State<MapView> {
         _buildCone(session.target!, session.directionDegrees, zoom),
       ..._cameras
           .where((n) => n.hasDirection && n.directionDeg != null)
+          .where((n) => n.coord.latitude != 0 || n.coord.longitude != 0)
+          .where((n) => n.coord.latitude.abs() <= 90 && n.coord.longitude.abs() <= 180)
           .map((n) => _buildCone(n.coord, n.directionDeg!, zoom)),
     ];
 
@@ -233,6 +256,7 @@ class _MapViewState extends State<MapView> {
             initialZoom: 15,
             maxZoom: 19,
             onPositionChanged: (pos, gesture) {
+              setState(() {}); // Instant UI update for zoom, etc.
               if (gesture) widget.onUserGesture();
               if (session != null) {
                 appState.updateSession(target: pos.center);
@@ -264,7 +288,7 @@ class _MapViewState extends State<MapView> {
                       return Image.memory(bytes, gaplessPlayback: true, fit: BoxFit.cover);
                     }
                   }
-                  return Image.asset('assets/transparent_1x1.png', gaplessPlayback: true, fit: BoxFit.cover);
+                  return tileWidget;
                 } catch (e) {
                   print('tileBuilder error: $e for tileImage: ${tileImage.toString()}');
                   return tileWidget;

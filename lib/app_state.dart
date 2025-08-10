@@ -50,6 +50,19 @@ class AppState extends ChangeNotifier {
   final List<CameraProfile> _profiles = [];
   final Set<CameraProfile> _enabled = {};
   static const String _enabledPrefsKey = 'enabled_profiles';
+  static const String _maxCamerasPrefsKey = 'max_cameras';
+
+  // Maximum number of cameras fetched/drawn
+  int _maxCameras = 250;
+  int get maxCameras => _maxCameras;
+  set maxCameras(int n) {
+    if (n < 10) n = 10; // minimum
+    _maxCameras = n;
+    SharedPreferences.getInstance().then((prefs) {
+      prefs.setInt(_maxCamerasPrefsKey, n);
+    });
+    notifyListeners();
+  }
 
   // Upload mode: production, sandbox, or simulate (in-memory, no uploads)
   UploadMode _uploadMode = UploadMode.production;
@@ -129,6 +142,10 @@ class AppState extends ChangeNotifier {
       _uploadMode = legacy ? UploadMode.simulate : UploadMode.production;
       await prefs.remove(_legacyTestModePrefsKey);
       await prefs.setInt(_uploadModePrefsKey, _uploadMode.index);
+    }
+    // Max cameras
+    if (prefs.containsKey(_maxCamerasPrefsKey)) {
+      _maxCameras = prefs.getInt(_maxCamerasPrefsKey) ?? 250;
     }
     // Offline mode loading
     if (prefs.containsKey(_offlineModePrefsKey)) {

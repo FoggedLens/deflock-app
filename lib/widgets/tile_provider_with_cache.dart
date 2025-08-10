@@ -11,6 +11,7 @@ class TileProviderWithCache extends TileProvider {
   static final Map<String, Uint8List> _tileCache = {};
   static Map<String, Uint8List> get tileCache => _tileCache;
   final VoidCallback? onTileCacheUpdated;
+
   TileProviderWithCache({this.onTileCacheUpdated});
 
   @override
@@ -20,7 +21,7 @@ class TileProviderWithCache extends TileProvider {
       return MemoryImage(_tileCache[key]!);
     } else {
       _fetchAndCacheTile(coords, key);
-      // Return a transparent PNG until the tile is available.
+      // Use asset (robust, cross-platform) for non-existing tiles.
       return const AssetImage('assets/transparent_1x1.png');
     }
   }
@@ -39,9 +40,10 @@ class TileProviderWithCache extends TileProvider {
           SchedulerBinding.instance.addPostFrameCallback((_) => onTileCacheUpdated!());
         }
       }
+      // If bytes were empty, don't cache anything (will re-attempt next time)
     } catch (e) {
       print('[TileProviderWithCache] Error fetching tile $key: $e');
-      // Optionally: fall back to a different asset, or record failures
+      // Do NOT cache a failed/placeholder/empty tile!
     }
   }
 }

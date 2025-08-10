@@ -6,6 +6,7 @@ import 'settings_screen_sections/queue_section.dart';
 import 'settings_screen_sections/offline_areas_section.dart';
 import 'settings_screen_sections/offline_mode_section.dart';
 import 'settings_screen_sections/about_section.dart';
+import 'settings_screen_sections/max_cameras_section.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -17,13 +18,15 @@ class SettingsScreen extends StatelessWidget {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: const [
-          AuthSection(),
-          Divider(),
           UploadModeSection(),
+          Divider(),
+          AuthSection(),
           Divider(),
           QueueSection(),
           Divider(),
           ProfileListSection(),
+          Divider(),
+          MaxCamerasSection(),
           Divider(),
           OfflineModeSection(),
           Divider(),

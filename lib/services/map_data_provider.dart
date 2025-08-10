@@ -47,7 +47,12 @@ class MapDataProvider {
       throw UnimplementedError('Local camera loading not yet implemented.');
     } else {
       // Use Overpass remote fetch, from submodule:
-      return camerasFromOverpass(bounds: bounds, profiles: profiles, uploadMode: uploadMode);
+      return camerasFromOverpass(
+        bounds: bounds,
+        profiles: profiles,
+        uploadMode: uploadMode,
+        maxCameras: AppState.instance.maxCameras,
+      );
     }
   }
   /// Fetch tile image bytes from OSM or local (future). Only fetches, does not save!
