@@ -4,16 +4,63 @@ A Flutter app for mapping and tagging ALPR-style cameras (and other surveillance
 
 ---
 
-## Code Organization
+## Code Organization (2025 Refactor)
 
-This project uses a modular file/folder structure for maintainability:
-- **Settings sections** each live in their own file under `lib/screens/settings_screen_sections/`.
-- **Offline map area models, tile logic, and network/camera helpers** are grouped under `lib/services/offline_areas/`.
-- The main Settings and OfflineAreaService files are now slim front-ends that delegate logic to these modules.
+- **Data providers:** All map tile and camera data fetching now routes through `lib/services/map_data_provider.dart`, which supports both OSM/Overpass and fully offline/local sources, with pluggable submodules:
+  - Remote tile fetch: `map_data_submodules/tiles_from_osm.dart`
+  - Remote cameras: `map_data_submodules/cameras_from_overpass.dart`
+  - *Coming soon:* Local tile/camera modules for offline/area-aware access
+- **Settings UI:** Each settings section lives in its own widget under `lib/screens/settings_screen_sections/`, using clean, modular ListTile-based layouts.
+- **Offline areas:** Management, persistence, and download logic remain in `OfflineAreaService`, but all fetch/caching is routed through the new provider.
+- **Legacy OSM/Overpass tile and camera fetch code has been removed from old modules.**
 
 ---
 
-## User Experience & Features
+## Key Features
+
+### Map Data & Provider Architecture
+- **All map tile and camera fetches** go through MapDataProvider, which selects local or remote sources as needed, automatically obeying the user's offline/online preference and settings.
+- **Offline Mode:** A global toggle in Settings disables all remote network fetches, forcing the app to use only locally downloaded map areas and cached camera data. (Instant feedback; no network calls when enabled.)
+- **MapSource Selection:** MapDataProvider lets calling code specify local-only, remote-only, or auto preference for tiles and camera points.
+
+### Map View
+- **Seamless offline/online tile loading:** Tiles are fetched (in parallel, with global concurrency/throttle control and exponential backoff) from OSM *only as needed*, with robust error handling and UI updates as tiles arrive.
+- **Camera overlays** are fetched from Overpass or local cache, respecting both offline mode and user preference for which camera types to display.
+
+### Camera Profiles & Upload Queue
+- Unchanged: creation/editing/enabling; see prior documentation.
+
+### Offline Map Areas
+- **Download tiles/cameras for any bounding box**; areas cover any region/zoom, and are automatically de-duped and managed.
+- **Robust area downloads** use the same MapDataProvider for source-of-truth logic, so downloads are always consistent with runtime lookup.
+- **Permanent world base map** at low zoom always available for core map functionality, even on first-use/offline.
+
+### Modular, Future-friendly Codebase
+- **No network fetch code outside the provider and submodules.**
+- **All legacy/duplicate OSM/Overpass downloaders have been removed or marked for deprecation.**
+
+---
+
+## For Developers
+
+**Highlights:**
+- To add a new data source, just drop in a new submodule and route fetch via MapDataProvider.
+- Any section of the app that needs tiles or camera data calls MapDataProvider with the relevant bounds/zoom/profiles and source preference.
+- Offline Mode and all core settings are strictly respected at a single data/control point.
+
+---
+
+## Roadmap (2025+)
+
+- **COMPLETE:** Core provider logic, settings, robust downloading and modular prefetch/caching.
+- **IN PROGRESS:** Local/offline tile/camera fetch modules for runtime map viewing and offline area management.
+- **NEXT:** More map overlays, offline routing, and data visualization.
+- **SOON:** UX polish for download/error states, multi-layer base maps.
+
+---
+
+*See prior README version for detailed setup/build/dependency notes—they remain unchanged!*
+
 
 ### Map View
 - **Explore the Map:** View OSM raster tiles, live camera overlays, and a visual scale bar and zoom indicator in the lower left.

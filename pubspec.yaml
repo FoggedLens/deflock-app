@@ -27,6 +27,10 @@ dependencies:
   shared_preferences: ^2.2.2
   uuid: ^4.0.0
 
+dev_dependencies:
+  flutter_launcher_icons: ^0.14.4
+  flutter_native_splash: ^2.4.6
+
 flutter:
   uses-material-design: true
 
@@ -34,3 +38,16 @@ flutter:
     - assets/info.txt
     - assets/transparent_1x1.png
     - assets/black_1x1.png
+    - assets/app_icon.png
+
+flutter_native_splash:
+  color: "#202020"
+  image: assets/app_icon.png
+  android: true
+  ios: true
+
+flutter_icons:
+  android: true
+  ios: true
+  image_path: "assets/app_icon.png"
+  min_sdk_android: 21

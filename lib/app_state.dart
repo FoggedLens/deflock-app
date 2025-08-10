@@ -42,6 +42,9 @@ class AppState extends ChangeNotifier {
   final _auth = AuthService();
   String? _username;
 
+  bool _isInitialized = false;
+  bool get isInitialized => _isInitialized;
+
   final List<CameraProfile> _profiles = [];
   final Set<CameraProfile> _enabled = {};
   static const String _enabledPrefsKey = 'enabled_profiles';
@@ -153,6 +156,7 @@ class AppState extends ChangeNotifier {
     }
     
     _startUploader();
+    _isInitialized = true;
     notifyListeners();
   }
 
