@@ -11,10 +11,10 @@ import '../offline_areas/offline_area_models.dart';
 Future<List<OsmCameraNode>> fetchLocalCameras({
   required LatLngBounds bounds,
   required List<CameraProfile> profiles,
+  int? maxCameras,
 }) async {
   final areas = OfflineAreaService().offlineAreas;
-  final List<OsmCameraNode> result = [];
-  final seenIds = <int>{};
+  final Map<int, OsmCameraNode> deduped = {};
 
   for (final area in areas) {
     if (area.status != OfflineAreaStatus.complete) continue;
@@ -22,16 +22,18 @@ Future<List<OsmCameraNode>> fetchLocalCameras({
 
     final nodes = await _loadAreaCameras(area);
     for (final cam in nodes) {
-      if (seenIds.contains(cam.id)) continue;
-      // Check geo bounds
+      // Deduplicate by camera ID, preferring the first occurrence
+      if (deduped.containsKey(cam.id)) continue;
+      // Within view bounds?
       if (!_pointInBounds(cam.coord, bounds)) continue;
-      // Check profiles
+      // Profile filter if used
       if (profiles.isNotEmpty && !_matchesAnyProfile(cam, profiles)) continue;
-      result.add(cam);
-      seenIds.add(cam.id);
+      deduped[cam.id] = cam;
     }
   }
-  return result;
+
+  final out = deduped.values.take(maxCameras ?? deduped.length).toList();
+  return out;
 }
 
 // Try in-memory first, else load from disk

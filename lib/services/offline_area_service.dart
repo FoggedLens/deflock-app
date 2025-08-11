@@ -111,7 +111,7 @@ class OfflineAreaService {
         }
       }
       if (filesFound != expectedTiles.length) {
-        debugPrint('World area: missing \\${expectedTiles.length - filesFound} tiles. First few: \\$missingTiles');
+        debugPrint('World area: missing ${expectedTiles.length - filesFound} tiles. First few: $missingTiles');
       } else {
         debugPrint('World area: all tiles accounted for.');
       }
@@ -212,7 +212,7 @@ class OfflineAreaService {
       while (pass < maxPasses && tilesToFetch.isNotEmpty) {
         pass++;
         int doneThisPass = 0;
-        debugPrint('DownloadArea: pass #$pass for area $id. Need \\${tilesToFetch.length} tiles.');
+        debugPrint('DownloadArea: pass #$pass for area $id. Need ${tilesToFetch.length} tiles.');
         for (final tile in tilesToFetch) {
           if (area.status == OfflineAreaStatus.cancelled) break;
           try {
@@ -245,7 +245,7 @@ class OfflineAreaService {
       }
 
       if (!area.isPermanent) {
-        final cameras = await camerasFromOverpass(
+        final cameras = await MapDataProvider().getAllCamerasForDownload(
           bounds: bounds,
           profiles: AppState.instance.enabledProfiles,
         );
@@ -262,7 +262,7 @@ class OfflineAreaService {
         debugPrint('Area $id: all tiles accounted for and area marked complete.');
       } else {
         area.status = OfflineAreaStatus.error;
-        debugPrint('Area $id: MISSING tiles after $maxPasses passes. First 10: \\${tilesToFetch.toList().take(10)}');
+        debugPrint('Area $id: MISSING tiles after $maxPasses passes. First 10: ${tilesToFetch.toList().take(10)}');
         if (!area.isPermanent) {
           final dirObj = Directory(area.directory);
           if (await dirObj.exists()) {

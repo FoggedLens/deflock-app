@@ -44,14 +44,15 @@ class MapDataProvider {
     // Explicit remote request: error if offline, else always remote
     if (source == MapSource.remote) {
       if (offline) {
-        print('[MapDataProvider] BLOCKED by offlineMode for remote camera fetch');
+        print('[MapDataProvider] Overpass request BLOCKED because we are in offlineMode');
         throw OfflineModeException("Cannot fetch remote cameras in offline mode.");
       }
       return camerasFromOverpass(
         bounds: bounds,
         profiles: profiles,
         uploadMode: uploadMode,
-        maxCameras: AppState.instance.maxCameras,
+        pageSize: AppState.instance.maxCameras,
+        fetchAllPages: false,
       );
     }
 
@@ -76,17 +77,42 @@ class MapDataProvider {
           bounds: bounds,
           profiles: profiles,
           uploadMode: uploadMode,
-          maxCameras: AppState.instance.maxCameras,
+          pageSize: AppState.instance.maxCameras,
         );
       } catch (e) {
         print('[MapDataProvider] Remote camera fetch failed, error: $e. Falling back to local.');
         return fetchLocalCameras(
           bounds: bounds,
           profiles: profiles,
+          maxCameras: AppState.instance.maxCameras,
         );
       }
     }
   }
+
+  /// Bulk/paged camera fetch for offline downloads (handling paging, dedup, and Overpass retries)
+  /// Only use for offline area download, not for map browsing! Ignores maxCameras config.
+  Future<List<OsmCameraNode>> getAllCamerasForDownload({
+    required LatLngBounds bounds,
+    required List<CameraProfile> profiles,
+    UploadMode uploadMode = UploadMode.production,
+    int pageSize = 500,
+    int maxTries = 3,
+  }) async {
+    final offline = AppState.instance.offlineMode;
+    if (offline) {
+      throw OfflineModeException("Cannot fetch remote cameras for offline area download in offline mode.");
+    }
+    return camerasFromOverpass(
+      bounds: bounds,
+      profiles: profiles,
+      uploadMode: uploadMode,
+      fetchAllPages: true,
+      pageSize: pageSize,
+      maxTries: maxTries,
+    );
+  }
+
   /// Fetch tile image bytes. Default is to try local first, then remote if not offline. Honors explicit source.
   Future<List<int>> getTile({
     required int z,

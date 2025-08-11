@@ -15,7 +15,8 @@ Future<List<int>> fetchLocalTile({required int z, required int x, required int y
 
     // Get tile coverage for area at this zoom only
     final coveredTiles = computeTileList(area.bounds, z, z);
-    if (coveredTiles.contains([z, x, y])) {
+    final hasTile = coveredTiles.any((tile) => tile[0] == z && tile[1] == x && tile[2] == y);
+    if (hasTile) {
       final tilePath = _tilePath(area.directory, z, x, y);
       final file = File(tilePath);
       if (await file.exists()) {
