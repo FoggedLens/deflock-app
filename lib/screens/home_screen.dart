@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:latlong2/latlong.dart';
 
+import 'package:flock_map_app/dev_config.dart';
 import '../app_state.dart';
 import '../widgets/map_view.dart';
 import 'package:flutter_map/flutter_map.dart';
@@ -133,8 +134,7 @@ class _DownloadAreaDialogState extends State<DownloadAreaDialog> {
     final minZoom = findDynamicMinZoom(bounds);
     final maxZoom = _zoom.toInt();
     final nTiles = computeTileList(bounds, minZoom, maxZoom).length;
-    const kbPerTile = 25.0; // Empirically ~6.5kB average for OSM tiles at z=1-19
-    final totalMb = (nTiles * kbPerTile) / 1024.0;
+    final totalMb = (nTiles * kTileEstimateKb) / 1024.0;
     setState(() {
       _minZoom = minZoom;
       _tileCount = nTiles;

@@ -20,6 +20,7 @@ import '../models/osm_camera_node.dart';
 import 'debouncer.dart';
 import 'camera_tag_sheet.dart';
 import 'tile_provider_with_cache.dart';
+import 'package:flock_map_app/dev_config.dart';
 
 // --- Smart marker widget for camera with single/double tap distinction
 class _CameraMapMarker extends StatefulWidget {
@@ -33,7 +34,8 @@ class _CameraMapMarker extends StatefulWidget {
 
 class _CameraMapMarkerState extends State<_CameraMapMarker> {
   Timer? _tapTimer;
-  static const Duration tapTimeout = Duration(milliseconds: 250);
+  // From dev_config.dart for build-time parameters
+  static const Duration tapTimeout = kMarkerTapTimeout;
 
   void _onTap() {
     _tapTimer = Timer(tapTimeout, () {
@@ -85,7 +87,7 @@ class MapView extends StatefulWidget {
 class _MapViewState extends State<MapView> {
   late final MapController _controller;
   final MapDataProvider _mapDataProvider = MapDataProvider();
-  final Debouncer _debounce = Debouncer(const Duration(milliseconds: 500));
+  final Debouncer _debounce = Debouncer(kDebounceCameraRefresh);
   Debouncer? _debounceTileLayerUpdate;
 
   StreamSubscription<Position>? _positionSub;
@@ -113,7 +115,7 @@ class _MapViewState extends State<MapView> {
   @override
   void initState() {
     super.initState();
-    _debounceTileLayerUpdate = Debouncer(const Duration(milliseconds: 50),);
+    _debounceTileLayerUpdate = Debouncer(kDebounceTileLayerUpdate);
     // Kick off offline area loading as soon as map loads
     OfflineAreaService();
     _controller = widget.controller;
@@ -391,8 +393,8 @@ class _MapViewState extends State<MapView> {
   }
 
   Polygon _buildCone(LatLng origin, double bearingDeg, double zoom) {
-    const halfAngle = 15.0;
-    final length = 0.0012 * math.pow(2, 15 - zoom);
+    final halfAngle = kDirectionConeHalfAngle;
+    final length = kDirectionConeBaseLength * math.pow(2, 15 - zoom);
 
     LatLng _project(double deg) {
       final rad = deg * math.pi / 180;

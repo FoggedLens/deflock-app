@@ -3,6 +3,7 @@ import 'dart:io';
 import 'dart:async';
 import 'package:http/http.dart' as http;
 import 'package:flutter/foundation.dart';
+import 'package:flock_map_app/dev_config.dart';
 
 /// Global semaphore to limit simultaneous tile fetches
 final _tileFetchSemaphore = _SimpleSemaphore(4); // Max 4 concurrent
@@ -15,13 +16,13 @@ Future<List<int>> fetchOSMTile({
   required int y,
 }) async {
   final url = 'https://tile.openstreetmap.org/$z/$x/$y.png';
-  const int maxAttempts = 3;
+  const int maxAttempts = kTileFetchMaxAttempts;
   int attempt = 0;
   final random = Random();
   final delays = [
-    4000 + random.nextInt(1000),         // 4-5s after 1st failure
-    15000 + random.nextInt(4000),       // 15-19s after 2nd
-    60000 + random.nextInt(5000),       // 60-65s after 3rd
+    kTileFetchInitialDelayMs + random.nextInt(kTileFetchJitter1Ms),
+    kTileFetchSecondDelayMs + random.nextInt(kTileFetchJitter2Ms),
+    kTileFetchThirdDelayMs + random.nextInt(kTileFetchJitter3Ms),
   ];
   while (true) {
     await _tileFetchSemaphore.acquire();

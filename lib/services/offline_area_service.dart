@@ -11,6 +11,7 @@ import '../models/osm_camera_node.dart';
 import '../app_state.dart';
 import 'map_data_provider.dart';
 import 'map_data_submodules/cameras_from_overpass.dart';
+import 'package:flock_map_app/dev_config.dart';
 
 /// Service for managing download, storage, and retrieval of offline map areas and cameras.
 class OfflineAreaService {
@@ -98,7 +99,7 @@ class OfflineAreaService {
     for (final a in _areas) {
       if (a.isPermanent) { world = a; break; }
     }
-    final Set<List<int>> expectedTiles = computeTileList(worldBounds, 1, 4);
+    final Set<List<int>> expectedTiles = computeTileList(worldBounds, kWorldMinZoom, kWorldMaxZoom);
     if (world != null) {
       int filesFound = 0;
       List<List<int>> missingTiles = [];
@@ -198,7 +199,7 @@ class OfflineAreaService {
     try {
       Set<List<int>> allTiles;
       if (area.isPermanent) {
-        allTiles = computeTileList(globalWorldBounds(), 1, 4);
+        allTiles = computeTileList(globalWorldBounds(), kWorldMinZoom, kWorldMaxZoom);
       } else {
         allTiles = computeTileList(bounds, minZoom, maxZoom);
       }
