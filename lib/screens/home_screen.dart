@@ -146,7 +146,32 @@ class _DownloadAreaDialogState extends State<DownloadAreaDialog> {
   Widget build(BuildContext context) {
     final bounds = widget.controller.camera.visibleBounds;
     final maxZoom = _zoom.toInt();
+    double sliderMin;
+    double sliderMax;
+    int sliderDivisions;
+    double sliderValue;
+    // Generate slider min/max/divisions with clarity
+    if (_minZoom != null) {
+      sliderMin = _minZoom!.toDouble();
+    } else {
+      sliderMin = 12.0; //fallback
+    }
+    if (_minZoom != null) {
+      final candidateMax = _minZoom! + kMaxUserDownloadZoomSpan;
+      sliderMax = candidateMax > 19 ? 19.0 : candidateMax.toDouble();
+    } else {
+      sliderMax = 19.0; //fallback
+    }
+    if (_minZoom != null) {
+      final candidateMax = _minZoom! + kMaxUserDownloadZoomSpan;
+      int diff = (candidateMax > 19 ? 19 : candidateMax) - _minZoom!;
+      sliderDivisions = diff > 0 ? diff : 1;
+    } else {
+      sliderDivisions = 7; //fallback
+    }
+    sliderValue = _zoom.clamp(sliderMin, sliderMax);
     // We recompute estimates when the zoom slider changes
+
     return AlertDialog(
       title: Row(
         children: const [
@@ -167,12 +192,13 @@ class _DownloadAreaDialogState extends State<DownloadAreaDialog> {
                 Text('Z${_zoom.toStringAsFixed(0)}'),
               ],
             ),
+
             Slider(
-              min: 12,
-              max: 19,
-              divisions: 7,
+              min: sliderMin,
+              max: sliderMax,
+              divisions: sliderDivisions,
               label: 'Z${_zoom.toStringAsFixed(0)}',
-              value: _zoom,
+              value: sliderValue,
               onChanged: (v) {
                 setState(() => _zoom = v);
                 WidgetsBinding.instance.addPostFrameCallback((_) => _recomputeEstimates());

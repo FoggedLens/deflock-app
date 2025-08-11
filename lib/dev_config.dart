@@ -23,3 +23,6 @@ const int kTileFetchSecondDelayMs = 15000;
 const int kTileFetchJitter2Ms = 4000;
 const int kTileFetchThirdDelayMs = 60000;
 const int kTileFetchJitter3Ms = 5000;
+
+// User download max zoom span (user can download up to kMaxUserDownloadZoomSpan zooms above min)
+const int kMaxUserDownloadZoomSpan = 7;

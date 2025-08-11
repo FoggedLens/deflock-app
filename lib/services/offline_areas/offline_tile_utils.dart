@@ -22,12 +22,16 @@ Set<List<int>> computeTileList(LatLngBounds bounds, int zMin, int zMax) {
   }
   for (int z = zMin; z <= zMax; z++) {
     final n = pow(2, z).toInt();
-    final minTile = latLonToTile(latMin, lonMin, z);
-    final maxTile = latLonToTile(latMax, lonMax, z);
-    final minX = min(minTile[0], maxTile[0]);
-    final maxX = max(minTile[0], maxTile[0]);
-    final minY = min(minTile[1], maxTile[1]);
-    final maxY = max(minTile[1], maxTile[1]);
+    final minTileRaw = latLonToTileRaw(latMin, lonMin, z);
+    final maxTileRaw = latLonToTileRaw(latMax, lonMax, z);
+    int minX = min(minTileRaw[0].floor(), maxTileRaw[0].floor()) - 1;
+    int maxX = max(minTileRaw[0].ceil() - 1, maxTileRaw[0].ceil() - 1) + 1;
+    int minY = min(minTileRaw[1].floor(), maxTileRaw[1].floor()) - 1;
+    int maxY = max(minTileRaw[1].ceil() - 1, maxTileRaw[1].ceil() - 1) + 1;
+    minX = minX.clamp(0, n - 1);
+    maxX = maxX.clamp(0, n - 1);
+    minY = minY.clamp(0, n - 1);
+    maxY = maxY.clamp(0, n - 1);
     for (int x = minX; x <= maxX; x++) {
       for (int y = minY; y <= maxY; y++) {
         tiles.add([z, x, y]);
