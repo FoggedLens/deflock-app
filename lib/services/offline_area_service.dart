@@ -93,7 +93,7 @@ class OfflineAreaService {
 
   Future<void> _ensureAndAutoDownloadWorldArea() async {
     final dir = await getOfflineAreaDir();
-    final worldDir = "${dir.path}/world_z1_4";
+    final worldDir = "${dir.path}/world";
     final LatLngBounds worldBounds = globalWorldBounds();
     OfflineArea? world;
     for (final a in _areas) {
@@ -139,11 +139,11 @@ class OfflineAreaService {
     }
     // If not present, create and start download
     world = OfflineArea(
-      id: 'permanent_world_z1_4',
-      name: 'World (zoom 1-4)',
+      id: 'permanent_world',
+      name: 'World (required)',
       bounds: worldBounds,
-      minZoom: 1,
-      maxZoom: 4,
+      minZoom: kWorldMinZoom,
+      maxZoom: kWorldMaxZoom,
       directory: worldDir,
       status: OfflineAreaStatus.downloading,
       progress: 0.0,
