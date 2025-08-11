@@ -9,6 +9,7 @@ import 'models/pending_upload.dart';
 import 'services/auth_service.dart';
 import 'services/uploader.dart';
 import 'services/profile_service.dart';
+import 'widgets/tile_provider_with_cache.dart';
 
 // Enum for upload mode (Production, OSM Sandbox, Simulate)
 enum UploadMode { production, sandbox, simulate }
@@ -24,16 +25,50 @@ class AddCameraSession {
 
 // ------------------ AppState ------------------
 class AppState extends ChangeNotifier {
+  static late AppState instance;
   AppState() {
+    instance = this;
     _init();
+  }
+
+  // ------------------- Offline Mode -------------------
+  static const String _offlineModePrefsKey = 'offline_mode';
+  bool _offlineMode = false;
+  bool get offlineMode => _offlineMode;
+  Future<void> setOfflineMode(bool enabled) async {
+    final wasOffline = _offlineMode;
+    _offlineMode = enabled;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_offlineModePrefsKey, enabled);
+    if (wasOffline && !enabled) {
+      // Transitioning from offline to online: clear tile cache!
+      TileProviderWithCache.clearCache();
+    }
+    notifyListeners();
   }
 
   final _auth = AuthService();
   String? _username;
 
+  bool _isInitialized = false;
+  bool get isInitialized => _isInitialized;
+
   final List<CameraProfile> _profiles = [];
   final Set<CameraProfile> _enabled = {};
   static const String _enabledPrefsKey = 'enabled_profiles';
+  static const String _maxCamerasPrefsKey = 'max_cameras';
+
+  // Maximum number of cameras fetched/drawn
+  int _maxCameras = 250;
+  int get maxCameras => _maxCameras;
+  set maxCameras(int n) {
+    if (n < 10) n = 10; // minimum
+    _maxCameras = n;
+    SharedPreferences.getInstance().then((prefs) {
+      prefs.setInt(_maxCamerasPrefsKey, n);
+    });
+    notifyListeners();
+  }
 
   // Upload mode: production, sandbox, or simulate (in-memory, no uploads)
   UploadMode _uploadMode = UploadMode.production;
@@ -49,10 +84,10 @@ class AppState extends ChangeNotifier {
         print('AppState: Switching mode, token exists; validating...');
         final isValid = await validateToken();
         if (isValid) {
-          print('AppState: Switching mode; fetching username for $mode...');
+          print("AppState: Switching mode; fetching username for $mode...");
           _username = await _auth.login();
           if (_username != null) {
-            print('AppState: Switched mode, now logged in as $_username');
+            print("AppState: Switched mode, now logged in as $_username");
           } else {
             print('AppState: Switched mode but failed to retrieve username');
           }
@@ -62,15 +97,15 @@ class AppState extends ChangeNotifier {
         }
       } else {
         _username = null;
-        print('AppState: Mode change: not logged in in $mode');
+        print("AppState: Mode change: not logged in in $mode");
       }
     } catch (e) {
       _username = null;
-      print('AppState: Mode change user restoration error: $e');
+      print("AppState: Mode change user restoration error: $e");
     }
     final prefs = await SharedPreferences.getInstance();
     await prefs.setInt(_uploadModePrefsKey, mode.index);
-    print('AppState: Upload mode set to $mode');
+    print("AppState: Upload mode set to $mode");
     notifyListeners();
   }
 
@@ -114,8 +149,17 @@ class AppState extends ChangeNotifier {
       await prefs.remove(_legacyTestModePrefsKey);
       await prefs.setInt(_uploadModePrefsKey, _uploadMode.index);
     }
+    // Max cameras
+    if (prefs.containsKey(_maxCamerasPrefsKey)) {
+      _maxCameras = prefs.getInt(_maxCamerasPrefsKey) ?? 250;
+    }
+    // Offline mode loading
+    if (prefs.containsKey(_offlineModePrefsKey)) {
+      _offlineMode = prefs.getBool(_offlineModePrefsKey) ?? false;
+    }
     // Ensure AuthService follows loaded mode
     _auth.setUploadMode(_uploadMode);
+    print('AppState: AuthService mode now updated to $_uploadMode');
 
     await _loadQueue();
     
@@ -125,7 +169,7 @@ class AppState extends ChangeNotifier {
         print('AppState: User appears to be logged in, fetching username...');
         _username = await _auth.login();
         if (_username != null) {
-          print('AppState: Successfully retrieved username: $_username');
+          print("AppState: Successfully retrieved username: $_username");
         } else {
           print('AppState: Failed to retrieve username despite being logged in');
         }
@@ -133,10 +177,11 @@ class AppState extends ChangeNotifier {
         print('AppState: User is not logged in');
       }
     } catch (e) {
-      print('AppState: Error during auth initialization: $e');
+      print("AppState: Error during auth initialization: $e");
     }
     
     _startUploader();
+    _isInitialized = true;
     notifyListeners();
   }
 
@@ -146,12 +191,12 @@ class AppState extends ChangeNotifier {
       print('AppState: Starting login process...');
       _username = await _auth.login();
       if (_username != null) {
-        print('AppState: Login successful for user: $_username');
+        print("AppState: Login successful for user: $_username");
       } else {
         print('AppState: Login failed - no username returned');
       }
     } catch (e) {
-      print('AppState: Login error: $e');
+      print("AppState: Login error: $e");
       _username = null;
     }
     notifyListeners();
@@ -171,7 +216,7 @@ class AppState extends ChangeNotifier {
         print('AppState: Token exists, fetching username...');
         _username = await _auth.login();
         if (_username != null) {
-          print('AppState: Auth refresh successful: $_username');
+          print("AppState: Auth refresh successful: $_username");
         } else {
           print('AppState: Auth refresh failed - no username');
         }
@@ -180,7 +225,7 @@ class AppState extends ChangeNotifier {
         _username = null;
       }
     } catch (e) {
-      print('AppState: Auth refresh error: $e');
+      print("AppState: Auth refresh error: $e");
       _username = null;
     }
     notifyListeners();
@@ -192,12 +237,12 @@ class AppState extends ChangeNotifier {
       print('AppState: Starting forced fresh login...');
       _username = await _auth.forceLogin();
       if (_username != null) {
-        print('AppState: Forced login successful: $_username');
+        print("AppState: Forced login successful: $_username");
       } else {
         print('AppState: Forced login failed - no username returned');
       }
     } catch (e) {
-      print('AppState: Forced login error: $e');
+      print("AppState: Forced login error: $e");
       _username = null;
     }
     notifyListeners();
@@ -208,7 +253,7 @@ class AppState extends ChangeNotifier {
     try {
       return await _auth.isLoggedIn();
     } catch (e) {
-      print('AppState: Token validation error: $e');
+    print("AppState: Token validation error: $e");
       return false;
     }
   }
@@ -219,7 +264,16 @@ class AppState extends ChangeNotifier {
   List<CameraProfile> get enabledProfiles =>
       _profiles.where(isEnabled).toList(growable: false);
   void toggleProfile(CameraProfile p, bool e) {
-    e ? _enabled.add(p) : _enabled.remove(p);
+    if (e) {
+      _enabled.add(p);
+    } else {
+      _enabled.remove(p);
+      // Safety: Always have at least one enabled profile
+      if (_enabled.isEmpty) {
+        final builtIn = _profiles.firstWhere((profile) => profile.builtin, orElse: () => _profiles.first);
+        _enabled.add(builtIn);
+      }
+    }
     _saveEnabledProfiles();
     notifyListeners();
   }
@@ -241,6 +295,11 @@ class AppState extends ChangeNotifier {
     if (p.builtin) return;
     _enabled.remove(p);
     _profiles.removeWhere((x) => x.id == p.id);
+    // Safety: Always have at least one enabled profile
+    if (_enabled.isEmpty) {
+      final builtIn = _profiles.firstWhere((profile) => profile.builtin, orElse: () => _profiles.first);
+      _enabled.add(builtIn);
+    }
     _saveEnabledProfiles();
     ProfileService().save(_profiles);
     notifyListeners();
@@ -342,7 +401,7 @@ class AppState extends ChangeNotifier {
       bool ok;
       if (_uploadMode == UploadMode.simulate) {
         // Simulate successful upload without calling real API
-        print('AppState: UploadMode.simulate - simulating upload for ${item.coord}');
+        print("AppState: UploadMode.simulate - simulating upload for ${item.coord}");
         await Future.delayed(const Duration(seconds: 1)); // Simulate network delay
         ok = true;
         print('AppState: Simulated upload successful');
@@ -380,14 +439,14 @@ class AppState extends ChangeNotifier {
   
   // ---------- Queue management ----------
   void clearQueue() {
-    print('AppState: Clearing upload queue (${_queue.length} items)');
+    print("AppState: Clearing upload queue (${_queue.length} items)");
     _queue.clear();
     _saveQueue();
     notifyListeners();
   }
   
   void removeFromQueue(PendingUpload upload) {
-    print('AppState: Removing upload from queue: ${upload.coord}');
+    print("AppState: Removing upload from queue: ${upload.coord}");
     _queue.remove(upload);
     _saveQueue();
     notifyListeners();

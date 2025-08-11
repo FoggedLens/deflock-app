@@ -12,7 +12,8 @@ dependencies:
 
   # UI & Map
   provider: ^6.1.2
-  flutter_map: ^6.2.1
+  flutter_map: ^8.2.1
+  # (removed: using built-in Scalebar from flutter_map >= v6)
   latlong2: ^0.9.0
   geolocator: ^10.1.0
   http: ^1.2.1
@@ -26,5 +27,26 @@ dependencies:
   shared_preferences: ^2.2.2
   uuid: ^4.0.0
 
+dev_dependencies:
+  flutter_launcher_icons: ^0.14.4
+  flutter_native_splash: ^2.4.6
+
 flutter:
   uses-material-design: true
+
+  assets:
+    - assets/info.txt
+    - assets/app_icon.png
+    - assets/transparent_1x1.png
+
+flutter_native_splash:
+  color: "#202020"
+  image: assets/app_icon.png
+  android: true
+  ios: true
+
+flutter_icons:
+  android: true
+  ios: true
+  image_path: "assets/app_icon.png"
+  min_sdk_android: 21

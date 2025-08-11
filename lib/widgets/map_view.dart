@@ -1,23 +1,78 @@
 import 'dart:async';
 import 'dart:math' as math;
 import 'dart:io';
+import 'dart:typed_data';
+import 'dart:ui' as ui;
 
 import 'package:http/io_client.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:provider/provider.dart';
 
 import '../app_state.dart';
-import '../services/overpass_service.dart';
+import '../services/map_data_provider.dart';
+import '../services/offline_area_service.dart';
 import '../models/osm_camera_node.dart';
 import 'debouncer.dart';
 import 'camera_tag_sheet.dart';
+import 'tile_provider_with_cache.dart';
+import 'package:flock_map_app/dev_config.dart';
+
+// --- Smart marker widget for camera with single/double tap distinction
+class _CameraMapMarker extends StatefulWidget {
+  final OsmCameraNode node;
+  final MapController mapController;
+  const _CameraMapMarker({required this.node, required this.mapController, Key? key}) : super(key: key);
+
+  @override
+  State<_CameraMapMarker> createState() => _CameraMapMarkerState();
+}
+
+class _CameraMapMarkerState extends State<_CameraMapMarker> {
+  Timer? _tapTimer;
+  // From dev_config.dart for build-time parameters
+  static const Duration tapTimeout = kMarkerTapTimeout;
+
+  void _onTap() {
+    _tapTimer = Timer(tapTimeout, () {
+      showModalBottomSheet(
+        context: context,
+        builder: (_) => CameraTagSheet(node: widget.node),
+        showDragHandle: true,
+      );
+    });
+  }
+
+  void _onDoubleTap() {
+    _tapTimer?.cancel();
+    widget.mapController.move(widget.node.coord, widget.mapController.camera.zoom + 1);
+  }
+
+  @override
+  void dispose() {
+    _tapTimer?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: _onTap,
+      onDoubleTap: _onDoubleTap,
+      child: const Icon(Icons.videocam, color: Colors.orange),
+    );
+  }
+}
 
 class MapView extends StatefulWidget {
+  final MapController controller;
   const MapView({
     super.key,
+    required this.controller,
     required this.followMe,
     required this.onUserGesture,
   });
@@ -30,9 +85,10 @@ class MapView extends StatefulWidget {
 }
 
 class _MapViewState extends State<MapView> {
-  final MapController _controller = MapController();
-  final OverpassService _overpass = OverpassService();
-  final Debouncer _debounce = Debouncer(const Duration(milliseconds: 500));
+  late final MapController _controller;
+  final MapDataProvider _mapDataProvider = MapDataProvider();
+  final Debouncer _debounce = Debouncer(kDebounceCameraRefresh);
+  Debouncer? _debounceTileLayerUpdate;
 
   StreamSubscription<Position>? _positionSub;
   LatLng? _currentLatLng;
@@ -41,15 +97,16 @@ class _MapViewState extends State<MapView> {
   List<String> _lastProfileIds = [];
   UploadMode? _lastUploadMode;
 
-  void _maybeRefreshCameras(AppState appState) {
+  void _maybeRefreshCameras() {
+    final appState = context.read<AppState>();
     final currProfileIds = appState.enabledProfiles.map((p) => p.id).toList();
     final currMode = appState.uploadMode;
-    if (_lastProfileIds.isEmpty ||
+    if (_lastProfileIds.isEmpty || 
         currProfileIds.length != _lastProfileIds.length ||
         !_lastProfileIds.asMap().entries.every((entry) => currProfileIds[entry.key] == entry.value) ||
         _lastUploadMode != currMode) {
       // If this is first load, or list/ids/mode changed, refetch
-      _debounce(() => _refreshCameras(appState));
+      _debounce(_refreshCameras);
       _lastProfileIds = List.from(currProfileIds);
       _lastUploadMode = currMode;
     }
@@ -58,6 +115,10 @@ class _MapViewState extends State<MapView> {
   @override
   void initState() {
     super.initState();
+    _debounceTileLayerUpdate = Debouncer(kDebounceTileLayerUpdate);
+    // Kick off offline area loading as soon as map loads
+    OfflineAreaService();
+    _controller = widget.controller;
     _initLocation();
   }
 
@@ -91,19 +152,41 @@ class _MapViewState extends State<MapView> {
     });
   }
 
-  Future<void> _refreshCameras(AppState appState) async {
+  Future<void> _refreshCameras() async {
+    final appState = context.read<AppState>();
     LatLngBounds? bounds;
     try {
       bounds = _controller.camera.visibleBounds;
     } catch (_) {
       return; // controller not ready yet
     }
-    final cams = await _overpass.fetchCameras(
-      bounds, 
-      appState.enabledProfiles, 
-      uploadMode: appState.uploadMode,
-    );
-    if (mounted) setState(() => _cameras = cams);
+    // If too zoomed out, do NOT fetch cameras; show info
+    final zoom = _controller.camera.zoom;
+    if (zoom < 10) {
+      if (mounted) setState(() => _cameras = []);
+      // Show a snackbar-style bubble, if desired
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Cameras not drawn below zoom level 10'),
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+      return;
+    }
+    try {
+      final cams = await _mapDataProvider.getCameras(
+        bounds: bounds,
+        profiles: appState.enabledProfiles,
+        uploadMode: appState.uploadMode,
+        // MapSource.auto (default) will prefer Overpass for now
+      );
+      if (mounted) setState(() => _cameras = cams);
+    } on OfflineModeException catch (_) {
+      // Swallow the error in offline mode
+      if (mounted) setState(() => _cameras = []);
+    }
   }
 
   double _safeZoom() {
@@ -122,7 +205,7 @@ class _MapViewState extends State<MapView> {
     // Refetch only if profiles or mode changed
     // This avoids repeated fetches on every build
     // We track last seen values (local to the State class)
-    _maybeRefreshCameras(appState);
+    _maybeRefreshCameras();
 
     // Seed add‑mode target once, after first controller center is available.
     if (session != null && session.target == null) {
@@ -136,7 +219,17 @@ class _MapViewState extends State<MapView> {
 
     final zoom = _safeZoom();
 
-    final markers = <Marker>[
+    // Camera markers first, then GPS dot, so blue dot is always on top
+    final markers = <Marker>[ 
+      ..._cameras
+        .where((n) => n.coord.latitude != 0 || n.coord.longitude != 0)
+        .where((n) => n.coord.latitude.abs() <= 90 && n.coord.longitude.abs() <= 180)
+        .map((n) => Marker(
+          point: n.coord,
+          width: 24,
+          height: 24,
+          child: _CameraMapMarker(node: n, mapController: _controller),
+        )),
       if (_currentLatLng != null)
         Marker(
           point: _currentLatLng!,
@@ -144,23 +237,6 @@ class _MapViewState extends State<MapView> {
           height: 16,
           child: const Icon(Icons.my_location, color: Colors.blue),
         ),
-      ..._cameras.map(
-        (n) => Marker(
-          point: n.coord,
-          width: 24,
-          height: 24,
-          child: GestureDetector(
-            onTap: () {
-              showModalBottomSheet(
-                context: context,
-                builder: (_) => CameraTagSheet(node: n),
-                showDragHandle: true, // for better UX on Material3
-              );
-            },
-            child: const Icon(Icons.videocam, color: Colors.orange),
-          ),
-        ),
-      ),
     ];
 
     final overlays = <Polygon>[
@@ -168,41 +244,75 @@ class _MapViewState extends State<MapView> {
         _buildCone(session.target!, session.directionDegrees, zoom),
       ..._cameras
           .where((n) => n.hasDirection && n.directionDeg != null)
+          .where((n) => n.coord.latitude != 0 || n.coord.longitude != 0)
+          .where((n) => n.coord.latitude.abs() <= 90 && n.coord.longitude.abs() <= 180)
           .map((n) => _buildCone(n.coord, n.directionDeg!, zoom)),
     ];
 
     return Stack(
       children: [
         FlutterMap(
+          key: ValueKey(appState.offlineMode),
           mapController: _controller,
           options: MapOptions(
-            center: _currentLatLng ?? LatLng(37.7749, -122.4194),
-            zoom: 15,
+            initialCenter: _currentLatLng ?? LatLng(37.7749, -122.4194),
+            initialZoom: 15,
             maxZoom: 19,
             onPositionChanged: (pos, gesture) {
+              setState(() {}); // Instant UI update for zoom, etc.
               if (gesture) widget.onUserGesture();
               if (session != null) {
                 appState.updateSession(target: pos.center);
               }
-              _debounce(() => _refreshCameras(appState));
+              _debounce(_refreshCameras);
             },
           ),
           children: [
             TileLayer(
-              urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-              tileProvider: NetworkTileProvider(
-                headers: {
-                  'User-Agent':
-                      'FlockMap/0.4 (+https://github.com/yourrepo)',
+              tileProvider: TileProviderWithCache(
+                onTileCacheUpdated: () {
+                  print('[MapView] onTileCacheUpdated fired (tile loaded)');
+                  if (_debounceTileLayerUpdate != null) _debounceTileLayerUpdate!(() { 
+                    print('[MapView] Running debounced setState due to tile cache update');
+                    if (mounted) setState(() {}); 
+                  });
                 },
-                httpClient: IOClient(
-                  HttpClient()..maxConnectionsPerHost = 4,
-                ),
               ),
-              userAgentPackageName: 'com.example.flock_map_app',
+              urlTemplate: 'unused-{z}-{x}-{y}',
+              tileSize: 256,
+              tileBuilder: (ctx, tileWidget, tileImage) {
+                try {
+                  final str = tileImage.toString();
+                  final regex = RegExp(r'TileCoordinate\((\d+), (\d+), (\d+)\)');
+                  final match = regex.firstMatch(str);
+                  if (match != null) {
+                    final x = match.group(1);
+                    final y = match.group(2);
+                    final z = match.group(3);
+                    final key = '$z/$x/$y';
+                    final bytes = TileProviderWithCache.tileCache[key];
+                    if (bytes != null && bytes.isNotEmpty) {
+                      return Image.memory(bytes, gaplessPlayback: true, fit: BoxFit.cover);
+                    }
+                  }
+                  return tileWidget;
+                } catch (e) {
+                  print('tileBuilder error: $e for tileImage: ${tileImage.toString()}');
+                  return tileWidget;
+                }
+              }
             ),
             PolygonLayer(polygons: overlays),
             MarkerLayer(markers: markers),
+            // Built-in scale bar from flutter_map 
+            Scalebar(
+              alignment: Alignment.bottomLeft,
+              padding: EdgeInsets.only(left: 8, bottom: 54), // above attribution
+              textStyle: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+              lineColor: Colors.black,
+              strokeWidth: 3,
+              // backgroundColor removed in flutter_map >=8 (wrap in Container if needed)
+            ),
           ],
         ),
 
@@ -236,6 +346,31 @@ class _MapViewState extends State<MapView> {
             ),
           ),
 
+        // Zoom indicator, positioned above scale bar
+        Positioned(
+          left: 10,
+          bottom: 92,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+            decoration: BoxDecoration(
+              color: Colors.black.withOpacity(0.52),
+              borderRadius: BorderRadius.circular(7),
+            ),
+            child: Builder(
+              builder: (context) {
+                final zoom = _controller.camera.zoom;
+                return Text(
+                  'Zoom: ${zoom.toStringAsFixed(2)}',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                  ),
+                );
+              },
+            ),
+          ),
+        ),
         // Attribution overlay
         Positioned(
           bottom: 20,
@@ -262,8 +397,8 @@ class _MapViewState extends State<MapView> {
   }
 
   Polygon _buildCone(LatLng origin, double bearingDeg, double zoom) {
-    const halfAngle = 15.0;
-    final length = 0.0012 * math.pow(2, 15 - zoom);
+    final halfAngle = kDirectionConeHalfAngle;
+    final length = kDirectionConeBaseLength * math.pow(2, 15 - zoom);
 
     LatLng _project(double deg) {
       final rad = deg * math.pi / 180;
@@ -278,7 +413,6 @@ class _MapViewState extends State<MapView> {
 
     return Polygon(
       points: [origin, left, right, origin],
-      isFilled: true,
       color: Colors.redAccent.withOpacity(0.25),
       borderColor: Colors.redAccent,
       borderStrokeWidth: 1,
