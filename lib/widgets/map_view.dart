@@ -271,7 +271,11 @@ class _MapViewState extends State<MapView> {
             TileLayer(
               tileProvider: TileProviderWithCache(
                 onTileCacheUpdated: () {
-                  if (_debounceTileLayerUpdate != null) _debounceTileLayerUpdate!(() { if (mounted) setState(() {}); });
+                  print('[MapView] onTileCacheUpdated fired (tile loaded)');
+                  if (_debounceTileLayerUpdate != null) _debounceTileLayerUpdate!(() { 
+                    print('[MapView] Running debounced setState due to tile cache update');
+                    if (mounted) setState(() {}); 
+                  });
                 },
               ),
               urlTemplate: 'unused-{z}-{x}-{y}',

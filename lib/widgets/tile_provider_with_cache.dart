@@ -42,6 +42,7 @@ class TileProviderWithCache extends TileProvider {
         _tileCache[key] = Uint8List.fromList(bytes);
         print('[TileProviderWithCache] Cached tile $key, bytes=${bytes.length}');
         if (onTileCacheUpdated != null) {
+          print('[TileProviderWithCache] Calling onTileCacheUpdated for $key');
           SchedulerBinding.instance.addPostFrameCallback((_) => onTileCacheUpdated!());
         }
       }
