@@ -9,6 +9,7 @@ import '../widgets/tile_provider_with_cache.dart';
 import 'package:flutter_map/flutter_map.dart';
 import '../services/offline_area_service.dart';
 import '../widgets/add_camera_sheet.dart';
+import '../widgets/camera_provider_with_cache.dart';
 import '../services/offline_areas/offline_tile_utils.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -37,8 +38,11 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     final appState = context.watch<AppState>();
 
-    return ChangeNotifierProvider<TileProviderWithCache>(
-      create: (_) => TileProviderWithCache(),
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider<TileProviderWithCache>(create: (_) => TileProviderWithCache()),
+        ChangeNotifierProvider<CameraProviderWithCache>(create: (_) => CameraProviderWithCache()),
+      ],
       child: Scaffold(
         key: _scaffoldKey,
         appBar: AppBar(

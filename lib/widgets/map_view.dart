@@ -106,6 +106,10 @@ class _MapViewState extends State<MapView> {
     // Set up camera overlay caching
     _cameraProvider = CameraProviderWithCache.instance;
     _cameraProvider.addListener(_onCamerasUpdated);
+    // Ensure initial overlays are fetched
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _refreshCamerasFromProvider();
+    });
   }
 
   @override
@@ -206,45 +210,54 @@ class _MapViewState extends State<MapView> {
     }
 
     final zoom = _safeZoom();
-    // Fetch cached cameras for current map bounds, but only if controller is ready
-    LatLngBounds? mapBounds;
-    try {
-      mapBounds = _controller.camera.visibleBounds;
-    } catch (_) {
-      mapBounds = null;
-    }
-    final cameras = (mapBounds != null)
-        ? _cameraProvider.getCachedCamerasForBounds(mapBounds)
-        : <OsmCameraNode>[];
-    // Camera markers first, then GPS dot, so blue dot is always on top
-    final markers = <Marker>[
-      ...cameras
-        .where((n) => n.coord.latitude != 0 || n.coord.longitude != 0)
-        .where((n) => n.coord.latitude.abs() <= 90 && n.coord.longitude.abs() <= 180)
-        .map((n) => Marker(
-          point: n.coord,
-          width: 24,
-          height: 24,
-          child: _CameraMapMarker(node: n, mapController: _controller),
-        )),
-      if (_currentLatLng != null)
-        Marker(
-          point: _currentLatLng!,
-          width: 16,
-          height: 16,
-          child: const Icon(Icons.my_location, color: Colors.blue),
-        ),
-    ];
+    // Fetch cached cameras for current map bounds (using Consumer so overlays redraw instantly)
+    Widget cameraLayers = Consumer<CameraProviderWithCache>(
+      builder: (context, cameraProvider, child) {
+        LatLngBounds? mapBounds;
+        try {
+          mapBounds = _controller.camera.visibleBounds;
+        } catch (_) {
+          mapBounds = null;
+        }
+        final cameras = (mapBounds != null)
+            ? cameraProvider.getCachedCamerasForBounds(mapBounds)
+            : <OsmCameraNode>[];
+        final markers = <Marker>[
+          ...cameras
+            .where((n) => n.coord.latitude != 0 || n.coord.longitude != 0)
+            .where((n) => n.coord.latitude.abs() <= 90 && n.coord.longitude.abs() <= 180)
+            .map((n) => Marker(
+              point: n.coord,
+              width: 24,
+              height: 24,
+              child: _CameraMapMarker(node: n, mapController: _controller),
+            )),
+          if (_currentLatLng != null)
+            Marker(
+              point: _currentLatLng!,
+              width: 16,
+              height: 16,
+              child: const Icon(Icons.my_location, color: Colors.blue),
+            ),
+        ];
 
-    final overlays = <Polygon>[
-      if (session != null && session.target != null)
-        _buildCone(session.target!, session.directionDegrees, zoom),
-      ...cameras
-          .where((n) => n.hasDirection && n.directionDeg != null)
-          .where((n) => n.coord.latitude != 0 || n.coord.longitude != 0)
-          .where((n) => n.coord.latitude.abs() <= 90 && n.coord.longitude.abs() <= 180)
-          .map((n) => _buildCone(n.coord, n.directionDeg!, zoom)),
-    ];
+        final overlays = <Polygon>[
+          if (session != null && session.target != null)
+            _buildCone(session.target!, session.directionDegrees, zoom),
+          ...cameras
+              .where((n) => n.hasDirection && n.directionDeg != null)
+              .where((n) => n.coord.latitude != 0 || n.coord.longitude != 0)
+              .where((n) => n.coord.latitude.abs() <= 90 && n.coord.longitude.abs() <= 180)
+              .map((n) => _buildCone(n.coord, n.directionDeg!, zoom)),
+        ];
+        return Stack(
+          children: [
+            PolygonLayer(polygons: overlays),
+            MarkerLayer(markers: markers),
+          ],
+        );
+      }
+    );
 
     return Stack(
       children: [
@@ -294,8 +307,7 @@ class _MapViewState extends State<MapView> {
                 }
               }
             ),
-            PolygonLayer(polygons: overlays),
-            MarkerLayer(markers: markers),
+            cameraLayers,
             // Built-in scale bar from flutter_map 
             Scalebar(
               alignment: Alignment.bottomLeft,
