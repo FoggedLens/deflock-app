@@ -20,6 +20,7 @@ import '../models/osm_camera_node.dart';
 import 'debouncer.dart';
 import 'camera_tag_sheet.dart';
 import 'tile_provider_with_cache.dart';
+import 'camera_provider_with_cache.dart';
 import 'package:flock_map_app/dev_config.dart';
 
 // --- Smart marker widget for camera with single/double tap distinction
@@ -93,41 +94,62 @@ class _MapViewState extends State<MapView> {
   StreamSubscription<Position>? _positionSub;
   LatLng? _currentLatLng;
 
-  List<OsmCameraNode> _cameras = [];
-  List<String> _lastProfileIds = [];
-  UploadMode? _lastUploadMode;
-
-  void _maybeRefreshCameras() {
-    final appState = context.read<AppState>();
-    final currProfileIds = appState.enabledProfiles.map((p) => p.id).toList();
-    final currMode = appState.uploadMode;
-    if (_lastProfileIds.isEmpty || 
-        currProfileIds.length != _lastProfileIds.length ||
-        !_lastProfileIds.asMap().entries.every((entry) => currProfileIds[entry.key] == entry.value) ||
-        _lastUploadMode != currMode) {
-      // If this is first load, or list/ids/mode changed, refetch
-      _debounce(_refreshCameras);
-      _lastProfileIds = List.from(currProfileIds);
-      _lastUploadMode = currMode;
-    }
-  }
+  late final CameraProviderWithCache _cameraProvider;
 
   @override
   void initState() {
     super.initState();
     _debounceTileLayerUpdate = Debouncer(kDebounceTileLayerUpdate);
-    // Kick off offline area loading as soon as map loads
     OfflineAreaService();
     _controller = widget.controller;
     _initLocation();
+
+    // Set up camera overlay caching
+    _cameraProvider = CameraProviderWithCache.instance;
+    _cameraProvider.addListener(_onCamerasUpdated);
   }
 
   @override
   void dispose() {
     _positionSub?.cancel();
     _debounce.dispose();
+    _cameraProvider.removeListener(_onCamerasUpdated);
     super.dispose();
   }
+
+  void _onCamerasUpdated() {
+    if (mounted) setState(() {});
+  }
+
+  void _refreshCamerasFromProvider() {
+    final appState = context.read<AppState>();
+    LatLngBounds? bounds;
+    try {
+      bounds = _controller.camera.visibleBounds;
+    } catch (_) {
+      return;
+    }
+    final zoom = _controller.camera.zoom;
+    if (zoom < 10) {
+      // Show a snackbar-style bubble, if desired
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Cameras not drawn below zoom level 10'),
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+      return;
+    }
+    _cameraProvider.fetchAndUpdate(
+      bounds: bounds,
+      profiles: appState.enabledProfiles,
+      uploadMode: appState.uploadMode,
+    );
+  }
+
+// Duplicate dispose in _MapViewState removed. Only one dispose() remains with all proper teardown.
 
   @override
   void didUpdateWidget(covariant MapView oldWidget) {
@@ -147,7 +169,15 @@ class _MapViewState extends State<MapView> {
       final latLng = LatLng(position.latitude, position.longitude);
       setState(() => _currentLatLng = latLng);
       if (widget.followMe) {
-        _controller.move(latLng, _controller.camera.zoom);
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) {
+            try {
+              _controller.move(latLng, _controller.camera.zoom);
+            } catch (e) {
+              debugPrint('MapController not ready yet: $e');
+            }
+          }
+        });
       }
     });
   }
@@ -163,7 +193,7 @@ class _MapViewState extends State<MapView> {
     // If too zoomed out, do NOT fetch cameras; show info
     final zoom = _controller.camera.zoom;
     if (zoom < 10) {
-      if (mounted) setState(() => _cameras = []);
+      // No-op: camera overlays handled via provider and cache, no local _cameras assignment needed.
       // Show a snackbar-style bubble, if desired
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -176,16 +206,10 @@ class _MapViewState extends State<MapView> {
       return;
     }
     try {
-      final cams = await _mapDataProvider.getCameras(
-        bounds: bounds,
-        profiles: appState.enabledProfiles,
-        uploadMode: appState.uploadMode,
-        // MapSource.auto (default) will prefer Overpass for now
-      );
-      if (mounted) setState(() => _cameras = cams);
+      // (Legacy _cameras assignment removed—now handled via provider and cache updates)
     } on OfflineModeException catch (_) {
       // Swallow the error in offline mode
-      if (mounted) setState(() => _cameras = []);
+      // (Legacy _cameras assignment removed—handled via provider)
     }
   }
 
@@ -202,10 +226,8 @@ class _MapViewState extends State<MapView> {
     final appState = context.watch<AppState>();
     final session = appState.session;
 
-    // Refetch only if profiles or mode changed
-    // This avoids repeated fetches on every build
-    // We track last seen values (local to the State class)
-    _maybeRefreshCameras();
+    // Always update cameras on profile/mode change and map move
+    _refreshCamerasFromProvider();
 
     // Seed add‑mode target once, after first controller center is available.
     if (session != null && session.target == null) {
@@ -218,10 +240,19 @@ class _MapViewState extends State<MapView> {
     }
 
     final zoom = _safeZoom();
-
+    // Fetch cached cameras for current map bounds, but only if controller is ready
+    LatLngBounds? mapBounds;
+    try {
+      mapBounds = _controller.camera.visibleBounds;
+    } catch (_) {
+      mapBounds = null;
+    }
+    final cameras = (mapBounds != null)
+        ? _cameraProvider.getCachedCamerasForBounds(mapBounds)
+        : <OsmCameraNode>[];
     // Camera markers first, then GPS dot, so blue dot is always on top
-    final markers = <Marker>[ 
-      ..._cameras
+    final markers = <Marker>[
+      ...cameras
         .where((n) => n.coord.latitude != 0 || n.coord.longitude != 0)
         .where((n) => n.coord.latitude.abs() <= 90 && n.coord.longitude.abs() <= 180)
         .map((n) => Marker(
@@ -242,7 +273,7 @@ class _MapViewState extends State<MapView> {
     final overlays = <Polygon>[
       if (session != null && session.target != null)
         _buildCone(session.target!, session.directionDegrees, zoom),
-      ..._cameras
+      ...cameras
           .where((n) => n.hasDirection && n.directionDeg != null)
           .where((n) => n.coord.latitude != 0 || n.coord.longitude != 0)
           .where((n) => n.coord.latitude.abs() <= 90 && n.coord.longitude.abs() <= 180)
