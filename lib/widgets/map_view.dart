@@ -226,8 +226,8 @@ class _MapViewState extends State<MapView> {
     final appState = context.watch<AppState>();
     final session = appState.session;
 
-    // Always update cameras on profile/mode change and map move
-    _refreshCamerasFromProvider();
+    // Only update cameras when map moves or profiles/mode actually change (not every build!)
+    // _refreshCamerasFromProvider() is now only called from map movement and relevant change handlers.
 
     // Seed add‑mode target once, after first controller center is available.
     if (session != null && session.target == null) {
@@ -295,7 +295,10 @@ class _MapViewState extends State<MapView> {
               if (session != null) {
                 appState.updateSession(target: pos.center);
               }
-              _debounce(_refreshCameras);
+              // Only request more cameras if the user navigated the map (and at valid zoom)
+              if (gesture && pos.zoom >= 10) {
+                _debounce(_refreshCamerasFromProvider);
+              }
             },
           ),
           children: [
