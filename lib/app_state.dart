@@ -43,6 +43,7 @@ class AppState extends ChangeNotifier {
     if (wasOffline && !enabled) {
       // Transitioning from offline to online: clear tile cache!
       TileProviderWithCache.clearCache();
+      _startUploader(); // Resume upload queue processing as we leave offline mode
     }
     notifyListeners();
   }
@@ -387,17 +388,23 @@ class AppState extends ChangeNotifier {
   void _startUploader() {
     _uploadTimer?.cancel();
 
-    // No uploads without auth or queue.
-    if (_queue.isEmpty) return;
+    // No uploads without auth or queue, or if offline mode is enabled.
+    if (_queue.isEmpty || _offlineMode) return;
 
     _uploadTimer = Timer.periodic(const Duration(seconds: 10), (t) async {
-      if (_queue.isEmpty) return;
+      if (_queue.isEmpty || _offlineMode) {
+        _uploadTimer?.cancel();
+        return;
+      }
+
+      // Find the first queue item that is NOT in error state and act on that
+      final item = _queue.where((pu) => !pu.error).cast<PendingUpload?>().firstOrNull;
+      if (item == null) return;
 
       // Retrieve access after every tick (accounts for re-login)
       final access = await _auth.getAccessToken();
       if (access == null) return; // not logged in
 
-      final item = _queue.first;
       bool ok;
       if (_uploadMode == UploadMode.simulate) {
         // Simulate successful upload without calling real API
@@ -424,7 +431,10 @@ class AppState extends ChangeNotifier {
       if (!ok) {
         item.attempts++;
         if (item.attempts >= 3) {
-          // give up until next launch
+          // Mark as error and stop the uploader. User can manually retry.
+          item.error = true;
+          _saveQueue();
+          notifyListeners();
           _uploadTimer?.cancel();
         } else {
           await Future.delayed(const Duration(seconds: 20));
@@ -450,5 +460,14 @@ class AppState extends ChangeNotifier {
     _queue.remove(upload);
     _saveQueue();
     notifyListeners();
+  }
+
+  // Retry a failed upload (clear error and attempts, then try uploading again)
+  void retryUpload(PendingUpload upload) {
+    upload.error = false;
+    upload.attempts = 0;
+    _saveQueue();
+    notifyListeners();
+    _startUploader(); // resume uploader if not busy
   }
 }

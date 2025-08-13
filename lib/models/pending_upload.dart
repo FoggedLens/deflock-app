@@ -6,12 +6,14 @@ class PendingUpload {
   final double direction;
   final CameraProfile profile;
   int attempts;
+  bool error;
 
   PendingUpload({
     required this.coord,
     required this.direction,
     required this.profile,
     this.attempts = 0,
+    this.error = false,
   });
 
   Map<String, dynamic> toJson() => {
@@ -20,6 +22,7 @@ class PendingUpload {
         'dir': direction,
         'profile': profile.toJson(),
         'attempts': attempts,
+        'error': error,
       };
 
   factory PendingUpload.fromJson(Map<String, dynamic> j) => PendingUpload(
@@ -27,8 +30,9 @@ class PendingUpload {
         direction: j['dir'],
         profile: j['profile'] is Map<String, dynamic>
             ? CameraProfile.fromJson(j['profile'])
-            : CameraProfile.alpr(), // fallback for legacy, more logic can be added
+            : CameraProfile.alpr(),
         attempts: j['attempts'] ?? 0,
+        error: j['error'] ?? false,
       );
 }
 
