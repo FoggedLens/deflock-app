@@ -71,22 +71,40 @@ class QueueSection extends StatelessWidget {
             itemBuilder: (context, index) {
               final upload = appState.pendingUploads[index];
               return ListTile(
-                leading: const Icon(Icons.camera_alt),
-                title: Text('Camera ${index + 1}'),
+                leading: Icon(
+                  upload.error ? Icons.error : Icons.camera_alt,
+                  color: upload.error ? Colors.red : null,
+                ),
+                title: Text('Camera ${index + 1}${upload.error ? " (Error)" : ""}'),
                 subtitle: Text(
                   'Lat: ${upload.coord.latitude.toStringAsFixed(6)}\n'
                   'Lon: ${upload.coord.longitude.toStringAsFixed(6)}\n'
                   'Direction: ${upload.direction.round()}°\n'
-                  'Attempts: ${upload.attempts}'
+                  'Attempts: ${upload.attempts}' +
+                  (upload.error ? "\nUpload failed. Tap retry to try again." : "")
                 ),
-                trailing: IconButton(
-                  icon: const Icon(Icons.delete),
-                  onPressed: () {
-                    appState.removeFromQueue(upload);
-                    if (appState.pendingCount == 0) {
-                      Navigator.pop(context);
-                    }
-                  },
+                trailing: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (upload.error)
+                      IconButton(
+                        icon: const Icon(Icons.refresh),
+                        color: Colors.orange,
+                        tooltip: 'Retry upload',
+                        onPressed: () {
+                          appState.retryUpload(upload);
+                        },
+                      ),
+                    IconButton(
+                      icon: const Icon(Icons.delete),
+                      onPressed: () {
+                        appState.removeFromQueue(upload);
+                        if (appState.pendingCount == 0) {
+                          Navigator.pop(context);
+                        }
+                      },
+                    ),
+                  ],
                 ),
               );
             },
