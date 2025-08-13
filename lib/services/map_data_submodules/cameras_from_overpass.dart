@@ -30,12 +30,13 @@ Future<List<OsmCameraNode>> camerasFromOverpass({
 
   // Helper for one Overpass chunk fetch
   Future<List<OsmCameraNode>> fetchChunk() async {
+    final outLine = fetchAllPages ? 'out body;' : 'out body $pageSize;';
     final query = '''
       [out:json][timeout:25];
       (
         $nodeClauses
       );
-      out body $pageSize;
+      $outLine
     ''';
     try {
       print('[camerasFromOverpass] Querying Overpass...');
@@ -62,37 +63,6 @@ Future<List<OsmCameraNode>> camerasFromOverpass({
     }
   }
 
-  if (!fetchAllPages) {
-    // Just one page
-    return await fetchChunk();
-  } else {
-    // Fetch all possible data, paging with deduplication and backoff
-    final seenIds = <int>{};
-    final allCameras = <OsmCameraNode>[];
-    int page = 0;
-    while (true) {
-      page++;
-      List<OsmCameraNode> pageCameras = [];
-      int tries = 0;
-      while (tries < maxTries) {
-        try {
-          final cams = await fetchChunk();
-          pageCameras = cams.where((c) => !seenIds.contains(c.id)).toList();
-          break;
-        } catch (e) {
-          tries++;
-          final delayMs = 400 * (1 << tries);
-          print('[camerasFromOverpass][paged] Error on page $page try $tries: $e. Retrying in ${delayMs}ms.');
-          await Future.delayed(Duration(milliseconds: delayMs));
-        }
-      }
-      if (pageCameras.isEmpty) break;
-      print('[camerasFromOverpass][paged] Page $page: got ${pageCameras.length} new cameras.');
-      allCameras.addAll(pageCameras);
-      seenIds.addAll(pageCameras.map((c) => c.id));
-      if (pageCameras.length < pageSize) break;
-    }
-    print('[camerasFromOverpass][paged] DONE. Found ${allCameras.length} cameras for download.');
-    return allCameras;
-  }
+  // All paths just use a single fetch now; paging logic no longer required.
+  return await fetchChunk();
 }
