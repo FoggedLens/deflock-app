@@ -5,6 +5,7 @@ import 'package:latlong2/latlong.dart';
 import 'package:flock_map_app/dev_config.dart';
 import '../app_state.dart';
 import '../widgets/map_view.dart';
+import '../widgets/tile_provider_with_cache.dart';
 import 'package:flutter_map/flutter_map.dart';
 import '../services/offline_area_service.dart';
 import '../widgets/add_camera_sheet.dart';
@@ -36,54 +37,57 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     final appState = context.watch<AppState>();
 
-    return Scaffold(
-      key: _scaffoldKey,
-      appBar: AppBar(
-        title: const Text('Flock Map'),
-        actions: [
-          IconButton(
-            tooltip: _followMe ? 'Disable follow‑me' : 'Enable follow‑me',
-            icon: Icon(_followMe ? Icons.gps_fixed : Icons.gps_off),
-            onPressed: () => setState(() => _followMe = !_followMe),
-          ),
-          IconButton(
-            icon: const Icon(Icons.settings),
-            onPressed: () => Navigator.pushNamed(context, '/settings'),
-          ),
-        ],
-      ),
-      body: MapView(
-        controller: _mapController,
-        followMe: _followMe,
-        onUserGesture: () {
-          if (_followMe) setState(() => _followMe = false);
-        },
-      ),
-      floatingActionButton: appState.session == null
-          ? Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                FloatingActionButton.extended(
-                  onPressed: _openAddCameraSheet,
-                  icon: const Icon(Icons.add_location_alt),
-                  label: const Text('Tag Camera'),
-                  heroTag: 'tag_camera_fab',
-                ),
-                const SizedBox(height: 12),
-                FloatingActionButton.extended(
-                  onPressed: () => showDialog(
-                    context: context,
-                    builder: (ctx) => DownloadAreaDialog(controller: _mapController),
+    return ChangeNotifierProvider<TileProviderWithCache>(
+      create: (_) => TileProviderWithCache(),
+      child: Scaffold(
+        key: _scaffoldKey,
+        appBar: AppBar(
+          title: const Text('Flock Map'),
+          actions: [
+            IconButton(
+              tooltip: _followMe ? 'Disable follow‑me' : 'Enable follow‑me',
+              icon: Icon(_followMe ? Icons.gps_fixed : Icons.gps_off),
+              onPressed: () => setState(() => _followMe = !_followMe),
+            ),
+            IconButton(
+              icon: const Icon(Icons.settings),
+              onPressed: () => Navigator.pushNamed(context, '/settings'),
+            ),
+          ],
+        ),
+        body: MapView(
+          controller: _mapController,
+          followMe: _followMe,
+          onUserGesture: () {
+            if (_followMe) setState(() => _followMe = false);
+          },
+        ),
+        floatingActionButton: appState.session == null
+            ? Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  FloatingActionButton.extended(
+                    onPressed: _openAddCameraSheet,
+                    icon: const Icon(Icons.add_location_alt),
+                    label: const Text('Tag Camera'),
+                    heroTag: 'tag_camera_fab',
                   ),
-                  icon: const Icon(Icons.download_for_offline),
-                  label: const Text('Download'),
-                  heroTag: 'download_fab',
-                ),
-              ],
-            )
-          : null,
-      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+                  const SizedBox(height: 12),
+                  FloatingActionButton.extended(
+                    onPressed: () => showDialog(
+                      context: context,
+                      builder: (ctx) => DownloadAreaDialog(controller: _mapController),
+                    ),
+                    icon: const Icon(Icons.download_for_offline),
+                    label: const Text('Download'),
+                    heroTag: 'download_fab',
+                  ),
+                ],
+              )
+            : null,
+        floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+      ),
     );
   }
 }

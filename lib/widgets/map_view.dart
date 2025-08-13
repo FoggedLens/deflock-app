@@ -89,7 +89,6 @@ class _MapViewState extends State<MapView> {
   late final MapController _controller;
   final MapDataProvider _mapDataProvider = MapDataProvider();
   final Debouncer _debounce = Debouncer(kDebounceCameraRefresh);
-  Debouncer? _debounceTileLayerUpdate;
 
   StreamSubscription<Position>? _positionSub;
   LatLng? _currentLatLng;
@@ -99,7 +98,7 @@ class _MapViewState extends State<MapView> {
   @override
   void initState() {
     super.initState();
-    _debounceTileLayerUpdate = Debouncer(kDebounceTileLayerUpdate);
+    // _debounceTileLayerUpdate removed
     OfflineAreaService();
     _controller = widget.controller;
     _initLocation();
@@ -130,13 +129,13 @@ class _MapViewState extends State<MapView> {
       return;
     }
     final zoom = _controller.camera.zoom;
-    if (zoom < 10) {
+    if (zoom < kCameraMinZoomLevel) {
       // Show a snackbar-style bubble, if desired
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Cameras not drawn below zoom level 10'),
-            duration: Duration(seconds: 2),
+          SnackBar(
+            content: Text('Cameras not drawn below zoom level $kCameraMinZoomLevel'),
+            duration: const Duration(seconds: 2),
           ),
         );
       }
@@ -148,8 +147,6 @@ class _MapViewState extends State<MapView> {
       uploadMode: appState.uploadMode,
     );
   }
-
-// Duplicate dispose in _MapViewState removed. Only one dispose() remains with all proper teardown.
 
   @override
   void didUpdateWidget(covariant MapView oldWidget) {
@@ -180,37 +177,6 @@ class _MapViewState extends State<MapView> {
         });
       }
     });
-  }
-
-  Future<void> _refreshCameras() async {
-    final appState = context.read<AppState>();
-    LatLngBounds? bounds;
-    try {
-      bounds = _controller.camera.visibleBounds;
-    } catch (_) {
-      return; // controller not ready yet
-    }
-    // If too zoomed out, do NOT fetch cameras; show info
-    final zoom = _controller.camera.zoom;
-    if (zoom < 10) {
-      // No-op: camera overlays handled via provider and cache, no local _cameras assignment needed.
-      // Show a snackbar-style bubble, if desired
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Cameras not drawn below zoom level 10'),
-            duration: Duration(seconds: 2),
-          ),
-        );
-      }
-      return;
-    }
-    try {
-      // (Legacy _cameras assignment removed—now handled via provider and cache updates)
-    } on OfflineModeException catch (_) {
-      // Swallow the error in offline mode
-      // (Legacy _cameras assignment removed—handled via provider)
-    }
   }
 
   double _safeZoom() {
@@ -303,15 +269,7 @@ class _MapViewState extends State<MapView> {
           ),
           children: [
             TileLayer(
-              tileProvider: TileProviderWithCache(
-                onTileCacheUpdated: () {
-                  print('[MapView] onTileCacheUpdated fired (tile loaded)');
-                  if (_debounceTileLayerUpdate != null) _debounceTileLayerUpdate!(() { 
-                    print('[MapView] Running debounced setState due to tile cache update');
-                    if (mounted) setState(() {}); 
-                  });
-                },
-              ),
+              tileProvider: Provider.of<TileProviderWithCache>(context),
               urlTemplate: 'unused-{z}-{x}-{y}',
               tileSize: 256,
               tileBuilder: (ctx, tileWidget, tileImage) {

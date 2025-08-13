@@ -1,27 +1,26 @@
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
-import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import '../services/map_data_provider.dart';
 import '../app_state.dart';
 
 /// Singleton in-memory tile cache and async provider for custom tiles.
-class TileProviderWithCache extends TileProvider {
+class TileProviderWithCache extends TileProvider with ChangeNotifier {
   static final Map<String, Uint8List> _tileCache = {};
   static Map<String, Uint8List> get tileCache => _tileCache;
-  final VoidCallback? onTileCacheUpdated;
 
-  TileProviderWithCache({this.onTileCacheUpdated});
+  TileProviderWithCache();
 
   @override
   ImageProvider getImage(TileCoordinates coords, TileLayer options, {MapSource source = MapSource.auto}) {
     final key = '${coords.z}/${coords.x}/${coords.y}';
     if (_tileCache.containsKey(key)) {
-      return MemoryImage(_tileCache[key]!);
+      final bytes = _tileCache[key]!;
+      return MemoryImage(bytes);
     } else {
       _fetchAndCacheTile(coords, key, source: source);
-      // Always return a placeholder until the real tile is cached, regardless of source/offline/online.
+      // Always return a placeholder until the real tile is cached
       return const AssetImage('assets/transparent_1x1.png');
     }
   }
@@ -41,10 +40,7 @@ class TileProviderWithCache extends TileProvider {
       if (bytes.isNotEmpty) {
         _tileCache[key] = Uint8List.fromList(bytes);
         print('[TileProviderWithCache] Cached tile $key, bytes=${bytes.length}');
-        if (onTileCacheUpdated != null) {
-          print('[TileProviderWithCache] Calling onTileCacheUpdated for $key');
-          SchedulerBinding.instance.addPostFrameCallback((_) => onTileCacheUpdated!());
-        }
+        notifyListeners(); // This updates any listening widgets
       }
       // If bytes were empty, don't cache (will re-attempt next time)
     } catch (e) {

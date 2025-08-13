@@ -11,9 +11,9 @@ const double kDirectionConeHalfAngle = 20.0; // degrees
 const double kDirectionConeBaseLength = 0.0012; // multiplier
 
 // Marker/camera interaction
+const int kCameraMinZoomLevel = 10; // Minimum zoom to show cameras or warning
 const Duration kMarkerTapTimeout = Duration(milliseconds: 250);
 const Duration kDebounceCameraRefresh = Duration(milliseconds: 500);
-const Duration kDebounceTileLayerUpdate = Duration(milliseconds: 50);
 
 // Tile/OSM fetch retry parameters (for tunable backoff)
 const int kTileFetchMaxAttempts = 3;
