@@ -20,7 +20,7 @@ class Uploader {
       final csXml = '''
         <osm>
           <changeset>
-            <tag k="created_by" v="FlockMap 0.5"/>
+            <tag k="created_by" v="$kClientName $kClientVersion"/>
             <tag k="comment" v="Add surveillance camera"/>
           </changeset>
         </osm>''';
