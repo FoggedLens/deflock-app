@@ -10,6 +10,9 @@ const double kTileEstimateKb = 25.0;
 const double kDirectionConeHalfAngle = 20.0; // degrees
 const double kDirectionConeBaseLength = 0.0012; // multiplier
 
+// Add Camera pin vertical offset (for pin tip to match coordinate on map)
+const double kAddPinYOffset = -16.0;
+
 // Marker/camera interaction
 const int kCameraMinZoomLevel = 10; // Minimum zoom to show cameras or warning
 const Duration kMarkerTapTimeout = Duration(milliseconds: 250);

@@ -391,9 +391,12 @@ class _MapViewState extends State<MapView> {
 
         // Fixed pin when adding camera
         if (session != null)
-          const IgnorePointer(
+          IgnorePointer(
             child: Center(
-              child: Icon(Icons.place, size: 40, color: Colors.redAccent),
+              child: Transform.translate(
+                offset: Offset(0, kAddPinYOffset),
+                child: Icon(Icons.place, size: 40, color: Colors.redAccent),
+              ),
             ),
           ),
       ],

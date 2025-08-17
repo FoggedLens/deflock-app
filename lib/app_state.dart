@@ -72,7 +72,7 @@ class AppState extends ChangeNotifier {
   }
 
   // Upload mode: production, sandbox, or simulate (in-memory, no uploads)
-  UploadMode _uploadMode = UploadMode.production;
+  UploadMode _uploadMode = UploadMode.simulate;
   static const String _uploadModePrefsKey = 'upload_mode';
   UploadMode get uploadMode => _uploadMode;
   Future<void> setUploadMode(UploadMode mode) async {
