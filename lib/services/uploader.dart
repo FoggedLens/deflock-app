@@ -2,7 +2,7 @@ import 'dart:async';
 import 'package:http/http.dart' as http;
 
 import '../models/pending_upload.dart';
-
+import '../dev_config.dart';
 import '../app_state.dart';
 
 class Uploader {
