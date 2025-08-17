@@ -80,3 +80,10 @@ Thumbs.db
 *.keystore
 .env
 
+# ───────────────────────────────
+# For now - not targeting these
+# ───────────────────────────────
+linux/
+macos/
+web/
+windows/
