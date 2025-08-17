@@ -27,10 +27,12 @@ class _HomeScreenState extends State<HomeScreen> {
   void _openAddCameraSheet() {
     final appState = context.read<AppState>();
     appState.startAddSession();
-    final session = appState.session!;          // guaranteed non‑null now
+    final session = appState.session!; // guaranteed non‑null now
 
-    _scaffoldKey.currentState!.showBottomSheet(
-      (ctx) => AddCameraSheet(session: session),
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      builder: (ctx) => AddCameraSheet(session: session),
     );
   }
 
@@ -66,31 +68,49 @@ class _HomeScreenState extends State<HomeScreen> {
             if (_followMe) setState(() => _followMe = false);
           },
         ),
-        floatingActionButton: appState.session == null
-            ? Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  FloatingActionButton.extended(
-                    onPressed: _openAddCameraSheet,
+        bottomNavigationBar: BottomAppBar(
+          elevation: 10,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                Expanded(
+                  child: ElevatedButton.icon(
                     icon: const Icon(Icons.add_location_alt),
                     label: const Text('Tag Camera'),
-                    heroTag: 'tag_camera_fab',
-                  ),
-                  const SizedBox(height: 12),
-                  FloatingActionButton.extended(
-                    onPressed: () => showDialog(
-                      context: context,
-                      builder: (ctx) => DownloadAreaDialog(controller: _mapController),
+                    onPressed: () {
+                      if (appState.session == null) {
+                        _openAddCameraSheet();
+                      }
+                    },
+                    style: ElevatedButton.styleFrom(
+                      minimumSize: const Size(0, 48),
+                      textStyle: const TextStyle(fontSize: 16),
                     ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: ElevatedButton.icon(
                     icon: const Icon(Icons.download_for_offline),
                     label: const Text('Download'),
-                    heroTag: 'download_fab',
+                    onPressed: appState.session == null
+                      ? () => showDialog(
+                          context: context,
+                          builder: (ctx) => DownloadAreaDialog(controller: _mapController),
+                        )
+                      : null, // Disabled while camera sheet active
+                    style: ElevatedButton.styleFrom(
+                      minimumSize: const Size(0, 48),
+                      textStyle: const TextStyle(fontSize: 16),
+                    ),
                   ),
-                ],
-              )
-            : null,
-        floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }
