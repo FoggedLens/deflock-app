@@ -311,7 +311,7 @@ class _MapViewState extends State<MapView> {
             // Built-in scale bar from flutter_map 
             Scalebar(
               alignment: Alignment.bottomLeft,
-              padding: EdgeInsets.only(left: 8, bottom: kScaleBarBottom), // from dev_config, above attribution & BottomAppBar
+              padding: EdgeInsets.only(left: 8, bottom: 54), // above attribution
               textStyle: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
               lineColor: Colors.black,
               strokeWidth: 3,
@@ -353,7 +353,7 @@ class _MapViewState extends State<MapView> {
         // Zoom indicator, positioned above scale bar
         Positioned(
           left: 10,
-          bottom: kZoomIndicatorBottom, // from dev_config
+          bottom: 92,
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
             decoration: BoxDecoration(
@@ -377,7 +377,7 @@ class _MapViewState extends State<MapView> {
         ),
         // Attribution overlay
         Positioned(
-          bottom: kAttributionBottom, // from dev_config
+          bottom: 20,
           left: 10,
           child: Container(
             color: Colors.white70,

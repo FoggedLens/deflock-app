@@ -27,12 +27,10 @@ class _HomeScreenState extends State<HomeScreen> {
   void _openAddCameraSheet() {
     final appState = context.read<AppState>();
     appState.startAddSession();
-    final session = appState.session!; // guaranteed non‑null now
+    final session = appState.session!;          // guaranteed non‑null now
 
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      builder: (ctx) => AddCameraSheet(session: session),
+    _scaffoldKey.currentState!.showBottomSheet(
+      (ctx) => AddCameraSheet(session: session),
     );
   }
 
@@ -68,49 +66,31 @@ class _HomeScreenState extends State<HomeScreen> {
             if (_followMe) setState(() => _followMe = false);
           },
         ),
-        bottomNavigationBar: BottomAppBar(
-          elevation: 10,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                Expanded(
-                  child: ElevatedButton.icon(
+        floatingActionButton: appState.session == null
+            ? Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  FloatingActionButton.extended(
+                    onPressed: _openAddCameraSheet,
                     icon: const Icon(Icons.add_location_alt),
                     label: const Text('Tag Camera'),
-                    onPressed: () {
-                      if (appState.session == null) {
-                        _openAddCameraSheet();
-                      }
-                    },
-                    style: ElevatedButton.styleFrom(
-                      minimumSize: const Size(0, 48),
-                      textStyle: const TextStyle(fontSize: 16),
-                    ),
+                    heroTag: 'tag_camera_fab',
                   ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: ElevatedButton.icon(
+                  const SizedBox(height: 12),
+                  FloatingActionButton.extended(
+                    onPressed: () => showDialog(
+                      context: context,
+                      builder: (ctx) => DownloadAreaDialog(controller: _mapController),
+                    ),
                     icon: const Icon(Icons.download_for_offline),
                     label: const Text('Download'),
-                    onPressed: appState.session == null
-                      ? () => showDialog(
-                          context: context,
-                          builder: (ctx) => DownloadAreaDialog(controller: _mapController),
-                        )
-                      : null, // Disabled while camera sheet active
-                    style: ElevatedButton.styleFrom(
-                      minimumSize: const Size(0, 48),
-                      textStyle: const TextStyle(fontSize: 16),
-                    ),
+                    heroTag: 'download_fab',
                   ),
-                ),
-              ],
-            ),
-          ),
-        ),
+                ],
+              )
+            : null,
+        floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
       ),
     );
   }
