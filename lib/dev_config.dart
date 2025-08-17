@@ -10,12 +10,20 @@ const double kTileEstimateKb = 25.0;
 const double kDirectionConeHalfAngle = 20.0; // degrees
 const double kDirectionConeBaseLength = 0.0012; // multiplier
 
+// Margin (bottom) for positioning the floating bottom button bar
+const double kBottomButtonBarMargin = 4.0;
+
+// Map overlay (attribution, scale bar, zoom) vertical offset from bottom edge
+const double kAttributionBottomOffset = 110.0;
+const double kZoomIndicatorBottomOffset = 142.0;
+const double kScaleBarBottomOffset = 170.0;
+
 // Add Camera pin vertical offset (for pin tip to match coordinate on map)
 const double kAddPinYOffset = -16.0;
 
 // Client name and version for OSM uploads ("created_by" tag)
 const String kClientName = 'FlockMap';
-const String kClientVersion = '0.8.1';
+const String kClientVersion = '0.8.2';
 
 // Marker/camera interaction
 const int kCameraMinZoomLevel = 10; // Minimum zoom to show cameras or warning

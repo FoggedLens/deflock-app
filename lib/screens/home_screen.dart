@@ -59,38 +59,66 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ],
         ),
-        body: MapView(
-          controller: _mapController,
-          followMe: _followMe,
-          onUserGesture: () {
-            if (_followMe) setState(() => _followMe = false);
-          },
+        body: Stack(
+          children: [
+            MapView(
+              controller: _mapController,
+              followMe: _followMe,
+              onUserGesture: () {
+                if (_followMe) setState(() => _followMe = false);
+              },
+            ),
+            Align(
+              alignment: Alignment.bottomCenter,
+              child: Padding(
+                padding: EdgeInsets.only(
+                  bottom: MediaQuery.of(context).padding.bottom + kBottomButtonBarMargin,
+                  left: 8,
+                  right: 8,
+                ),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [BoxShadow(color: Colors.black26, blurRadius: 10, offset: Offset(0, -2))],
+                  ),
+                  margin: EdgeInsets.only(bottom: kBottomButtonBarMargin),
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: ElevatedButton.icon(
+                          icon: Icon(Icons.add_location_alt),
+                          label: Text('Tag Camera'),
+                          onPressed: _openAddCameraSheet,
+                          style: ElevatedButton.styleFrom(
+                            minimumSize: Size(0, 48),
+                            textStyle: TextStyle(fontSize: 16),
+                          ),
+                        ),
+                      ),
+                      SizedBox(width: 12),
+                      Expanded(
+                        child: ElevatedButton.icon(
+                          icon: Icon(Icons.download_for_offline),
+                          label: Text('Download'),
+                          onPressed: () => showDialog(
+                            context: context,
+                            builder: (ctx) => DownloadAreaDialog(controller: _mapController),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            minimumSize: Size(0, 48),
+                            textStyle: TextStyle(fontSize: 16),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ],
         ),
-        floatingActionButton: appState.session == null
-            ? Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  FloatingActionButton.extended(
-                    onPressed: _openAddCameraSheet,
-                    icon: const Icon(Icons.add_location_alt),
-                    label: const Text('Tag Camera'),
-                    heroTag: 'tag_camera_fab',
-                  ),
-                  const SizedBox(height: 12),
-                  FloatingActionButton.extended(
-                    onPressed: () => showDialog(
-                      context: context,
-                      builder: (ctx) => DownloadAreaDialog(controller: _mapController),
-                    ),
-                    icon: const Icon(Icons.download_for_offline),
-                    label: const Text('Download'),
-                    heroTag: 'download_fab',
-                  ),
-                ],
-              )
-            : null,
-        floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
       ),
     );
   }
