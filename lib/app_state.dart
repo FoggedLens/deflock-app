@@ -6,10 +6,13 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'models/camera_profile.dart';
 import 'models/pending_upload.dart';
+import 'models/osm_camera_node.dart';
 import 'services/auth_service.dart';
 import 'services/uploader.dart';
 import 'services/profile_service.dart';
+import 'services/camera_cache.dart';
 import 'widgets/tile_provider_with_cache.dart';
+import 'widgets/camera_provider_with_cache.dart';
 
 // Enum for upload mode (Production, OSM Sandbox, Simulate)
 enum UploadMode { production, sandbox, simulate }
@@ -351,14 +354,35 @@ class AppState extends ChangeNotifier {
 
   void commitSession() {
     if (_session?.target == null) return;
-    _queue.add(
-      PendingUpload(
-        coord: _session!.target!,
-        direction: _session!.directionDegrees,
-        profile: _session!.profile,
-      ),
+    
+    // Create the pending upload
+    final upload = PendingUpload(
+      coord: _session!.target!,
+      direction: _session!.directionDegrees,
+      profile: _session!.profile,
     );
+    
+    _queue.add(upload);
     _saveQueue();
+    
+    // Add to camera cache immediately so it shows on the map
+    // Create a temporary node with a negative ID (to distinguish from real OSM nodes)
+    // Using timestamp as negative ID to ensure uniqueness
+    final tempId = -DateTime.now().millisecondsSinceEpoch;
+    final tags = Map<String, String>.from(upload.profile.tags);
+    tags['direction'] = upload.direction.toStringAsFixed(0);
+    tags['_pending_upload'] = 'true'; // Mark as pending for potential UI distinction
+    
+    final tempNode = OsmCameraNode(
+      id: tempId,
+      coord: upload.coord,
+      tags: tags,
+    );
+    
+    CameraCache.instance.addOrUpdate([tempNode]);
+    // Notify camera provider to update the map
+    CameraProviderWithCache.instance.notifyListeners();
+    
     _session = null;
     
     // Restart uploader when new items are added
