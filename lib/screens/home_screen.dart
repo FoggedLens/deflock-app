@@ -71,6 +71,34 @@ class _HomeScreenState extends State<HomeScreen> {
                 if (_followMe) setState(() => _followMe = false);
               },
             ),
+            // Zoom buttons
+            Positioned(
+              right: 10,
+              bottom: MediaQuery.of(context).padding.bottom + kBottomButtonBarMargin + 120,
+              child: Column(
+                children: [
+                  FloatingActionButton(
+                    mini: true,
+                    onPressed: () {
+                      final currentZoom = _mapController.camera.zoom;
+                      _mapController.move(_mapController.camera.center, currentZoom + 0.5);
+                    },
+                    child: Icon(Icons.add),
+                    heroTag: 'zoom_in',
+                  ),
+                  SizedBox(height: 8),
+                  FloatingActionButton(
+                    mini: true,
+                    onPressed: () {
+                      final currentZoom = _mapController.camera.zoom;
+                      _mapController.move(_mapController.camera.center, currentZoom - 0.5);
+                    },
+                    child: Icon(Icons.remove),
+                    heroTag: 'zoom_out',
+                  ),
+                ],
+              ),
+            ),
             Align(
               alignment: Alignment.bottomCenter,
               child: Padding(
