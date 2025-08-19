@@ -61,10 +61,17 @@ class _CameraMapMarkerState extends State<_CameraMapMarker> {
 
   @override
   Widget build(BuildContext context) {
+    // Check if this is a pending upload
+    final isPending = widget.node.tags.containsKey('_pending_upload') && 
+                      widget.node.tags['_pending_upload'] == 'true';
+    
     return GestureDetector(
       onTap: _onTap,
       onDoubleTap: _onDoubleTap,
-      child: const Icon(Icons.videocam, color: Colors.orange),
+      child: Icon(
+        Icons.videocam, 
+        color: isPending ? Colors.purple : Colors.orange,
+      ),
     );
   }
 }
@@ -248,7 +255,12 @@ class _MapViewState extends State<MapView> {
               .where((n) => n.hasDirection && n.directionDeg != null)
               .where((n) => n.coord.latitude != 0 || n.coord.longitude != 0)
               .where((n) => n.coord.latitude.abs() <= 90 && n.coord.longitude.abs() <= 180)
-              .map((n) => _buildCone(n.coord, n.directionDeg!, zoom)),
+              .map((n) => _buildCone(
+                n.coord, 
+                n.directionDeg!, 
+                zoom,
+                isPending: n.tags.containsKey('_pending_upload') && n.tags['_pending_upload'] == 'true',
+              )),
         ];
         return Stack(
           children: [
@@ -403,7 +415,7 @@ class _MapViewState extends State<MapView> {
     );
   }
 
-  Polygon _buildCone(LatLng origin, double bearingDeg, double zoom) {
+  Polygon _buildCone(LatLng origin, double bearingDeg, double zoom, {bool isPending = false}) {
     final halfAngle = kDirectionConeHalfAngle;
     final length = kDirectionConeBaseLength * math.pow(2, 15 - zoom);
 
@@ -418,10 +430,13 @@ class _MapViewState extends State<MapView> {
     final left = _project(bearingDeg - halfAngle);
     final right = _project(bearingDeg + halfAngle);
 
+    // Use purple color for pending uploads
+    final color = isPending ? Colors.purple : Colors.redAccent;
+
     return Polygon(
       points: [origin, left, right, origin],
-      color: Colors.redAccent.withOpacity(0.25),
-      borderColor: Colors.redAccent,
+      color: color.withOpacity(0.25),
+      borderColor: color,
       borderStrokeWidth: 1,
     );
   }
