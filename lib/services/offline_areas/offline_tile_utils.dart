@@ -56,17 +56,6 @@ List<int> latLonToTile(double lat, double lon, int zoom) {
   return [xtile, ytile];
 }
 
-int findDynamicMinZoom(LatLngBounds bounds, {int maxSearchZoom = 19}) {
-  for (int z = 1; z <= maxSearchZoom; z++) {
-    final swTile = latLonToTile(bounds.southWest.latitude, bounds.southWest.longitude, z);
-    final neTile = latLonToTile(bounds.northEast.latitude, bounds.northEast.longitude, z);
-    if (swTile[0] != neTile[0] || swTile[1] != neTile[1]) {
-      return z - 1 > 0 ? z - 1 : 1;
-    }
-  }
-  return maxSearchZoom;
-}
-
 LatLngBounds globalWorldBounds() {
   // Use slightly shrunken bounds to avoid tile index overflow at extreme coordinates
   return LatLngBounds(LatLng(-85.0, -179.9), LatLng(85.0, 179.9));

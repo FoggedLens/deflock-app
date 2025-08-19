@@ -198,7 +198,7 @@ class _DownloadAreaDialogState extends State<DownloadAreaDialog> {
         LatLng(bounds.northEast.latitude, bounds.northEast.longitude + epsilon)
       );
     }
-    final minZoom = findDynamicMinZoom(bounds);
+    final minZoom = kWorldMaxZoom + 1; // Use world max zoom + 1 for seamless zoom experience
     final maxZoom = _zoom.toInt();
     final nTiles = computeTileList(bounds, minZoom, maxZoom).length;
     final totalMb = (nTiles * kTileEstimateKb) / 1024.0;
