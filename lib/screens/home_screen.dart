@@ -25,6 +25,9 @@ class _HomeScreenState extends State<HomeScreen> {
   bool _followMe = true;
 
   void _openAddCameraSheet() {
+    // Disable follow-me when adding a camera so the map doesn't jump around
+    setState(() => _followMe = false);
+    
     final appState = context.read<AppState>();
     appState.startAddSession();
     final session = appState.session!;          // guaranteed non‑null now
