@@ -35,24 +35,22 @@ class CameraProviderWithCache extends ChangeNotifier {
     // Debounce rapid panning/zooming
     _debounceTimer?.cancel();
     _debounceTimer = Timer(const Duration(milliseconds: 400), () async {
-      final isOffline = AppState.instance.offlineMode;
-      if (!isOffline) {
-        try {
-          final fresh = await MapDataProvider().getCameras(
-            bounds: bounds,
-            profiles: profiles,
-            uploadMode: uploadMode,
-            source: MapSource.remote,
-          );
-          if (fresh.isNotEmpty) {
-            CameraCache.instance.addOrUpdate(fresh);
-            notifyListeners();
-          }
-        } catch (e) {
-          debugPrint('[CameraProviderWithCache] Overpass fetch failed: $e');
-          // Cache already holds whatever is available for the view
+      try {
+        // Use MapSource.auto to handle both offline and online modes appropriately
+        final fresh = await MapDataProvider().getCameras(
+          bounds: bounds,
+          profiles: profiles,
+          uploadMode: uploadMode,
+          source: MapSource.auto,
+        );
+        if (fresh.isNotEmpty) {
+          CameraCache.instance.addOrUpdate(fresh);
+          notifyListeners();
         }
-      } // else, only cache is used
+      } catch (e) {
+        debugPrint('[CameraProviderWithCache] Camera fetch failed: $e');
+        // Cache already holds whatever is available for the view
+      }
     });
   }
 
