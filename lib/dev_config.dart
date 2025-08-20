@@ -23,7 +23,7 @@ const double kAddPinYOffset = -16.0;
 
 // Client name and version for OSM uploads ("created_by" tag)
 const String kClientName = 'FlockMap';
-const String kClientVersion = '0.8.2';
+const String kClientVersion = '0.8.3';
 
 // Marker/camera interaction
 const int kCameraMinZoomLevel = 10; // Minimum zoom to show cameras or warning
