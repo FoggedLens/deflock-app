@@ -40,7 +40,6 @@ class OfflineAreaService {
     await _loadAreasFromDisk();
     await _ensureAndAutoDownloadWorldArea();
     _initialized = true;
-    print('OfflineAreaService: Initialization complete. Found ${_areas.length} offline areas.');
   }
 
   Future<Directory> getOfflineAreaDir() async {
@@ -58,7 +57,6 @@ class OfflineAreaService {
   }
 
   Future<int> getAreaSizeBytes(OfflineArea area) async {
-    print('[getAreaSizeBytes] Starting for area ${area.id}, status: ${area.status}');
     int total = 0;
     final dir = Directory(area.directory);
     if (await dir.exists()) {
@@ -69,9 +67,7 @@ class OfflineAreaService {
       }
     }
     area.sizeBytes = total;
-    print('[getAreaSizeBytes] Before saveAreasToDisk, area ${area.id} status: ${area.status}');
     await saveAreasToDisk();
-    print('[getAreaSizeBytes] After saveAreasToDisk, area ${area.id} status: ${area.status}');
     return total;
   }
 
@@ -87,7 +83,6 @@ class OfflineAreaService {
         if (json['directory'].toString().startsWith(offlineDir.path)) {
           final relativePath = json['directory'].toString().replaceFirst('${offlineDir.path}/', '');
           json['directory'] = relativePath;
-          print('[OfflineAreaService] Saving area ${area.id} with relative path: $relativePath');
         }
         return json;
       }).toList();
@@ -133,29 +128,20 @@ class OfflineAreaService {
         final offlineDir = await getOfflineAreaDir();
         final fullPath = '${offlineDir.path}/$relativePath';
         
-        print('[OfflineAreaService] Area ${areaJson['id']}: stored="$storedDir", relative="$relativePath", full="$fullPath"');
-        
         // Update the JSON to use the full path for this session
         areaJson['directory'] = fullPath;
         
         final area = OfflineArea.fromJson(areaJson);
         
         if (!Directory(area.directory).existsSync()) {
-          print('[OfflineAreaService] Directory does not exist: ${area.directory}');
           area.status = OfflineAreaStatus.error;
         } else {
-          print('[OfflineAreaService] Directory exists, getting size...');
-          
           // Reset error status if directory now exists (fixes areas that were previously broken due to path issues)
           if (area.status == OfflineAreaStatus.error) {
-            print('[OfflineAreaService] Resetting error status to complete for area ${area.id} since directory now exists');
             area.status = OfflineAreaStatus.complete;
           }
           
-          print('[OfflineAreaService] Status before getAreaSizeBytes: ${area.status}');
           getAreaSizeBytes(area);
-          print('[OfflineAreaService] Status after getAreaSizeBytes: ${area.status}');
-          print('[OfflineAreaService] Area ${area.id} loaded successfully');
         }
         _areas.add(area);
       }
