@@ -8,9 +8,8 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 /// Handles PKCE OAuth login with OpenStreetMap.
-import '../app_state.dart';
-
 import '../keys.dart';
+import '../app_state.dart' show UploadMode;
 
 class AuthService {
   // Both client IDs from keys.dart

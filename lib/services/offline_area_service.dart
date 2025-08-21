@@ -17,12 +17,31 @@ import 'package:flock_map_app/dev_config.dart';
 class OfflineAreaService {
   static final OfflineAreaService _instance = OfflineAreaService._();
   factory OfflineAreaService() => _instance;
-  OfflineAreaService._() {
-    _loadAreasFromDisk().then((_) => _ensureAndAutoDownloadWorldArea());
-  }
+  
+  bool _initialized = false;
+  Future<void>? _initializationFuture;
+  
+  OfflineAreaService._();
 
   final List<OfflineArea> _areas = [];
   List<OfflineArea> get offlineAreas => List.unmodifiable(_areas);
+  
+  /// Ensure the service is initialized (areas loaded from disk)
+  Future<void> ensureInitialized() async {
+    if (_initialized) return;
+    
+    _initializationFuture ??= _initialize();
+    await _initializationFuture;
+  }
+  
+  Future<void> _initialize() async {
+    if (_initialized) return;
+    
+    await _loadAreasFromDisk();
+    await _ensureAndAutoDownloadWorldArea();
+    _initialized = true;
+    print('OfflineAreaService: Initialization complete. Found ${_areas.length} offline areas.');
+  }
 
   Future<Directory> getOfflineAreaDir() async {
     final dir = await getApplicationDocumentsDirectory();
@@ -39,6 +58,7 @@ class OfflineAreaService {
   }
 
   Future<int> getAreaSizeBytes(OfflineArea area) async {
+    print('[getAreaSizeBytes] Starting for area ${area.id}, status: ${area.status}');
     int total = 0;
     final dir = Directory(area.directory);
     if (await dir.exists()) {
@@ -49,14 +69,30 @@ class OfflineAreaService {
       }
     }
     area.sizeBytes = total;
+    print('[getAreaSizeBytes] Before saveAreasToDisk, area ${area.id} status: ${area.status}');
     await saveAreasToDisk();
+    print('[getAreaSizeBytes] After saveAreasToDisk, area ${area.id} status: ${area.status}');
     return total;
   }
 
   Future<void> saveAreasToDisk() async {
     try {
       final file = await _getMetadataPath();
-      final content = jsonEncode(_areas.map((a) => a.toJson()).toList());
+      final offlineDir = await getOfflineAreaDir();
+      
+      // Convert areas to JSON with relative paths for portability
+      final areaJsonList = _areas.map((area) {
+        final json = area.toJson();
+        // Convert absolute path to relative path for storage
+        if (json['directory'].toString().startsWith(offlineDir.path)) {
+          final relativePath = json['directory'].toString().replaceFirst('${offlineDir.path}/', '');
+          json['directory'] = relativePath;
+          print('[OfflineAreaService] Saving area ${area.id} with relative path: $relativePath');
+        }
+        return json;
+      }).toList();
+      
+      final content = jsonEncode(areaJsonList);
       await file.writeAsString(content);
     } catch (e) {
       debugPrint('Failed to save offline areas: $e');
@@ -77,12 +113,49 @@ class OfflineAreaService {
         return;
       }
       _areas.clear();
+      
       for (final areaJson in data) {
+        // Migrate stored directory paths to be relative for portability
+        String storedDir = areaJson['directory'];
+        String relativePath = storedDir;
+        
+        // If it's an absolute path, extract just the folder name
+        if (storedDir.startsWith('/')) {
+          if (storedDir.contains('/offline_areas/')) {
+            final parts = storedDir.split('/offline_areas/');
+            if (parts.length == 2) {
+              relativePath = parts[1]; // Just the folder name (e.g., "world" or "2025-08-19...")
+            }
+          }
+        }
+        
+        // Always construct absolute path at runtime
+        final offlineDir = await getOfflineAreaDir();
+        final fullPath = '${offlineDir.path}/$relativePath';
+        
+        print('[OfflineAreaService] Area ${areaJson['id']}: stored="$storedDir", relative="$relativePath", full="$fullPath"');
+        
+        // Update the JSON to use the full path for this session
+        areaJson['directory'] = fullPath;
+        
         final area = OfflineArea.fromJson(areaJson);
+        
         if (!Directory(area.directory).existsSync()) {
+          print('[OfflineAreaService] Directory does not exist: ${area.directory}');
           area.status = OfflineAreaStatus.error;
         } else {
+          print('[OfflineAreaService] Directory exists, getting size...');
+          
+          // Reset error status if directory now exists (fixes areas that were previously broken due to path issues)
+          if (area.status == OfflineAreaStatus.error) {
+            print('[OfflineAreaService] Resetting error status to complete for area ${area.id} since directory now exists');
+            area.status = OfflineAreaStatus.complete;
+          }
+          
+          print('[OfflineAreaService] Status before getAreaSizeBytes: ${area.status}');
           getAreaSizeBytes(area);
+          print('[OfflineAreaService] Status after getAreaSizeBytes: ${area.status}');
+          print('[OfflineAreaService] Area ${area.id} loaded successfully');
         }
         _areas.add(area);
       }
