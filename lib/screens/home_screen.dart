@@ -276,9 +276,15 @@ class _DownloadAreaDialogState extends State<DownloadAreaDialog> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 const Text('Storage estimate:'),
-                Text(_mbEstimate == null
-                    ? '…'
-                    : '${_tileCount} tiles, ${_mbEstimate!.toStringAsFixed(1)} MB'),
+                Expanded(
+                  child: Text(
+                    _mbEstimate == null
+                        ? '…'
+                        : '${_tileCount} tiles, ${_mbEstimate!.toStringAsFixed(1)} MB',
+                    textAlign: TextAlign.end,
+                    style: const TextStyle(fontSize: 14),
+                  ),
+                ),
               ],
             ),
             if (_minZoom != null)
