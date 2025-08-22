@@ -1,0 +1,94 @@
+import 'dart:async';
+import 'package:flutter/material.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:latlong2/latlong.dart';
+
+import '../../dev_config.dart';
+import '../../models/osm_camera_node.dart';
+import '../camera_tag_sheet.dart';
+
+/// Smart marker widget for camera with single/double tap distinction
+class CameraMapMarker extends StatefulWidget {
+  final OsmCameraNode node;
+  final MapController mapController;
+  const CameraMapMarker({required this.node, required this.mapController, Key? key}) : super(key: key);
+
+  @override
+  State<CameraMapMarker> createState() => _CameraMapMarkerState();
+}
+
+class _CameraMapMarkerState extends State<CameraMapMarker> {
+  Timer? _tapTimer;
+  // From dev_config.dart for build-time parameters
+  static const Duration tapTimeout = kMarkerTapTimeout;
+
+  void _onTap() {
+    _tapTimer = Timer(tapTimeout, () {
+      showModalBottomSheet(
+        context: context,
+        builder: (_) => CameraTagSheet(node: widget.node),
+        showDragHandle: true,
+      );
+    });
+  }
+
+  void _onDoubleTap() {
+    _tapTimer?.cancel();
+    widget.mapController.move(widget.node.coord, widget.mapController.camera.zoom + 1);
+  }
+
+  @override
+  void dispose() {
+    _tapTimer?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // Check if this is a pending upload
+    final isPending = widget.node.tags.containsKey('_pending_upload') && 
+                      widget.node.tags['_pending_upload'] == 'true';
+    
+    return GestureDetector(
+      onTap: _onTap,
+      onDoubleTap: _onDoubleTap,
+      child: Icon(
+        Icons.videocam, 
+        color: isPending ? Colors.purple : Colors.orange,
+      ),
+    );
+  }
+}
+
+/// Helper class to build marker layers for cameras and user location
+class CameraMarkersBuilder {
+  static List<Marker> buildCameraMarkers({
+    required List<OsmCameraNode> cameras,
+    required MapController mapController,
+    LatLng? userLocation,
+  }) {
+    final markers = <Marker>[
+      // Camera markers
+      ...cameras
+        .where((n) => n.coord.latitude != 0 || n.coord.longitude != 0)
+        .where((n) => n.coord.latitude.abs() <= 90 && n.coord.longitude.abs() <= 180)
+        .map((n) => Marker(
+          point: n.coord,
+          width: 24,
+          height: 24,
+          child: CameraMapMarker(node: n, mapController: mapController),
+        )),
+      
+      // User location marker
+      if (userLocation != null)
+        Marker(
+          point: userLocation,
+          width: 16,
+          height: 16,
+          child: const Icon(Icons.my_location, color: Colors.blue),
+        ),
+    ];
+
+    return markers;
+  }
+}
