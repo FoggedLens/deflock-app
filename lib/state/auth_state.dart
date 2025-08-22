@@ -18,15 +18,7 @@ class AuthState extends ChangeNotifier {
     
     try {
       if (await _auth.isLoggedIn()) {
-        print('AuthState: User appears to be logged in, fetching username...');
         _username = await _auth.login();
-        if (_username != null) {
-          print("AuthState: Successfully retrieved username: $_username");
-        } else {
-          print('AuthState: Failed to retrieve username despite being logged in');
-        }
-      } else {
-        print('AuthState: User is not logged in');
       }
     } catch (e) {
       print("AuthState: Error during auth initialization: $e");
@@ -35,13 +27,7 @@ class AuthState extends ChangeNotifier {
 
   Future<void> login() async {
     try {
-      print('AuthState: Starting login process...');
       _username = await _auth.login();
-      if (_username != null) {
-        print("AuthState: Login successful for user: $_username");
-      } else {
-        print('AuthState: Login failed - no username returned');
-      }
     } catch (e) {
       print("AuthState: Login error: $e");
       _username = null;
@@ -57,17 +43,9 @@ class AuthState extends ChangeNotifier {
 
   Future<void> refreshAuthState() async {
     try {
-      print('AuthState: Refreshing auth state...');
       if (await _auth.isLoggedIn()) {
-        print('AuthState: Token exists, fetching username...');
         _username = await _auth.login();
-        if (_username != null) {
-          print("AuthState: Auth refresh successful: $_username");
-        } else {
-          print('AuthState: Auth refresh failed - no username');
-        }
       } else {
-        print('AuthState: No valid token found');
         _username = null;
       }
     } catch (e) {
@@ -79,13 +57,7 @@ class AuthState extends ChangeNotifier {
 
   Future<void> forceLogin() async {
     try {
-      print('AuthState: Starting forced fresh login...');
       _username = await _auth.forceLogin();
-      if (_username != null) {
-        print("AuthState: Forced login successful: $_username");
-      } else {
-        print('AuthState: Forced login failed - no username returned');
-      }
     } catch (e) {
       print("AuthState: Forced login error: $e");
       _username = null;
@@ -109,23 +81,14 @@ class AuthState extends ChangeNotifier {
     // Refresh user display for active mode, validating token
     try {
       if (await _auth.isLoggedIn()) {
-        print('AuthState: Switching mode, token exists; validating...');
         final isValid = await validateToken();
         if (isValid) {
-          print("AuthState: Switching mode; fetching username for $mode...");
           _username = await _auth.login();
-          if (_username != null) {
-            print("AuthState: Switched mode, now logged in as $_username");
-          } else {
-            print('AuthState: Switched mode but failed to retrieve username');
-          }
         } else {
-          print('AuthState: Switching mode, token invalid—auto-logout.');
           await logout(); // This clears _username also.
         }
       } else {
         _username = null;
-        print("AuthState: Mode change: not logged in in $mode");
       }
     } catch (e) {
       _username = null;

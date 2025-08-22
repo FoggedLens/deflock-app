@@ -207,8 +207,9 @@ class _MapViewState extends State<MapView> {
               if (session != null) {
                 appState.updateSession(target: pos.center);
               }
-              // Only request more cameras if the user navigated the map (and at valid zoom)
-              if (gesture && pos.zoom >= 10) {
+              // Request more cameras on any map movement/zoom at valid zoom level
+              // This ensures cameras load even when zooming without panning (like with zoom buttons)
+              if (pos.zoom >= 10) {
                 _debounce(_refreshCamerasFromProvider);
               }
             },
