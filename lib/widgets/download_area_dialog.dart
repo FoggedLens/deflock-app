@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'dart:math' as math;
 
 import '../dev_config.dart';
 import '../services/offline_area_service.dart';
@@ -17,6 +18,7 @@ class DownloadAreaDialog extends StatefulWidget {
 class _DownloadAreaDialogState extends State<DownloadAreaDialog> {
   double _zoom = 15;
   int? _minZoom;
+  int? _maxPossibleZoom;
   int? _tileCount;
   double? _mbEstimate;
 
@@ -28,6 +30,7 @@ class _DownloadAreaDialogState extends State<DownloadAreaDialog> {
 
   void _recomputeEstimates() {
     var bounds = widget.controller.camera.visibleBounds;
+    
     // If the visible area is nearly zero, nudge the bounds for estimation
     const double epsilon = 0.0002;
     final latSpan = (bounds.north - bounds.south).abs();
@@ -48,46 +51,48 @@ class _DownloadAreaDialogState extends State<DownloadAreaDialog> {
         LatLng(bounds.northEast.latitude, bounds.northEast.longitude + epsilon)
       );
     }
-    final minZoom = kWorldMaxZoom + 1; // Use world max zoom + 1 for seamless zoom experience
+    
+    final minZoom = kWorldMaxZoom + 1;
     final maxZoom = _zoom.toInt();
+    
+    // Calculate maximum possible zoom based on tile count limit
+    final maxPossibleZoom = _calculateMaxZoomForTileLimit(bounds, minZoom);
+    
     final nTiles = computeTileList(bounds, minZoom, maxZoom).length;
     final totalMb = (nTiles * kTileEstimateKb) / 1024.0;
+    
     setState(() {
       _minZoom = minZoom;
+      _maxPossibleZoom = maxPossibleZoom;
       _tileCount = nTiles;
       _mbEstimate = totalMb;
     });
   }
+  
+  /// Calculate the maximum zoom level that keeps tile count under the limit
+  int _calculateMaxZoomForTileLimit(LatLngBounds bounds, int minZoom) {
+    for (int zoom = minZoom; zoom <= kAbsoluteMaxZoom; zoom++) {
+      final tileCount = computeTileList(bounds, minZoom, zoom).length;
+      if (tileCount > kMaxReasonableTileCount) {
+        // Return the previous zoom level that was still under the limit
+        return math.max(minZoom, zoom - 1);
+      }
+    }
+    return kAbsoluteMaxZoom;
+  }
+  
+
 
   @override
   Widget build(BuildContext context) {
     final bounds = widget.controller.camera.visibleBounds;
     final maxZoom = _zoom.toInt();
-    double sliderMin;
-    double sliderMax;
-    int sliderDivisions;
-    double sliderValue;
-    // Generate slider min/max/divisions with clarity
-    if (_minZoom != null) {
-      sliderMin = _minZoom!.toDouble();
-    } else {
-      sliderMin = 12.0; //fallback
-    }
-    if (_minZoom != null) {
-      final candidateMax = _minZoom! + kMaxUserDownloadZoomSpan;
-      sliderMax = candidateMax > 19 ? 19.0 : candidateMax.toDouble();
-    } else {
-      sliderMax = 19.0; //fallback
-    }
-    if (_minZoom != null) {
-      final candidateMax = _minZoom! + kMaxUserDownloadZoomSpan;
-      int diff = (candidateMax > 19 ? 19 : candidateMax) - _minZoom!;
-      sliderDivisions = diff > 0 ? diff : 1;
-    } else {
-      sliderDivisions = 7; //fallback
-    }
-    sliderValue = _zoom.clamp(sliderMin, sliderMax);
-    // We recompute estimates when the zoom slider changes
+    
+    // Use the calculated max possible zoom instead of fixed span
+    final sliderMin = _minZoom?.toDouble() ?? 12.0;
+    final sliderMax = _maxPossibleZoom?.toDouble() ?? 19.0;
+    final sliderDivisions = math.max(1, (_maxPossibleZoom ?? 19) - (_minZoom ?? 12));
+    final sliderValue = _zoom.clamp(sliderMin, sliderMax);
 
     return AlertDialog(
       title: Row(
@@ -144,7 +149,47 @@ class _DownloadAreaDialogState extends State<DownloadAreaDialog> {
                   const Text('Min zoom:'),
                   Text('Z$_minZoom'),
                 ],
-              )
+              ),
+            if (_maxPossibleZoom != null && _tileCount != null)
+              Padding(
+                padding: const EdgeInsets.only(top: 8.0),
+                child: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: _tileCount! > kMaxReasonableTileCount 
+                        ? Colors.orange.withOpacity(0.1)
+                        : Colors.green.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Max recommended zoom: Z$_maxPossibleZoom',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: _tileCount! > kMaxReasonableTileCount 
+                              ? Colors.orange[700] 
+                              : Colors.green[700],
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        _tileCount! > kMaxReasonableTileCount
+                            ? 'Current selection exceeds ${kMaxReasonableTileCount.toString()} tile limit'
+                            : 'Within ${kMaxReasonableTileCount.toString()} tile limit',
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: _tileCount! > kMaxReasonableTileCount 
+                              ? Colors.orange[600] 
+                              : Colors.green[600],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
           ],
         ),
       ),
@@ -159,6 +204,7 @@ class _DownloadAreaDialogState extends State<DownloadAreaDialog> {
               final id = DateTime.now().toIso8601String().replaceAll(':', '-');
               final appDocDir = await OfflineAreaService().getOfflineAreaDir();
               final dir = "${appDocDir.path}/$id";
+              
               // Fire and forget: don't await download, so dialog closes immediately
               // ignore: unawaited_futures
               OfflineAreaService().downloadArea(
@@ -173,7 +219,7 @@ class _DownloadAreaDialogState extends State<DownloadAreaDialog> {
               Navigator.pop(context);
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
-                  content: Text('Download started!'),
+                  content: Text('Download started! Fetching tiles and cameras...'),
                 ),
               );
             } catch (e) {

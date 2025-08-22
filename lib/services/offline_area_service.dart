@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'dart:convert';
+import 'dart:math' as math;
 import 'package:flutter/foundation.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:flutter_map/flutter_map.dart' show LatLngBounds;
@@ -305,12 +306,15 @@ class OfflineAreaService {
       }
 
       if (!area.isPermanent) {
+        // Calculate expanded camera bounds that cover the entire tile area at minimum zoom
+        final cameraBounds = _calculateCameraBounds(bounds, minZoom);
         final cameras = await MapDataProvider().getAllCamerasForDownload(
-          bounds: bounds,
+          bounds: cameraBounds,
           profiles: AppState.instance.enabledProfiles,
         );
         area.cameras = cameras;
         await saveCameras(cameras, directory);
+        debugPrint('Area $id: Downloaded ${cameras.length} cameras from expanded bounds (${cameraBounds.north.toStringAsFixed(6)}, ${cameraBounds.west.toStringAsFixed(6)}) to (${cameraBounds.south.toStringAsFixed(6)}, ${cameraBounds.east.toStringAsFixed(6)})');
       } else {
         area.cameras = [];
       }
@@ -362,5 +366,58 @@ class OfflineAreaService {
     }
     _areas.remove(area);
     await saveAreasToDisk();
+  }
+  
+  /// Calculate expanded bounds that cover the entire tile area at minimum zoom
+  /// This ensures we fetch all cameras that could be relevant for the offline area
+  LatLngBounds _calculateCameraBounds(LatLngBounds visibleBounds, int minZoom) {
+    // Get all tiles that cover the visible bounds at minimum zoom
+    final tiles = computeTileList(visibleBounds, minZoom, minZoom);
+    if (tiles.isEmpty) return visibleBounds;
+    
+    // Find the bounding box of all these tiles
+    double minLat = 90.0, maxLat = -90.0;
+    double minLon = 180.0, maxLon = -180.0;
+    
+    for (final tile in tiles) {
+      final z = tile[0];
+      final x = tile[1]; 
+      final y = tile[2];
+      
+      // Convert tile coordinates back to lat/lng bounds
+      final tileBounds = _tileToLatLngBounds(x, y, z);
+      
+      minLat = math.min(minLat, tileBounds.south);
+      maxLat = math.max(maxLat, tileBounds.north);
+      minLon = math.min(minLon, tileBounds.west);
+      maxLon = math.max(maxLon, tileBounds.east);
+    }
+    
+    return LatLngBounds(
+      LatLng(minLat, minLon),
+      LatLng(maxLat, maxLon),
+    );
+  }
+  
+  /// Convert tile coordinates to LatLng bounds
+  LatLngBounds _tileToLatLngBounds(int x, int y, int z) {
+    final n = math.pow(2, z);
+    final lonDeg = x / n * 360.0 - 180.0;
+    final latRad = math.atan(_sinh(math.pi * (1 - 2 * y / n)));
+    final latDeg = latRad * 180.0 / math.pi;
+    
+    final lonDegNext = (x + 1) / n * 360.0 - 180.0;
+    final latRadNext = math.atan(_sinh(math.pi * (1 - 2 * (y + 1) / n)));
+    final latDegNext = latRadNext * 180.0 / math.pi;
+    
+    return LatLngBounds(
+      LatLng(latDegNext, lonDeg),      // SW corner
+      LatLng(latDeg, lonDegNext),      // NE corner  
+    );
+  }
+  
+  /// Hyperbolic sine function: sinh(x) = (e^x - e^(-x)) / 2
+  double _sinh(double x) {
+    return (math.exp(x) - math.exp(-x)) / 2;
   }
 }

@@ -41,3 +41,7 @@ const int kTileFetchJitter3Ms = 5000;
 
 // User download max zoom span (user can download up to kMaxUserDownloadZoomSpan zooms above min)
 const int kMaxUserDownloadZoomSpan = 7;
+
+// Download area limits and constants
+const int kMaxReasonableTileCount = 10000;
+const int kAbsoluteMaxZoom = 19;
