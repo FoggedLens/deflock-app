@@ -56,6 +56,32 @@ List<int> latLonToTile(double lat, double lon, int zoom) {
   return [xtile, ytile];
 }
 
+/// Convert tile coordinates back to LatLng bounds
+LatLngBounds tileToLatLngBounds(int x, int y, int z) {
+  final n = pow(2, z);
+  
+  // Calculate bounds for this tile
+  final lonWest = x / n * 360.0 - 180.0;
+  final lonEast = (x + 1) / n * 360.0 - 180.0;
+  
+  // For latitude, we need to invert the mercator projection
+  final latNorthRad = atan(sinh(pi * (1 - 2 * y / n)));
+  final latSouthRad = atan(sinh(pi * (1 - 2 * (y + 1) / n)));
+  
+  final latNorth = latNorthRad * 180.0 / pi;
+  final latSouth = latSouthRad * 180.0 / pi;
+  
+  return LatLngBounds(
+    LatLng(latSouth, lonWest),   // SW corner
+    LatLng(latNorth, lonEast),   // NE corner
+  );
+}
+
+/// Hyperbolic sine function: sinh(x) = (e^x - e^(-x)) / 2
+double sinh(double x) {
+  return (exp(x) - exp(-x)) / 2;
+}
+
 LatLngBounds globalWorldBounds() {
   // Use slightly shrunken bounds to avoid tile index overflow at extreme coordinates
   return LatLngBounds(LatLng(-85.0, -179.9), LatLng(85.0, 179.9));
