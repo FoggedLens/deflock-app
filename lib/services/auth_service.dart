@@ -55,7 +55,6 @@ class AuthService {
       enablePKCE: true,
       // tokenStorageKey: _tokenKey, // not supported by this package version
     );
-    print('AuthService: Initialized for $mode with $authBase, clientId $clientId [manual token storage as needed]');
   }
 
   Future<bool> isLoggedIn() async {
@@ -80,17 +79,14 @@ class AuthService {
 
   Future<String?> login() async {
     if (_mode == UploadMode.simulate) {
-      print('AuthService: Simulate login (no OAuth)');
       final prefs = await SharedPreferences.getInstance();
       _displayName = 'Demo User';
       await prefs.setBool('sim_user_logged_in', true);
       return _displayName;
     }
     try {
-      print('AuthService: Starting OAuth login...');
       final token = await _helper.getToken();
       if (token?.accessToken == null) {
-        print('AuthService: OAuth error - token null or missing accessToken');
         log('OAuth error: token null or missing accessToken');
         return null;
       }
@@ -101,13 +97,7 @@ class AuthService {
       final tokenJson = jsonEncode(tokenMap);
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString(_tokenKey, tokenJson); // Save token for current mode
-      print('AuthService: Got access token, fetching username...');
       _displayName = await _fetchUsername(token!.accessToken!);
-      if (_displayName != null) {
-        print('AuthService: Successfully fetched username: $_displayName');
-      } else {
-        print('AuthService: Failed to fetch username from OSM API');
-      }
       return _displayName;
     } catch (e) {
       print('AuthService: OAuth login failed: $e');
@@ -131,7 +121,6 @@ class AuthService {
 
   // Force a fresh login by clearing stored tokens
   Future<String?> forceLogin() async {
-    print('AuthService: Forcing fresh login by clearing stored tokens...');
     await _helper.removeAllTokens();
     _displayName = null;
     return await login();
@@ -162,37 +151,17 @@ class AuthService {
 
   Future<String?> _fetchUsername(String accessToken) async {
     try {
-      print('AuthService: Fetching username from OSM API ($_apiHost) ...');
-      print('AuthService: Access token (first 20 chars): ${accessToken.substring(0, math.min(20, accessToken.length))}...');
-      
       final resp = await http.get(
         Uri.parse('$_apiHost/api/0.6/user/details.json'),
         headers: {'Authorization': 'Bearer $accessToken'},
       );
-      print('AuthService: OSM API response status: ${resp.statusCode}');
-      print('AuthService: Response headers: ${resp.headers}');
       
       if (resp.statusCode != 200) {
-        print('AuthService: fetchUsername failed with ${resp.statusCode}: ${resp.body}');
         log('fetchUsername response ${resp.statusCode}: ${resp.body}');
-        
-        // Try to get more info about the token by checking permissions endpoint
-        try {
-          print('AuthService: Checking token permissions...');
-          final permResp = await http.get(
-            Uri.parse('$_apiHost/api/0.6/permissions.json'),
-            headers: {'Authorization': 'Bearer $accessToken'},
-          );
-          print('AuthService: Permissions response ${permResp.statusCode}: ${permResp.body}');
-        } catch (e) {
-          print('AuthService: Error checking permissions: $e');
-        }
-        
         return null;
       }
       final userData = jsonDecode(resp.body);
       final displayName = userData['user']?['display_name'];
-      print('AuthService: Extracted display name: $displayName');
       return displayName;
     } catch (e) {
       print('AuthService: Error fetching username: $e');

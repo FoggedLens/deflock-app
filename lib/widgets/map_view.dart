@@ -6,7 +6,6 @@ import 'package:geolocator/geolocator.dart';
 import 'package:provider/provider.dart';
 
 import '../app_state.dart';
-import '../services/map_data_provider.dart';
 import '../services/offline_area_service.dart';
 import '../models/osm_camera_node.dart';
 import 'debouncer.dart';
@@ -35,7 +34,6 @@ class MapView extends StatefulWidget {
 
 class _MapViewState extends State<MapView> {
   late final MapController _controller;
-  final MapDataProvider _mapDataProvider = MapDataProvider();
   final Debouncer _debounce = Debouncer(kDebounceCameraRefresh);
 
   StreamSubscription<Position>? _positionSub;

@@ -28,19 +28,29 @@ class DirectionConesBuilder {
     // Add cones for cameras with direction
     overlays.addAll(
       cameras
-        .where((n) => n.hasDirection && n.directionDeg != null)
-        .where((n) => n.coord.latitude != 0 || n.coord.longitude != 0)
-        .where((n) => n.coord.latitude.abs() <= 90 && n.coord.longitude.abs() <= 180)
+        .where(_isValidCameraWithDirection)
         .map((n) => _buildCone(
           n.coord, 
           n.directionDeg!, 
           zoom,
-          isPending: n.tags.containsKey('_pending_upload') && 
-                     n.tags['_pending_upload'] == 'true',
+          isPending: _isPendingUpload(n),
         ))
     );
     
     return overlays;
+  }
+
+  static bool _isValidCameraWithDirection(OsmCameraNode node) {
+    return node.hasDirection && 
+           node.directionDeg != null &&
+           (node.coord.latitude != 0 || node.coord.longitude != 0) &&
+           node.coord.latitude.abs() <= 90 && 
+           node.coord.longitude.abs() <= 180;
+  }
+
+  static bool _isPendingUpload(OsmCameraNode node) {
+    return node.tags.containsKey('_pending_upload') && 
+           node.tags['_pending_upload'] == 'true';
   }
 
   static Polygon _buildCone(

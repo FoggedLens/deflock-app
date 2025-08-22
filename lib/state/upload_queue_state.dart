@@ -57,14 +57,12 @@ class UploadQueueState extends ChangeNotifier {
   }
 
   void clearQueue() {
-    print("UploadQueueState: Clearing upload queue (${_queue.length} items)");
     _queue.clear();
     _saveQueue();
     notifyListeners();
   }
   
   void removeFromQueue(PendingUpload upload) {
-    print("UploadQueueState: Removing upload from queue: ${upload.coord}");
     _queue.remove(upload);
     _saveQueue();
     notifyListeners();
@@ -105,10 +103,8 @@ class UploadQueueState extends ChangeNotifier {
       bool ok;
       if (uploadMode == UploadMode.simulate) {
         // Simulate successful upload without calling real API
-        print("UploadQueueState: UploadMode.simulate - simulating upload for ${item.coord}");
         await Future.delayed(const Duration(seconds: 1)); // Simulate network delay
         ok = true;
-        print('UploadQueueState: Simulated upload successful');
       } else {
         // Real upload -- pass uploadMode so uploader can switch between prod and sandbox
         final up = Uploader(access, () {

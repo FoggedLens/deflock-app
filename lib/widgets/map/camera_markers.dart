@@ -70,8 +70,7 @@ class CameraMarkersBuilder {
     final markers = <Marker>[
       // Camera markers
       ...cameras
-        .where((n) => n.coord.latitude != 0 || n.coord.longitude != 0)
-        .where((n) => n.coord.latitude.abs() <= 90 && n.coord.longitude.abs() <= 180)
+        .where(_isValidCameraCoordinate)
         .map((n) => Marker(
           point: n.coord,
           width: 24,
@@ -90,5 +89,11 @@ class CameraMarkersBuilder {
     ];
 
     return markers;
+  }
+
+  static bool _isValidCameraCoordinate(OsmCameraNode node) {
+    return (node.coord.latitude != 0 || node.coord.longitude != 0) &&
+           node.coord.latitude.abs() <= 90 && 
+           node.coord.longitude.abs() <= 180;
   }
 }
