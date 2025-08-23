@@ -40,31 +40,39 @@ class SimpleTileHttpClient extends http.BaseClient {
   }
 
   Future<http.StreamedResponse> _getTile(int z, int x, int y) async {
+    // Only serve from offline if available - otherwise let flutter_map handle directly
     try {
-      // Use centralized tile fetching from MapDataProvider
-      final tileBytes = await _mapDataProvider.getTile(z: z, x: x, y: y);
-      debugPrint('[SimpleTileService] Serving tile $z/$x/$y via MapDataProvider');
+      // Check if we have this tile offline (without fetching)
+      final localTileBytes = await _mapDataProvider.getTile(z: z, x: x, y: y, source: MapSource.local);
       
+      debugPrint('[SimpleTileService] Serving tile $z/$x/$y from offline storage');
+      
+      // Serve offline tile with proper cache headers
       return http.StreamedResponse(
-        Stream.value(tileBytes),
+        Stream.value(localTileBytes),
         200,
         headers: {
           'Content-Type': 'image/png',
-          'Cache-Control': 'public, max-age=604800', // 1 week cache
+          'Cache-Control': 'public, max-age=604800',
           'Expires': _httpDateFormat(DateTime.now().add(Duration(days: 7))),
           'Last-Modified': _httpDateFormat(DateTime.now().subtract(Duration(hours: 1))),
         },
       );
       
     } catch (e) {
-      debugPrint('[SimpleTileService] Tile fetch failed for $z/$x/$y: $e');
-      
-      // Return 404 for any failure - let flutter_map handle gracefully
-      return http.StreamedResponse(
-        Stream.value(<int>[]),
-        404,
-        reasonPhrase: 'Tile not available: $e',
-      );
+      // No offline tile - try OSM with proper error handling
+      debugPrint('[SimpleTileService] No offline tile for $z/$x/$y - trying OSM');
+      try {
+        return await _inner.send(http.Request('GET', Uri.parse('https://tile.openstreetmap.org/$z/$x/$y.png')));
+      } catch (networkError) {
+        debugPrint('[SimpleTileService] OSM request failed for $z/$x/$y: $networkError');
+        // Return 404 instead of throwing - let flutter_map handle gracefully
+        return http.StreamedResponse(
+          Stream.value(<int>[]),
+          404,
+          reasonPhrase: 'Network tile unavailable: $networkError',
+        );
+      }
     }
   }
 

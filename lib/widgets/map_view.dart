@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
@@ -50,9 +49,8 @@ class _MapViewState extends State<MapView> {
   // Track profile changes to trigger camera refresh
   List<CameraProfile>? _lastEnabledProfiles;
   
-  // Track map position to only clear queue on significant changes
+  // Track zoom to clear queue on zoom changes
   double? _lastZoom;
-  LatLng? _lastCenter;
 
   @override
   void initState() {
@@ -164,18 +162,7 @@ class _MapViewState extends State<MapView> {
     return ids1.length == ids2.length && ids1.containsAll(ids2);
   }
 
-  /// Calculate approximate distance between two LatLng points in meters
-  double _distanceInMeters(LatLng point1, LatLng point2) {
-    const double earthRadius = 6371000; // Earth radius in meters
-    final dLat = (point2.latitude - point1.latitude) * (3.14159 / 180);
-    final dLon = (point2.longitude - point1.longitude) * (3.14159 / 180);
-    final a = math.sin(dLat / 2) * math.sin(dLat / 2) +
-        math.cos(point1.latitude * (3.14159 / 180)) *
-        math.cos(point2.latitude * (3.14159 / 180)) *
-        math.sin(dLon / 2) * math.sin(dLon / 2);
-    final c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a));
-    return earthRadius * c;
-  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -257,25 +244,17 @@ class _MapViewState extends State<MapView> {
                 appState.updateSession(target: pos.center);
               }
               
-              // TODO: Re-enable smart queue clearing once we debug tile loading issues
-              // For now, let flutter_map handle its own request management
-              /*
-              // Only clear tile queue on significant movement changes
+              // Only clear tile queue on significant ZOOM changes (not panning)
               final currentZoom = pos.zoom;
-              final currentCenter = pos.center;
-              final zoomChanged = _lastZoom == null || (currentZoom - _lastZoom!).abs() > 0.1;
-              final centerChanged = _lastCenter == null || 
-                  _distanceInMeters(_lastCenter!, currentCenter) > 100; // 100m threshold
+              final zoomChanged = _lastZoom != null && (currentZoom - _lastZoom!).abs() > 0.5;
               
-              if (zoomChanged || centerChanged) {
+              if (zoomChanged) {
                 _tileDebounce(() {
-                  debugPrint('[MapView] Significant map change - clearing stale tile requests');
+                  debugPrint('[MapView] Zoom change detected - clearing stale tile requests');
                   _tileHttpClient.clearTileQueue();
                 });
-                _lastZoom = currentZoom;
-                _lastCenter = currentCenter;
               }
-              */
+              _lastZoom = currentZoom;
               
               // Request more cameras on any map movement/zoom at valid zoom level (slower debounce)
               if (pos.zoom >= 10) {
