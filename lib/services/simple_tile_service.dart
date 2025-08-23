@@ -1,6 +1,7 @@
 import 'package:http/http.dart' as http;
 import 'package:flutter/foundation.dart';
 
+import '../app_state.dart';
 import 'map_data_provider.dart';
 
 /// Simple HTTP client that routes tile requests through the centralized MapDataProvider.
@@ -40,9 +41,8 @@ class SimpleTileHttpClient extends http.BaseClient {
   }
 
   Future<http.StreamedResponse> _getTile(int z, int x, int y) async {
-    // Only serve from offline if available - otherwise let flutter_map handle directly
     try {
-      // Check if we have this tile offline (without fetching)
+      // First try to get tile from offline storage
       final localTileBytes = await _mapDataProvider.getTile(z: z, x: x, y: y, source: MapSource.local);
       
       debugPrint('[SimpleTileService] Serving tile $z/$x/$y from offline storage');
@@ -60,8 +60,21 @@ class SimpleTileHttpClient extends http.BaseClient {
       );
       
     } catch (e) {
-      // No offline tile - try OSM with proper error handling
-      debugPrint('[SimpleTileService] No offline tile for $z/$x/$y - trying OSM');
+      // No offline tile available
+      debugPrint('[SimpleTileService] No offline tile for $z/$x/$y');
+      
+      // Check if we're in offline mode
+      if (AppState.instance.offlineMode) {
+        debugPrint('[SimpleTileService] Offline mode - not attempting OSM fetch for $z/$x/$y');
+        return http.StreamedResponse(
+          Stream.value(<int>[]),
+          404,
+          reasonPhrase: 'Tile not available offline',
+        );
+      }
+      
+      // We're online - try OSM with proper error handling
+      debugPrint('[SimpleTileService] Online mode - trying OSM for $z/$x/$y');
       try {
         return await _inner.send(http.Request('GET', Uri.parse('https://tile.openstreetmap.org/$z/$x/$y.png')));
       } catch (networkError) {
