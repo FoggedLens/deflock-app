@@ -26,6 +26,27 @@ class OfflineAreaService {
   final List<OfflineArea> _areas = [];
   List<OfflineArea> get offlineAreas => List.unmodifiable(_areas);
   
+  /// Check if any areas are currently downloading
+  bool get hasActiveDownloads => _areas.any((area) => area.status == OfflineAreaStatus.downloading);
+  
+  /// Cancel all active downloads (used when enabling offline mode)
+  Future<void> cancelActiveDownloads() async {
+    final activeAreas = _areas.where((area) => area.status == OfflineAreaStatus.downloading).toList();
+    for (final area in activeAreas) {
+      area.status = OfflineAreaStatus.cancelled;
+      if (!area.isPermanent) {
+        // Clean up non-permanent areas
+        final dir = Directory(area.directory);
+        if (await dir.exists()) {
+          await dir.delete(recursive: true);
+        }
+        _areas.remove(area);
+      }
+    }
+    await saveAreasToDisk();
+    debugPrint('OfflineAreaService: Cancelled ${activeAreas.length} active downloads due to offline mode');
+  }
+  
   /// Ensure the service is initialized (areas loaded from disk)
   Future<void> ensureInitialized() async {
     if (_initialized) return;

@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:provider/provider.dart';
 import 'dart:math' as math;
 
+import '../app_state.dart';
 import '../dev_config.dart';
 import '../services/offline_area_service.dart';
 import '../services/offline_areas/offline_tile_utils.dart';
@@ -85,8 +87,10 @@ class _DownloadAreaDialogState extends State<DownloadAreaDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final appState = context.watch<AppState>();
     final bounds = widget.controller.camera.visibleBounds;
     final maxZoom = _zoom.toInt();
+    final isOfflineMode = appState.offlineMode;
     
     // Use the calculated max possible zoom instead of fixed span
     final sliderMin = _minZoom?.toDouble() ?? 12.0;
@@ -190,6 +194,33 @@ class _DownloadAreaDialogState extends State<DownloadAreaDialog> {
                   ),
                 ),
               ),
+            if (isOfflineMode)
+              Padding(
+                padding: const EdgeInsets.only(top: 12.0),
+                child: Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.orange.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.orange.withOpacity(0.3)),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.wifi_off, color: Colors.orange[700], size: 20),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          'Downloads disabled while in offline mode. Disable offline mode to download new areas.',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.orange[700],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
           ],
         ),
       ),
@@ -199,7 +230,7 @@ class _DownloadAreaDialogState extends State<DownloadAreaDialog> {
           child: const Text('Cancel'),
         ),
         ElevatedButton(
-          onPressed: () async {
+          onPressed: isOfflineMode ? null : () async {
             try {
               final id = DateTime.now().toIso8601String().replaceAll(':', '-');
               final appDocDir = await OfflineAreaService().getOfflineAreaDir();

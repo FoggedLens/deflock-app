@@ -161,6 +161,8 @@ class AppState extends ChangeNotifier {
       _startUploader(); // Resume upload queue processing as we leave offline mode
     } else {
       _uploadQueueState.stopUploader(); // Stop uploader in offline mode
+      // Cancel any active area downloads
+      await OfflineAreaService().cancelActiveDownloads();
     }
   }
 
