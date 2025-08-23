@@ -10,8 +10,14 @@ class TileProviderWithCache extends TileProvider with ChangeNotifier {
   
   bool _disposed = false;
   int _disposeCount = 0;
+  VoidCallback? _onTilesCachedCallback;
 
   TileProviderWithCache();
+  
+  /// Set a callback to be called when tiles are cached (used by MapView for refresh)
+  void setOnTilesCachedCallback(VoidCallback? callback) {
+    _onTilesCachedCallback = callback;
+  }
   
   @override
   void dispose() {
@@ -67,6 +73,8 @@ class TileProviderWithCache extends TileProvider with ChangeNotifier {
         if (!_disposed && hasListeners) {
           notifyListeners(); // This updates any listening widgets
         }
+        // Trigger map refresh callback to force tile re-rendering
+        _onTilesCachedCallback?.call();
       }
       // If bytes were empty, don't cache (will re-attempt next time)
     } catch (e) {

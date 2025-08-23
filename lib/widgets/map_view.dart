@@ -63,6 +63,10 @@ class _MapViewState extends State<MapView> {
     
     // Ensure initial overlays are fetched
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      // Set up tile refresh callback
+      final tileProvider = Provider.of<TileProviderWithCache>(context, listen: false);
+      tileProvider.setOnTilesCachedCallback(_onTilesCached);
+      
       _refreshCamerasFromProvider();
     });
   }
@@ -72,11 +76,28 @@ class _MapViewState extends State<MapView> {
     _positionSub?.cancel();
     _debounce.dispose();
     _cameraProvider.removeListener(_onCamerasUpdated);
+    
+    // Clean up tile refresh callback
+    try {
+      final tileProvider = Provider.of<TileProviderWithCache>(context, listen: false);
+      tileProvider.setOnTilesCachedCallback(null);
+    } catch (e) {
+      // Context might be disposed already - that's okay
+    }
+    
     super.dispose();
   }
 
   void _onCamerasUpdated() {
     if (mounted) setState(() {});
+  }
+
+  void _onTilesCached() {
+    // When new tiles are cached, just trigger a widget rebuild
+    // This should cause the TileLayer to re-render with cached tiles
+    if (mounted) {
+      setState(() {});
+    }
   }
 
   void _refreshCamerasFromProvider() {
@@ -154,6 +175,8 @@ class _MapViewState extends State<MapView> {
     final ids2 = list2.map((p) => p.id).toSet();
     return ids1.length == ids2.length && ids1.containsAll(ids2);
   }
+
+
 
 
 

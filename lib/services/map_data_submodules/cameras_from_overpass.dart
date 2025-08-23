@@ -6,6 +6,7 @@ import 'package:flutter_map/flutter_map.dart';
 import '../../models/camera_profile.dart';
 import '../../models/osm_camera_node.dart';
 import '../../app_state.dart';
+import '../network_status.dart';
 
 /// Fetches cameras from the Overpass OSM API for the given bounds and profiles.
 /// If fetchAllPages is true, returns all possible cameras using multiple API calls (paging with pageSize).
@@ -45,11 +46,13 @@ Future<List<OsmCameraNode>> camerasFromOverpass({
       print('[camerasFromOverpass] Status: ${resp.statusCode}, Length: ${resp.body.length}');
       if (resp.statusCode != 200) {
         print('[camerasFromOverpass] Overpass failed: ${resp.body}');
+        NetworkStatus.instance.reportOverpassIssue();
         return [];
       }
       final data = jsonDecode(resp.body) as Map<String, dynamic>;
       final elements = data['elements'] as List<dynamic>;
       print('[camerasFromOverpass] Retrieved elements: ${elements.length}');
+      NetworkStatus.instance.reportOverpassSuccess();
       return elements.whereType<Map<String, dynamic>>().map((e) {
         return OsmCameraNode(
           id: e['id'],
@@ -59,6 +62,14 @@ Future<List<OsmCameraNode>> camerasFromOverpass({
       }).toList();
     } catch (e) {
       print('[camerasFromOverpass] Overpass exception: $e');
+      
+      // Report network issues on connection errors
+      if (e.toString().contains('Connection refused') || 
+          e.toString().contains('Connection timed out') ||
+          e.toString().contains('Connection reset')) {
+        NetworkStatus.instance.reportOverpassIssue();
+      }
+      
       return [];
     }
   }

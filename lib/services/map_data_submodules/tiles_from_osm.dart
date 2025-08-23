@@ -4,6 +4,7 @@ import 'dart:async';
 import 'package:http/http.dart' as http;
 import 'package:flutter/foundation.dart';
 import 'package:flock_map_app/dev_config.dart';
+import '../network_status.dart';
 
 /// Global semaphore to limit simultaneous tile fetches
 final _tileFetchSemaphore = _SimpleSemaphore(4); // Max 4 concurrent
@@ -33,13 +34,23 @@ Future<List<int>> fetchOSMTile({
       print('[fetchOSMTile] HTTP ${resp.statusCode} for $z/$x/$y, length=${resp.bodyBytes.length}');
       if (resp.statusCode == 200 && resp.bodyBytes.isNotEmpty) {
         print('[fetchOSMTile] SUCCESS $z/$x/$y');
+        NetworkStatus.instance.reportOsmTileSuccess();
         return resp.bodyBytes;
       } else {
         print('[fetchOSMTile] FAIL $z/$x/$y: code=${resp.statusCode}, bytes=${resp.bodyBytes.length}');
+        NetworkStatus.instance.reportOsmTileIssue();
         throw HttpException('Failed to fetch tile $z/$x/$y: status ${resp.statusCode}');
       }
     } catch (e) {
       print('[fetchOSMTile] Exception $z/$x/$y: $e');
+      
+      // Report network issues on connection errors
+      if (e.toString().contains('Connection refused') || 
+          e.toString().contains('Connection timed out') ||
+          e.toString().contains('Connection reset')) {
+        NetworkStatus.instance.reportOsmTileIssue();
+      }
+      
       if (attempt >= maxAttempts) {
         print("[fetchOSMTile] Failed for $z/$x/$y after $attempt attempts: $e");
         rethrow;
