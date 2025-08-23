@@ -1,9 +1,7 @@
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
-import 'package:flutter/services.dart';
 import '../services/map_data_provider.dart';
-import '../app_state.dart';
 
 /// In-memory tile cache and async provider for custom tiles.
 class TileProviderWithCache extends TileProvider with ChangeNotifier {
@@ -36,7 +34,6 @@ class TileProviderWithCache extends TileProvider with ChangeNotifier {
 
   static void clearCache() {
     _tileCache.clear();
-    print('[TileProviderWithCache] Tile cache cleared');
   }
 
   void _fetchAndCacheTile(TileCoordinates coords, String key, {MapSource source = MapSource.auto}) async {
@@ -49,7 +46,6 @@ class TileProviderWithCache extends TileProvider with ChangeNotifier {
       );
       if (bytes.isNotEmpty) {
         _tileCache[key] = Uint8List.fromList(bytes);
-        print('[TileProviderWithCache] Cached tile $key, bytes=${bytes.length}');
         // Only notify listeners if not disposed
         if (!_disposed) {
           notifyListeners(); // This updates any listening widgets
@@ -57,7 +53,6 @@ class TileProviderWithCache extends TileProvider with ChangeNotifier {
       }
       // If bytes were empty, don't cache (will re-attempt next time)
     } catch (e) {
-      print('[TileProviderWithCache] Error fetching tile $key: $e');
       // Do NOT cache a failed or empty tile! Placeholder tiles will be evicted on online transition.
     }
   }

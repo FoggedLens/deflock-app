@@ -39,12 +39,10 @@ class MapDataProvider {
     MapSource source = MapSource.auto,
   }) async {
     final offline = AppState.instance.offlineMode;
-    print('[MapDataProvider] getCameras called, source=$source, offlineMode=$offline');
 
     // Explicit remote request: error if offline, else always remote
     if (source == MapSource.remote) {
       if (offline) {
-        print('[MapDataProvider] Overpass request BLOCKED because we are in offlineMode');
         throw OfflineModeException("Cannot fetch remote cameras in offline mode.");
       }
       return camerasFromOverpass(
@@ -121,12 +119,10 @@ class MapDataProvider {
     MapSource source = MapSource.auto,
   }) async {
     final offline = AppState.instance.offlineMode;
-    print('[MapDataProvider] getTile called for $z/$x/$y, source=$source, offlineMode=$offline');
 
     // Explicitly remote
     if (source == MapSource.remote) {
       if (offline) {
-        print('[MapDataProvider] BLOCKED by offlineMode for remote tile fetch');
         throw OfflineModeException("Cannot fetch remote tiles in offline mode.");
       }
       return fetchOSMTile(z: z, x: x, y: y);
