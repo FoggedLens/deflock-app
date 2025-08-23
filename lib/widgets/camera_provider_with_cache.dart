@@ -19,8 +19,18 @@ class CameraProviderWithCache extends ChangeNotifier {
   Timer? _debounceTimer;
 
   /// Call this to get (quickly) all cached overlays for the given view.
+  /// Filters by currently enabled profiles.
   List<OsmCameraNode> getCachedCamerasForBounds(LatLngBounds bounds) {
-    return CameraCache.instance.queryByBounds(bounds);
+    final allCameras = CameraCache.instance.queryByBounds(bounds);
+    final enabledProfiles = AppState.instance.enabledProfiles;
+    
+    // If no profiles are enabled, show no cameras
+    if (enabledProfiles.isEmpty) return [];
+    
+    // Filter cameras to only show those matching enabled profiles
+    return allCameras.where((camera) {
+      return _matchesAnyProfile(camera, enabledProfiles);
+    }).toList();
   }
 
   /// Call this when the map view changes (bounds/profiles), triggers async fetch
@@ -58,5 +68,26 @@ class CameraProviderWithCache extends ChangeNotifier {
   void clearCache() {
     CameraCache.instance.clear();
     notifyListeners();
+  }
+
+  /// Force refresh the display (useful when filters change but cache doesn't)
+  void refreshDisplay() {
+    notifyListeners();
+  }
+
+  /// Check if a camera matches any of the provided profiles
+  bool _matchesAnyProfile(OsmCameraNode camera, List<CameraProfile> profiles) {
+    for (final profile in profiles) {
+      if (_cameraMatchesProfile(camera, profile)) return true;
+    }
+    return false;
+  }
+
+  /// Check if a camera matches a specific profile (all profile tags must match)
+  bool _cameraMatchesProfile(OsmCameraNode camera, CameraProfile profile) {
+    for (final entry in profile.tags.entries) {
+      if (camera.tags[entry.key] != entry.value) return false;
+    }
+    return true;
   }
 }

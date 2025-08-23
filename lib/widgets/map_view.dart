@@ -8,6 +8,7 @@ import 'package:provider/provider.dart';
 import '../app_state.dart';
 import '../services/offline_area_service.dart';
 import '../models/osm_camera_node.dart';
+import '../models/camera_profile.dart';
 import 'debouncer.dart';
 import 'tile_provider_with_cache.dart';
 import 'camera_provider_with_cache.dart';
@@ -40,6 +41,13 @@ class _MapViewState extends State<MapView> {
   LatLng? _currentLatLng;
 
   late final CameraProviderWithCache _cameraProvider;
+  
+  // Track profile changes to trigger camera refresh
+  List<CameraProfile>? _lastEnabledProfiles;
+  
+  // Track offline mode changes to trigger tile refresh
+  bool? _lastOfflineMode;
+  int _mapRebuildCounter = 0;
 
   @override
   void initState() {
@@ -52,6 +60,7 @@ class _MapViewState extends State<MapView> {
     // Set up camera overlay caching
     _cameraProvider = CameraProviderWithCache.instance;
     _cameraProvider.addListener(_onCamerasUpdated);
+    
     // Ensure initial overlays are fetched
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _refreshCamerasFromProvider();
@@ -137,13 +146,46 @@ class _MapViewState extends State<MapView> {
     }
   }
 
+  /// Helper to check if two profile lists are equal
+  bool _profileListsEqual(List<CameraProfile> list1, List<CameraProfile> list2) {
+    if (list1.length != list2.length) return false;
+    // Compare by profile IDs since profiles are value objects
+    final ids1 = list1.map((p) => p.id).toSet();
+    final ids2 = list2.map((p) => p.id).toSet();
+    return ids1.length == ids2.length && ids1.containsAll(ids2);
+  }
+
+
+
+
+
   @override
   Widget build(BuildContext context) {
     final appState = context.watch<AppState>();
     final session = appState.session;
 
-    // Only update cameras when map moves or profiles/mode actually change (not every build!)
-    // _refreshCamerasFromProvider() is now only called from map movement and relevant change handlers.
+    // Check if enabled profiles changed and refresh cameras if needed
+    final currentEnabledProfiles = appState.enabledProfiles;
+    if (_lastEnabledProfiles == null || 
+        !_profileListsEqual(_lastEnabledProfiles!, currentEnabledProfiles)) {
+      _lastEnabledProfiles = List.from(currentEnabledProfiles);
+      // Refresh cameras when profiles change
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        // Force display refresh first (for immediate UI update)
+        _cameraProvider.refreshDisplay();
+        // Then fetch new cameras for newly enabled profiles
+        _refreshCamerasFromProvider();
+      });
+    }
+
+    // Check if offline mode changed and force complete map rebuild
+    final currentOfflineMode = appState.offlineMode;
+    if (_lastOfflineMode != null && _lastOfflineMode != currentOfflineMode) {
+      // Offline mode changed - increment counter to force FlutterMap rebuild
+      _mapRebuildCounter++;
+      debugPrint('[MapView] Offline mode changed, forcing map rebuild #$_mapRebuildCounter');
+    }
+    _lastOfflineMode = currentOfflineMode;
 
     // Seed add‑mode target once, after first controller center is available.
     if (session != null && session.target == null) {
@@ -193,7 +235,7 @@ class _MapViewState extends State<MapView> {
     return Stack(
       children: [
         FlutterMap(
-          key: ValueKey(appState.offlineMode),
+          key: ValueKey('map_rebuild_$_mapRebuildCounter'),
           mapController: _controller,
           options: MapOptions(
             initialCenter: _currentLatLng ?? LatLng(37.7749, -122.4194),
@@ -237,7 +279,7 @@ class _MapViewState extends State<MapView> {
                   print('tileBuilder error: $e for tileImage: ${tileImage.toString()}');
                   return tileWidget;
                 }
-              }
+              },
             ),
             cameraLayers,
             // Built-in scale bar from flutter_map 

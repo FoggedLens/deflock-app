@@ -9,13 +9,30 @@ class TileProviderWithCache extends TileProvider with ChangeNotifier {
   static Map<String, Uint8List> get tileCache => _tileCache;
   
   bool _disposed = false;
+  int _disposeCount = 0;
 
   TileProviderWithCache();
   
   @override
   void dispose() {
+    _disposeCount++;
+    
+    // If already disposed, just silently return (common during FlutterMap rebuilds)
+    if (_disposed) {
+      debugPrint('[TileProviderWithCache] Already disposed (call #$_disposeCount) - ignoring');
+      return;
+    }
+    
+    debugPrint('[TileProviderWithCache] Disposing (call #$_disposeCount)');
     _disposed = true;
-    super.dispose();
+    
+    // Safely call super.dispose() with error handling
+    try {
+      super.dispose();
+    } catch (e) {
+      debugPrint('[TileProviderWithCache] Error during disposal: $e');
+      // Continue execution - disposal errors shouldn't crash the app
+    }
   }
 
   @override
@@ -46,8 +63,8 @@ class TileProviderWithCache extends TileProvider with ChangeNotifier {
       );
       if (bytes.isNotEmpty) {
         _tileCache[key] = Uint8List.fromList(bytes);
-        // Only notify listeners if not disposed
-        if (!_disposed) {
+        // Only notify listeners if not disposed and still mounted
+        if (!_disposed && hasListeners) {
           notifyListeners(); // This updates any listening widgets
         }
       }
