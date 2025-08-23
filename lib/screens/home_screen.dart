@@ -19,6 +19,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  final GlobalKey<MapViewState> _mapViewKey = GlobalKey<MapViewState>();
   final MapController _mapController = MapController();
   bool _followMe = true;
 
@@ -51,7 +52,13 @@ class _HomeScreenState extends State<HomeScreen> {
             IconButton(
               tooltip: _followMe ? 'Disable follow‑me' : 'Enable follow‑me',
               icon: Icon(_followMe ? Icons.gps_fixed : Icons.gps_off),
-              onPressed: () => setState(() => _followMe = !_followMe),
+              onPressed: () {
+                setState(() => _followMe = !_followMe);
+                // If enabling follow-me, retry location init in case permission was granted
+                if (_followMe) {
+                  _mapViewKey.currentState?.retryLocationInit();
+                }
+              },
             ),
             IconButton(
               icon: const Icon(Icons.settings),
@@ -62,6 +69,7 @@ class _HomeScreenState extends State<HomeScreen> {
         body: Stack(
           children: [
             MapView(
+              key: _mapViewKey,
               controller: _mapController,
               followMe: _followMe,
               onUserGesture: () {

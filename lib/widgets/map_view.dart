@@ -32,10 +32,10 @@ class MapView extends StatefulWidget {
   final VoidCallback onUserGesture;
 
   @override
-  State<MapView> createState() => _MapViewState();
+  State<MapView> createState() => MapViewState();
 }
 
-class _MapViewState extends State<MapView> {
+class MapViewState extends State<MapView> {
   late final MapController _controller;
   final Debouncer _cameraDebounce = Debouncer(kDebounceCameraRefresh);
   final Debouncer _tileDebounce = Debouncer(const Duration(milliseconds: 150));
@@ -82,6 +82,12 @@ class _MapViewState extends State<MapView> {
 
   void _onCamerasUpdated() {
     if (mounted) setState(() {});
+  }
+
+  /// Public method to retry location initialization (e.g., after permission granted)
+  void retryLocationInit() {
+    debugPrint('[MapView] Retrying location initialization');
+    _initLocation();
   }
 
 
