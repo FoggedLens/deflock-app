@@ -5,7 +5,7 @@ import 'app_state.dart';
 import 'screens/home_screen.dart';
 import 'screens/settings_screen.dart';
 
-import 'widgets/tile_provider_with_cache.dart';
+
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();

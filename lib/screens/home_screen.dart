@@ -5,7 +5,7 @@ import 'package:provider/provider.dart';
 import '../app_state.dart';
 import '../dev_config.dart';
 import '../widgets/map_view.dart';
-import '../widgets/tile_provider_with_cache.dart';
+
 import '../widgets/add_camera_sheet.dart';
 import '../widgets/camera_provider_with_cache.dart';
 import '../widgets/download_area_dialog.dart';
@@ -41,7 +41,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider<TileProviderWithCache>(create: (_) => TileProviderWithCache()),
         ChangeNotifierProvider<CameraProviderWithCache>(create: (_) => CameraProviderWithCache()),
       ],
       child: Scaffold(

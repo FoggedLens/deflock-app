@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../widgets/tile_provider_with_cache.dart';
+
 
 // Enum for upload mode (Production, OSM Sandbox, Simulate)
 enum UploadMode { production, sandbox, simulate }
@@ -49,16 +49,9 @@ class SettingsState extends ChangeNotifier {
   }
 
   Future<void> setOfflineMode(bool enabled) async {
-    final wasOffline = _offlineMode;
     _offlineMode = enabled;
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(_offlineModePrefsKey, enabled);
-    
-    if (wasOffline && !enabled) {
-      // Transitioning from offline to online: clear tile cache!
-      TileProviderWithCache.clearCache();
-    }
-    
     notifyListeners();
   }
 

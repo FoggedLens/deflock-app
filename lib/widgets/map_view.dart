@@ -1,16 +1,18 @@
 import 'dart:async';
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:provider/provider.dart';
+import 'package:http/http.dart' as http;
 
 import '../app_state.dart';
 import '../services/offline_area_service.dart';
+import '../services/simple_tile_service.dart';
 import '../models/osm_camera_node.dart';
 import '../models/camera_profile.dart';
 import 'debouncer.dart';
-import 'tile_provider_with_cache.dart';
 import 'camera_provider_with_cache.dart';
 import 'map/camera_markers.dart';
 import 'map/direction_cones.dart';
@@ -36,38 +38,36 @@ class MapView extends StatefulWidget {
 
 class _MapViewState extends State<MapView> {
   late final MapController _controller;
-  final Debouncer _debounce = Debouncer(kDebounceCameraRefresh);
+  final Debouncer _cameraDebounce = Debouncer(kDebounceCameraRefresh);
+  final Debouncer _tileDebounce = Debouncer(const Duration(milliseconds: 150));
 
   StreamSubscription<Position>? _positionSub;
   LatLng? _currentLatLng;
 
   late final CameraProviderWithCache _cameraProvider;
+  late final SimpleTileHttpClient _tileHttpClient;
   
   // Track profile changes to trigger camera refresh
   List<CameraProfile>? _lastEnabledProfiles;
   
-  // Track offline mode changes to trigger tile refresh
-  bool? _lastOfflineMode;
-  int _mapRebuildCounter = 0;
+  // Track map position to only clear queue on significant changes
+  double? _lastZoom;
+  LatLng? _lastCenter;
 
   @override
   void initState() {
     super.initState();
-    // _debounceTileLayerUpdate removed
     OfflineAreaService();
     _controller = widget.controller;
+    _tileHttpClient = SimpleTileHttpClient();
     _initLocation();
 
     // Set up camera overlay caching
     _cameraProvider = CameraProviderWithCache.instance;
     _cameraProvider.addListener(_onCamerasUpdated);
     
-    // Ensure initial overlays are fetched
+    // Fetch initial cameras
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      // Set up tile refresh callback
-      final tileProvider = Provider.of<TileProviderWithCache>(context, listen: false);
-      tileProvider.setOnTilesCachedCallback(_onTilesCached);
-      
       _refreshCamerasFromProvider();
     });
   }
@@ -75,17 +75,10 @@ class _MapViewState extends State<MapView> {
   @override
   void dispose() {
     _positionSub?.cancel();
-    _debounce.dispose();
+    _cameraDebounce.dispose();
+    _tileDebounce.dispose();
     _cameraProvider.removeListener(_onCamerasUpdated);
-    
-    // Clean up tile refresh callback
-    try {
-      final tileProvider = Provider.of<TileProviderWithCache>(context, listen: false);
-      tileProvider.setOnTilesCachedCallback(null);
-    } catch (e) {
-      // Context might be disposed already - that's okay
-    }
-    
+    _tileHttpClient.close();
     super.dispose();
   }
 
@@ -93,14 +86,7 @@ class _MapViewState extends State<MapView> {
     if (mounted) setState(() {});
   }
 
-  void _onTilesCached() {
-    // When new tiles are cached, just trigger a widget rebuild
-    // This should cause the TileLayer to re-render with cached tiles
-    debugPrint('[MapView] Tile cached callback triggered, calling setState');
-    if (mounted) {
-      setState(() {});
-    }
-  }
+
 
   void _refreshCamerasFromProvider() {
     final appState = context.read<AppState>();
@@ -178,6 +164,19 @@ class _MapViewState extends State<MapView> {
     return ids1.length == ids2.length && ids1.containsAll(ids2);
   }
 
+  /// Calculate approximate distance between two LatLng points in meters
+  double _distanceInMeters(LatLng point1, LatLng point2) {
+    const double earthRadius = 6371000; // Earth radius in meters
+    final dLat = (point2.latitude - point1.latitude) * (3.14159 / 180);
+    final dLon = (point2.longitude - point1.longitude) * (3.14159 / 180);
+    final a = math.sin(dLat / 2) * math.sin(dLat / 2) +
+        math.cos(point1.latitude * (3.14159 / 180)) *
+        math.cos(point2.latitude * (3.14159 / 180)) *
+        math.sin(dLon / 2) * math.sin(dLon / 2);
+    final c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a));
+    return earthRadius * c;
+  }
+
   @override
   Widget build(BuildContext context) {
     final appState = context.watch<AppState>();
@@ -196,15 +195,6 @@ class _MapViewState extends State<MapView> {
         _refreshCamerasFromProvider();
       });
     }
-
-    // Check if offline mode changed and force complete map rebuild
-    final currentOfflineMode = appState.offlineMode;
-    if (_lastOfflineMode != null && _lastOfflineMode != currentOfflineMode) {
-      // Offline mode changed - increment counter to force FlutterMap rebuild
-      _mapRebuildCounter++;
-      debugPrint('[MapView] Offline mode changed, forcing map rebuild #$_mapRebuildCounter');
-    }
-    _lastOfflineMode = currentOfflineMode;
 
     // Seed add‑mode target once, after first controller center is available.
     if (session != null && session.target == null) {
@@ -254,7 +244,7 @@ class _MapViewState extends State<MapView> {
     return Stack(
       children: [
         FlutterMap(
-          key: ValueKey('map_rebuild_$_mapRebuildCounter'),
+          key: ValueKey('map_offline_${appState.offlineMode}'),
           mapController: _controller,
           options: MapOptions(
             initialCenter: _currentLatLng ?? LatLng(37.7749, -122.4194),
@@ -267,43 +257,39 @@ class _MapViewState extends State<MapView> {
                 appState.updateSession(target: pos.center);
               }
               
-              // Simple approach: cancel tiles on ANY significant view change
-              final tileProvider = Provider.of<TileProviderWithCache>(context, listen: false);
-              tileProvider.cancelAllTileRequests();
+              // TODO: Re-enable smart queue clearing once we debug tile loading issues
+              // For now, let flutter_map handle its own request management
+              /*
+              // Only clear tile queue on significant movement changes
+              final currentZoom = pos.zoom;
+              final currentCenter = pos.center;
+              final zoomChanged = _lastZoom == null || (currentZoom - _lastZoom!).abs() > 0.1;
+              final centerChanged = _lastCenter == null || 
+                  _distanceInMeters(_lastCenter!, currentCenter) > 100; // 100m threshold
               
-              // Request more cameras on any map movement/zoom at valid zoom level
-              // This ensures cameras load even when zooming without panning (like with zoom buttons)
+              if (zoomChanged || centerChanged) {
+                _tileDebounce(() {
+                  debugPrint('[MapView] Significant map change - clearing stale tile requests');
+                  _tileHttpClient.clearTileQueue();
+                });
+                _lastZoom = currentZoom;
+                _lastCenter = currentCenter;
+              }
+              */
+              
+              // Request more cameras on any map movement/zoom at valid zoom level (slower debounce)
               if (pos.zoom >= 10) {
-                _debounce(_refreshCamerasFromProvider);
+                _cameraDebounce(_refreshCamerasFromProvider);
               }
             },
           ),
           children: [
             TileLayer(
-              tileProvider: Provider.of<TileProviderWithCache>(context),
-              urlTemplate: 'unused-{z}-{x}-{y}',
-              tileSize: 256,
-              tileBuilder: (ctx, tileWidget, tileImage) {
-                try {
-                  final str = tileImage.toString();
-                  final regex = RegExp(r'TileCoordinate\((\d+), (\d+), (\d+)\)');
-                  final match = regex.firstMatch(str);
-                  if (match != null) {
-                    final x = match.group(1);
-                    final y = match.group(2);
-                    final z = match.group(3);
-                    final key = '$z/$x/$y';
-                    final bytes = TileProviderWithCache.tileCache[key];
-                    if (bytes != null && bytes.isNotEmpty) {
-                      return Image.memory(bytes, gaplessPlayback: true, fit: BoxFit.cover);
-                    }
-                  }
-                  return tileWidget;
-                } catch (e) {
-                  print('tileBuilder error: $e for tileImage: ${tileImage.toString()}');
-                  return tileWidget;
-                }
-              },
+              urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+              userAgentPackageName: 'com.stopflock.flock_map_app',
+              tileProvider: NetworkTileProvider(
+                httpClient: _tileHttpClient,
+              ),
             ),
             cameraLayers,
             // Built-in scale bar from flutter_map 

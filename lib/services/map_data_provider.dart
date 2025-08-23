@@ -144,4 +144,9 @@ class MapDataProvider {
       }
     }
   }
+
+  /// Clear any queued tile requests (call when map view changes significantly)
+  void clearTileQueue() {
+    clearOSMTileQueue();
+  }
 }
