@@ -60,25 +60,21 @@ class NetworkStatus extends ChangeNotifier {
 
   /// Report successful operations to potentially clear issues faster
   void reportOsmTileSuccess() {
-    // Don't immediately clear on single success, but reduce recovery time
+    // Clear issues immediately on success (they were likely temporary)
     if (_osmTilesHaveIssues) {
+      debugPrint('[NetworkStatus] OSM tile server issues cleared after success');
+      _osmTilesHaveIssues = false;
       _osmRecoveryTimer?.cancel();
-      _osmRecoveryTimer = Timer(const Duration(seconds: 30), () {
-        _osmTilesHaveIssues = false;
-        notifyListeners();
-        debugPrint('[NetworkStatus] OSM tile server issues cleared after success');
-      });
+      notifyListeners();
     }
   }
 
   void reportOverpassSuccess() {
     if (_overpassHasIssues) {
+      debugPrint('[NetworkStatus] Overpass API issues cleared after success');
+      _overpassHasIssues = false;
       _overpassRecoveryTimer?.cancel();
-      _overpassRecoveryTimer = Timer(const Duration(seconds: 30), () {
-        _overpassHasIssues = false;
-        notifyListeners();
-        debugPrint('[NetworkStatus] Overpass API issues cleared after success');
-      });
+      notifyListeners();
     }
   }
 

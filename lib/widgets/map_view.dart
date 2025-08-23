@@ -15,6 +15,7 @@ import 'camera_provider_with_cache.dart';
 import 'map/camera_markers.dart';
 import 'map/direction_cones.dart';
 import 'map/map_overlays.dart';
+import 'network_status_indicator.dart';
 import '../dev_config.dart';
 
 class MapView extends StatefulWidget {
@@ -95,6 +96,7 @@ class _MapViewState extends State<MapView> {
   void _onTilesCached() {
     // When new tiles are cached, just trigger a widget rebuild
     // This should cause the TileLayer to re-render with cached tiles
+    debugPrint('[MapView] Tile cached callback triggered, calling setState');
     if (mounted) {
       setState(() {});
     }
@@ -175,12 +177,6 @@ class _MapViewState extends State<MapView> {
     final ids2 = list2.map((p) => p.id).toSet();
     return ids1.length == ids2.length && ids1.containsAll(ids2);
   }
-
-
-
-
-
-
 
   @override
   Widget build(BuildContext context) {
@@ -270,6 +266,11 @@ class _MapViewState extends State<MapView> {
               if (session != null) {
                 appState.updateSession(target: pos.center);
               }
+              
+              // Simple approach: cancel tiles on ANY significant view change
+              final tileProvider = Provider.of<TileProviderWithCache>(context, listen: false);
+              tileProvider.cancelAllTileRequests();
+              
               // Request more cameras on any map movement/zoom at valid zoom level
               // This ensures cameras load even when zooming without panning (like with zoom buttons)
               if (pos.zoom >= 10) {
@@ -323,6 +324,9 @@ class _MapViewState extends State<MapView> {
           uploadMode: appState.uploadMode,
           session: session,
         ),
+
+        // Network status indicator (top-left)
+        const NetworkStatusIndicator(),
       ],
     );
   }

@@ -2,6 +2,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import '../services/map_data_provider.dart';
+import '../services/map_data_submodules/tiles_from_osm.dart';
 
 /// In-memory tile cache and async provider for custom tiles.
 class TileProviderWithCache extends TileProvider with ChangeNotifier {
@@ -11,12 +12,18 @@ class TileProviderWithCache extends TileProvider with ChangeNotifier {
   bool _disposed = false;
   int _disposeCount = 0;
   VoidCallback? _onTilesCachedCallback;
-
+  
   TileProviderWithCache();
   
   /// Set a callback to be called when tiles are cached (used by MapView for refresh)
   void setOnTilesCachedCallback(VoidCallback? callback) {
     _onTilesCachedCallback = callback;
+  }
+  
+  /// Cancel ALL pending tile requests - delegates to OSM tile fetcher
+  void cancelAllTileRequests() {
+    clearOSMTileQueue(); // This handles all the cancellation logic
+    debugPrint('[TileProviderWithCache] Cancelled all tile requests');
   }
   
   @override
@@ -73,12 +80,17 @@ class TileProviderWithCache extends TileProvider with ChangeNotifier {
         if (!_disposed && hasListeners) {
           notifyListeners(); // This updates any listening widgets
         }
-        // Trigger map refresh callback to force tile re-rendering
+        // Trigger map refresh callback to force tile re-rendering  
+        debugPrint('[TileProviderWithCache] Tile cached: $key, calling refresh callback');
         _onTilesCachedCallback?.call();
       }
       // If bytes were empty, don't cache (will re-attempt next time)
     } catch (e) {
-      // Do NOT cache a failed or empty tile! Placeholder tiles will be evicted on online transition.
+      // Cancelled requests will throw exceptions from fetchOSMTile(), just ignore them
+      if (e.toString().contains('cancelled')) {
+        debugPrint('[TileProviderWithCache] Tile request was cancelled: $key');
+      }
+      // Don't cache failed tiles regardless of reason
     }
   }
 }
