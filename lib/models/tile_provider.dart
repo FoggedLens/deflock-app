@@ -1,100 +1,223 @@
+import 'dart:convert';
+import 'dart:typed_data';
+
+/// A specific tile type within a provider
+class TileType {
+  final String id;
+  final String name;
+  final String urlTemplate;
+  final String attribution;
+  final Uint8List? previewTile; // Single tile image data for preview
+
+  const TileType({
+    required this.id,
+    required this.name,
+    required this.urlTemplate,
+    required this.attribution,
+    this.previewTile,
+  });
+
+  /// Create URL for a specific tile, replacing template variables
+  String getTileUrl(int z, int x, int y, {String? apiKey}) {
+    String url = urlTemplate
+        .replaceAll('{z}', z.toString())
+        .replaceAll('{x}', x.toString())
+        .replaceAll('{y}', y.toString());
+    
+    if (apiKey != null && apiKey.isNotEmpty) {
+      url = url.replaceAll('{api_key}', apiKey);
+    }
+    
+    return url;
+  }
+
+  /// Check if this tile type needs an API key
+  bool get requiresApiKey => urlTemplate.contains('{api_key}');
+
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'name': name,
+    'urlTemplate': urlTemplate,
+    'attribution': attribution,
+    'previewTile': previewTile != null ? base64Encode(previewTile!) : null,
+  };
+
+  static TileType fromJson(Map<String, dynamic> json) => TileType(
+    id: json['id'],
+    name: json['name'],
+    urlTemplate: json['urlTemplate'],
+    attribution: json['attribution'],
+    previewTile: json['previewTile'] != null 
+        ? base64Decode(json['previewTile'])
+        : null,
+  );
+
+  TileType copyWith({
+    String? id,
+    String? name,
+    String? urlTemplate,
+    String? attribution,
+    Uint8List? previewTile,
+  }) => TileType(
+    id: id ?? this.id,
+    name: name ?? this.name,
+    urlTemplate: urlTemplate ?? this.urlTemplate,
+    attribution: attribution ?? this.attribution,
+    previewTile: previewTile ?? this.previewTile,
+  );
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is TileType && runtimeType == other.runtimeType && id == other.id;
+
+  @override
+  int get hashCode => id.hashCode;
+}
+
+/// A tile provider containing multiple tile types
+class TileProvider {
+  final String id;
+  final String name;
+  final String? apiKey;
+  final List<TileType> tileTypes;
+
+  const TileProvider({
+    required this.id,
+    required this.name,
+    this.apiKey,
+    required this.tileTypes,
+  });
+
+  /// Check if this provider is usable (has API key if any tile types need it)
+  bool get isUsable {
+    final needsKey = tileTypes.any((type) => type.requiresApiKey);
+    return !needsKey || (apiKey != null && apiKey!.isNotEmpty);
+  }
+
+  /// Get available tile types (those that don't need API key or have one)
+  List<TileType> get availableTileTypes {
+    return tileTypes.where((type) => !type.requiresApiKey || isUsable).toList();
+  }
+
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'name': name,
+    'apiKey': apiKey,
+    'tileTypes': tileTypes.map((type) => type.toJson()).toList(),
+  };
+
+  static TileProvider fromJson(Map<String, dynamic> json) => TileProvider(
+    id: json['id'],
+    name: json['name'],
+    apiKey: json['apiKey'],
+    tileTypes: (json['tileTypes'] as List)
+        .map((typeJson) => TileType.fromJson(typeJson))
+        .toList(),
+  );
+
+  TileProvider copyWith({
+    String? id,
+    String? name,
+    String? apiKey,
+    List<TileType>? tileTypes,
+  }) => TileProvider(
+    id: id ?? this.id,
+    name: name ?? this.name,
+    apiKey: apiKey ?? this.apiKey,
+    tileTypes: tileTypes ?? this.tileTypes,
+  );
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is TileProvider && runtimeType == other.runtimeType && id == other.id;
+
+  @override
+  int get hashCode => id.hashCode;
+}
+
+/// Factory for creating default tile providers
+class DefaultTileProviders {
+  /// Create the default set of tile providers
+  static List<TileProvider> createDefaults() {
+    return [
+      TileProvider(
+        id: 'openstreetmap',
+        name: 'OpenStreetMap',
+        tileTypes: [
+          TileType(
+            id: 'osm_street',
+            name: 'Street Map',
+            urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+            attribution: '© OpenStreetMap contributors',
+          ),
+        ],
+      ),
+      TileProvider(
+        id: 'google',
+        name: 'Google',
+        tileTypes: [
+          TileType(
+            id: 'google_hybrid',
+            name: 'Satellite + Roads',
+            urlTemplate: 'https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}',
+            attribution: '© Google',
+          ),
+          TileType(
+            id: 'google_satellite',
+            name: 'Satellite Only',
+            urlTemplate: 'https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}',
+            attribution: '© Google',
+          ),
+          TileType(
+            id: 'google_roadmap',
+            name: 'Road Map',
+            urlTemplate: 'https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}',
+            attribution: '© Google',
+          ),
+        ],
+      ),
+      TileProvider(
+        id: 'esri',
+        name: 'Esri',
+        tileTypes: [
+          TileType(
+            id: 'esri_satellite',
+            name: 'Satellite Imagery',
+            urlTemplate: 'https://services.arcgisonline.com/ArcGis/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}.png',
+            attribution: '© Esri © Maxar',
+          ),
+        ],
+      ),
+      TileProvider(
+        id: 'mapbox',
+        name: 'Mapbox',
+        tileTypes: [
+          TileType(
+            id: 'mapbox_satellite',
+            name: 'Satellite',
+            urlTemplate: 'https://api.mapbox.com/v4/mapbox.satellite/{z}/{x}/{y}@2x.jpg90?access_token={api_key}',
+            attribution: '© Mapbox © Maxar',
+          ),
+          TileType(
+            id: 'mapbox_streets',
+            name: 'Streets',
+            urlTemplate: 'https://api.mapbox.com/styles/v1/mapbox/streets-v12/tiles/{z}/{x}/{y}?access_token={api_key}',
+            attribution: '© Mapbox © OpenStreetMap',
+          ),
+        ],
+      ),
+    ];
+  }
+}
+
+/// Legacy enum for backward compatibility during transition
+/// TODO: Remove once all references are updated
+@Deprecated('Use TileProvider and TileType instead')
 enum TileProviderType {
   osmStreet,
   googleHybrid,
   arcgisSatellite,
   mapboxSatellite,
-}
-
-class TileProviderConfig {
-  final TileProviderType type;
-  final String name;
-  final String urlTemplate;
-  final String attribution;
-  final bool requiresApiKey;
-  final String? description;
-  
-  const TileProviderConfig({
-    required this.type,
-    required this.name, 
-    required this.urlTemplate,
-    required this.attribution,
-    this.requiresApiKey = false,
-    this.description,
-  });
-
-  /// Returns the URL template with API key inserted if needed
-  String getUrlTemplate({String? apiKey}) {
-    if (requiresApiKey && apiKey != null) {
-      return urlTemplate.replaceAll('{api_key}', apiKey);
-    }
-    return urlTemplate;
-  }
-
-  /// Check if this provider is available (has required API key if needed)
-  bool isAvailable({String? apiKey}) {
-    if (requiresApiKey) {
-      return apiKey != null && apiKey.isNotEmpty;
-    }
-    return true;
-  }
-}
-
-/// Built-in tile provider configurations
-class TileProviders {
-  static const osmStreet = TileProviderConfig(
-    type: TileProviderType.osmStreet,
-    name: 'Street Map',
-    urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-    attribution: '© OpenStreetMap contributors',
-    description: 'Standard street map with roads, buildings, and labels',
-  );
-
-  static const googleHybrid = TileProviderConfig(
-    type: TileProviderType.googleHybrid,
-    name: 'Satellite + Roads',
-    urlTemplate: 'https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}',
-    attribution: '© Google',
-    description: 'Satellite imagery with road and label overlays',
-  );
-
-  static const arcgisSatellite = TileProviderConfig(
-    type: TileProviderType.arcgisSatellite,
-    name: 'Pure Satellite',
-    urlTemplate: 'https://services.arcgisonline.com/ArcGis/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}.png',
-    attribution: '© Esri © Maxar',
-    description: 'High-resolution satellite imagery without overlays',
-  );
-
-  static const mapboxSatellite = TileProviderConfig(
-    type: TileProviderType.mapboxSatellite,
-    name: 'Pure Satellite (Mapbox)',
-    urlTemplate: 'https://api.mapbox.com/v4/mapbox.satellite/{z}/{x}/{y}@2x.jpg90?access_token={api_key}',
-    attribution: '© Mapbox © Maxar',
-    requiresApiKey: true,
-    description: 'High-resolution satellite imagery without overlays',
-  );
-
-  /// Get all available tile providers (those with API keys if required)
-  static List<TileProviderConfig> getAvailable({String? mapboxApiKey}) {
-    return [
-      osmStreet,
-      googleHybrid,
-      arcgisSatellite,
-      if (mapboxSatellite.isAvailable(apiKey: mapboxApiKey)) mapboxSatellite,
-    ];
-  }
-
-  /// Get provider config by type
-  static TileProviderConfig? getByType(TileProviderType type) {
-    switch (type) {
-      case TileProviderType.osmStreet:
-        return osmStreet;
-      case TileProviderType.googleHybrid:
-        return googleHybrid;
-      case TileProviderType.arcgisSatellite:
-        return arcgisSatellite;
-      case TileProviderType.mapboxSatellite:
-        return mapboxSatellite;
-    }
-  }
 }

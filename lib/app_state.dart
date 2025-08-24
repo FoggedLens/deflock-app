@@ -66,6 +66,14 @@ class AppState extends ChangeNotifier {
   bool get offlineMode => _settingsState.offlineMode;
   int get maxCameras => _settingsState.maxCameras;
   UploadMode get uploadMode => _settingsState.uploadMode;
+  
+  // Tile provider state
+  List<TileProvider> get tileProviders => _settingsState.tileProviders;
+  TileType? get selectedTileType => _settingsState.selectedTileType;
+  TileProvider? get selectedTileProvider => _settingsState.selectedTileProvider;
+  
+  /// Legacy getter for backward compatibility
+  @Deprecated('Use selectedTileType instead')
   TileProviderType get tileProvider => _settingsState.tileProvider;
   
   // Upload queue state
@@ -179,6 +187,23 @@ class AppState extends ChangeNotifier {
     _startUploader(); // Restart uploader with new mode
   }
 
+  /// Select a tile type by ID
+  Future<void> setSelectedTileType(String tileTypeId) async {
+    await _settingsState.setSelectedTileType(tileTypeId);
+  }
+
+  /// Add or update a tile provider
+  Future<void> addOrUpdateTileProvider(TileProvider provider) async {
+    await _settingsState.addOrUpdateTileProvider(provider);
+  }
+
+  /// Delete a tile provider
+  Future<void> deleteTileProvider(String providerId) async {
+    await _settingsState.deleteTileProvider(providerId);
+  }
+
+  /// Legacy setter for backward compatibility
+  @Deprecated('Use setSelectedTileType instead')
   Future<void> setTileProvider(TileProviderType provider) async {
     await _settingsState.setTileProvider(provider);
   }

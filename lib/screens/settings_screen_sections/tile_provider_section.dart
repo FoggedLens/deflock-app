@@ -10,50 +10,84 @@ class TileProviderSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final appState = context.watch<AppState>();
-    final currentProvider = appState.tileProvider;
-    
-    // Get available providers (for now, all free ones are available)
-    final availableProviders = [
-      TileProviders.osmStreet,
-      TileProviders.googleHybrid,
-      TileProviders.arcgisSatellite,
-      // Don't include Mapbox for now since we don't have API key handling
-    ];
+    final selectedTileType = appState.selectedTileType;
+    final allTileTypes = <TileType>[];
+    for (final provider in appState.tileProviders) {
+      allTileTypes.addAll(provider.availableTileTypes);
+    }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'Map Type',
-          style: Theme.of(context).textTheme.titleMedium,
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              'Map Type',
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+            TextButton(
+              onPressed: () {
+                // TODO: Navigate to provider management screen
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Provider management coming soon!')),
+                );
+              },
+              child: const Text('Manage Providers'),
+            ),
+          ],
         ),
         const SizedBox(height: 8),
-        ...availableProviders.map((config) {
-          final isSelected = config.type == currentProvider;
-          
-          return ListTile(
-            contentPadding: EdgeInsets.zero,
-            leading: Radio<TileProviderType>(
-              value: config.type,
-              groupValue: currentProvider,
-              onChanged: (TileProviderType? value) {
-                if (value != null) {
-                  appState.setTileProvider(value);
-                }
-              },
-            ),
-            title: Text(config.name),
-            subtitle: config.description != null 
-                ? Text(
-                    config.description!,
-                    style: Theme.of(context).textTheme.bodySmall,
-                  )
-                : null,
-            onTap: () {
-              appState.setTileProvider(config.type);
-            },
-          );
-        }),
+        if (allTileTypes.isEmpty)
+          const Text('No tile providers available')
+        else
+          ...allTileTypes.map((tileType) {
+            final provider = appState.tileProviders
+                .firstWhere((p) => p.tileTypes.contains(tileType));
+            final isSelected = selectedTileType?.id == tileType.id;
+            final isUsable = !tileType.requiresApiKey || provider.isUsable;
+            
+            return ListTile(
+              contentPadding: EdgeInsets.zero,
+              leading: Radio<String>(
+                value: tileType.id,
+                groupValue: selectedTileType?.id,
+                onChanged: isUsable ? (String? value) {
+                  if (value != null) {
+                    appState.setSelectedTileType(value);
+                  }
+                } : null,
+              ),
+              title: Text(
+                '${provider.name} - ${tileType.name}',
+                style: TextStyle(
+                  color: isUsable ? null : Theme.of(context).disabledColor,
+                ),
+              ),
+              subtitle: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    tileType.attribution,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: isUsable ? null : Theme.of(context).disabledColor,
+                    ),
+                  ),
+                  if (!isUsable)
+                    Text(
+                      'Requires API key',
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: Theme.of(context).colorScheme.error,
+                        fontStyle: FontStyle.italic,
+                      ),
+                    ),
+                ],
+              ),
+              onTap: isUsable ? () {
+                appState.setSelectedTileType(tileType.id);
+              } : null,
+            );
+          }),
       ],
     );
   }

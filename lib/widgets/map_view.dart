@@ -5,6 +5,7 @@ import 'package:latlong2/latlong.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:provider/provider.dart';
 import 'package:http/http.dart' as http;
+import 'package:collection/collection.dart';
 
 import '../app_state.dart';
 import '../services/offline_area_service.dart';
@@ -172,11 +173,30 @@ class MapViewState extends State<MapView> {
 
   /// Build tile layer based on selected tile provider
   Widget _buildTileLayer(AppState appState) {
-    final providerConfig = TileProviders.getByType(appState.tileProvider);
-    if (providerConfig == null) {
-      // Fallback to OSM if somehow we have an invalid provider
+    final selectedTileType = appState.selectedTileType;
+    final selectedProvider = appState.selectedTileProvider;
+    
+    // Fallback to first available tile type if none selected
+    if (selectedTileType == null || selectedProvider == null) {
+      final allTypes = <TileType>[];
+      for (final provider in appState.tileProviders) {
+        allTypes.addAll(provider.availableTileTypes);
+      }
+      
+      final fallback = allTypes.firstOrNull;
+      if (fallback != null) {
+        return TileLayer(
+          urlTemplate: fallback.urlTemplate,
+          userAgentPackageName: 'com.stopflock.flock_map_app',
+          tileProvider: NetworkTileProvider(
+            httpClient: _tileHttpClient,
+          ),
+        );
+      }
+      
+      // Ultimate fallback - hardcoded OSM
       return TileLayer(
-        urlTemplate: TileProviders.osmStreet.urlTemplate,
+        urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
         userAgentPackageName: 'com.stopflock.flock_map_app',
         tileProvider: NetworkTileProvider(
           httpClient: _tileHttpClient,
@@ -184,23 +204,22 @@ class MapViewState extends State<MapView> {
       );
     }
 
-    // For OSM tiles, use our custom HTTP client for offline/online routing
-    if (providerConfig.type == TileProviderType.osmStreet) {
-      return TileLayer(
-        urlTemplate: providerConfig.urlTemplate,
-        userAgentPackageName: 'com.stopflock.flock_map_app',
-        tileProvider: NetworkTileProvider(
-          httpClient: _tileHttpClient,
-        ),
-      );
+    // Get the URL template with API key if needed
+    String urlTemplate = selectedTileType.urlTemplate;
+    if (selectedTileType.requiresApiKey && selectedProvider.apiKey != null) {
+      urlTemplate = urlTemplate.replaceAll('{api_key}', selectedProvider.apiKey!);
     }
 
-    // For other providers, use standard HTTP client (no offline support yet)
+    // For now, use our custom HTTP client for all tile requests
+    // This will enable offline support for all providers
     return TileLayer(
-      urlTemplate: providerConfig.urlTemplate,
+      urlTemplate: urlTemplate,
       userAgentPackageName: 'com.stopflock.flock_map_app',
+      tileProvider: NetworkTileProvider(
+        httpClient: _tileHttpClient,
+      ),
       additionalOptions: {
-        'attribution': providerConfig.attribution,
+        'attribution': selectedTileType.attribution,
       },
     );
   }
@@ -274,7 +293,7 @@ class MapViewState extends State<MapView> {
     return Stack(
       children: [
         FlutterMap(
-          key: ValueKey('map_offline_${appState.offlineMode}_provider_${appState.tileProvider.name}'),
+          key: ValueKey('map_offline_${appState.offlineMode}_tiletype_${appState.selectedTileType?.id ?? 'none'}'),
           mapController: _controller,
           options: MapOptions(
             initialCenter: _currentLatLng ?? LatLng(37.7749, -122.4194),
