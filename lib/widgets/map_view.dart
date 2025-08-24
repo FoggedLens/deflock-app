@@ -347,6 +347,7 @@ class MapViewState extends State<MapView> {
           mapController: _controller,
           uploadMode: appState.uploadMode,
           session: session,
+          attribution: appState.selectedTileType?.attribution,
         ),
 
         // Network status indicator (top-left)

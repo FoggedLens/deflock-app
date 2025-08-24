@@ -10,86 +10,28 @@ class TileProviderSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final appState = context.watch<AppState>();
-    final selectedTileType = appState.selectedTileType;
-    final allTileTypes = <TileType>[];
-    for (final provider in appState.tileProviders) {
-      allTileTypes.addAll(provider.availableTileTypes);
-    }
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              'Map Type',
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (context) => const TileProviderManagementScreen(),
-                  ),
-                );
-              },
-              child: const Text('Manage Providers'),
-            ),
-          ],
+        Text(
+          'Map Tiles',
+          style: Theme.of(context).textTheme.titleMedium,
         ),
         const SizedBox(height: 8),
-        if (allTileTypes.isEmpty)
-          const Text('No tile providers available')
-        else
-          ...allTileTypes.map((tileType) {
-            final provider = appState.tileProviders
-                .firstWhere((p) => p.tileTypes.contains(tileType));
-            final isSelected = selectedTileType?.id == tileType.id;
-            final isUsable = !tileType.requiresApiKey || provider.isUsable;
-            
-            return ListTile(
-              contentPadding: EdgeInsets.zero,
-              leading: Radio<String>(
-                value: tileType.id,
-                groupValue: selectedTileType?.id,
-                onChanged: isUsable ? (String? value) {
-                  if (value != null) {
-                    appState.setSelectedTileType(value);
-                  }
-                } : null,
-              ),
-              title: Text(
-                '${provider.name} - ${tileType.name}',
-                style: TextStyle(
-                  color: isUsable ? null : Theme.of(context).disabledColor,
+        SizedBox(
+          width: double.infinity,
+          child: ElevatedButton.icon(
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => const TileProviderManagementScreen(),
                 ),
-              ),
-              subtitle: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    tileType.attribution,
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: isUsable ? null : Theme.of(context).disabledColor,
-                    ),
-                  ),
-                  if (!isUsable)
-                    Text(
-                      'Requires API key',
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: Theme.of(context).colorScheme.error,
-                        fontStyle: FontStyle.italic,
-                      ),
-                    ),
-                ],
-              ),
-              onTap: isUsable ? () {
-                appState.setSelectedTileType(tileType.id);
-              } : null,
-            );
-          }),
+              );
+            },
+            icon: const Icon(Icons.settings),
+            label: const Text('Manage Providers'),
+          ),
+        ),
       ],
     );
   }

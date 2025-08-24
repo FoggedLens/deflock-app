@@ -3,18 +3,21 @@ import 'package:flutter_map/flutter_map.dart';
 
 import '../../app_state.dart';
 import '../../dev_config.dart';
+import 'layer_selector_button.dart';
 
 /// Widget that renders all map overlay UI elements
 class MapOverlays extends StatelessWidget {
   final MapController mapController;
   final UploadMode uploadMode;
   final AddCameraSession? session;
+  final String? attribution; // Attribution for current tile provider
 
   const MapOverlays({
     super.key,
     required this.mapController,
     required this.uploadMode,
     this.session,
+    this.attribution,
   });
 
   @override
@@ -78,16 +81,51 @@ class MapOverlays extends StatelessWidget {
         ),
 
         // Attribution overlay
-        Positioned(
-          bottom: kAttributionBottomOffset,
-          left: 10,
-          child: Container(
-            color: Colors.white70,
-            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
-            child: const Text(
-              '© OpenStreetMap and contributors',
-              style: TextStyle(fontSize: 11),
+        if (attribution != null)
+          Positioned(
+            bottom: kAttributionBottomOffset,
+            left: 10,
+            child: Container(
+              color: Colors.white70,
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+              child: Text(
+                attribution!,
+                style: const TextStyle(fontSize: 11),
+              ),
             ),
+          ),
+
+        // Zoom and layer controls (bottom-right)
+        Positioned(
+          bottom: 80,
+          right: 16,
+          child: Column(
+            children: [
+              // Layer selector button
+              const LayerSelectorButton(),
+              const SizedBox(height: 8),
+              // Zoom in button
+              FloatingActionButton(
+                mini: true,
+                heroTag: "zoom_in",
+                onPressed: () {
+                  final zoom = mapController.camera.zoom;
+                  mapController.move(mapController.camera.center, zoom + 1);
+                },
+                child: const Icon(Icons.add),
+              ),
+              const SizedBox(height: 8),
+              // Zoom out button  
+              FloatingActionButton(
+                mini: true,
+                heroTag: "zoom_out",
+                onPressed: () {
+                  final zoom = mapController.camera.zoom;
+                  mapController.move(mapController.camera.center, zoom - 1);
+                },
+                child: const Icon(Icons.remove),
+              ),
+            ],
           ),
         ),
 
