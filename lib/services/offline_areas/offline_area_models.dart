@@ -20,6 +20,12 @@ class OfflineArea {
   List<OsmCameraNode> cameras;
   int sizeBytes; // Disk size in bytes
   final bool isPermanent; // Not user-deletable if true
+  
+  // Tile provider metadata (null for legacy areas)
+  final String? tileProviderId;
+  final String? tileProviderName;
+  final String? tileTypeId;
+  final String? tileTypeName;
 
   OfflineArea({
     required this.id,
@@ -35,6 +41,10 @@ class OfflineArea {
     this.cameras = const [],
     this.sizeBytes = 0,
     this.isPermanent = false,
+    this.tileProviderId,
+    this.tileProviderName,
+    this.tileTypeId,
+    this.tileTypeName,
   });
 
   Map<String, dynamic> toJson() => {
@@ -54,6 +64,10 @@ class OfflineArea {
     'cameras': cameras.map((c) => c.toJson()).toList(),
     'sizeBytes': sizeBytes,
     'isPermanent': isPermanent,
+    'tileProviderId': tileProviderId,
+    'tileProviderName': tileProviderName,
+    'tileTypeId': tileTypeId,
+    'tileTypeName': tileTypeName,
   };
 
   static OfflineArea fromJson(Map<String, dynamic> json) {
@@ -77,6 +91,27 @@ class OfflineArea {
           .map((e) => OsmCameraNode.fromJson(e)).toList(),
       sizeBytes: json['sizeBytes'] ?? 0,
       isPermanent: json['isPermanent'] ?? false,
+      tileProviderId: json['tileProviderId'],
+      tileProviderName: json['tileProviderName'],
+      tileTypeId: json['tileTypeId'],
+      tileTypeName: json['tileTypeName'],
     );
   }
+
+  /// Get display text for the tile provider used in this area
+  String get tileProviderDisplay {
+    if (tileProviderName != null && tileTypeName != null) {
+      return '$tileProviderName - $tileTypeName';
+    } else if (tileTypeName != null) {
+      return tileTypeName!;
+    } else if (tileProviderName != null) {
+      return tileProviderName!;
+    } else {
+      // Legacy area - assume OSM
+      return 'OpenStreetMap (Legacy)';
+    }
+  }
+
+  /// Check if this area has tile provider metadata
+  bool get hasTileProviderInfo => tileProviderId != null && tileTypeId != null;
 }

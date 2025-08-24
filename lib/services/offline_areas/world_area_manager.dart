@@ -23,6 +23,10 @@ class WorldAreaManager {
       required int maxZoom,
       required String directory,
       String? name,
+      String? tileProviderId,
+      String? tileProviderName,
+      String? tileTypeId,
+      String? tileTypeName,
     }) downloadArea,
   ) async {
     // Find existing world area
@@ -66,6 +70,10 @@ class WorldAreaManager {
       required int maxZoom,
       required String directory,
       String? name,
+      String? tileProviderId,
+      String? tileProviderName,
+      String? tileTypeId,
+      String? tileTypeName,
     }) downloadArea,
   ) async {
     if (world.status == OfflineAreaStatus.complete) return;
@@ -97,7 +105,7 @@ class WorldAreaManager {
       world.status = OfflineAreaStatus.downloading;
       debugPrint('WorldAreaManager: Starting world area download. ${world.tilesDownloaded}/${world.tilesTotal} tiles found.');
       
-      // Start download (fire and forget)
+      // Start download (fire and forget) - use OSM for world areas
       downloadArea(
         id: world.id,
         bounds: world.bounds,
@@ -105,6 +113,10 @@ class WorldAreaManager {
         maxZoom: world.maxZoom,
         directory: world.directory,
         name: world.name,
+        tileProviderId: 'openstreetmap',
+        tileProviderName: 'OpenStreetMap',
+        tileTypeId: 'osm_street',
+        tileTypeName: 'Street Map',
       );
     }
   }

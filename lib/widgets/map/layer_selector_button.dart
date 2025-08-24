@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../../app_state.dart';
 import '../../models/tile_provider.dart';
+import '../../services/offline_area_service.dart';
 
 class LayerSelectorButton extends StatelessWidget {
   const LayerSelectorButton({super.key});
@@ -17,6 +18,18 @@ class LayerSelectorButton extends StatelessWidget {
   }
 
   void _showLayerSelector(BuildContext context) {
+    // Check if any downloads are active
+    final offlineService = OfflineAreaService();
+    if (offlineService.hasActiveDownloads) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Cannot change tile types while downloading offline areas'),
+          duration: Duration(seconds: 3),
+        ),
+      );
+      return;
+    }
+
     showDialog(
       context: context,
       builder: (context) => const _LayerSelectorDialog(),

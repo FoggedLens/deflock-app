@@ -41,6 +41,7 @@ class _OfflineAreasSectionState extends State<OfflineAreasSection> {
                 : "${(area.sizeBytes / 1024).toStringAsFixed(1)} KB"
             : '--';
         String subtitle =
+            'Provider: ${area.tileProviderDisplay}\n' +
             'Z${area.minZoom}-${area.maxZoom}\n' +
                 'Lat: ${area.bounds.southWest.latitude.toStringAsFixed(3)}, ${area.bounds.southWest.longitude.toStringAsFixed(3)}\n' +
                 'Lat: ${area.bounds.northEast.latitude.toStringAsFixed(3)}, ${area.bounds.northEast.longitude.toStringAsFixed(3)}';
@@ -121,6 +122,10 @@ class _OfflineAreasSectionState extends State<OfflineAreasSection> {
                         name: area.name,
                         onProgress: (progress) {},
                         onComplete: (status) {},
+                        tileProviderId: area.tileProviderId,
+                        tileProviderName: area.tileProviderName,
+                        tileTypeId: area.tileTypeId,
+                        tileTypeName: area.tileTypeName,
                       );
                       setState(() {});
                     },

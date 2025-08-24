@@ -182,6 +182,10 @@ class OfflineAreaService {
     void Function(double progress)? onProgress,
     void Function(OfflineAreaStatus status)? onComplete,
     String? name,
+    String? tileProviderId,
+    String? tileProviderName,
+    String? tileTypeId,
+    String? tileTypeName,
   }) async {
     OfflineArea? area;
     for (final a in _areas) {
@@ -202,6 +206,10 @@ class OfflineAreaService {
       maxZoom: maxZoom,
       directory: directory,
       isPermanent: area?.isPermanent ?? false,
+      tileProviderId: tileProviderId,
+      tileProviderName: tileProviderName,
+      tileTypeId: tileTypeId,
+      tileTypeName: tileTypeName,
     );
     _areas.add(area);
     await saveAreasToDisk();

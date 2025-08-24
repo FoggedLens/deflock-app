@@ -236,6 +236,11 @@ class _DownloadAreaDialogState extends State<DownloadAreaDialog> {
               final appDocDir = await OfflineAreaService().getOfflineAreaDir();
               final dir = "${appDocDir.path}/$id";
               
+              // Get current tile provider info
+              final appState = context.read<AppState>();
+              final selectedProvider = appState.selectedTileProvider;
+              final selectedTileType = appState.selectedTileType;
+              
               // Fire and forget: don't await download, so dialog closes immediately
               // ignore: unawaited_futures
               OfflineAreaService().downloadArea(
@@ -246,6 +251,10 @@ class _DownloadAreaDialogState extends State<DownloadAreaDialog> {
                 directory: dir,
                 onProgress: (progress) {},
                 onComplete: (status) {},
+                tileProviderId: selectedProvider?.id,
+                tileProviderName: selectedProvider?.name,
+                tileTypeId: selectedTileType?.id,
+                tileTypeName: selectedTileType?.name,
               );
               Navigator.pop(context);
               ScaffoldMessenger.of(context).showSnackBar(
