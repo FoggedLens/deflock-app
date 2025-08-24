@@ -10,19 +10,23 @@ import '../network_status.dart';
 final _tileFetchSemaphore = _SimpleSemaphore(4); // Max 4 concurrent
 
 /// Clear queued tile requests when map view changes significantly
-void clearOSMTileQueue() {
+void clearRemoteTileQueue() {
   final clearedCount = _tileFetchSemaphore.clearQueue();
-  debugPrint('[OSMTiles] Cleared $clearedCount queued tile requests');
+  debugPrint('[RemoteTiles] Cleared $clearedCount queued tile requests');
 }
 
-/// Fetches a tile from OSM, with in-memory retries/backoff, and global concurrency limit.
+/// Legacy alias for backward compatibility
+@Deprecated('Use clearRemoteTileQueue instead')
+void clearOSMTileQueue() => clearRemoteTileQueue();
+
+/// Fetches a tile from any remote provider, with in-memory retries/backoff, and global concurrency limit.
 /// Returns tile image bytes, or throws on persistent failure.
-Future<List<int>> fetchOSMTile({
+Future<List<int>> fetchRemoteTile({
   required int z,
   required int x,
   required int y,
+  required String url,
 }) async {
-  final url = 'https://tile.openstreetmap.org/$z/$x/$y.png';
   const int maxAttempts = kTileFetchMaxAttempts;
   int attempt = 0;
   final random = Random();
@@ -32,45 +36,62 @@ Future<List<int>> fetchOSMTile({
     kTileFetchThirdDelayMs + random.nextInt(kTileFetchJitter3Ms),
   ];
   
+  final hostInfo = Uri.parse(url).host; // For logging
+
   while (true) {
     await _tileFetchSemaphore.acquire();
     try {
-      print('[fetchOSMTile] FETCH $z/$x/$y');
+      print('[fetchRemoteTile] FETCH $z/$x/$y from $hostInfo');
       attempt++;
       final resp = await http.get(Uri.parse(url));
-      print('[fetchOSMTile] HTTP ${resp.statusCode} for $z/$x/$y, length=${resp.bodyBytes.length}');
+      print('[fetchRemoteTile] HTTP ${resp.statusCode} for $z/$x/$y from $hostInfo, length=${resp.bodyBytes.length}');
       
       if (resp.statusCode == 200 && resp.bodyBytes.isNotEmpty) {
-        print('[fetchOSMTile] SUCCESS $z/$x/$y');
-        NetworkStatus.instance.reportOsmTileSuccess();
+        print('[fetchRemoteTile] SUCCESS $z/$x/$y from $hostInfo');
+        NetworkStatus.instance.reportOsmTileSuccess(); // Still use OSM reporting for now
         return resp.bodyBytes;
       } else {
-        print('[fetchOSMTile] FAIL $z/$x/$y: code=${resp.statusCode}, bytes=${resp.bodyBytes.length}');
-        NetworkStatus.instance.reportOsmTileIssue();
-        throw HttpException('Failed to fetch tile $z/$x/$y: status ${resp.statusCode}');
+        print('[fetchRemoteTile] FAIL $z/$x/$y from $hostInfo: code=${resp.statusCode}, bytes=${resp.bodyBytes.length}');
+        NetworkStatus.instance.reportOsmTileIssue(); // Still use OSM reporting for now
+        throw HttpException('Failed to fetch tile $z/$x/$y from $hostInfo: status ${resp.statusCode}');
       }
     } catch (e) {
-      print('[fetchOSMTile] Exception $z/$x/$y: $e');
+      print('[fetchRemoteTile] Exception $z/$x/$y from $hostInfo: $e');
       
       // Report network issues on connection errors
       if (e.toString().contains('Connection refused') || 
           e.toString().contains('Connection timed out') ||
           e.toString().contains('Connection reset')) {
-        NetworkStatus.instance.reportOsmTileIssue();
+        NetworkStatus.instance.reportOsmTileIssue(); // Still use OSM reporting for now
       }
       
       if (attempt >= maxAttempts) {
-        print("[fetchOSMTile] Failed for $z/$x/$y after $attempt attempts: $e");
+        print("[fetchRemoteTile] Failed for $z/$x/$y from $hostInfo after $attempt attempts: $e");
         rethrow;
       }
       
       final delay = delays[attempt - 1].clamp(0, 60000);
-      print("[fetchOSMTile] Attempt $attempt for $z/$x/$y failed: $e. Retrying in ${delay}ms.");
+      print("[fetchRemoteTile] Attempt $attempt for $z/$x/$y from $hostInfo failed: $e. Retrying in ${delay}ms.");
       await Future.delayed(Duration(milliseconds: delay));
     } finally {
       _tileFetchSemaphore.release();
     }
   }
+}
+
+/// Legacy function for backward compatibility
+@Deprecated('Use fetchRemoteTile instead')
+Future<List<int>> fetchOSMTile({
+  required int z,
+  required int x,
+  required int y,
+}) async {
+  return fetchRemoteTile(
+    z: z,
+    x: x,
+    y: y,
+    url: 'https://tile.openstreetmap.org/$z/$x/$y.png',
+  );
 }
 
 /// Simple counting semaphore, suitable for single-thread Flutter concurrency

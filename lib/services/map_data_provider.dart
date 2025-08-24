@@ -5,7 +5,7 @@ import '../models/camera_profile.dart';
 import '../models/osm_camera_node.dart';
 import '../app_state.dart';
 import 'map_data_submodules/cameras_from_overpass.dart';
-import 'map_data_submodules/tiles_from_osm.dart';
+import 'map_data_submodules/tiles_from_remote.dart';
 import 'map_data_submodules/cameras_from_local.dart';
 import 'map_data_submodules/tiles_from_local.dart';
 
@@ -147,6 +147,6 @@ class MapDataProvider {
 
   /// Clear any queued tile requests (call when map view changes significantly)
   void clearTileQueue() {
-    clearOSMTileQueue();
+    clearRemoteTileQueue();
   }
 }

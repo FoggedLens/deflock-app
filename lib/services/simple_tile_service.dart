@@ -13,35 +13,65 @@ class SimpleTileHttpClient extends http.BaseClient {
 
   @override
   Future<http.StreamedResponse> send(http.BaseRequest request) async {
-    // Only intercept tile requests to OSM (for now - other providers pass through)
-    if (request.url.host == 'tile.openstreetmap.org') {
-      return _handleTileRequest(request);
+    // Try to parse as a tile request from any provider
+    final tileInfo = _parseTileRequest(request.url);
+    if (tileInfo != null) {
+      return _handleTileRequest(request, tileInfo);
     }
     
-    // Pass through all other requests (Google, Mapbox, etc.)
+    // Pass through non-tile requests
     return _inner.send(request);
   }
 
-  Future<http.StreamedResponse> _handleTileRequest(http.BaseRequest request) async {
-    final pathSegments = request.url.pathSegments;
+  /// Parse URL to extract tile coordinates if it looks like a tile request
+  Map<String, dynamic>? _parseTileRequest(Uri url) {
+    final pathSegments = url.pathSegments;
     
-    // Parse z/x/y from URL like: /15/5242/12666.png
-    if (pathSegments.length == 3) {
-      final z = int.tryParse(pathSegments[0]);
-      final x = int.tryParse(pathSegments[1]);
-      final yPng = pathSegments[2];
-      final y = int.tryParse(yPng.replaceAll('.png', ''));
-      
-      if (z != null && x != null && y != null) {
-        return _getTile(z, x, y);
+    // Common patterns for tile URLs:
+    // OSM: /z/x/y.png
+    // Google: /vt/lyrs=y&x=x&y=y&z=z  (query params)
+    // Mapbox: /styles/v1/mapbox/streets-v12/tiles/z/x/y
+    // ArcGIS: /tile/z/y/x.png
+    
+    // Try query parameters first (Google style)
+    final query = url.queryParameters;
+    if (query.containsKey('x') && query.containsKey('y') && query.containsKey('z')) {
+      final x = int.tryParse(query['x']!);
+      final y = int.tryParse(query['y']!);
+      final z = int.tryParse(query['z']!);
+      if (x != null && y != null && z != null) {
+        return {'z': z, 'x': x, 'y': y, 'originalUrl': url.toString()};
       }
     }
     
-    // Malformed tile URL - pass through to OSM
-    return _inner.send(request);
+    // Try path-based patterns
+    if (pathSegments.length >= 3) {
+      // Try z/x/y pattern (OSM style) - can be at different positions
+      for (int i = 0; i <= pathSegments.length - 3; i++) {
+        final z = int.tryParse(pathSegments[i]);
+        final x = int.tryParse(pathSegments[i + 1]);
+        final yWithExt = pathSegments[i + 2];
+        final y = int.tryParse(yWithExt.replaceAll(RegExp(r'\.[^.]*$'), '')); // Remove file extension
+        
+        if (z != null && x != null && y != null) {
+          return {'z': z, 'x': x, 'y': y, 'originalUrl': url.toString()};
+        }
+      }
+    }
+    
+    return null; // Not a recognizable tile request
   }
 
-  Future<http.StreamedResponse> _getTile(int z, int x, int y) async {
+  Future<http.StreamedResponse> _handleTileRequest(http.BaseRequest request, Map<String, dynamic> tileInfo) async {
+    final z = tileInfo['z'] as int;
+    final x = tileInfo['x'] as int; 
+    final y = tileInfo['y'] as int;
+    final originalUrl = tileInfo['originalUrl'] as String;
+    
+    return _getTile(z, x, y, originalUrl, request.url.host);
+  }
+
+  Future<http.StreamedResponse> _getTile(int z, int x, int y, String originalUrl, String providerHost) async {
     try {
       // First try to get tile from offline storage
       final localTileBytes = await _mapDataProvider.getTile(z: z, x: x, y: y, source: MapSource.local);
@@ -69,7 +99,7 @@ class SimpleTileHttpClient extends http.BaseClient {
       
       // Check if we're in offline mode
       if (AppState.instance.offlineMode) {
-        debugPrint('[SimpleTileService] Offline mode - not attempting OSM fetch for $z/$x/$y');
+        debugPrint('[SimpleTileService] Offline mode - not attempting $providerHost fetch for $z/$x/$y');
         // Report that we couldn't serve this tile offline
         NetworkStatus.instance.reportOfflineMiss();
         return http.StreamedResponse(
@@ -79,17 +109,17 @@ class SimpleTileHttpClient extends http.BaseClient {
         );
       }
       
-      // We're online - try OSM with proper error handling
-      debugPrint('[SimpleTileService] Online mode - trying OSM for $z/$x/$y');
+      // We're online - try the original provider with proper error handling
+      debugPrint('[SimpleTileService] Online mode - trying $providerHost for $z/$x/$y');
       try {
-        final response = await _inner.send(http.Request('GET', Uri.parse('https://tile.openstreetmap.org/$z/$x/$y.png')));
+        final response = await _inner.send(http.Request('GET', Uri.parse(originalUrl)));
         // Clear waiting status on successful network tile
         if (response.statusCode == 200) {
           NetworkStatus.instance.clearWaiting();
         }
         return response;
       } catch (networkError) {
-        debugPrint('[SimpleTileService] OSM request failed for $z/$x/$y: $networkError');
+        debugPrint('[SimpleTileService] $providerHost request failed for $z/$x/$y: $networkError');
         // Return 404 instead of throwing - let flutter_map handle gracefully
         return http.StreamedResponse(
           Stream.value(<int>[]),
