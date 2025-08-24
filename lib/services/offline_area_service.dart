@@ -215,16 +215,16 @@ class OfflineAreaService {
     await saveAreasToDisk();
 
     try {
-      final success = await OfflineAreaDownloader.downloadArea(
-        area: area,
-        bounds: bounds,
-        minZoom: minZoom,
-        maxZoom: maxZoom,
-        directory: directory,
-        onProgress: onProgress,
-        saveAreasToDisk: saveAreasToDisk,
-        getAreaSizeBytes: getAreaSizeBytes,
-      );
+    final success = await OfflineAreaDownloader.downloadArea(
+      area: area,
+      bounds: bounds,
+      minZoom: minZoom,
+      maxZoom: maxZoom,
+      directory: directory,
+      onProgress: onProgress,
+      saveAreasToDisk: saveAreasToDisk,
+      getAreaSizeBytes: getAreaSizeBytes,
+    );
 
       await getAreaSizeBytes(area);
 

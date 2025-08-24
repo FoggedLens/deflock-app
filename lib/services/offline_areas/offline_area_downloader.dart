@@ -4,10 +4,13 @@ import 'dart:math' as math;
 import 'package:flutter/foundation.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:flutter_map/flutter_map.dart' show LatLngBounds;
+import 'package:collection/collection.dart';
 
 import '../../app_state.dart';
 import '../../models/osm_camera_node.dart';
+import '../../models/tile_provider.dart';
 import '../map_data_provider.dart';
+import '../map_data_submodules/tiles_from_remote.dart';
 import 'offline_area_models.dart';
 import 'offline_tile_utils.dart';
 import 'package:flock_map_app/dev_config.dart';
@@ -27,6 +30,31 @@ class OfflineAreaDownloader {
     required Future<void> Function() saveAreasToDisk,
     required Future<void> Function(OfflineArea) getAreaSizeBytes,
   }) async {
+    // Get tile provider info from the area metadata or current AppState
+    TileProvider? tileProvider;
+    TileType? tileType;
+    
+    final appState = AppState.instance;
+    
+    if (area.tileProviderId != null && area.tileTypeId != null) {
+      // Use the provider info stored with the area (for refreshing existing areas)
+      try {
+        tileProvider = appState.tileProviders.firstWhere(
+          (p) => p.id == area.tileProviderId,
+        );
+        tileType = tileProvider.tileTypes.firstWhere(
+          (t) => t.id == area.tileTypeId,
+        );
+      } catch (e) {
+        // Fallback if stored provider/type not found
+        tileProvider = appState.selectedTileProvider ?? appState.tileProviders.firstOrNull;
+        tileType = appState.selectedTileType ?? tileProvider?.tileTypes.firstOrNull;
+      }
+    } else {
+      // New area - use currently selected provider
+      tileProvider = appState.selectedTileProvider ?? appState.tileProviders.firstOrNull;
+      tileType = appState.selectedTileType ?? tileProvider?.tileTypes.firstOrNull;
+    }
     // Calculate tiles to download
     Set<List<int>> allTiles;
     if (area.isPermanent) {
@@ -44,6 +72,8 @@ class OfflineAreaDownloader {
       onProgress: onProgress,
       saveAreasToDisk: saveAreasToDisk,
       getAreaSizeBytes: getAreaSizeBytes,
+      tileProvider: tileProvider,
+      tileType: tileType,
     );
 
     // Download cameras for non-permanent areas
@@ -69,6 +99,8 @@ class OfflineAreaDownloader {
     void Function(double progress)? onProgress,
     required Future<void> Function() saveAreasToDisk,
     required Future<void> Function(OfflineArea) getAreaSizeBytes,
+    TileProvider? tileProvider,
+    TileType? tileType,
   }) async {
     int pass = 0;
     Set<List<int>> tilesToFetch = allTiles;
@@ -81,7 +113,7 @@ class OfflineAreaDownloader {
       for (final tile in tilesToFetch) {
         if (area.status == OfflineAreaStatus.cancelled) break;
         
-        if (await _downloadSingleTile(tile, directory)) {
+        if (await _downloadSingleTile(tile, directory, area, tileProvider, tileType)) {
           totalDone++;
           area.tilesDownloaded = totalDone;
           area.progress = area.tilesTotal == 0 ? 0.0 : (totalDone / area.tilesTotal);
@@ -103,14 +135,24 @@ class OfflineAreaDownloader {
   }
 
   /// Download a single tile
-  static Future<bool> _downloadSingleTile(List<int> tile, String directory) async {
+  static Future<bool> _downloadSingleTile(
+    List<int> tile, 
+    String directory, 
+    OfflineArea area,
+    TileProvider? tileProvider,
+    TileType? tileType,
+  ) async {
     try {
-      final bytes = await MapDataProvider().getTile(
-        z: tile[0], 
-        x: tile[1], 
-        y: tile[2], 
-        source: MapSource.remote,
-      );
+      List<int> bytes;
+      
+      if (tileType != null && tileProvider != null) {
+        // Use the same path as live tiles: build URL and fetch directly
+        final tileUrl = tileType.getTileUrl(tile[0], tile[1], tile[2], apiKey: tileProvider.apiKey);
+        bytes = await fetchRemoteTile(z: tile[0], x: tile[1], y: tile[2], url: tileUrl);
+      } else {
+        // Fallback to OSM for legacy areas or when no provider info
+        bytes = await fetchOSMTile(z: tile[0], x: tile[1], y: tile[2]);
+      }
       if (bytes.isNotEmpty) {
         await OfflineAreaDownloader.saveTileBytes(tile[0], tile[1], tile[2], directory, bytes);
         return true;
