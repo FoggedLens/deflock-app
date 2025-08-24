@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
 
+import '../app_state.dart';
+
 enum NetworkIssueType { osmTiles, overpassApi, both }
-enum NetworkStatusType { waiting, issues, timedOut, ready }
+enum NetworkStatusType { waiting, issues, timedOut, noData, ready }
 
 class NetworkStatus extends ChangeNotifier {
   static final NetworkStatus instance = NetworkStatus._();
@@ -12,9 +14,12 @@ class NetworkStatus extends ChangeNotifier {
   bool _overpassHasIssues = false;
   bool _isWaitingForData = false;
   bool _isTimedOut = false;
+  bool _hasNoData = false;
+  int _recentOfflineMisses = 0;
   Timer? _osmRecoveryTimer;
   Timer? _overpassRecoveryTimer;
   Timer? _waitingTimer;
+  Timer? _noDataResetTimer;
 
   // Getters
   bool get hasAnyIssues => _osmTilesHaveIssues || _overpassHasIssues;
@@ -22,11 +27,13 @@ class NetworkStatus extends ChangeNotifier {
   bool get overpassHasIssues => _overpassHasIssues;
   bool get isWaitingForData => _isWaitingForData;
   bool get isTimedOut => _isTimedOut;
+  bool get hasNoData => _hasNoData;
   
   NetworkStatusType get currentStatus {
     if (hasAnyIssues) return NetworkStatusType.issues;
     if (_isWaitingForData) return NetworkStatusType.waiting;
     if (_isTimedOut) return NetworkStatusType.timedOut;
+    if (_hasNoData) return NetworkStatusType.noData;
     return NetworkStatusType.ready;
   }
 
@@ -93,8 +100,11 @@ class NetworkStatus extends ChangeNotifier {
 
   /// Set waiting status (show when loading tiles/cameras)
   void setWaiting() {
-    // Clear any previous timeout state when starting new wait
+    // Clear any previous timeout/no-data state when starting new wait
     _isTimedOut = false;
+    _hasNoData = false;
+    _recentOfflineMisses = 0;
+    _noDataResetTimer?.cancel();
     
     if (!_isWaitingForData) {
       _isWaitingForData = true;
@@ -102,25 +112,58 @@ class NetworkStatus extends ChangeNotifier {
       debugPrint('[NetworkStatus] Waiting for data...');
     }
     
-    // Set timeout to show "timed out" status after reasonable time
+    // Set timeout to show appropriate status after reasonable time
     _waitingTimer?.cancel();
     _waitingTimer = Timer(const Duration(seconds: 10), () {
       _isWaitingForData = false;
-      _isTimedOut = true;
+      
+      // If in offline mode, this is "no data" not "timed out"
+      if (AppState.instance.offlineMode) {
+        _hasNoData = true;
+        debugPrint('[NetworkStatus] No offline data available (timeout in offline mode)');
+      } else {
+        _isTimedOut = true;
+        debugPrint('[NetworkStatus] Data request timed out (online mode)');
+      }
+      
       notifyListeners();
-      debugPrint('[NetworkStatus] Data request timed out');
     });
   }
   
-  /// Clear waiting/timeout status when data arrives
+  /// Clear waiting/timeout/no-data status when data arrives
   void clearWaiting() {
-    if (_isWaitingForData || _isTimedOut) {
+    if (_isWaitingForData || _isTimedOut || _hasNoData) {
       _isWaitingForData = false;
       _isTimedOut = false;
+      _hasNoData = false;
+      _recentOfflineMisses = 0;
+      _waitingTimer?.cancel();
+      _noDataResetTimer?.cancel();
+      notifyListeners();
+      debugPrint('[NetworkStatus] Waiting/timeout/no-data status cleared - data arrived');
+    }
+  }
+  
+  /// Report that a tile was not available offline
+  void reportOfflineMiss() {
+    _recentOfflineMisses++;
+    debugPrint('[NetworkStatus] Offline miss #$_recentOfflineMisses');
+    
+    // If we get several misses in a short time, show "no data" status
+    if (_recentOfflineMisses >= 3 && !_hasNoData) {
+      _isWaitingForData = false;
+      _isTimedOut = false;
+      _hasNoData = true;
       _waitingTimer?.cancel();
       notifyListeners();
-      debugPrint('[NetworkStatus] Waiting/timeout status cleared - data arrived');
+      debugPrint('[NetworkStatus] No offline data available for this area');
     }
+    
+    // Reset the miss counter after some time
+    _noDataResetTimer?.cancel();
+    _noDataResetTimer = Timer(const Duration(seconds: 5), () {
+      _recentOfflineMisses = 0;
+    });
   }
 
   @override
@@ -128,6 +171,7 @@ class NetworkStatus extends ChangeNotifier {
     _osmRecoveryTimer?.cancel();
     _overpassRecoveryTimer?.cancel();
     _waitingTimer?.cancel();
+    _noDataResetTimer?.cancel();
     super.dispose();
   }
 }

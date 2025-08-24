@@ -70,6 +70,8 @@ class SimpleTileHttpClient extends http.BaseClient {
       // Check if we're in offline mode
       if (AppState.instance.offlineMode) {
         debugPrint('[SimpleTileService] Offline mode - not attempting OSM fetch for $z/$x/$y');
+        // Report that we couldn't serve this tile offline
+        NetworkStatus.instance.reportOfflineMiss();
         return http.StreamedResponse(
           Stream.value(<int>[]),
           404,

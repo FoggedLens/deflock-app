@@ -28,6 +28,12 @@ class NetworkStatusIndicator extends StatelessWidget {
               color = Colors.orange;
               break;
               
+            case NetworkStatusType.noData:
+              message = 'No offline data';
+              icon = Icons.cloud_off;
+              color = Colors.grey;
+              break;
+              
             case NetworkStatusType.issues:
               switch (networkStatus.currentIssueType) {
                 case NetworkIssueType.osmTiles:
