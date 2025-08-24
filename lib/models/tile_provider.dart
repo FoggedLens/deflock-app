@@ -212,12 +212,3 @@ class DefaultTileProviders {
   }
 }
 
-/// Legacy enum for backward compatibility during transition
-/// TODO: Remove once all references are updated
-@Deprecated('Use TileProvider and TileType instead')
-enum TileProviderType {
-  osmStreet,
-  googleHybrid,
-  arcgisSatellite,
-  mapboxSatellite,
-}

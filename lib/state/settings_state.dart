@@ -60,26 +60,7 @@ class SettingsState extends ChangeNotifier {
     return types;
   }
 
-  /// Legacy getter for backward compatibility
-  @Deprecated('Use selectedTileType instead')
-  TileProviderType get tileProvider {
-    // Map current selection to legacy enum for compatibility
-    final selected = selectedTileType;
-    if (selected == null) return TileProviderType.osmStreet;
-    
-    switch (selected.id) {
-      case 'osm_street':
-        return TileProviderType.osmStreet;
-      case 'google_hybrid':
-        return TileProviderType.googleHybrid;
-      case 'esri_satellite':
-        return TileProviderType.arcgisSatellite;
-      case 'mapbox_satellite':
-        return TileProviderType.mapboxSatellite;
-      default:
-        return TileProviderType.osmStreet;
-    }
-  }
+
 
   // Initialize settings from preferences
   Future<void> init() async {
@@ -230,26 +211,5 @@ class SettingsState extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Legacy setter for backward compatibility
-  @Deprecated('Use setSelectedTileType instead')
-  Future<void> setTileProvider(TileProviderType provider) async {
-    // Map legacy enum to new tile type ID
-    String tileTypeId;
-    switch (provider) {
-      case TileProviderType.osmStreet:
-        tileTypeId = 'osm_street';
-        break;
-      case TileProviderType.googleHybrid:
-        tileTypeId = 'google_hybrid';
-        break;
-      case TileProviderType.arcgisSatellite:
-        tileTypeId = 'esri_satellite';
-        break;
-      case TileProviderType.mapboxSatellite:
-        tileTypeId = 'mapbox_satellite';
-        break;
-    }
-    
-    await setSelectedTileType(tileTypeId);
-  }
+
 }

@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../../app_state.dart';
 import '../../models/tile_provider.dart';
+import '../tile_provider_management_screen.dart';
 
 class TileProviderSection extends StatelessWidget {
   const TileProviderSection({super.key});
@@ -28,9 +29,10 @@ class TileProviderSection extends StatelessWidget {
             ),
             TextButton(
               onPressed: () {
-                // TODO: Navigate to provider management screen
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Provider management coming soon!')),
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => const TileProviderManagementScreen(),
+                  ),
                 );
               },
               child: const Text('Manage Providers'),

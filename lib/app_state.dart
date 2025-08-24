@@ -11,10 +11,9 @@ import 'state/session_state.dart';
 import 'state/settings_state.dart';
 import 'state/upload_queue_state.dart';
 
-// Re-export types for backward compatibility
+// Re-export types
 export 'state/settings_state.dart' show UploadMode;
 export 'state/session_state.dart' show AddCameraSession;
-export 'models/tile_provider.dart' show TileProviderType;
 
 // ------------------ AppState ------------------
 class AppState extends ChangeNotifier {
@@ -72,9 +71,7 @@ class AppState extends ChangeNotifier {
   TileType? get selectedTileType => _settingsState.selectedTileType;
   TileProvider? get selectedTileProvider => _settingsState.selectedTileProvider;
   
-  /// Legacy getter for backward compatibility
-  @Deprecated('Use selectedTileType instead')
-  TileProviderType get tileProvider => _settingsState.tileProvider;
+
   
   // Upload queue state
   int get pendingCount => _uploadQueueState.pendingCount;
@@ -202,11 +199,7 @@ class AppState extends ChangeNotifier {
     await _settingsState.deleteTileProvider(providerId);
   }
 
-  /// Legacy setter for backward compatibility
-  @Deprecated('Use setSelectedTileType instead')
-  Future<void> setTileProvider(TileProviderType provider) async {
-    await _settingsState.setTileProvider(provider);
-  }
+
 
   // ---------- Queue Methods ----------
   void clearQueue() {
