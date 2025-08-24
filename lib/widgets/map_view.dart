@@ -9,6 +9,7 @@ import 'package:http/http.dart' as http;
 import '../app_state.dart';
 import '../services/offline_area_service.dart';
 import '../services/simple_tile_service.dart';
+import '../services/network_status.dart';
 import '../models/osm_camera_node.dart';
 import '../models/camera_profile.dart';
 import 'debouncer.dart';
@@ -249,6 +250,9 @@ class MapViewState extends State<MapView> {
               if (session != null) {
                 appState.updateSession(target: pos.center);
               }
+              
+              // Show waiting indicator when map moves (user is expecting new content)
+              NetworkStatus.instance.setWaiting();
               
               // Only clear tile queue on significant ZOOM changes (not panning)
               final currentZoom = pos.zoom;

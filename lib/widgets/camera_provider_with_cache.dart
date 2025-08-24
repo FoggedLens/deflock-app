@@ -5,6 +5,7 @@ import 'package:flutter_map/flutter_map.dart' show LatLngBounds;
 
 import '../services/map_data_provider.dart';
 import '../services/camera_cache.dart';
+import '../services/network_status.dart';
 import '../models/camera_profile.dart';
 import '../models/osm_camera_node.dart';
 import '../app_state.dart';
@@ -55,6 +56,8 @@ class CameraProviderWithCache extends ChangeNotifier {
         );
         if (fresh.isNotEmpty) {
           CameraCache.instance.addOrUpdate(fresh);
+          // Clear waiting status when camera data arrives
+          NetworkStatus.instance.clearWaiting();
           notifyListeners();
         }
       } catch (e) {

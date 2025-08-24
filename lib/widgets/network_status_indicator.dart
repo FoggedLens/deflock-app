@@ -11,31 +11,46 @@ class NetworkStatusIndicator extends StatelessWidget {
       value: NetworkStatus.instance,
       child: Consumer<NetworkStatus>(
         builder: (context, networkStatus, child) {
-          if (!networkStatus.hasAnyIssues) {
-            return const SizedBox.shrink();
-          }
-
           String message;
           IconData icon;
           Color color;
 
-          switch (networkStatus.currentIssueType) {
-            case NetworkIssueType.osmTiles:
-              message = 'OSM tiles slow';
-              icon = Icons.map_outlined;
+          switch (networkStatus.currentStatus) {
+            case NetworkStatusType.waiting:
+              message = 'Loading...';
+              icon = Icons.hourglass_empty;
+              color = Colors.blue;
+              break;
+              
+            case NetworkStatusType.timedOut:
+              message = 'Timed out';
+              icon = Icons.hourglass_disabled;
               color = Colors.orange;
               break;
-            case NetworkIssueType.overpassApi:
-              message = 'Camera data slow';
-              icon = Icons.camera_alt_outlined;
-              color = Colors.orange;
+              
+            case NetworkStatusType.issues:
+              switch (networkStatus.currentIssueType) {
+                case NetworkIssueType.osmTiles:
+                  message = 'OSM tiles slow';
+                  icon = Icons.map_outlined;
+                  color = Colors.orange;
+                  break;
+                case NetworkIssueType.overpassApi:
+                  message = 'Camera data slow';
+                  icon = Icons.camera_alt_outlined;
+                  color = Colors.orange;
+                  break;
+                case NetworkIssueType.both:
+                  message = 'Network issues';
+                  icon = Icons.cloud_off_outlined;
+                  color = Colors.red;
+                  break;
+                default:
+                  return const SizedBox.shrink();
+              }
               break;
-            case NetworkIssueType.both:
-              message = 'Network issues';
-              icon = Icons.cloud_off_outlined;
-              color = Colors.red;
-              break;
-            default:
+              
+            case NetworkStatusType.ready:
               return const SizedBox.shrink();
           }
 

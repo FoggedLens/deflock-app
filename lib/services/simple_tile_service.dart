@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 
 import '../app_state.dart';
 import 'map_data_provider.dart';
+import 'network_status.dart';
 
 /// Simple HTTP client that routes tile requests through the centralized MapDataProvider.
 /// This ensures all tile fetching (offline/online routing, retries, etc.) is in one place.
@@ -47,6 +48,9 @@ class SimpleTileHttpClient extends http.BaseClient {
       
       debugPrint('[SimpleTileService] Serving tile $z/$x/$y from offline storage');
       
+      // Clear waiting status - we got data
+      NetworkStatus.instance.clearWaiting();
+      
       // Serve offline tile with proper cache headers
       return http.StreamedResponse(
         Stream.value(localTileBytes),
@@ -76,7 +80,12 @@ class SimpleTileHttpClient extends http.BaseClient {
       // We're online - try OSM with proper error handling
       debugPrint('[SimpleTileService] Online mode - trying OSM for $z/$x/$y');
       try {
-        return await _inner.send(http.Request('GET', Uri.parse('https://tile.openstreetmap.org/$z/$x/$y.png')));
+        final response = await _inner.send(http.Request('GET', Uri.parse('https://tile.openstreetmap.org/$z/$x/$y.png')));
+        // Clear waiting status on successful network tile
+        if (response.statusCode == 200) {
+          NetworkStatus.instance.clearWaiting();
+        }
+        return response;
       } catch (networkError) {
         debugPrint('[SimpleTileService] OSM request failed for $z/$x/$y: $networkError');
         // Return 404 instead of throwing - let flutter_map handle gracefully

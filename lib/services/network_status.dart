@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'dart:async';
 
 enum NetworkIssueType { osmTiles, overpassApi, both }
+enum NetworkStatusType { waiting, issues, timedOut, ready }
 
 class NetworkStatus extends ChangeNotifier {
   static final NetworkStatus instance = NetworkStatus._();
@@ -9,13 +10,25 @@ class NetworkStatus extends ChangeNotifier {
 
   bool _osmTilesHaveIssues = false;
   bool _overpassHasIssues = false;
+  bool _isWaitingForData = false;
+  bool _isTimedOut = false;
   Timer? _osmRecoveryTimer;
   Timer? _overpassRecoveryTimer;
+  Timer? _waitingTimer;
 
   // Getters
   bool get hasAnyIssues => _osmTilesHaveIssues || _overpassHasIssues;
   bool get osmTilesHaveIssues => _osmTilesHaveIssues;
   bool get overpassHasIssues => _overpassHasIssues;
+  bool get isWaitingForData => _isWaitingForData;
+  bool get isTimedOut => _isTimedOut;
+  
+  NetworkStatusType get currentStatus {
+    if (hasAnyIssues) return NetworkStatusType.issues;
+    if (_isWaitingForData) return NetworkStatusType.waiting;
+    if (_isTimedOut) return NetworkStatusType.timedOut;
+    return NetworkStatusType.ready;
+  }
 
   NetworkIssueType? get currentIssueType {
     if (_osmTilesHaveIssues && _overpassHasIssues) return NetworkIssueType.both;
@@ -78,10 +91,43 @@ class NetworkStatus extends ChangeNotifier {
     }
   }
 
+  /// Set waiting status (show when loading tiles/cameras)
+  void setWaiting() {
+    // Clear any previous timeout state when starting new wait
+    _isTimedOut = false;
+    
+    if (!_isWaitingForData) {
+      _isWaitingForData = true;
+      notifyListeners();
+      debugPrint('[NetworkStatus] Waiting for data...');
+    }
+    
+    // Set timeout to show "timed out" status after reasonable time
+    _waitingTimer?.cancel();
+    _waitingTimer = Timer(const Duration(seconds: 10), () {
+      _isWaitingForData = false;
+      _isTimedOut = true;
+      notifyListeners();
+      debugPrint('[NetworkStatus] Data request timed out');
+    });
+  }
+  
+  /// Clear waiting/timeout status when data arrives
+  void clearWaiting() {
+    if (_isWaitingForData || _isTimedOut) {
+      _isWaitingForData = false;
+      _isTimedOut = false;
+      _waitingTimer?.cancel();
+      notifyListeners();
+      debugPrint('[NetworkStatus] Waiting/timeout status cleared - data arrived');
+    }
+  }
+
   @override
   void dispose() {
     _osmRecoveryTimer?.cancel();
     _overpassRecoveryTimer?.cancel();
+    _waitingTimer?.cancel();
     super.dispose();
   }
 }
