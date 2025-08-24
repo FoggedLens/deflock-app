@@ -1,5 +1,6 @@
 import 'package:latlong2/latlong.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:flutter/foundation.dart';
 
 import '../models/camera_profile.dart';
 import '../models/osm_camera_node.dart';
@@ -125,7 +126,7 @@ class MapDataProvider {
       if (offline) {
         throw OfflineModeException("Cannot fetch remote tiles in offline mode.");
       }
-      return fetchOSMTile(z: z, x: x, y: y);
+      return _fetchRemoteTileFromCurrentProvider(z, x, y);
     }
 
     // Explicitly local
@@ -138,10 +139,26 @@ class MapDataProvider {
       return await fetchLocalTile(z: z, x: x, y: y);
     } catch (_) {
       if (!offline) {
-        return fetchOSMTile(z: z, x: x, y: y);
+        return _fetchRemoteTileFromCurrentProvider(z, x, y);
       } else {
         throw OfflineModeException("Tile $z/$x/$y not found in offline areas and offline mode is enabled.");
       }
+    }
+  }
+
+  /// Fetch remote tile using current provider from AppState
+  Future<List<int>> _fetchRemoteTileFromCurrentProvider(int z, int x, int y) async {
+    final appState = AppState.instance;
+    final selectedTileType = appState.selectedTileType;
+    final selectedProvider = appState.selectedTileProvider;
+    
+    if (selectedTileType != null && selectedProvider != null) {
+      // Use current provider
+      final tileUrl = selectedTileType.getTileUrl(z, x, y, apiKey: selectedProvider.apiKey);
+      return fetchRemoteTile(z: z, x: x, y: y, url: tileUrl);
+    } else {
+      // Fallback to OSM if no provider selected
+      return fetchOSMTile(z: z, x: x, y: y);
     }
   }
 

@@ -54,6 +54,9 @@ class MapViewState extends State<MapView> {
   
   // Track zoom to clear queue on zoom changes
   double? _lastZoom;
+  
+  // Track tile type changes to clear cache
+  String? _lastTileTypeId;
 
   @override
   void initState() {
@@ -171,56 +174,16 @@ class MapViewState extends State<MapView> {
     return ids1.length == ids2.length && ids1.containsAll(ids2);
   }
 
-  /// Build tile layer based on selected tile provider
+  /// Build tile layer - uses standard URL that SimpleTileHttpClient can parse
   Widget _buildTileLayer(AppState appState) {
-    final selectedTileType = appState.selectedTileType;
-    final selectedProvider = appState.selectedTileProvider;
-    
-    // Fallback to first available tile type if none selected
-    if (selectedTileType == null || selectedProvider == null) {
-      final allTypes = <TileType>[];
-      for (final provider in appState.tileProviders) {
-        allTypes.addAll(provider.availableTileTypes);
-      }
-      
-      final fallback = allTypes.firstOrNull;
-      if (fallback != null) {
-        return TileLayer(
-          urlTemplate: fallback.urlTemplate,
-          userAgentPackageName: 'com.stopflock.flock_map_app',
-          tileProvider: NetworkTileProvider(
-            httpClient: _tileHttpClient,
-          ),
-        );
-      }
-      
-      // Ultimate fallback - hardcoded OSM
-      return TileLayer(
-        urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-        userAgentPackageName: 'com.stopflock.flock_map_app',
-        tileProvider: NetworkTileProvider(
-          httpClient: _tileHttpClient,
-        ),
-      );
-    }
-
-    // Get the URL template with API key if needed
-    String urlTemplate = selectedTileType.urlTemplate;
-    if (selectedTileType.requiresApiKey && selectedProvider.apiKey != null) {
-      urlTemplate = urlTemplate.replaceAll('{api_key}', selectedProvider.apiKey!);
-    }
-
-    // For now, use our custom HTTP client for all tile requests
-    // This will enable offline support for all providers
+    // Use a generic URL template that SimpleTileHttpClient recognizes
+    // The actual provider URL will be built by MapDataProvider using current AppState
     return TileLayer(
-      urlTemplate: urlTemplate,
+      urlTemplate: 'https://tiles.local/{z}/{x}/{y}.png',
       userAgentPackageName: 'com.stopflock.flock_map_app',
       tileProvider: NetworkTileProvider(
         httpClient: _tileHttpClient,
       ),
-      additionalOptions: {
-        'attribution': selectedTileType.attribution,
-      },
     );
   }
 
@@ -244,6 +207,17 @@ class MapViewState extends State<MapView> {
         _refreshCamerasFromProvider();
       });
     }
+
+    // Check if tile type changed and clear cache if needed
+    final currentTileTypeId = appState.selectedTileType?.id;
+    if (_lastTileTypeId != null && _lastTileTypeId != currentTileTypeId) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        // Clear our tile request queue
+        _tileHttpClient.clearTileQueue();
+        // Note: The ValueKey on FlutterMap will cause flutter_map to rebuild and clear its cache
+      });
+    }
+    _lastTileTypeId = currentTileTypeId;
 
     // Seed add‑mode target once, after first controller center is available.
     if (session != null && session.target == null) {

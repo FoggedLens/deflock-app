@@ -41,23 +41,23 @@ Future<List<int>> fetchRemoteTile({
   while (true) {
     await _tileFetchSemaphore.acquire();
     try {
-      print('[fetchRemoteTile] FETCH $z/$x/$y from $hostInfo');
+      // Only log on first attempt or errors
+      if (attempt == 1) {
+        debugPrint('[fetchRemoteTile] Fetching $z/$x/$y from $hostInfo');
+      }
       attempt++;
       final resp = await http.get(Uri.parse(url));
-      print('[fetchRemoteTile] HTTP ${resp.statusCode} for $z/$x/$y from $hostInfo, length=${resp.bodyBytes.length}');
       
       if (resp.statusCode == 200 && resp.bodyBytes.isNotEmpty) {
-        print('[fetchRemoteTile] SUCCESS $z/$x/$y from $hostInfo');
+        // Success - no logging for normal operation
         NetworkStatus.instance.reportOsmTileSuccess(); // Still use OSM reporting for now
         return resp.bodyBytes;
       } else {
-        print('[fetchRemoteTile] FAIL $z/$x/$y from $hostInfo: code=${resp.statusCode}, bytes=${resp.bodyBytes.length}');
+        debugPrint('[fetchRemoteTile] FAIL $z/$x/$y from $hostInfo: code=${resp.statusCode}, bytes=${resp.bodyBytes.length}');
         NetworkStatus.instance.reportOsmTileIssue(); // Still use OSM reporting for now
         throw HttpException('Failed to fetch tile $z/$x/$y from $hostInfo: status ${resp.statusCode}');
       }
     } catch (e) {
-      print('[fetchRemoteTile] Exception $z/$x/$y from $hostInfo: $e');
-      
       // Report network issues on connection errors
       if (e.toString().contains('Connection refused') || 
           e.toString().contains('Connection timed out') ||
@@ -66,12 +66,14 @@ Future<List<int>> fetchRemoteTile({
       }
       
       if (attempt >= maxAttempts) {
-        print("[fetchRemoteTile] Failed for $z/$x/$y from $hostInfo after $attempt attempts: $e");
+        debugPrint("[fetchRemoteTile] Failed for $z/$x/$y from $hostInfo after $attempt attempts: $e");
         rethrow;
       }
       
       final delay = delays[attempt - 1].clamp(0, 60000);
-      print("[fetchRemoteTile] Attempt $attempt for $z/$x/$y from $hostInfo failed: $e. Retrying in ${delay}ms.");
+      if (attempt == 1) {
+        debugPrint("[fetchRemoteTile] Attempt $attempt for $z/$x/$y from $hostInfo failed: $e. Retrying in ${delay}ms.");
+      }
       await Future.delayed(Duration(milliseconds: delay));
     } finally {
       _tileFetchSemaphore.release();
