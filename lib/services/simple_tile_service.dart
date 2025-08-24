@@ -13,12 +13,12 @@ class SimpleTileHttpClient extends http.BaseClient {
 
   @override
   Future<http.StreamedResponse> send(http.BaseRequest request) async {
-    // Only intercept tile requests to OSM
+    // Only intercept tile requests to OSM (for now - other providers pass through)
     if (request.url.host == 'tile.openstreetmap.org') {
       return _handleTileRequest(request);
     }
     
-    // Pass through all other requests
+    // Pass through all other requests (Google, Mapbox, etc.)
     return _inner.send(request);
   }
 

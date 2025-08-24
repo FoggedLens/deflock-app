@@ -3,6 +3,7 @@ import 'package:latlong2/latlong.dart';
 
 import 'models/camera_profile.dart';
 import 'models/pending_upload.dart';
+import 'models/tile_provider.dart';
 import 'services/offline_area_service.dart';
 import 'state/auth_state.dart';
 import 'state/profile_state.dart';
@@ -13,6 +14,7 @@ import 'state/upload_queue_state.dart';
 // Re-export types for backward compatibility
 export 'state/settings_state.dart' show UploadMode;
 export 'state/session_state.dart' show AddCameraSession;
+export 'models/tile_provider.dart' show TileProviderType;
 
 // ------------------ AppState ------------------
 class AppState extends ChangeNotifier {
@@ -64,6 +66,7 @@ class AppState extends ChangeNotifier {
   bool get offlineMode => _settingsState.offlineMode;
   int get maxCameras => _settingsState.maxCameras;
   UploadMode get uploadMode => _settingsState.uploadMode;
+  TileProviderType get tileProvider => _settingsState.tileProvider;
   
   // Upload queue state
   int get pendingCount => _uploadQueueState.pendingCount;
@@ -174,6 +177,10 @@ class AppState extends ChangeNotifier {
     await _settingsState.setUploadMode(mode);
     await _authState.onUploadModeChanged(mode);
     _startUploader(); // Restart uploader with new mode
+  }
+
+  Future<void> setTileProvider(TileProviderType provider) async {
+    await _settingsState.setTileProvider(provider);
   }
 
   // ---------- Queue Methods ----------

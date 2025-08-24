@@ -12,6 +12,7 @@ import '../services/simple_tile_service.dart';
 import '../services/network_status.dart';
 import '../models/osm_camera_node.dart';
 import '../models/camera_profile.dart';
+import '../models/tile_provider.dart';
 import 'debouncer.dart';
 import 'camera_provider_with_cache.dart';
 import 'map/camera_markers.dart';
@@ -169,6 +170,41 @@ class MapViewState extends State<MapView> {
     return ids1.length == ids2.length && ids1.containsAll(ids2);
   }
 
+  /// Build tile layer based on selected tile provider
+  Widget _buildTileLayer(AppState appState) {
+    final providerConfig = TileProviders.getByType(appState.tileProvider);
+    if (providerConfig == null) {
+      // Fallback to OSM if somehow we have an invalid provider
+      return TileLayer(
+        urlTemplate: TileProviders.osmStreet.urlTemplate,
+        userAgentPackageName: 'com.stopflock.flock_map_app',
+        tileProvider: NetworkTileProvider(
+          httpClient: _tileHttpClient,
+        ),
+      );
+    }
+
+    // For OSM tiles, use our custom HTTP client for offline/online routing
+    if (providerConfig.type == TileProviderType.osmStreet) {
+      return TileLayer(
+        urlTemplate: providerConfig.urlTemplate,
+        userAgentPackageName: 'com.stopflock.flock_map_app',
+        tileProvider: NetworkTileProvider(
+          httpClient: _tileHttpClient,
+        ),
+      );
+    }
+
+    // For other providers, use standard HTTP client (no offline support yet)
+    return TileLayer(
+      urlTemplate: providerConfig.urlTemplate,
+      userAgentPackageName: 'com.stopflock.flock_map_app',
+      additionalOptions: {
+        'attribution': providerConfig.attribution,
+      },
+    );
+  }
+
 
 
   @override
@@ -238,7 +274,7 @@ class MapViewState extends State<MapView> {
     return Stack(
       children: [
         FlutterMap(
-          key: ValueKey('map_offline_${appState.offlineMode}'),
+          key: ValueKey('map_offline_${appState.offlineMode}_provider_${appState.tileProvider.name}'),
           mapController: _controller,
           options: MapOptions(
             initialCenter: _currentLatLng ?? LatLng(37.7749, -122.4194),
@@ -273,13 +309,7 @@ class MapViewState extends State<MapView> {
             },
           ),
           children: [
-            TileLayer(
-              urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-              userAgentPackageName: 'com.stopflock.flock_map_app',
-              tileProvider: NetworkTileProvider(
-                httpClient: _tileHttpClient,
-              ),
-            ),
+            _buildTileLayer(appState),
             cameraLayers,
             // Built-in scale bar from flutter_map 
             Scalebar(

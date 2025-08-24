@@ -7,6 +7,7 @@ import 'settings_screen_sections/offline_areas_section.dart';
 import 'settings_screen_sections/offline_mode_section.dart';
 import 'settings_screen_sections/about_section.dart';
 import 'settings_screen_sections/max_cameras_section.dart';
+import 'settings_screen_sections/tile_provider_section.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -27,6 +28,8 @@ class SettingsScreen extends StatelessWidget {
           ProfileListSection(),
           Divider(),
           MaxCamerasSection(),
+          Divider(),
+          TileProviderSection(),
           Divider(),
           OfflineModeSection(),
           Divider(),
