@@ -60,7 +60,7 @@ class TileProviders {
   static const arcgisSatellite = TileProviderConfig(
     type: TileProviderType.arcgisSatellite,
     name: 'Pure Satellite',
-    urlTemplate: 'http://services.arcgisonline.com/ArcGis/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}.png',
+    urlTemplate: 'https://services.arcgisonline.com/ArcGis/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}.png',
     attribution: '© Esri © Maxar',
     description: 'High-resolution satellite imagery without overlays',
   );
