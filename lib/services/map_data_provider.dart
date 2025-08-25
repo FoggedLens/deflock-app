@@ -79,7 +79,7 @@ class MapDataProvider {
           pageSize: AppState.instance.maxCameras,
         );
       } catch (e) {
-        print('[MapDataProvider] Remote camera fetch failed, error: $e. Falling back to local.');
+        debugPrint('[MapDataProvider] Remote camera fetch failed, error: $e. Falling back to local.');
         return fetchLocalCameras(
           bounds: bounds,
           profiles: profiles,
@@ -152,14 +152,13 @@ class MapDataProvider {
     final selectedTileType = appState.selectedTileType;
     final selectedProvider = appState.selectedTileProvider;
     
-    if (selectedTileType != null && selectedProvider != null) {
-      // Use current provider
-      final tileUrl = selectedTileType.getTileUrl(z, x, y, apiKey: selectedProvider.apiKey);
-      return fetchRemoteTile(z: z, x: x, y: y, url: tileUrl);
-    } else {
-      // Fallback to OSM if no provider selected
-      return fetchOSMTile(z: z, x: x, y: y);
+    // We guarantee that a provider and tile type are always selected
+    if (selectedTileType == null || selectedProvider == null) {
+      throw Exception('No tile provider selected - this should never happen');
     }
+    
+    final tileUrl = selectedTileType.getTileUrl(z, x, y, apiKey: selectedProvider.apiKey);
+    return fetchRemoteTile(z: z, x: x, y: y, url: tileUrl);
   }
 
   /// Clear any queued tile requests (call when map view changes significantly)

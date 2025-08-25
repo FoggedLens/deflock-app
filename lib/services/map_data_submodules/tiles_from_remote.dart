@@ -12,12 +12,13 @@ final _tileFetchSemaphore = _SimpleSemaphore(4); // Max 4 concurrent
 /// Clear queued tile requests when map view changes significantly
 void clearRemoteTileQueue() {
   final clearedCount = _tileFetchSemaphore.clearQueue();
-  debugPrint('[RemoteTiles] Cleared $clearedCount queued tile requests');
+  // Only log if we actually cleared something significant
+  if (clearedCount > 5) {
+    debugPrint('[RemoteTiles] Cleared $clearedCount queued tile requests');
+  }
 }
 
-/// Legacy alias for backward compatibility
-@Deprecated('Use clearRemoteTileQueue instead')
-void clearOSMTileQueue() => clearRemoteTileQueue();
+
 
 /// Fetches a tile from any remote provider, with in-memory retries/backoff, and global concurrency limit.
 /// Returns tile image bytes, or throws on persistent failure.
@@ -50,11 +51,11 @@ Future<List<int>> fetchRemoteTile({
       
       if (resp.statusCode == 200 && resp.bodyBytes.isNotEmpty) {
         // Success - no logging for normal operation
-        NetworkStatus.instance.reportOsmTileSuccess(); // Still use OSM reporting for now
+        NetworkStatus.instance.reportOsmTileSuccess(); // Generic tile server reporting
         return resp.bodyBytes;
       } else {
         debugPrint('[fetchRemoteTile] FAIL $z/$x/$y from $hostInfo: code=${resp.statusCode}, bytes=${resp.bodyBytes.length}');
-        NetworkStatus.instance.reportOsmTileIssue(); // Still use OSM reporting for now
+        NetworkStatus.instance.reportOsmTileIssue(); // Generic tile server reporting
         throw HttpException('Failed to fetch tile $z/$x/$y from $hostInfo: status ${resp.statusCode}');
       }
     } catch (e) {
@@ -62,7 +63,7 @@ Future<List<int>> fetchRemoteTile({
       if (e.toString().contains('Connection refused') || 
           e.toString().contains('Connection timed out') ||
           e.toString().contains('Connection reset')) {
-        NetworkStatus.instance.reportOsmTileIssue(); // Still use OSM reporting for now
+        NetworkStatus.instance.reportOsmTileIssue(); // Generic tile server reporting
       }
       
       if (attempt >= maxAttempts) {

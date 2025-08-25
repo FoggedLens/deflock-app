@@ -44,12 +44,12 @@ class NetworkStatus extends ChangeNotifier {
     return null;
   }
 
-  /// Report OSM tile server issues
+  /// Report tile server issues (for any provider)
   void reportOsmTileIssue() {
     if (!_osmTilesHaveIssues) {
       _osmTilesHaveIssues = true;
       notifyListeners();
-      debugPrint('[NetworkStatus] OSM tile server issues detected');
+      debugPrint('[NetworkStatus] Tile server issues detected');
     }
     
     // Reset recovery timer - if we keep getting errors, keep showing indicator
@@ -57,7 +57,7 @@ class NetworkStatus extends ChangeNotifier {
     _osmRecoveryTimer = Timer(const Duration(minutes: 2), () {
       _osmTilesHaveIssues = false;
       notifyListeners();
-      debugPrint('[NetworkStatus] OSM tile server issues cleared');
+      debugPrint('[NetworkStatus] Tile server issues cleared');
     });
   }
 
@@ -82,7 +82,7 @@ class NetworkStatus extends ChangeNotifier {
   void reportOsmTileSuccess() {
     // Clear issues immediately on success (they were likely temporary)
     if (_osmTilesHaveIssues) {
-      debugPrint('[NetworkStatus] OSM tile server issues cleared after success');
+      // Quietly clear - don't log routine success
       _osmTilesHaveIssues = false;
       _osmRecoveryTimer?.cancel();
       notifyListeners();
@@ -91,7 +91,7 @@ class NetworkStatus extends ChangeNotifier {
 
   void reportOverpassSuccess() {
     if (_overpassHasIssues) {
-      debugPrint('[NetworkStatus] Overpass API issues cleared after success');
+      // Quietly clear - don't log routine success
       _overpassHasIssues = false;
       _overpassRecoveryTimer?.cancel();
       notifyListeners();
@@ -109,7 +109,7 @@ class NetworkStatus extends ChangeNotifier {
     if (!_isWaitingForData) {
       _isWaitingForData = true;
       notifyListeners();
-      debugPrint('[NetworkStatus] Waiting for data...');
+      // Don't log routine waiting - only log if we stay waiting too long
     }
     
     // Set timeout to show appropriate status after reasonable time
@@ -140,7 +140,7 @@ class NetworkStatus extends ChangeNotifier {
       _waitingTimer?.cancel();
       _noDataResetTimer?.cancel();
       notifyListeners();
-      debugPrint('[NetworkStatus] Waiting/timeout/no-data status cleared - data arrived');
+      // Quietly clear waiting status - don't log routine data arrival
     }
   }
   

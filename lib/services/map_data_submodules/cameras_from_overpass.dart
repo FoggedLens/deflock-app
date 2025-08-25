@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:flutter/foundation.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:flutter_map/flutter_map.dart';
 
@@ -43,15 +44,19 @@ Future<List<OsmCameraNode>> camerasFromOverpass({
       print('[camerasFromOverpass] Querying Overpass...');
       print('[camerasFromOverpass] Query:\n$query');
       final resp = await http.post(Uri.parse(prodEndpoint), body: {'data': query.trim()});
-      print('[camerasFromOverpass] Status: ${resp.statusCode}, Length: ${resp.body.length}');
+      // Only log errors
       if (resp.statusCode != 200) {
-        print('[camerasFromOverpass] Overpass failed: ${resp.body}');
+        debugPrint('[camerasFromOverpass] Overpass failed: ${resp.body}');
         NetworkStatus.instance.reportOverpassIssue();
         return [];
       }
       final data = jsonDecode(resp.body) as Map<String, dynamic>;
       final elements = data['elements'] as List<dynamic>;
-      print('[camerasFromOverpass] Retrieved elements: ${elements.length}');
+      
+      // Only log if many cameras found or if it's a bulk download
+      if (elements.length > 20 || fetchAllPages) {
+        debugPrint('[camerasFromOverpass] Retrieved ${elements.length} cameras');
+      }
       NetworkStatus.instance.reportOverpassSuccess();
       return elements.whereType<Map<String, dynamic>>().map((e) {
         return OsmCameraNode(

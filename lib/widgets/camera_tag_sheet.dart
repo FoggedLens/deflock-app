@@ -11,10 +11,11 @@ class CameraTagSheet extends StatelessWidget {
     return SafeArea(
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
             Text('Camera #${node.id}',
                 style: Theme.of(context).textTheme.titleLarge),
             const SizedBox(height: 12),
@@ -54,6 +55,7 @@ class CameraTagSheet extends StatelessWidget {
               ),
             ),
           ],
+        ),
         ),
       ),
     );

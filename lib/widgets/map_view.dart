@@ -55,8 +55,11 @@ class MapViewState extends State<MapView> {
   // Track zoom to clear queue on zoom changes
   double? _lastZoom;
   
-  // Track tile type changes to clear cache
+  // Track changes that require cache clearing
   String? _lastTileTypeId;
+  bool? _lastOfflineMode;
+  int _mapRebuildKey = 0;
+  bool _shouldClearCache = false;
 
   @override
   void initState() {
@@ -126,6 +129,10 @@ class MapViewState extends State<MapView> {
     );
   }
 
+
+
+
+
   @override
   void didUpdateWidget(covariant MapView oldWidget) {
     super.didUpdateWidget(oldWidget);
@@ -176,13 +183,38 @@ class MapViewState extends State<MapView> {
 
   /// Build tile layer - uses standard URL that SimpleTileHttpClient can parse
   Widget _buildTileLayer(AppState appState) {
+    final selectedTileType = appState.selectedTileType;
+    final selectedProvider = appState.selectedTileProvider;
+    final offlineMode = appState.offlineMode;
+    
+    // Create a unique cache key that includes provider, tile type, and offline mode
+    // This ensures different providers/modes have separate cache entries
+    String generateTileKey(String url) {
+      final providerKey = selectedProvider?.id ?? 'unknown';
+      final typeKey = selectedTileType?.id ?? 'unknown';
+      final modeKey = offlineMode ? 'offline' : 'online';
+      return '$providerKey-$typeKey-$modeKey-$url';
+    }
+
     // Use a generic URL template that SimpleTileHttpClient recognizes
     // The actual provider URL will be built by MapDataProvider using current AppState
+    // Create a completely fresh HTTP client when providers change
+    // This should bypass any caching at the HTTP client level
+    final httpClient = _shouldClearCache 
+        ? SimpleTileHttpClient() // Fresh instance
+        : _tileHttpClient; // Reuse existing
+    
+    if (_shouldClearCache) {
+      debugPrint('[MapView] Creating fresh HTTP client to bypass cache');
+    }
+    
     return TileLayer(
-      urlTemplate: 'https://tiles.local/{z}/{x}/{y}.png',
+      urlTemplate: 'https://tiles.local/{z}/{x}/{y}.png?provider=${selectedProvider?.id}&type=${selectedTileType?.id}&mode=${offlineMode ? 'offline' : 'online'}',
       userAgentPackageName: 'com.stopflock.flock_map_app',
       tileProvider: NetworkTileProvider(
-        httpClient: _tileHttpClient,
+        httpClient: httpClient,
+        // Also disable flutter_map caching
+        cachingProvider: const DisabledMapCachingProvider(),
       ),
     );
   }
@@ -208,16 +240,28 @@ class MapViewState extends State<MapView> {
       });
     }
 
-    // Check if tile type changed and clear cache if needed
+    // Check if tile type OR offline mode changed and clear cache if needed
     final currentTileTypeId = appState.selectedTileType?.id;
-    if (_lastTileTypeId != null && _lastTileTypeId != currentTileTypeId) {
+    final currentOfflineMode = appState.offlineMode;
+    
+    if ((_lastTileTypeId != null && _lastTileTypeId != currentTileTypeId) ||
+        (_lastOfflineMode != null && _lastOfflineMode != currentOfflineMode)) {
+      // Force map rebuild with new key and destroy cache
+      _mapRebuildKey++;
+      _shouldClearCache = true;
+      final reason = _lastTileTypeId != currentTileTypeId 
+          ? 'tile type ($currentTileTypeId)' 
+          : 'offline mode ($currentOfflineMode)';
+      debugPrint('[MapView] *** CACHE CLEAR *** $reason changed - destroying cache $_mapRebuildKey');
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        // Clear our tile request queue
+        debugPrint('[MapView] Post-frame: Clearing tile request queue');
         _tileHttpClient.clearTileQueue();
-        // Note: The ValueKey on FlutterMap will cause flutter_map to rebuild and clear its cache
+        _shouldClearCache = false;
       });
     }
+    
     _lastTileTypeId = currentTileTypeId;
+    _lastOfflineMode = currentOfflineMode;
 
     // Seed add‑mode target once, after first controller center is available.
     if (session != null && session.target == null) {
@@ -267,7 +311,7 @@ class MapViewState extends State<MapView> {
     return Stack(
       children: [
         FlutterMap(
-          key: ValueKey('map_offline_${appState.offlineMode}_tiletype_${appState.selectedTileType?.id ?? 'none'}'),
+          key: ValueKey('map_${appState.offlineMode}_${appState.selectedTileType?.id ?? 'none'}_$_mapRebuildKey'),
           mapController: _controller,
           options: MapOptions(
             initialCenter: _currentLatLng ?? LatLng(37.7749, -122.4194),
@@ -289,7 +333,7 @@ class MapViewState extends State<MapView> {
               
               if (zoomChanged) {
                 _tileDebounce(() {
-                  debugPrint('[MapView] Zoom change detected - clearing stale tile requests');
+                  // Clear stale tile requests on zoom change (quietly)
                   _tileHttpClient.clearTileQueue();
                 });
               }

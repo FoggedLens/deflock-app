@@ -2,6 +2,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:http/http.dart' as http;
+import 'package:collection/collection.dart';
 
 import '../app_state.dart';
 import '../models/tile_provider.dart';
@@ -158,9 +159,33 @@ class _TileProviderEditorScreenState extends State<TileProviderEditorScreen> {
   void _deleteTileType(int index) {
     if (_tileTypes.length <= 1) return;
     
+    final tileTypeToDelete = _tileTypes[index];
+    final appState = context.read<AppState>();
+    
     setState(() {
       _tileTypes.removeAt(index);
     });
+    
+    // If we're deleting the currently selected tile type, switch to another one
+    if (appState.selectedTileType?.id == tileTypeToDelete.id) {
+      // Find first remaining tile type in this provider or any other provider
+      TileType? replacement;
+      if (_tileTypes.isNotEmpty) {
+        replacement = _tileTypes.first;
+      } else {
+        // Look in other providers
+        for (final provider in appState.tileProviders) {
+          if (provider.availableTileTypes.isNotEmpty) {
+            replacement = provider.availableTileTypes.first;
+            break;
+          }
+        }
+      }
+      
+      if (replacement != null) {
+        appState.setSelectedTileType(replacement.id);
+      }
+    }
   }
 
   void _showTileTypeDialog({TileType? tileType, int? index}) {
