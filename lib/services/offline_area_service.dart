@@ -60,6 +60,7 @@ class OfflineAreaService {
     
     await _loadAreasFromDisk();
     await WorldAreaManager.ensureWorldArea(_areas, getOfflineAreaDir, downloadArea);
+    await saveAreasToDisk(); // Save any world area updates
     _initialized = true;
   }
 

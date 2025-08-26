@@ -109,6 +109,7 @@ class OfflineAreaDownloader {
   ) async {
     try {
       // Use the same unified path as live tiles: always go through MapDataProvider
+      // MapDataProvider will use current AppState provider for downloads
       final bytes = await MapDataProvider().getTile(
         z: tile[0], 
         x: tile[1], 

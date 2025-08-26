@@ -38,7 +38,7 @@ class WorldAreaManager {
       }
     }
 
-    // Create world area if it doesn't exist
+    // Create world area if it doesn't exist, or update existing area without provider info
     if (world == null) {
       final appDocDir = await getOfflineAreaDir();
       final dir = "${appDocDir.path}/$_worldAreaId";
@@ -51,8 +51,38 @@ class WorldAreaManager {
         directory: dir,
         status: OfflineAreaStatus.downloading,
         isPermanent: true,
+        // World area always uses OpenStreetMap
+        tileProviderId: 'openstreetmap',
+        tileProviderName: 'OpenStreetMap',
+        tileTypeId: 'osm_street',
+        tileTypeName: 'Street Map',
       );
       areas.insert(0, world);
+    } else if (world.tileProviderId == null || world.tileTypeId == null) {
+      // Update existing world area that lacks provider metadata
+      final updatedWorld = OfflineArea(
+        id: world.id,
+        name: world.name,
+        bounds: world.bounds,
+        minZoom: world.minZoom,
+        maxZoom: world.maxZoom,
+        directory: world.directory,
+        status: world.status,
+        progress: world.progress,
+        tilesDownloaded: world.tilesDownloaded,
+        tilesTotal: world.tilesTotal,
+        cameras: world.cameras,
+        sizeBytes: world.sizeBytes,
+        isPermanent: world.isPermanent,
+        // Add missing provider metadata
+        tileProviderId: 'openstreetmap',
+        tileProviderName: 'OpenStreetMap',
+        tileTypeId: 'osm_street',
+        tileTypeName: 'Street Map',
+      );
+      final index = areas.indexOf(world);
+      areas[index] = updatedWorld;
+      world = updatedWorld;
     }
 
     // Check world area status and start download if needed

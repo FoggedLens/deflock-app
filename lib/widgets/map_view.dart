@@ -59,7 +59,6 @@ class MapViewState extends State<MapView> {
   String? _lastTileTypeId;
   bool? _lastOfflineMode;
   int _mapRebuildKey = 0;
-  bool _shouldClearCache = false;
 
   @override
   void initState() {
@@ -181,40 +180,21 @@ class MapViewState extends State<MapView> {
     return ids1.length == ids2.length && ids1.containsAll(ids2);
   }
 
-  /// Build tile layer - uses standard URL that SimpleTileHttpClient can parse
+  /// Build tile layer - uses fake domain that SimpleTileHttpClient can parse
   Widget _buildTileLayer(AppState appState) {
     final selectedTileType = appState.selectedTileType;
     final selectedProvider = appState.selectedTileProvider;
-    final offlineMode = appState.offlineMode;
     
-    // Create a unique cache key that includes provider, tile type, and offline mode
-    // This ensures different providers/modes have separate cache entries
-    String generateTileKey(String url) {
-      final providerKey = selectedProvider?.id ?? 'unknown';
-      final typeKey = selectedTileType?.id ?? 'unknown';
-      final modeKey = offlineMode ? 'offline' : 'online';
-      return '$providerKey-$typeKey-$modeKey-$url';
-    }
-
-    // Use a generic URL template that SimpleTileHttpClient recognizes
-    // The actual provider URL will be built by MapDataProvider using current AppState
-    // Create a completely fresh HTTP client when providers change
-    // This should bypass any caching at the HTTP client level
-    final httpClient = _shouldClearCache 
-        ? SimpleTileHttpClient() // Fresh instance
-        : _tileHttpClient; // Reuse existing
-    
-    if (_shouldClearCache) {
-      debugPrint('[MapView] Creating fresh HTTP client to bypass cache');
-    }
+    // Use fake domain with standard HTTPS scheme: https://tiles.local/provider/type/z/x/y
+    // This naturally separates cache entries by provider and type while being HTTP-compatible
+    final urlTemplate = 'https://tiles.local/${selectedProvider?.id ?? 'unknown'}/${selectedTileType?.id ?? 'unknown'}/{z}/{x}/{y}';
     
     return TileLayer(
-      urlTemplate: 'https://tiles.local/{z}/{x}/{y}.png?provider=${selectedProvider?.id}&type=${selectedTileType?.id}&mode=${offlineMode ? 'offline' : 'online'}',
+      urlTemplate: urlTemplate,
       userAgentPackageName: 'com.stopflock.flock_map_app',
       tileProvider: NetworkTileProvider(
-        httpClient: httpClient,
-        // Also disable flutter_map caching
-        cachingProvider: const DisabledMapCachingProvider(),
+        httpClient: _tileHttpClient,
+        // Enable flutter_map caching - cache busting handled by URL changes and FlutterMap key
       ),
     );
   }
@@ -246,17 +226,15 @@ class MapViewState extends State<MapView> {
     
     if ((_lastTileTypeId != null && _lastTileTypeId != currentTileTypeId) ||
         (_lastOfflineMode != null && _lastOfflineMode != currentOfflineMode)) {
-      // Force map rebuild with new key and destroy cache
+      // Force map rebuild with new key to bust flutter_map cache
       _mapRebuildKey++;
-      _shouldClearCache = true;
       final reason = _lastTileTypeId != currentTileTypeId 
           ? 'tile type ($currentTileTypeId)' 
           : 'offline mode ($currentOfflineMode)';
-      debugPrint('[MapView] *** CACHE CLEAR *** $reason changed - destroying cache $_mapRebuildKey');
+      debugPrint('[MapView] *** CACHE CLEAR *** $reason changed - rebuilding map $_mapRebuildKey');
       WidgetsBinding.instance.addPostFrameCallback((_) {
         debugPrint('[MapView] Post-frame: Clearing tile request queue');
         _tileHttpClient.clearTileQueue();
-        _shouldClearCache = false;
       });
     }
     

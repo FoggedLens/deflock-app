@@ -13,10 +13,10 @@ class SimpleTileHttpClient extends http.BaseClient {
 
   @override
   Future<http.StreamedResponse> send(http.BaseRequest request) async {
-    // Extract tile coordinates from the URL using our standard pattern
+    // Extract tile coordinates from our custom URL scheme
     final tileCoords = _extractTileCoords(request.url);
     if (tileCoords != null) {
-      final z = tileCoords['z']!; // We know these are not null from _extractTileCoords
+      final z = tileCoords['z']!;
       final x = tileCoords['x']!;
       final y = tileCoords['y']!;
       return _handleTileRequest(z, x, y);
@@ -26,21 +26,22 @@ class SimpleTileHttpClient extends http.BaseClient {
     return _inner.send(request);
   }
 
-  /// Extract z/x/y coordinates from our standard tile URL pattern
+  /// Extract z/x/y coordinates from our fake domain: https://tiles.local/provider/type/z/x/y
+  /// We ignore the provider/type in the URL since we use current AppState for actual fetching
   Map<String, int>? _extractTileCoords(Uri url) {
-    // We'll use a simple standard pattern: /{z}/{x}/{y}.png
-    // This will be the format we use in map_view.dart
-    final pathSegments = url.pathSegments;
+    if (url.host != 'tiles.local') return null;
     
-    if (pathSegments.length == 3) {
-      final z = int.tryParse(pathSegments[0]);
-      final x = int.tryParse(pathSegments[1]); 
-      final yWithExt = pathSegments[2];
-      final y = int.tryParse(yWithExt.replaceAll(RegExp(r'\.[^.]*$'), '')); // Remove .png
-      
-      if (z != null && x != null && y != null) {
-        return {'z': z, 'x': x, 'y': y};
-      }
+    final pathSegments = url.pathSegments;
+    if (pathSegments.length != 5) return null;
+    
+    // pathSegments[0] = providerId (for cache separation only)
+    // pathSegments[1] = tileTypeId (for cache separation only) 
+    final z = int.tryParse(pathSegments[2]);
+    final x = int.tryParse(pathSegments[3]);
+    final y = int.tryParse(pathSegments[4]);
+    
+    if (z != null && x != null && y != null) {
+      return {'z': z, 'x': x, 'y': y};
     }
     
     return null;
@@ -49,6 +50,7 @@ class SimpleTileHttpClient extends http.BaseClient {
   Future<http.StreamedResponse> _handleTileRequest(int z, int x, int y) async {
     try {
       // Always go through MapDataProvider - it handles offline/online routing
+      // MapDataProvider will get current provider from AppState
       final tileBytes = await _mapDataProvider.getTile(z: z, x: x, y: y, source: MapSource.auto);
       
       // Clear waiting status - we got data
