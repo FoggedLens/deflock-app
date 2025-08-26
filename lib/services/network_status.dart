@@ -112,20 +112,12 @@ class NetworkStatus extends ChangeNotifier {
       // Don't log routine waiting - only log if we stay waiting too long
     }
     
-    // Set timeout to show appropriate status after reasonable time
+    // Set timeout for genuine network issues (not 404s)
     _waitingTimer?.cancel();
-    _waitingTimer = Timer(const Duration(seconds: 10), () {
+    _waitingTimer = Timer(const Duration(seconds: 8), () {
       _isWaitingForData = false;
-      
-      // If in offline mode, this is "no data" not "timed out"
-      if (AppState.instance.offlineMode) {
-        _hasNoData = true;
-        debugPrint('[NetworkStatus] No offline data available (timeout in offline mode)');
-      } else {
-        _isTimedOut = true;
-        debugPrint('[NetworkStatus] Data request timed out (online mode)');
-      }
-      
+      _isTimedOut = true;
+      debugPrint('[NetworkStatus] Request timed out - likely network issues');
       notifyListeners();
     });
   }
@@ -143,6 +135,8 @@ class NetworkStatus extends ChangeNotifier {
       // Quietly clear waiting status - don't log routine data arrival
     }
   }
+
+
   
   /// Report that a tile was not available offline
   void reportOfflineMiss() {

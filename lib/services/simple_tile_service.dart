@@ -71,8 +71,11 @@ class SimpleTileHttpClient extends http.BaseClient {
     } catch (e) {
       debugPrint('[SimpleTileService] Could not get tile $z/$x/$y: $e');
       
-      // Let MapDataProvider handle offline mode logic
-      // Just return 404 and let flutter_map handle it gracefully
+      // 404 means no tiles available - clear waiting status
+      // This is true whether we're online or offline
+      NetworkStatus.instance.clearWaiting();
+      
+      // Return 404 and let flutter_map handle it gracefully
       return http.StreamedResponse(
         Stream.value(<int>[]),
         404,
