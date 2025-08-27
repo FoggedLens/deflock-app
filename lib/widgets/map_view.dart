@@ -213,6 +213,8 @@ class MapViewState extends State<MapView> {
       _lastEnabledProfiles = List.from(currentEnabledProfiles);
       // Refresh cameras when profiles change
       WidgetsBinding.instance.addPostFrameCallback((_) {
+        // Clear camera cache to ensure fresh data for new profile combination
+        _cameraProvider.clearCache();
         // Force display refresh first (for immediate UI update)
         _cameraProvider.refreshDisplay();
         // Then fetch new cameras for newly enabled profiles

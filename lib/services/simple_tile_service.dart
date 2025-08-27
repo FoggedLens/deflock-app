@@ -48,10 +48,17 @@ class SimpleTileHttpClient extends http.BaseClient {
   }
 
   Future<http.StreamedResponse> _handleTileRequest(int z, int x, int y) async {
+    final startTime = DateTime.now();
+    final isOffline = AppState.instance.offlineMode;
+    debugPrint('[SimpleTileService] Requesting tile $z/$x/$y (offline: $isOffline)');
+    
     try {
       // Always go through MapDataProvider - it handles offline/online routing
       // MapDataProvider will get current provider from AppState
       final tileBytes = await _mapDataProvider.getTile(z: z, x: x, y: y, source: MapSource.auto);
+      
+      final duration = DateTime.now().difference(startTime);
+      debugPrint('[SimpleTileService] SUCCESS tile $z/$x/$y in ${duration.inMilliseconds}ms');
       
       // Clear waiting status - we got data
       NetworkStatus.instance.clearWaiting();
@@ -69,7 +76,8 @@ class SimpleTileHttpClient extends http.BaseClient {
       );
       
     } catch (e) {
-      debugPrint('[SimpleTileService] Could not get tile $z/$x/$y: $e');
+      final duration = DateTime.now().difference(startTime);
+      debugPrint('[SimpleTileService] FAILED tile $z/$x/$y in ${duration.inMilliseconds}ms: $e');
       
       // 404 means no tiles available - clear waiting status
       // This is true whether we're online or offline
