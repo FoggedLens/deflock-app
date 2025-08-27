@@ -33,7 +33,6 @@ class DirectionConesBuilder {
           n.coord, 
           n.directionDeg!, 
           zoom,
-          isPending: _isPendingUpload(n),
         ))
     );
     
@@ -58,9 +57,13 @@ class DirectionConesBuilder {
     double bearingDeg, 
     double zoom, {
     bool isPending = false,
+    bool isSession = false,
   }) {
     final halfAngle = kDirectionConeHalfAngle;
     final length = kDirectionConeBaseLength * math.pow(2, 15 - zoom);
+    
+    // Number of points to create the arc (more = smoother curve)
+    const int arcPoints = 12;
 
     LatLng project(double deg) {
       final rad = deg * math.pi / 180;
@@ -70,16 +73,22 @@ class DirectionConesBuilder {
       return LatLng(origin.latitude + dLat, origin.longitude + dLon);
     }
 
-    final left = project(bearingDeg - halfAngle);
-    final right = project(bearingDeg + halfAngle);
-
-    // Use purple color for pending uploads
-    final color = isPending ? Colors.purple : Colors.redAccent;
+    // Build pizza slice with curved edge
+    final points = <LatLng>[origin];
+    
+    // Add arc points from left to right
+    for (int i = 0; i <= arcPoints; i++) {
+      final angle = bearingDeg - halfAngle + (i * 2 * halfAngle / arcPoints);
+      points.add(project(angle));
+    }
+    
+    // Close the shape back to origin
+    points.add(origin);
 
     return Polygon(
-      points: [origin, left, right, origin],
-      color: color.withOpacity(0.25),
-      borderColor: color,
+      points: points,
+      color: kDirectionConeColor.withOpacity(0.25),
+      borderColor: kDirectionConeColor,
       borderStrokeWidth: 1,
     );
   }

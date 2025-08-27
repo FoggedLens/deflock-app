@@ -6,6 +6,7 @@ import 'package:latlong2/latlong.dart';
 import '../../dev_config.dart';
 import '../../models/osm_camera_node.dart';
 import '../camera_tag_sheet.dart';
+import '../camera_icon.dart';
 
 /// Smart marker widget for camera with single/double tap distinction
 class CameraMapMarker extends StatefulWidget {
@@ -52,9 +53,8 @@ class _CameraMapMarkerState extends State<CameraMapMarker> {
     return GestureDetector(
       onTap: _onTap,
       onDoubleTap: _onDoubleTap,
-      child: Icon(
-        Icons.videocam, 
-        color: isPending ? Colors.purple : Colors.orange,
+      child: CameraIcon(
+        type: isPending ? CameraIconType.pending : CameraIconType.real,
       ),
     );
   }
@@ -73,8 +73,8 @@ class CameraMarkersBuilder {
         .where(_isValidCameraCoordinate)
         .map((n) => Marker(
           point: n.coord,
-          width: 24,
-          height: 24,
+          width: kCameraIconDiameter,
+          height: kCameraIconDiameter,
           child: CameraMapMarker(node: n, mapController: mapController),
         )),
       

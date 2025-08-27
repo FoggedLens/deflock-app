@@ -3,6 +3,7 @@ import 'package:flutter_map/flutter_map.dart';
 
 import '../../app_state.dart';
 import '../../dev_config.dart';
+import '../camera_icon.dart';
 import 'layer_selector_button.dart';
 
 /// Widget that renders all map overlay UI elements
@@ -135,7 +136,7 @@ class MapOverlays extends StatelessWidget {
             child: Center(
               child: Transform.translate(
                 offset: const Offset(0, kAddPinYOffset),
-                child: const Icon(Icons.place, size: 40, color: Colors.redAccent),
+                child: const CameraIcon(type: CameraIconType.mock),
               ),
             ),
           ),
