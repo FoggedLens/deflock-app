@@ -4,7 +4,7 @@ import 'dart:async';
 import '../app_state.dart';
 
 enum NetworkIssueType { osmTiles, overpassApi, both }
-enum NetworkStatusType { waiting, issues, timedOut, noData, ready }
+enum NetworkStatusType { waiting, issues, timedOut, noData, ready, success }
 
 class NetworkStatus extends ChangeNotifier {
   static final NetworkStatus instance = NetworkStatus._();
@@ -15,11 +15,13 @@ class NetworkStatus extends ChangeNotifier {
   bool _isWaitingForData = false;
   bool _isTimedOut = false;
   bool _hasNoData = false;
+  bool _hasSuccess = false;
   int _recentOfflineMisses = 0;
   Timer? _osmRecoveryTimer;
   Timer? _overpassRecoveryTimer;
   Timer? _waitingTimer;
   Timer? _noDataResetTimer;
+  Timer? _successResetTimer;
 
   // Getters
   bool get hasAnyIssues => _osmTilesHaveIssues || _overpassHasIssues;
@@ -28,12 +30,14 @@ class NetworkStatus extends ChangeNotifier {
   bool get isWaitingForData => _isWaitingForData;
   bool get isTimedOut => _isTimedOut;
   bool get hasNoData => _hasNoData;
+  bool get hasSuccess => _hasSuccess;
   
   NetworkStatusType get currentStatus {
     if (hasAnyIssues) return NetworkStatusType.issues;
     if (_isWaitingForData) return NetworkStatusType.waiting;
     if (_isTimedOut) return NetworkStatusType.timedOut;
     if (_hasNoData) return NetworkStatusType.noData;
+    if (_hasSuccess) return NetworkStatusType.success;
     return NetworkStatusType.ready;
   }
 
@@ -122,17 +126,59 @@ class NetworkStatus extends ChangeNotifier {
     });
   }
   
-  /// Clear waiting/timeout/no-data status when data arrives
+  /// Show success status briefly when data loads
+  void setSuccess() {
+    _isWaitingForData = false;
+    _isTimedOut = false;
+    _hasNoData = false;
+    _hasSuccess = true;
+    _recentOfflineMisses = 0;
+    _waitingTimer?.cancel();
+    _noDataResetTimer?.cancel();
+    notifyListeners();
+    
+    // Auto-clear success status after 2 seconds
+    _successResetTimer?.cancel();
+    _successResetTimer = Timer(const Duration(seconds: 2), () {
+      if (_hasSuccess) {
+        _hasSuccess = false;
+        notifyListeners();
+      }
+    });
+  }
+
+  /// Show no-data status briefly when tiles aren't available
+  void setNoData() {
+    _isWaitingForData = false;
+    _isTimedOut = false;
+    _hasSuccess = false;
+    _hasNoData = true;
+    _waitingTimer?.cancel();
+    _successResetTimer?.cancel();
+    notifyListeners();
+    
+    // Auto-clear no-data status after 2 seconds
+    _noDataResetTimer?.cancel();
+    _noDataResetTimer = Timer(const Duration(seconds: 2), () {
+      if (_hasNoData) {
+        _hasNoData = false;
+        notifyListeners();
+      }
+    });
+  }
+
+  /// Clear waiting/timeout/no-data status (legacy method for compatibility)
   void clearWaiting() {
-    if (_isWaitingForData || _isTimedOut || _hasNoData) {
+    if (_isWaitingForData || _isTimedOut || _hasNoData || _hasSuccess) {
       _isWaitingForData = false;
       _isTimedOut = false;
       _hasNoData = false;
+      _hasSuccess = false;
       _recentOfflineMisses = 0;
       _waitingTimer?.cancel();
       _noDataResetTimer?.cancel();
+      _successResetTimer?.cancel();
       notifyListeners();
-      // Quietly clear waiting status - don't log routine data arrival
     }
   }
 

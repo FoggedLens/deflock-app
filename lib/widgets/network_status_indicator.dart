@@ -29,9 +29,15 @@ class NetworkStatusIndicator extends StatelessWidget {
               break;
               
             case NetworkStatusType.noData:
-              message = 'No offline data';
+              message = 'No tiles here';
               icon = Icons.cloud_off;
               color = Colors.grey;
+              break;
+
+            case NetworkStatusType.success:
+              message = 'Tiles loaded';
+              icon = Icons.check_circle;
+              color = Colors.green;
               break;
               
             case NetworkStatusType.issues:

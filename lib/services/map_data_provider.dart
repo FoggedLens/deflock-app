@@ -136,15 +136,11 @@ class MapDataProvider {
 
     // AUTO (default): try local first, then remote if not offline
     try {
-      debugPrint('[MapDataProvider] Trying local tile $z/$x/$y (offline: $offline)');
       return await fetchLocalTile(z: z, x: x, y: y);
-    } catch (e) {
-      debugPrint('[MapDataProvider] Local tile $z/$x/$y failed: $e');
+    } catch (_) {
       if (!offline) {
-        debugPrint('[MapDataProvider] Falling back to remote for $z/$x/$y');
         return _fetchRemoteTileFromCurrentProvider(z, x, y);
       } else {
-        debugPrint('[MapDataProvider] Offline mode - no fallback for $z/$x/$y');
         throw OfflineModeException("Tile $z/$x/$y not found in offline areas and offline mode is enabled.");
       }
     }
