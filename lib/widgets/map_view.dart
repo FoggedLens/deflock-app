@@ -22,16 +22,18 @@ import 'map/map_overlays.dart';
 import 'network_status_indicator.dart';
 import '../dev_config.dart';
 
+import '../screens/home_screen.dart' show FollowMeMode;
+
 class MapView extends StatefulWidget {
   final MapController controller;
   const MapView({
     super.key,
     required this.controller,
-    required this.followMe,
+    required this.followMeMode,
     required this.onUserGesture,
   });
 
-  final bool followMe;
+  final FollowMeMode followMeMode;
   final VoidCallback onUserGesture;
 
   @override
@@ -135,12 +137,16 @@ class MapViewState extends State<MapView> {
   @override
   void didUpdateWidget(covariant MapView oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (widget.followMe && !oldWidget.followMe && _currentLatLng != null) {
+    if (widget.followMeMode != FollowMeMode.off && 
+        oldWidget.followMeMode == FollowMeMode.off && 
+        _currentLatLng != null) {
       // Use smooth animation when follow me is first enabled
-      _controller.animatedMove(
-        _currentLatLng!, 
-        _controller.camera.zoom,
-      );
+      if (widget.followMeMode == FollowMeMode.northUp) {
+        _controller.move(_currentLatLng!, _controller.camera.zoom);
+      } else if (widget.followMeMode == FollowMeMode.rotating) {
+        // When switching to rotating mode, reset to north-up first, then let GPS handle rotation
+        _controller.moveAndRotate(_currentLatLng!, _controller.camera.zoom, 0.0);
+      }
     }
   }
 
@@ -160,15 +166,20 @@ class MapViewState extends State<MapView> {
         Geolocator.getPositionStream(locationSettings: locationSettings).listen((Position position) {
       final latLng = LatLng(position.latitude, position.longitude);
       setState(() => _currentLatLng = latLng);
-      if (widget.followMe) {
+      
+      if (widget.followMeMode != FollowMeMode.off) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (mounted) {
             try {
-              // Use smooth animation instead of instant jump
-              _controller.animatedMove(
-                latLng, 
-                _controller.camera.zoom,
-              );
+              if (widget.followMeMode == FollowMeMode.northUp) {
+                // Follow position only, keep current rotation
+                _controller.move(latLng, _controller.camera.zoom);
+              } else if (widget.followMeMode == FollowMeMode.rotating) {
+                // Follow position and rotation based on heading
+                final heading = position.heading;
+                final rotation = heading.isNaN ? 0.0 : -heading; // Convert to map rotation
+                _controller.moveAndRotate(latLng, _controller.camera.zoom, rotation);
+              }
             } catch (e) {
               debugPrint('MapController not ready yet: $e');
             }

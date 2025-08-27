@@ -10,6 +10,12 @@ import '../widgets/add_camera_sheet.dart';
 import '../widgets/camera_provider_with_cache.dart';
 import '../widgets/download_area_dialog.dart';
 
+enum FollowMeMode {
+  off,      // No following
+  northUp,  // Follow position, keep north up
+  rotating, // Follow position and rotation
+}
+
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -21,11 +27,44 @@ class _HomeScreenState extends State<HomeScreen> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final GlobalKey<MapViewState> _mapViewKey = GlobalKey<MapViewState>();
   final MapController _mapController = MapController();
-  bool _followMe = true;
+  FollowMeMode _followMeMode = FollowMeMode.northUp;
+
+  String _getFollowMeTooltip() {
+    switch (_followMeMode) {
+      case FollowMeMode.off:
+        return 'Enable follow-me (north up)';
+      case FollowMeMode.northUp:
+        return 'Enable follow-me (rotating)';
+      case FollowMeMode.rotating:
+        return 'Disable follow-me';
+    }
+  }
+
+  IconData _getFollowMeIcon() {
+    switch (_followMeMode) {
+      case FollowMeMode.off:
+        return Icons.gps_off;
+      case FollowMeMode.northUp:
+        return Icons.gps_fixed;
+      case FollowMeMode.rotating:
+        return Icons.navigation;
+    }
+  }
+
+  FollowMeMode _getNextFollowMeMode() {
+    switch (_followMeMode) {
+      case FollowMeMode.off:
+        return FollowMeMode.northUp;
+      case FollowMeMode.northUp:
+        return FollowMeMode.rotating;
+      case FollowMeMode.rotating:
+        return FollowMeMode.off;
+    }
+  }
 
   void _openAddCameraSheet() {
     // Disable follow-me when adding a camera so the map doesn't jump around
-    setState(() => _followMe = false);
+    setState(() => _followMeMode = FollowMeMode.off);
     
     final appState = context.read<AppState>();
     appState.startAddSession();
@@ -50,12 +89,14 @@ class _HomeScreenState extends State<HomeScreen> {
           title: const Text('Flock Map'),
           actions: [
             IconButton(
-              tooltip: _followMe ? 'Disable follow‑me' : 'Enable follow‑me',
-              icon: Icon(_followMe ? Icons.gps_fixed : Icons.gps_off),
+              tooltip: _getFollowMeTooltip(),
+              icon: Icon(_getFollowMeIcon()),
               onPressed: () {
-                setState(() => _followMe = !_followMe);
+                setState(() {
+                  _followMeMode = _getNextFollowMeMode();
+                });
                 // If enabling follow-me, retry location init in case permission was granted
-                if (_followMe) {
+                if (_followMeMode != FollowMeMode.off) {
                   _mapViewKey.currentState?.retryLocationInit();
                 }
               },
@@ -71,9 +112,11 @@ class _HomeScreenState extends State<HomeScreen> {
             MapView(
               key: _mapViewKey,
               controller: _mapController,
-              followMe: _followMe,
+              followMeMode: _followMeMode,
               onUserGesture: () {
-                if (_followMe) setState(() => _followMe = false);
+                if (_followMeMode != FollowMeMode.off) {
+                  setState(() => _followMeMode = FollowMeMode.off);
+                }
               },
             ),
             Align(
