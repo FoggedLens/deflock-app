@@ -21,7 +21,6 @@ import 'map/direction_cones.dart';
 import 'map/map_overlays.dart';
 import 'network_status_indicator.dart';
 import '../dev_config.dart';
-
 import '../screens/home_screen.dart' show FollowMeMode;
 
 class MapView extends StatefulWidget {
@@ -137,14 +136,15 @@ class MapViewState extends State<MapView> {
   @override
   void didUpdateWidget(covariant MapView oldWidget) {
     super.didUpdateWidget(oldWidget);
+    // Back to original pattern - simple check
     if (widget.followMeMode != FollowMeMode.off && 
         oldWidget.followMeMode == FollowMeMode.off && 
         _currentLatLng != null) {
-      // Use smooth animation when follow me is first enabled
+      // Move to current location when follow me is first enabled
       if (widget.followMeMode == FollowMeMode.northUp) {
         _controller.move(_currentLatLng!, _controller.camera.zoom);
       } else if (widget.followMeMode == FollowMeMode.rotating) {
-        // When switching to rotating mode, reset to north-up first, then let GPS handle rotation
+        // When switching to rotating mode, reset to north-up first
         _controller.moveAndRotate(_currentLatLng!, _controller.camera.zoom, 0.0);
       }
     }
@@ -155,18 +155,12 @@ class MapViewState extends State<MapView> {
     if (perm == LocationPermission.denied ||
         perm == LocationPermission.deniedForever) return;
 
-    // Configure location settings for smoother tracking
-    const locationSettings = LocationSettings(
-      accuracy: LocationAccuracy.high,
-      distanceFilter: 1, // Update every 1 meter
-      timeLimit: Duration(seconds: 2), // Max 2 seconds between updates
-    );
-
     _positionSub =
-        Geolocator.getPositionStream(locationSettings: locationSettings).listen((Position position) {
+        Geolocator.getPositionStream().listen((Position position) {
       final latLng = LatLng(position.latitude, position.longitude);
       setState(() => _currentLatLng = latLng);
       
+      // Back to original pattern - directly check widget parameter
       if (widget.followMeMode != FollowMeMode.off) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (mounted) {

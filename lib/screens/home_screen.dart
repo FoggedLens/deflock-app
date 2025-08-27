@@ -93,7 +93,9 @@ class _HomeScreenState extends State<HomeScreen> {
               icon: Icon(_getFollowMeIcon()),
               onPressed: () {
                 setState(() {
+                  final oldMode = _followMeMode;
                   _followMeMode = _getNextFollowMeMode();
+                  debugPrint('[HomeScreen] Follow mode changed: $oldMode → $_followMeMode');
                 });
                 // If enabling follow-me, retry location init in case permission was granted
                 if (_followMeMode != FollowMeMode.off) {
