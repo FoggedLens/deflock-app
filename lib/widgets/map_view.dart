@@ -136,7 +136,11 @@ class MapViewState extends State<MapView> {
   void didUpdateWidget(covariant MapView oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.followMe && !oldWidget.followMe && _currentLatLng != null) {
-      _controller.move(_currentLatLng!, _controller.camera.zoom);
+      // Use smooth animation when follow me is first enabled
+      _controller.animatedMove(
+        _currentLatLng!, 
+        _controller.camera.zoom,
+      );
     }
   }
 
@@ -145,15 +149,26 @@ class MapViewState extends State<MapView> {
     if (perm == LocationPermission.denied ||
         perm == LocationPermission.deniedForever) return;
 
+    // Configure location settings for smoother tracking
+    const locationSettings = LocationSettings(
+      accuracy: LocationAccuracy.high,
+      distanceFilter: 1, // Update every 1 meter
+      timeLimit: Duration(seconds: 2), // Max 2 seconds between updates
+    );
+
     _positionSub =
-        Geolocator.getPositionStream().listen((Position position) {
+        Geolocator.getPositionStream(locationSettings: locationSettings).listen((Position position) {
       final latLng = LatLng(position.latitude, position.longitude);
       setState(() => _currentLatLng = latLng);
       if (widget.followMe) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (mounted) {
             try {
-              _controller.move(latLng, _controller.camera.zoom);
+              // Use smooth animation instead of instant jump
+              _controller.animatedMove(
+                latLng, 
+                _controller.camera.zoom,
+              );
             } catch (e) {
               debugPrint('MapController not ready yet: $e');
             }
