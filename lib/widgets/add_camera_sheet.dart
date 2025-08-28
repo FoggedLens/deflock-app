@@ -26,8 +26,8 @@ class AddCameraSheet extends StatelessWidget {
       Navigator.pop(context);
     }
 
-    final customProfiles = appState.enabledProfiles.where((p) => !p.builtin).toList();
-    final allowSubmit = customProfiles.isNotEmpty && !session.profile.builtin;
+    final submittableProfiles = appState.enabledProfiles.where((p) => p.isSubmittable).toList();
+    final allowSubmit = submittableProfiles.isNotEmpty && session.profile.isSubmittable;
 
     return Padding(
       padding:
@@ -49,7 +49,7 @@ class AddCameraSheet extends StatelessWidget {
             title: const Text('Profile'),
             trailing: DropdownButton<CameraProfile>(
               value: session.profile,
-              items: appState.enabledProfiles
+              items: submittableProfiles
                   .map((p) => DropdownMenuItem(value: p, child: Text(p.name)))
                   .toList(),
               onChanged: (p) =>
@@ -67,7 +67,7 @@ class AddCameraSheet extends StatelessWidget {
               onChanged: (v) => appState.updateSession(directionDeg: v),
             ),
           ),
-          if (customProfiles.isEmpty)
+          if (submittableProfiles.isEmpty)
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
               child: Row(
@@ -76,14 +76,14 @@ class AddCameraSheet extends StatelessWidget {
                   SizedBox(width: 6),
                   Expanded(
                     child: Text(
-                      'Enable or create a custom profile in Settings to submit new cameras.',
+                      'Enable a submittable profile in Settings to submit new cameras.',
                       style: TextStyle(color: Colors.red, fontSize: 13),
                     ),
                   ),
                 ],
               ),
             )
-          else if (session.profile.builtin)
+          else if (!session.profile.isSubmittable)
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
               child: Row(
@@ -92,7 +92,7 @@ class AddCameraSheet extends StatelessWidget {
                   SizedBox(width: 6),
                   Expanded(
                     child: Text(
-                      'The built-in profile is for map viewing only. Please select a custom profile to submit new cameras.',
+                      'This profile is for map viewing only. Please select a submittable profile to submit new cameras.',
                       style: TextStyle(color: Colors.orange, fontSize: 13),
                     ),
                   ),

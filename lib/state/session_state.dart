@@ -18,7 +18,11 @@ class SessionState extends ChangeNotifier {
   AddCameraSession? get session => _session;
 
   void startAddSession(List<CameraProfile> enabledProfiles) {
-    _session = AddCameraSession(profile: enabledProfiles.first);
+    final submittableProfiles = enabledProfiles.where((p) => p.isSubmittable).toList();
+    final defaultProfile = submittableProfiles.isNotEmpty 
+        ? submittableProfiles.first 
+        : enabledProfiles.first; // Fallback to any enabled profile
+    _session = AddCameraSession(profile: defaultProfile);
     notifyListeners();
   }
 

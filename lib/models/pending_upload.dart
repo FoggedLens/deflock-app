@@ -30,7 +30,7 @@ class PendingUpload {
         direction: j['dir'],
         profile: j['profile'] is Map<String, dynamic>
             ? CameraProfile.fromJson(j['profile'])
-            : CameraProfile.alpr(),
+            : CameraProfile.genericAlpr(),
         attempts: j['attempts'] ?? 0,
         error: j['error'] ?? false,
       );

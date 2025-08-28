@@ -19,7 +19,12 @@ class ProfileState extends ChangeNotifier {
   // Initialize profiles from built-in and custom sources
   Future<void> init() async {
     // Initialize profiles: built-in + custom
-    _profiles.add(CameraProfile.alpr());
+    _profiles.add(CameraProfile.genericAlpr());
+    _profiles.add(CameraProfile.flock());
+    _profiles.add(CameraProfile.motorola());
+    _profiles.add(CameraProfile.genetec());
+    _profiles.add(CameraProfile.leonardo());
+    _profiles.add(CameraProfile.neology());
     _profiles.addAll(await ProfileService().load());
 
     // Load enabled profile IDs from prefs
