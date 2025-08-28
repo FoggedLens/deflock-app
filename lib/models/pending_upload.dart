@@ -5,6 +5,7 @@ class PendingUpload {
   final LatLng coord;
   final double direction;
   final CameraProfile profile;
+  final int? originalNodeId; // If this is an edit, the ID of the original OSM node
   int attempts;
   bool error;
 
@@ -12,15 +13,20 @@ class PendingUpload {
     required this.coord,
     required this.direction,
     required this.profile,
+    this.originalNodeId,
     this.attempts = 0,
     this.error = false,
   });
+
+  // True if this is an edit of an existing camera, false if it's a new camera
+  bool get isEdit => originalNodeId != null;
 
   Map<String, dynamic> toJson() => {
         'lat': coord.latitude,
         'lon': coord.longitude,
         'dir': direction,
         'profile': profile.toJson(),
+        'originalNodeId': originalNodeId,
         'attempts': attempts,
         'error': error,
       };
@@ -30,7 +36,8 @@ class PendingUpload {
         direction: j['dir'],
         profile: j['profile'] is Map<String, dynamic>
             ? CameraProfile.fromJson(j['profile'])
-            : CameraProfile.alpr(),
+            : CameraProfile.genericAlpr(),
+        originalNodeId: j['originalNodeId'],
         attempts: j['attempts'] ?? 0,
         error: j['error'] ?? false,
       );

@@ -13,6 +13,7 @@ class DirectionConesBuilder {
     required List<OsmCameraNode> cameras,
     required double zoom,
     AddCameraSession? session,
+    EditCameraSession? editSession,
   }) {
     final overlays = <Polygon>[];
     
@@ -22,13 +23,25 @@ class DirectionConesBuilder {
         session.target!, 
         session.directionDegrees, 
         zoom,
+        isSession: true,
       ));
     }
     
-    // Add cones for cameras with direction
+    // Add edit session cone if in edit-camera mode
+    if (editSession != null) {
+      overlays.add(_buildCone(
+        editSession.target, 
+        editSession.directionDegrees, 
+        zoom,
+        isSession: true,
+      ));
+    }
+    
+    // Add cones for cameras with direction (but exclude camera being edited)
     overlays.addAll(
       cameras
-        .where(_isValidCameraWithDirection)
+        .where((n) => _isValidCameraWithDirection(n) && 
+                     (editSession == null || n.id != editSession.originalNode.id))
         .map((n) => _buildCone(
           n.coord, 
           n.directionDeg!, 

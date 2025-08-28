@@ -56,3 +56,5 @@ const double kCameraDotOpacity = 0.4; // Opacity for the grey dot interior
 const Color kCameraRingColorReal = Color(0xC43F55F3); // Real cameras from OSM - blue
 const Color kCameraRingColorMock = Color(0xC4FFFFFF); // Add camera mock point - white
 const Color kCameraRingColorPending = Color(0xC49C27B0); // Submitted/pending cameras - purple
+const Color kCameraRingColorEditing = Color(0xC4FF9800); // Camera being edited - orange
+const Color kCameraRingColorPendingEdit = Color(0xC4757575); // Original camera with pending edit - grey

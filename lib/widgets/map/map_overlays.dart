@@ -11,6 +11,7 @@ class MapOverlays extends StatelessWidget {
   final MapController mapController;
   final UploadMode uploadMode;
   final AddCameraSession? session;
+  final EditCameraSession? editSession;
   final String? attribution; // Attribution for current tile provider
 
   const MapOverlays({
@@ -18,6 +19,7 @@ class MapOverlays extends StatelessWidget {
     required this.mapController,
     required this.uploadMode,
     this.session,
+    this.editSession,
     this.attribution,
   });
 
@@ -130,13 +132,15 @@ class MapOverlays extends StatelessWidget {
           ),
         ),
 
-        // Fixed pin when adding camera
-        if (session != null)
+        // Fixed pin when adding or editing camera
+        if (session != null || editSession != null)
           IgnorePointer(
             child: Center(
               child: Transform.translate(
                 offset: const Offset(0, kAddPinYOffset),
-                child: const CameraIcon(type: CameraIconType.mock),
+                child: CameraIcon(
+                  type: editSession != null ? CameraIconType.editing : CameraIconType.mock
+                ),
               ),
             ),
           ),

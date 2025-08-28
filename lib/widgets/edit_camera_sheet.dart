@@ -4,25 +4,25 @@ import 'package:provider/provider.dart';
 import '../app_state.dart';
 import '../models/camera_profile.dart';
 
-class AddCameraSheet extends StatelessWidget {
-  const AddCameraSheet({super.key, required this.session});
+class EditCameraSheet extends StatelessWidget {
+  const EditCameraSheet({super.key, required this.session});
 
-  final AddCameraSession session;
+  final EditCameraSession session;
 
   @override
   Widget build(BuildContext context) {
     final appState = context.watch<AppState>();
 
     void _commit() {
-      appState.commitSession();
+      appState.commitEditSession();
       Navigator.pop(context);
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Camera queued for upload')),
+        const SnackBar(content: Text('Camera edit queued for upload')),
       );
     }
 
     void _cancel() {
-      appState.cancelSession();
+      appState.cancelEditSession();
       Navigator.pop(context);
     }
 
@@ -44,6 +44,11 @@ class AddCameraSheet extends StatelessWidget {
               borderRadius: BorderRadius.circular(2),
             ),
           ),
+          const SizedBox(height: 8),
+          Text(
+            'Edit Camera #${session.originalNode.id}',
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
           const SizedBox(height: 16),
           ListTile(
             title: const Text('Profile'),
@@ -53,7 +58,7 @@ class AddCameraSheet extends StatelessWidget {
                   .map((p) => DropdownMenuItem(value: p, child: Text(p.name)))
                   .toList(),
               onChanged: (p) =>
-                  appState.updateSession(profile: p ?? session.profile),
+                  appState.updateEditSession(profile: p ?? session.profile),
             ),
           ),
           ListTile(
@@ -64,7 +69,7 @@ class AddCameraSheet extends StatelessWidget {
               divisions: 359,
               value: session.directionDegrees,
               label: session.directionDegrees.round().toString(),
-              onChanged: (v) => appState.updateSession(directionDeg: v),
+              onChanged: (v) => appState.updateEditSession(directionDeg: v),
             ),
           ),
           if (submittableProfiles.isEmpty)
@@ -76,7 +81,7 @@ class AddCameraSheet extends StatelessWidget {
                   SizedBox(width: 6),
                   Expanded(
                     child: Text(
-                      'Enable a submittable profile in Settings to submit new cameras.',
+                      'Enable a submittable profile in Settings to edit cameras.',
                       style: TextStyle(color: Colors.red, fontSize: 13),
                     ),
                   ),
@@ -92,7 +97,7 @@ class AddCameraSheet extends StatelessWidget {
                   SizedBox(width: 6),
                   Expanded(
                     child: Text(
-                      'This profile is for map viewing only. Please select a submittable profile to submit new cameras.',
+                      'This profile is for map viewing only. Please select a submittable profile to edit cameras.',
                       style: TextStyle(color: Colors.orange, fontSize: 13),
                     ),
                   ),
@@ -114,7 +119,7 @@ class AddCameraSheet extends StatelessWidget {
                 Expanded(
                   child: ElevatedButton(
                     onPressed: allowSubmit ? _commit : null,
-                    child: const Text('Submit'),
+                    child: const Text('Save Edit'),
                   ),
                 ),
               ],
@@ -126,4 +131,3 @@ class AddCameraSheet extends StatelessWidget {
     );
   }
 }
-

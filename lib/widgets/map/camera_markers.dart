@@ -46,16 +46,25 @@ class _CameraMapMarkerState extends State<CameraMapMarker> {
 
   @override
   Widget build(BuildContext context) {
-    // Check if this is a pending upload
-    final isPending = widget.node.tags.containsKey('_pending_upload') && 
-                      widget.node.tags['_pending_upload'] == 'true';
+    // Check camera state
+    final isPendingUpload = widget.node.tags.containsKey('_pending_upload') && 
+                           widget.node.tags['_pending_upload'] == 'true';
+    final isPendingEdit = widget.node.tags.containsKey('_pending_edit') && 
+                         widget.node.tags['_pending_edit'] == 'true';
+    
+    CameraIconType iconType;
+    if (isPendingUpload) {
+      iconType = CameraIconType.pending;
+    } else if (isPendingEdit) {
+      iconType = CameraIconType.pendingEdit;
+    } else {
+      iconType = CameraIconType.real;
+    }
     
     return GestureDetector(
       onTap: _onTap,
       onDoubleTap: _onDoubleTap,
-      child: CameraIcon(
-        type: isPending ? CameraIconType.pending : CameraIconType.real,
-      ),
+      child: CameraIcon(type: iconType),
     );
   }
 }

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../models/osm_camera_node.dart';
+import '../app_state.dart';
 
 class CameraTagSheet extends StatelessWidget {
   final OsmCameraNode node;
@@ -8,6 +10,19 @@ class CameraTagSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final appState = context.watch<AppState>();
+    
+    // Check if this camera is editable (not a pending upload or pending edit)
+    final isEditable = (!node.tags.containsKey('_pending_upload') || 
+                       node.tags['_pending_upload'] != 'true') &&
+                      (!node.tags.containsKey('_pending_edit') || 
+                       node.tags['_pending_edit'] != 'true');
+    
+    void _openEditSheet() {
+      Navigator.pop(context); // Close this sheet first
+      appState.startEditSession(node); // HomeScreen will auto-show the edit sheet
+    }
+
     return SafeArea(
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
@@ -46,13 +61,26 @@ class CameraTagSheet extends StatelessWidget {
                 ),
               ),
             ),
-            const SizedBox(height: 8),
-            Align(
-              alignment: Alignment.centerRight,
-              child: TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('Close'),
-              ),
+            const SizedBox(height: 16),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                if (isEditable) ...[
+                  ElevatedButton.icon(
+                    onPressed: _openEditSheet,
+                    icon: const Icon(Icons.edit, size: 18),
+                    label: const Text('Edit'),
+                    style: ElevatedButton.styleFrom(
+                      minimumSize: const Size(0, 36),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                ],
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('Close'),
+                ),
+              ],
             ),
           ],
         ),

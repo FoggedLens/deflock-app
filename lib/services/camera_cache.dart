@@ -13,7 +13,23 @@ class CameraCache {
   /// Add or update a batch of camera nodes in the cache.
   void addOrUpdate(List<OsmCameraNode> nodes) {
     for (var node in nodes) {
-      _nodes[node.id] = node;
+      final existing = _nodes[node.id];
+      if (existing != null) {
+        // Preserve any tags starting with underscore when updating existing nodes
+        final mergedTags = Map<String, String>.from(node.tags);
+        for (final entry in existing.tags.entries) {
+          if (entry.key.startsWith('_')) {
+            mergedTags[entry.key] = entry.value;
+          }
+        }
+        _nodes[node.id] = OsmCameraNode(
+          id: node.id,
+          coord: node.coord,
+          tags: mergedTags,
+        );
+      } else {
+        _nodes[node.id] = node;
+      }
     }
   }
 

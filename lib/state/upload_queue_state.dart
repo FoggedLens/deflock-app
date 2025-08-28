@@ -56,6 +56,50 @@ class UploadQueueState extends ChangeNotifier {
     notifyListeners();
   }
 
+  // Add a completed edit session to the upload queue
+  void addFromEditSession(EditCameraSession session) {
+    final upload = PendingUpload(
+      coord: session.target,
+      direction: session.directionDegrees,
+      profile: session.profile,
+      originalNodeId: session.originalNode.id, // Track which node we're editing
+    );
+    
+    _queue.add(upload);
+    _saveQueue();
+    
+    // Create two cache entries:
+    
+    // 1. Mark the original camera with _pending_edit (grey ring) at original location
+    final originalTags = Map<String, String>.from(session.originalNode.tags);
+    originalTags['_pending_edit'] = 'true'; // Mark original as having pending edit
+    
+    final originalNode = OsmCameraNode(
+      id: session.originalNode.id,
+      coord: session.originalNode.coord, // Keep at original location
+      tags: originalTags,
+    );
+    
+    // 2. Create new temp node for the edited camera (purple ring) at new location
+    final tempId = -DateTime.now().millisecondsSinceEpoch;
+    final editedTags = Map<String, String>.from(upload.profile.tags);
+    editedTags['direction'] = upload.direction.toStringAsFixed(0);
+    editedTags['_pending_upload'] = 'true'; // Mark as pending upload
+    editedTags['_original_node_id'] = session.originalNode.id.toString(); // Track original for line drawing
+    
+    final editedNode = OsmCameraNode(
+      id: tempId,
+      coord: upload.coord, // At new location
+      tags: editedTags,
+    );
+    
+    CameraCache.instance.addOrUpdate([originalNode, editedNode]);
+    // Notify camera provider to update the map
+    CameraProviderWithCache.instance.notifyListeners();
+    
+    notifyListeners();
+  }
+
   void clearQueue() {
     _queue.clear();
     _saveQueue();

@@ -21,17 +21,18 @@ import 'map/direction_cones.dart';
 import 'map/map_overlays.dart';
 import 'network_status_indicator.dart';
 import '../dev_config.dart';
+import '../screens/home_screen.dart' show FollowMeMode;
 
 class MapView extends StatefulWidget {
   final MapController controller;
   const MapView({
     super.key,
     required this.controller,
-    required this.followMe,
+    required this.followMeMode,
     required this.onUserGesture,
   });
 
-  final bool followMe;
+  final FollowMeMode followMeMode;
   final VoidCallback onUserGesture;
 
   @override
@@ -135,8 +136,17 @@ class MapViewState extends State<MapView> {
   @override
   void didUpdateWidget(covariant MapView oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (widget.followMe && !oldWidget.followMe && _currentLatLng != null) {
-      _controller.move(_currentLatLng!, _controller.camera.zoom);
+    // Back to original pattern - simple check
+    if (widget.followMeMode != FollowMeMode.off && 
+        oldWidget.followMeMode == FollowMeMode.off && 
+        _currentLatLng != null) {
+      // Move to current location when follow me is first enabled
+      if (widget.followMeMode == FollowMeMode.northUp) {
+        _controller.move(_currentLatLng!, _controller.camera.zoom);
+      } else if (widget.followMeMode == FollowMeMode.rotating) {
+        // When switching to rotating mode, reset to north-up first
+        _controller.moveAndRotate(_currentLatLng!, _controller.camera.zoom, 0.0);
+      }
     }
   }
 
@@ -149,11 +159,21 @@ class MapViewState extends State<MapView> {
         Geolocator.getPositionStream().listen((Position position) {
       final latLng = LatLng(position.latitude, position.longitude);
       setState(() => _currentLatLng = latLng);
-      if (widget.followMe) {
+      
+      // Back to original pattern - directly check widget parameter
+      if (widget.followMeMode != FollowMeMode.off) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (mounted) {
             try {
-              _controller.move(latLng, _controller.camera.zoom);
+              if (widget.followMeMode == FollowMeMode.northUp) {
+                // Follow position only, keep current rotation
+                _controller.move(latLng, _controller.camera.zoom);
+              } else if (widget.followMeMode == FollowMeMode.rotating) {
+                // Follow position and rotation based on heading
+                final heading = position.heading;
+                final rotation = heading.isNaN ? 0.0 : -heading; // Convert to map rotation
+                _controller.moveAndRotate(latLng, _controller.camera.zoom, rotation);
+              }
             } catch (e) {
               debugPrint('MapController not ready yet: $e');
             }
@@ -205,6 +225,7 @@ class MapViewState extends State<MapView> {
   Widget build(BuildContext context) {
     final appState = context.watch<AppState>();
     final session = appState.session;
+    final editSession = appState.editSession;
 
     // Check if enabled profiles changed and refresh cameras if needed
     final currentEnabledProfiles = appState.enabledProfiles;
@@ -252,6 +273,17 @@ class MapViewState extends State<MapView> {
         );
       } catch (_) {/* controller not ready yet */}
     }
+    
+    // For edit sessions, center the map on the camera being edited initially
+    if (editSession != null && _controller.camera.center != editSession.target) {
+      WidgetsBinding.instance.addPostFrameCallback(
+        (_) {
+          try {
+            _controller.move(editSession.target, _controller.camera.zoom);
+          } catch (_) {/* controller not ready yet */}
+        },
+      );
+    }
 
     final zoom = _safeZoom();
     // Fetch cached cameras for current map bounds (using Consumer so overlays redraw instantly)
@@ -277,11 +309,16 @@ class MapViewState extends State<MapView> {
           cameras: cameras,
           zoom: zoom,
           session: session,
+          editSession: editSession,
         );
+
+        // Build edit lines connecting original cameras to their edited positions
+        final editLines = _buildEditLines(cameras);
 
         return Stack(
           children: [
             PolygonLayer(polygons: overlays),
+            if (editLines.isNotEmpty) PolylineLayer(polylines: editLines),
             MarkerLayer(markers: markers),
           ],
         );
@@ -302,6 +339,9 @@ class MapViewState extends State<MapView> {
               if (gesture) widget.onUserGesture();
               if (session != null) {
                 appState.updateSession(target: pos.center);
+              }
+              if (editSession != null) {
+                appState.updateEditSession(target: pos.center);
               }
               
               // Show waiting indicator when map moves (user is expecting new content)
@@ -345,6 +385,7 @@ class MapViewState extends State<MapView> {
           mapController: _controller,
           uploadMode: appState.uploadMode,
           session: session,
+          editSession: editSession,
           attribution: appState.selectedTileType?.attribution,
         ),
 
@@ -352,6 +393,38 @@ class MapViewState extends State<MapView> {
         const NetworkStatusIndicator(),
       ],
     );
+  }
+
+  /// Build polylines connecting original cameras to their edited positions
+  List<Polyline> _buildEditLines(List<OsmCameraNode> cameras) {
+    final lines = <Polyline>[];
+    
+    // Create a lookup map of original node IDs to their coordinates
+    final originalNodes = <int, LatLng>{};
+    for (final camera in cameras) {
+      if (camera.tags['_pending_edit'] == 'true') {
+        originalNodes[camera.id] = camera.coord;
+      }
+    }
+    
+    // Find edited cameras and draw lines to their originals
+    for (final camera in cameras) {
+      final originalIdStr = camera.tags['_original_node_id'];
+      if (originalIdStr != null && camera.tags['_pending_upload'] == 'true') {
+        final originalId = int.tryParse(originalIdStr);
+        final originalCoord = originalId != null ? originalNodes[originalId] : null;
+        
+        if (originalCoord != null) {
+          lines.add(Polyline(
+            points: [originalCoord, camera.coord],
+            color: kCameraRingColorPending,
+            strokeWidth: 3.0,
+          ));
+        }
+      }
+    }
+    
+    return lines;
   }
 }
 
