@@ -312,9 +312,13 @@ class MapViewState extends State<MapView> {
           editSession: editSession,
         );
 
+        // Build edit lines connecting original cameras to their edited positions
+        final editLines = _buildEditLines(cameras);
+
         return Stack(
           children: [
             PolygonLayer(polygons: overlays),
+            if (editLines.isNotEmpty) PolylineLayer(polylines: editLines),
             MarkerLayer(markers: markers),
           ],
         );
@@ -389,6 +393,38 @@ class MapViewState extends State<MapView> {
         const NetworkStatusIndicator(),
       ],
     );
+  }
+
+  /// Build polylines connecting original cameras to their edited positions
+  List<Polyline> _buildEditLines(List<OsmCameraNode> cameras) {
+    final lines = <Polyline>[];
+    
+    // Create a lookup map of original node IDs to their coordinates
+    final originalNodes = <int, LatLng>{};
+    for (final camera in cameras) {
+      if (camera.tags['_pending_edit'] == 'true') {
+        originalNodes[camera.id] = camera.coord;
+      }
+    }
+    
+    // Find edited cameras and draw lines to their originals
+    for (final camera in cameras) {
+      final originalIdStr = camera.tags['_original_node_id'];
+      if (originalIdStr != null && camera.tags['_pending_upload'] == 'true') {
+        final originalId = int.tryParse(originalIdStr);
+        final originalCoord = originalId != null ? originalNodes[originalId] : null;
+        
+        if (originalCoord != null) {
+          lines.add(Polyline(
+            points: [originalCoord, camera.coord],
+            color: Colors.orange.withOpacity(0.7),
+            strokeWidth: 2.0,
+          ));
+        }
+      }
+    }
+    
+    return lines;
   }
 }
 

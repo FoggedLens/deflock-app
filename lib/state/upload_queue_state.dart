@@ -85,6 +85,7 @@ class UploadQueueState extends ChangeNotifier {
     final editedTags = Map<String, String>.from(upload.profile.tags);
     editedTags['direction'] = upload.direction.toStringAsFixed(0);
     editedTags['_pending_upload'] = 'true'; // Mark as pending upload
+    editedTags['_original_node_id'] = session.originalNode.id.toString(); // Track original for line drawing
     
     final editedNode = OsmCameraNode(
       id: tempId,
