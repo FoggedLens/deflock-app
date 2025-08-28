@@ -31,7 +31,9 @@ class CameraProfile {
         name: 'Flock',
         tags: const {
           'man_made': 'surveillance',
+          'surveillance': 'public',
           'surveillance:type': 'ALPR',
+          'surveillance:zone': 'traffic',
           'camera:type': 'fixed',
           'manufacturer': 'Flock Safety',
           'manufacturer:wikidata': 'Q108485435',
@@ -45,7 +47,9 @@ class CameraProfile {
         name: 'Motorola/Vigilant',
         tags: const {
           'man_made': 'surveillance',
+          'surveillance': 'public',
           'surveillance:type': 'ALPR',
+          'surveillance:zone': 'traffic',
           'camera:type': 'fixed',
           'manufacturer': 'Motorola Solutions',
           'manufacturer:wikidata': 'Q634815',
@@ -59,7 +63,9 @@ class CameraProfile {
         name: 'Genetec',
         tags: const {
           'man_made': 'surveillance',
+          'surveillance': 'public',
           'surveillance:type': 'ALPR',
+          'surveillance:zone': 'traffic',
           'camera:type': 'fixed',
           'manufacturer': 'Genetec',
           'manufacturer:wikidata': 'Q30295174',
@@ -73,7 +79,9 @@ class CameraProfile {
         name: 'Leonardo/ELSAG',
         tags: const {
           'man_made': 'surveillance',
+          'surveillance': 'public',
           'surveillance:type': 'ALPR',
+          'surveillance:zone': 'traffic',
           'camera:type': 'fixed',
           'manufacturer': 'Leonardo',
           'manufacturer:wikidata': 'Q910379',
@@ -87,7 +95,9 @@ class CameraProfile {
         name: 'Neology',
         tags: const {
           'man_made': 'surveillance',
+          'surveillance': 'public',
           'surveillance:type': 'ALPR',
+          'surveillance:zone': 'traffic',
           'camera:type': 'fixed',
           'manufacturer': 'Neology, Inc.',
         },
