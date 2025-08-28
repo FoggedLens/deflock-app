@@ -37,9 +37,11 @@ const Duration kDebounceCameraRefresh = Duration(milliseconds: 500);
 const Duration kFollowMeAnimationDuration = Duration(milliseconds: 600);
 const double kMinSpeedForRotationMps = 1.0; // Minimum speed (m/s) to apply rotation
 
-// Last known location storage
-const String kLastKnownLatKey = 'last_known_latitude';
-const String kLastKnownLngKey = 'last_known_longitude';
+// Last map location and settings storage
+const String kLastMapLatKey = 'last_map_latitude';
+const String kLastMapLngKey = 'last_map_longitude';
+const String kLastMapZoomKey = 'last_map_zoom';
+const String kFollowMeModeKey = 'follow_me_mode';
 
 // Tile/OSM fetch retry parameters (for tunable backoff)
 const int kTileFetchMaxAttempts = 3;

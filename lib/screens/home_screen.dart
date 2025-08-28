@@ -36,6 +36,18 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   void initState() {
     super.initState();
     _mapController = AnimatedMapController(vsync: this);
+    // Load saved follow-me mode
+    _loadFollowMeMode();
+  }
+
+  /// Load the saved follow-me mode
+  Future<void> _loadFollowMeMode() async {
+    final savedMode = await MapViewState.loadFollowMeMode();
+    if (mounted) {
+      setState(() {
+        _followMeMode = savedMode;
+      });
+    }
   }
 
   @override
@@ -132,6 +144,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   _followMeMode = _getNextFollowMeMode();
                   debugPrint('[HomeScreen] Follow mode changed: $oldMode → $_followMeMode');
                 });
+                // Save the new follow-me mode
+                MapViewState.saveFollowMeMode(_followMeMode);
                 // If enabling follow-me, retry location init in case permission was granted
                 if (_followMeMode != FollowMeMode.off) {
                   _mapViewKey.currentState?.retryLocationInit();
