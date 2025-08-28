@@ -225,6 +225,7 @@ class MapViewState extends State<MapView> {
   Widget build(BuildContext context) {
     final appState = context.watch<AppState>();
     final session = appState.session;
+    final editSession = appState.editSession;
 
     // Check if enabled profiles changed and refresh cameras if needed
     final currentEnabledProfiles = appState.enabledProfiles;
@@ -271,6 +272,17 @@ class MapViewState extends State<MapView> {
           (_) => appState.updateSession(target: center),
         );
       } catch (_) {/* controller not ready yet */}
+    }
+    
+    // For edit sessions, center the map on the camera being edited initially
+    if (editSession != null && _controller.camera.center != editSession.target) {
+      WidgetsBinding.instance.addPostFrameCallback(
+        (_) {
+          try {
+            _controller.move(editSession.target, _controller.camera.zoom);
+          } catch (_) {/* controller not ready yet */}
+        },
+      );
     }
 
     final zoom = _safeZoom();
@@ -323,6 +335,9 @@ class MapViewState extends State<MapView> {
               if (session != null) {
                 appState.updateSession(target: pos.center);
               }
+              if (editSession != null) {
+                appState.updateEditSession(target: pos.center);
+              }
               
               // Show waiting indicator when map moves (user is expecting new content)
               NetworkStatus.instance.setWaiting();
@@ -365,6 +380,7 @@ class MapViewState extends State<MapView> {
           mapController: _controller,
           uploadMode: appState.uploadMode,
           session: session,
+          editSession: editSession,
           attribution: appState.selectedTileType?.attribution,
         ),
 

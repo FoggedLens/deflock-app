@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:latlong2/latlong.dart';
 
 import 'models/camera_profile.dart';
+import 'models/osm_camera_node.dart';
 import 'models/pending_upload.dart';
 import 'models/tile_provider.dart';
 import 'services/offline_area_service.dart';
@@ -14,7 +15,7 @@ import 'state/upload_queue_state.dart';
 
 // Re-export types
 export 'state/settings_state.dart' show UploadMode;
-export 'state/session_state.dart' show AddCameraSession;
+export 'state/session_state.dart' show AddCameraSession, EditCameraSession;
 
 // ------------------ AppState ------------------
 class AppState extends ChangeNotifier {
@@ -61,6 +62,7 @@ class AppState extends ChangeNotifier {
   
   // Session state
   AddCameraSession? get session => _sessionState.session;
+  EditCameraSession? get editSession => _sessionState.editSession;
   
   // Settings state
   bool get offlineMode => _settingsState.offlineMode;
@@ -139,6 +141,10 @@ class AppState extends ChangeNotifier {
     _sessionState.startAddSession(enabledProfiles);
   }
 
+  void startEditSession(OsmCameraNode node) {
+    _sessionState.startEditSession(node, enabledProfiles);
+  }
+
   void updateSession({
     double? directionDeg,
     CameraProfile? profile,
@@ -151,14 +157,38 @@ class AppState extends ChangeNotifier {
     );
   }
 
+  void updateEditSession({
+    double? directionDeg,
+    CameraProfile? profile,
+    LatLng? target,
+  }) {
+    _sessionState.updateEditSession(
+      directionDeg: directionDeg,
+      profile: profile,
+      target: target,
+    );
+  }
+
   void cancelSession() {
     _sessionState.cancelSession();
+  }
+
+  void cancelEditSession() {
+    _sessionState.cancelEditSession();
   }
 
   void commitSession() {
     final session = _sessionState.commitSession();
     if (session != null) {
       _uploadQueueState.addFromSession(session);
+      _startUploader();
+    }
+  }
+
+  void commitEditSession() {
+    final session = _sessionState.commitEditSession();
+    if (session != null) {
+      _uploadQueueState.addFromEditSession(session);
       _startUploader();
     }
   }

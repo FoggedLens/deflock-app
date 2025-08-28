@@ -5,6 +5,7 @@ enum CameraIconType {
   real,     // Blue ring - real cameras from OSM
   mock,     // White ring - add camera mock point
   pending,  // Purple ring - submitted/pending cameras
+  editing,  // Orange ring - camera being edited
 }
 
 /// Simple camera icon with grey dot and colored ring
@@ -21,6 +22,8 @@ class CameraIcon extends StatelessWidget {
         return kCameraRingColorMock;
       case CameraIconType.pending:
         return kCameraRingColorPending;
+      case CameraIconType.editing:
+        return kCameraRingColorEditing;
     }
   }
 
