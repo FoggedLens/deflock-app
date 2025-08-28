@@ -309,6 +309,7 @@ class MapViewState extends State<MapView> {
           cameras: cameras,
           zoom: zoom,
           session: session,
+          editSession: editSession,
         );
 
         return Stack(

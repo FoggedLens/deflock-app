@@ -20,14 +20,16 @@ class CameraTagSheet extends StatelessWidget {
     void _openEditSheet() {
       Navigator.pop(context); // Close this sheet first
       appState.startEditSession(node);
-      final session = appState.editSession!;
       
-      // Show the edit sheet
-      showModalBottomSheet(
-        context: context,
-        builder: (_) => EditCameraSheet(session: session),
-        showDragHandle: true,
-      );
+      // Show the edit sheet using a post-frame callback to ensure proper context
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        final session = appState.editSession!;
+        showModalBottomSheet(
+          context: context,
+          builder: (_) => EditCameraSheet(session: session),
+          showDragHandle: true,
+        );
+      });
     }
 
     return SafeArea(
