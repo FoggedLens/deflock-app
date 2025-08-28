@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:flutter_map_animations/flutter_map_animations.dart';
 import 'package:provider/provider.dart';
 
 import '../app_state.dart';
@@ -24,12 +25,24 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final GlobalKey<MapViewState> _mapViewKey = GlobalKey<MapViewState>();
-  final MapController _mapController = MapController();
+  late final AnimatedMapController _mapController;
   FollowMeMode _followMeMode = FollowMeMode.northUp;
   bool _editSheetShown = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _mapController = AnimatedMapController(vsync: this);
+  }
+
+  @override
+  void dispose() {
+    _mapController.dispose();
+    super.dispose();
+  }
 
   String _getFollowMeTooltip() {
     switch (_followMeMode) {
@@ -179,7 +192,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           label: Text('Download'),
                           onPressed: () => showDialog(
                             context: context,
-                            builder: (ctx) => DownloadAreaDialog(controller: _mapController),
+                            builder: (ctx) => DownloadAreaDialog(controller: _mapController.mapController),
                           ),
                           style: ElevatedButton.styleFrom(
                             minimumSize: Size(0, 48),

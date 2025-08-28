@@ -33,6 +33,14 @@ const int kCameraMinZoomLevel = 10; // Minimum zoom to show cameras or warning
 const Duration kMarkerTapTimeout = Duration(milliseconds: 250);
 const Duration kDebounceCameraRefresh = Duration(milliseconds: 500);
 
+// Follow-me mode smooth transitions
+const Duration kFollowMeAnimationDuration = Duration(milliseconds: 600);
+const double kMinSpeedForRotationMps = 1.0; // Minimum speed (m/s) to apply rotation
+
+// Last known location storage
+const String kLastKnownLatKey = 'last_known_latitude';
+const String kLastKnownLngKey = 'last_known_longitude';
+
 // Tile/OSM fetch retry parameters (for tunable backoff)
 const int kTileFetchMaxAttempts = 3;
 const int kTileFetchInitialDelayMs = 4000;

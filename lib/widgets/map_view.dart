@@ -1,11 +1,13 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:flutter_map_animations/flutter_map_animations.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:provider/provider.dart';
 import 'package:http/http.dart' as http;
 import 'package:collection/collection.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../app_state.dart';
 import '../services/offline_area_service.dart';
@@ -24,7 +26,7 @@ import '../dev_config.dart';
 import '../screens/home_screen.dart' show FollowMeMode;
 
 class MapView extends StatefulWidget {
-  final MapController controller;
+  final AnimatedMapController controller;
   const MapView({
     super.key,
     required this.controller,
@@ -40,12 +42,13 @@ class MapView extends StatefulWidget {
 }
 
 class MapViewState extends State<MapView> {
-  late final MapController _controller;
+  late final AnimatedMapController _controller;
   final Debouncer _cameraDebounce = Debouncer(kDebounceCameraRefresh);
   final Debouncer _tileDebounce = Debouncer(const Duration(milliseconds: 150));
 
   StreamSubscription<Position>? _positionSub;
   LatLng? _currentLatLng;
+  LatLng? _initialLocation;
 
   late final CameraProviderWithCache _cameraProvider;
   late final SimpleTileHttpClient _tileHttpClient;
@@ -67,6 +70,9 @@ class MapViewState extends State<MapView> {
     OfflineAreaService();
     _controller = widget.controller;
     _tileHttpClient = SimpleTileHttpClient();
+    
+    // Load last known location before initializing GPS
+    _loadInitialLocation();
     _initLocation();
 
     // Set up camera overlay caching
@@ -78,6 +84,13 @@ class MapViewState extends State<MapView> {
       _refreshCamerasFromProvider();
     });
   }
+
+  /// Load the initial location (last known location or default)
+  Future<void> _loadInitialLocation() async {
+    _initialLocation = await _loadLastKnownLocation();
+  }
+
+
 
   @override
   void dispose() {
@@ -99,17 +112,47 @@ class MapViewState extends State<MapView> {
     _initLocation();
   }
 
+  /// Save the last known location to persistent storage
+  Future<void> _saveLastKnownLocation(LatLng location) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setDouble(kLastKnownLatKey, location.latitude);
+      await prefs.setDouble(kLastKnownLngKey, location.longitude);
+      debugPrint('[MapView] Saved last known location: ${location.latitude}, ${location.longitude}');
+    } catch (e) {
+      debugPrint('[MapView] Failed to save last known location: $e');
+    }
+  }
+
+  /// Load the last known location from persistent storage
+  Future<LatLng?> _loadLastKnownLocation() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final lat = prefs.getDouble(kLastKnownLatKey);
+      final lng = prefs.getDouble(kLastKnownLngKey);
+      
+      if (lat != null && lng != null) {
+        final location = LatLng(lat, lng);
+        debugPrint('[MapView] Loaded last known location: ${location.latitude}, ${location.longitude}');
+        return location;
+      }
+    } catch (e) {
+      debugPrint('[MapView] Failed to load last known location: $e');
+    }
+    return null;
+  }
+
 
 
   void _refreshCamerasFromProvider() {
     final appState = context.read<AppState>();
     LatLngBounds? bounds;
     try {
-      bounds = _controller.camera.visibleBounds;
+      bounds = _controller.mapController.camera.visibleBounds;
     } catch (_) {
       return;
     }
-    final zoom = _controller.camera.zoom;
+    final zoom = _controller.mapController.camera.zoom;
     if (zoom < kCameraMinZoomLevel) {
       // Show a snackbar-style bubble, if desired
       if (mounted) {
@@ -140,12 +183,23 @@ class MapViewState extends State<MapView> {
     if (widget.followMeMode != FollowMeMode.off && 
         oldWidget.followMeMode == FollowMeMode.off && 
         _currentLatLng != null) {
-      // Move to current location when follow me is first enabled
+      // Move to current location when follow me is first enabled - smooth animation
       if (widget.followMeMode == FollowMeMode.northUp) {
-        _controller.move(_currentLatLng!, _controller.camera.zoom);
+        _controller.animateTo(
+          dest: _currentLatLng!,
+          zoom: _controller.mapController.camera.zoom,
+          duration: kFollowMeAnimationDuration,
+          curve: Curves.easeOut,
+        );
       } else if (widget.followMeMode == FollowMeMode.rotating) {
-        // When switching to rotating mode, reset to north-up first
-        _controller.moveAndRotate(_currentLatLng!, _controller.camera.zoom, 0.0);
+        // When switching to rotating mode, reset to north-up first - smooth animation
+        _controller.animateTo(
+          dest: _currentLatLng!,
+          zoom: _controller.mapController.camera.zoom,
+          rotation: 0.0,
+          duration: kFollowMeAnimationDuration,
+          curve: Curves.easeOut,
+        );
       }
     }
   }
@@ -160,19 +214,38 @@ class MapViewState extends State<MapView> {
       final latLng = LatLng(position.latitude, position.longitude);
       setState(() => _currentLatLng = latLng);
       
+      // Save this as the last known location
+      _saveLastKnownLocation(latLng);
+      
       // Back to original pattern - directly check widget parameter
       if (widget.followMeMode != FollowMeMode.off) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (mounted) {
             try {
               if (widget.followMeMode == FollowMeMode.northUp) {
-                // Follow position only, keep current rotation
-                _controller.move(latLng, _controller.camera.zoom);
+                // Follow position only, keep current rotation - smooth animation
+                _controller.animateTo(
+                  dest: latLng,
+                  zoom: _controller.mapController.camera.zoom,
+                  duration: kFollowMeAnimationDuration,
+                  curve: Curves.easeOut,
+                );
               } else if (widget.followMeMode == FollowMeMode.rotating) {
-                // Follow position and rotation based on heading
+                // Follow position and rotation based on heading - smooth animation
                 final heading = position.heading;
-                final rotation = heading.isNaN ? 0.0 : -heading; // Convert to map rotation
-                _controller.moveAndRotate(latLng, _controller.camera.zoom, rotation);
+                final speed = position.speed; // Speed in m/s
+                
+                // Only apply rotation if moving fast enough to avoid wild spinning when stationary
+                final shouldRotate = !speed.isNaN && speed >= kMinSpeedForRotationMps && !heading.isNaN;
+                final rotation = shouldRotate ? -heading : _controller.mapController.camera.rotation;
+                
+                _controller.animateTo(
+                  dest: latLng,
+                  zoom: _controller.mapController.camera.zoom,
+                  rotation: rotation,
+                  duration: kFollowMeAnimationDuration,
+                  curve: Curves.easeOut,
+                );
               }
             } catch (e) {
               debugPrint('MapController not ready yet: $e');
@@ -185,7 +258,7 @@ class MapViewState extends State<MapView> {
 
   double _safeZoom() {
     try {
-      return _controller.camera.zoom;
+      return _controller.mapController.camera.zoom;
     } catch (_) {
       return 15.0;
     }
@@ -267,7 +340,7 @@ class MapViewState extends State<MapView> {
     // Seed add‑mode target once, after first controller center is available.
     if (session != null && session.target == null) {
       try {
-        final center = _controller.camera.center;
+        final center = _controller.mapController.camera.center;
         WidgetsBinding.instance.addPostFrameCallback(
           (_) => appState.updateSession(target: center),
         );
@@ -275,11 +348,11 @@ class MapViewState extends State<MapView> {
     }
     
     // For edit sessions, center the map on the camera being edited initially
-    if (editSession != null && _controller.camera.center != editSession.target) {
+    if (editSession != null && _controller.mapController.camera.center != editSession.target) {
       WidgetsBinding.instance.addPostFrameCallback(
         (_) {
           try {
-            _controller.move(editSession.target, _controller.camera.zoom);
+            _controller.mapController.move(editSession.target, _controller.mapController.camera.zoom);
           } catch (_) {/* controller not ready yet */}
         },
       );
@@ -291,7 +364,7 @@ class MapViewState extends State<MapView> {
       builder: (context, cameraProvider, child) {
         LatLngBounds? mapBounds;
         try {
-          mapBounds = _controller.camera.visibleBounds;
+          mapBounds = _controller.mapController.camera.visibleBounds;
         } catch (_) {
           mapBounds = null;
         }
@@ -301,7 +374,7 @@ class MapViewState extends State<MapView> {
         
         final markers = CameraMarkersBuilder.buildCameraMarkers(
           cameras: cameras,
-          mapController: _controller,
+          mapController: _controller.mapController,
           userLocation: _currentLatLng,
         );
 
@@ -329,9 +402,9 @@ class MapViewState extends State<MapView> {
       children: [
         FlutterMap(
           key: ValueKey('map_${appState.offlineMode}_${appState.selectedTileType?.id ?? 'none'}_$_mapRebuildKey'),
-          mapController: _controller,
+          mapController: _controller.mapController,
           options: MapOptions(
-            initialCenter: _currentLatLng ?? LatLng(37.7749, -122.4194),
+            initialCenter: _currentLatLng ?? _initialLocation ?? LatLng(37.7749, -122.4194),
             initialZoom: 15,
             maxZoom: 19,
             onPositionChanged: (pos, gesture) {
@@ -382,7 +455,7 @@ class MapViewState extends State<MapView> {
 
         // All map overlays (mode indicator, zoom, attribution, add pin)
         MapOverlays(
-          mapController: _controller,
+          mapController: _controller.mapController,
           uploadMode: appState.uploadMode,
           session: session,
           editSession: editSession,
