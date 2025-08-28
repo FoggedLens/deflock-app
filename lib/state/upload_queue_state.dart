@@ -68,17 +68,31 @@ class UploadQueueState extends ChangeNotifier {
     _queue.add(upload);
     _saveQueue();
     
-    // Update the original camera in the cache to mark it as having a pending edit
-    final originalTags = Map<String, String>.from(session.originalNode.tags);
-    originalTags['_pending_upload'] = 'true'; // Mark as pending for UI distinction
+    // Create two cache entries:
     
-    final updatedNode = OsmCameraNode(
+    // 1. Mark the original camera with _pending_edit (grey ring) at original location
+    final originalTags = Map<String, String>.from(session.originalNode.tags);
+    originalTags['_pending_edit'] = 'true'; // Mark original as having pending edit
+    
+    final originalNode = OsmCameraNode(
       id: session.originalNode.id,
-      coord: session.originalNode.coord,
+      coord: session.originalNode.coord, // Keep at original location
       tags: originalTags,
     );
     
-    CameraCache.instance.addOrUpdate([updatedNode]);
+    // 2. Create new temp node for the edited camera (purple ring) at new location
+    final tempId = -DateTime.now().millisecondsSinceEpoch;
+    final editedTags = Map<String, String>.from(upload.profile.tags);
+    editedTags['direction'] = upload.direction.toStringAsFixed(0);
+    editedTags['_pending_upload'] = 'true'; // Mark as pending upload
+    
+    final editedNode = OsmCameraNode(
+      id: tempId,
+      coord: upload.coord, // At new location
+      tags: editedTags,
+    );
+    
+    CameraCache.instance.addOrUpdate([originalNode, editedNode]);
     // Notify camera provider to update the map
     CameraProviderWithCache.instance.notifyListeners();
     

@@ -12,9 +12,11 @@ class CameraTagSheet extends StatelessWidget {
   Widget build(BuildContext context) {
     final appState = context.watch<AppState>();
     
-    // Check if this camera is editable (not a pending upload)
-    final isEditable = !node.tags.containsKey('_pending_upload') || 
-                      node.tags['_pending_upload'] != 'true';
+    // Check if this camera is editable (not a pending upload or pending edit)
+    final isEditable = (!node.tags.containsKey('_pending_upload') || 
+                       node.tags['_pending_upload'] != 'true') &&
+                      (!node.tags.containsKey('_pending_edit') || 
+                       node.tags['_pending_edit'] != 'true');
     
     void _openEditSheet() {
       Navigator.pop(context); // Close this sheet first
