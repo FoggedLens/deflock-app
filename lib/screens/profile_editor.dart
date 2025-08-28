@@ -52,14 +52,16 @@ class _ProfileEditorState extends State<ProfileEditor> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title:
-            Text(widget.profile.name.isEmpty ? 'New Profile' : 'Edit Profile'),
+        title: Text(widget.profile.builtin 
+            ? 'View Profile' 
+            : (widget.profile.name.isEmpty ? 'New Profile' : 'Edit Profile')),
       ),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
           TextField(
             controller: _nameCtrl,
+            readOnly: widget.profile.builtin,
             decoration: const InputDecoration(
               labelText: 'Profile name',
               hintText: 'e.g., Custom ALPR Camera',
@@ -71,20 +73,22 @@ class _ProfileEditorState extends State<ProfileEditor> {
             children: [
               const Text('OSM Tags',
                   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-              TextButton.icon(
-                onPressed: () => setState(() => _tags.add(const MapEntry('', ''))),
-                icon: const Icon(Icons.add),
-                label: const Text('Add tag'),
-              ),
+              if (!widget.profile.builtin)
+                TextButton.icon(
+                  onPressed: () => setState(() => _tags.add(const MapEntry('', ''))),
+                  icon: const Icon(Icons.add),
+                  label: const Text('Add tag'),
+                ),
             ],
           ),
           const SizedBox(height: 8),
           ..._buildTagRows(),
           const SizedBox(height: 24),
-          ElevatedButton(
-            onPressed: _save,
-            child: const Text('Save Profile'),
-          ),
+          if (!widget.profile.builtin)
+            ElevatedButton(
+              onPressed: _save,
+              child: const Text('Save Profile'),
+            ),
         ],
       ),
     );
@@ -108,7 +112,10 @@ class _ProfileEditorState extends State<ProfileEditor> {
                   isDense: true,
                 ),
                 controller: keyController,
-                onChanged: (v) => _tags[i] = MapEntry(v, _tags[i].value),
+                readOnly: widget.profile.builtin,
+                onChanged: widget.profile.builtin 
+                    ? null 
+                    : (v) => _tags[i] = MapEntry(v, _tags[i].value),
               ),
             ),
             const SizedBox(width: 8),
@@ -121,13 +128,17 @@ class _ProfileEditorState extends State<ProfileEditor> {
                   isDense: true,
                 ),
                 controller: valueController,
-                onChanged: (v) => _tags[i] = MapEntry(_tags[i].key, v),
+                readOnly: widget.profile.builtin,
+                onChanged: widget.profile.builtin 
+                    ? null 
+                    : (v) => _tags[i] = MapEntry(_tags[i].key, v),
               ),
             ),
-            IconButton(
-              icon: const Icon(Icons.delete, color: Colors.red),
-              onPressed: () => setState(() => _tags.removeAt(i)),
-            ),
+            if (!widget.profile.builtin)
+              IconButton(
+                icon: const Icon(Icons.delete, color: Colors.red),
+                onPressed: () => setState(() => _tags.removeAt(i)),
+              ),
           ],
         ),
       );
