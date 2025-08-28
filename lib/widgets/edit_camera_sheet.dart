@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../app_state.dart';
 import '../models/camera_profile.dart';
+import '../state/settings_state.dart';
 
 class EditCameraSheet extends StatelessWidget {
   const EditCameraSheet({super.key, required this.session});
@@ -27,7 +28,8 @@ class EditCameraSheet extends StatelessWidget {
     }
 
     final submittableProfiles = appState.enabledProfiles.where((p) => p.isSubmittable).toList();
-    final allowSubmit = submittableProfiles.isNotEmpty && session.profile.isSubmittable;
+    final isSandboxMode = appState.uploadMode == UploadMode.sandbox;
+    final allowSubmit = submittableProfiles.isNotEmpty && session.profile.isSubmittable && !isSandboxMode;
 
     return Padding(
       padding:
@@ -72,7 +74,23 @@ class EditCameraSheet extends StatelessWidget {
               onChanged: (v) => appState.updateEditSession(directionDeg: v),
             ),
           ),
-          if (submittableProfiles.isEmpty)
+          if (isSandboxMode)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+              child: Row(
+                children: const [
+                  Icon(Icons.info_outline, color: Colors.blue, size: 20),
+                  SizedBox(width: 6),
+                  Expanded(
+                    child: Text(
+                      'Cannot submit edits on production nodes to sandbox. Switch to Production mode in Settings to edit cameras.',
+                      style: TextStyle(color: Colors.blue, fontSize: 13),
+                    ),
+                  ),
+                ],
+              ),
+            )
+          else if (submittableProfiles.isEmpty)
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
               child: Row(
