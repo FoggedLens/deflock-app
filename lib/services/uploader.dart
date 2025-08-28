@@ -34,28 +34,45 @@ class Uploader {
       final csId = csResp.body.trim();
       print('Uploader: Created changeset ID: $csId');
 
-      // 2. create node
-      // Merge tags: direction in PendingUpload should always be present,
-      // and override any in the profile for upload purposes
+      // 2. create or update node
       final mergedTags = Map<String, String>.from(p.profile.tags)
         ..['direction'] = p.direction.round().toString();
       final tagsXml = mergedTags.entries.map((e) =>
         '<tag k="${e.key}" v="${e.value}"/>').join('\n            ');
-      final nodeXml = '''
+      
+      final http.Response nodeResp;
+      final String nodeId;
+      
+      if (p.isEdit) {
+        // Update existing node
+        final nodeXml = '''
+        <osm>
+          <node changeset="$csId" id="${p.originalNodeId}" lat="${p.coord.latitude}" lon="${p.coord.longitude}">
+            $tagsXml
+          </node>
+        </osm>''';
+        print('Uploader: Updating node ${p.originalNodeId}...');
+        nodeResp = await _put('/api/0.6/node/${p.originalNodeId}', nodeXml);
+        nodeId = p.originalNodeId.toString();
+      } else {
+        // Create new node
+        final nodeXml = '''
         <osm>
           <node changeset="$csId" lat="${p.coord.latitude}" lon="${p.coord.longitude}">
             $tagsXml
           </node>
         </osm>''';
-      print('Uploader: Creating node...');
-      final nodeResp = await _put('/api/0.6/node/create', nodeXml);
+        print('Uploader: Creating new node...');
+        nodeResp = await _put('/api/0.6/node/create', nodeXml);
+        nodeId = nodeResp.body.trim();
+      }
+      
       print('Uploader: Node response: ${nodeResp.statusCode} - ${nodeResp.body}');
       if (nodeResp.statusCode != 200) {
-        print('Uploader: Failed to create node');
+        print('Uploader: Failed to ${p.isEdit ? "update" : "create"} node');
         return false;
       }
-      final nodeId = nodeResp.body.trim();
-      print('Uploader: Created node ID: $nodeId');
+      print('Uploader: ${p.isEdit ? "Updated" : "Created"} node ID: $nodeId');
 
       // 3. close changeset
       print('Uploader: Closing changeset...');
