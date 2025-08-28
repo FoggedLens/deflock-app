@@ -1,145 +1,133 @@
 # Flock Map App
 
-A Flutter app for mapping and tagging ALPR-style cameras (and other surveillance nodes) for OpenStreetMap, with advanced offline support, robust camera profile management, and a pro-grade UX.
+A comprehensive Flutter app for mapping surveillance cameras to OpenStreetMap with professional offline capabilities, robust editing features, and an intuitive interface.
+
+**Stop Flock** is a privacy-focused initiative to document the rapid expansion of automated license plate readers (ALPRs) and surveillance cameras. This app is the primary tool for contributors to map cameras in their communities and upload the data to OpenStreetMap, making surveillance infrastructure visible and searchable.
+
+**For complete documentation, tutorials, and community info, visit [stopflock.com/app](https://stopflock.com/app)**
 
 ---
 
-## Code Organization (2025 Refactor)
+## What This App Does
 
-- **Data providers:** All map tile and camera data fetching now routes through `lib/services/map_data_provider.dart`, which supports both OSM/Overpass and fully offline/local sources, with pluggable submodules:
-  - Remote tile fetch: `map_data_submodules/tiles_from_osm.dart`
-  - Remote cameras: `map_data_submodules/cameras_from_overpass.dart`
-  - *Coming soon:* Local tile/camera modules for offline/area-aware access
-- **Settings UI:** Each settings section lives in its own widget under `lib/screens/settings_screen_sections/`, using clean, modular ListTile-based layouts.
-- **Offline areas:** Management, persistence, and download logic remain in `OfflineAreaService`, but all fetch/caching is routed through the new provider.
-- **Legacy OSM/Overpass tile and camera fetch code has been removed from old modules.**
+- **Map surveillance cameras** with precise location, direction, and manufacturer details
+- **Work completely offline** with downloadable map areas and camera data
+- **Multiple map types** including satellite imagery from Google, Esri, Mapbox, and OpenStreetMap
+- **Professional editing tools** to update existing camera locations and properties
+- **Upload to OpenStreetMap** with OAuth2 integration (live or sandbox modes)
+- **Built-in camera profiles** for Flock Safety, Motorola, Genetec, Leonardo, and other major manufacturers
 
 ---
 
 ## Key Features
 
-### Map Data & Provider Architecture
-- **All map tile and camera fetches** go through MapDataProvider, which selects local or remote sources as needed, automatically obeying the user's offline/online preference and settings.
-- **Offline Mode:** A global toggle in Settings disables all remote network fetches, forcing the app to use only locally downloaded map areas and cached camera data. (Instant feedback; no network calls when enabled.)
-- **MapSource Selection:** MapDataProvider lets calling code specify local-only, remote-only, or auto preference for tiles and camera points.
+### Map & Navigation
+- **Multi-source tiles**: Switch between OpenStreetMap, Google Satellite, Esri imagery, and Mapbox
+- **Offline-first design**: Download any region at any zoom level for complete offline operation
+- **Smooth UX**: Intelligent zoom controls, follow-me mode with GPS rotation, and gesture-friendly interactions
+- **Camera visualization**: Color-coded markers showing real cameras (blue), pending uploads (purple), and cameras being edited (orange)
 
-### Map View
-- **Seamless offline/online tile loading:** Tiles are fetched (in parallel, with global concurrency/throttle control and exponential backoff) from OSM *only as needed*, with robust error handling and UI updates as tiles arrive.
-- **Camera overlays** are fetched from Overpass or local cache, respecting both offline mode and user preference for which camera types to display.
+### Camera Management
+- **Comprehensive profiles**: Built-in profiles for major manufacturers (Flock, Motorola/Vigilant, Genetec, Leonardo/ELSAG, Neology) plus custom profile creation
+- **Full editing capabilities**: Update location, direction, and tags of existing cameras with sophisticated conflict resolution
+- **Direction visualization**: Interactive field-of-view cones showing camera viewing angles
+- **Bulk operations**: Tag multiple cameras efficiently with profile-based workflows
 
-### Camera Profiles & Upload Queue
-- Unchanged: creation/editing/enabling; see prior documentation.
+### Professional Upload & Sync
+- **OpenStreetMap integration**: Direct upload with full OAuth2 authentication
+- **Upload modes**: Production OSM, testing sandbox, or simulate-only mode
+- **Queue management**: Review, edit, retry, or cancel pending uploads
+- **Changeset tracking**: Automatic grouping and commenting for organized contributions
 
-### Offline Map Areas
-- **Download tiles/cameras for any bounding box**; areas cover any region/zoom, and are automatically de-duped and managed.
-- **Robust area downloads** use the same MapDataProvider for source-of-truth logic, so downloads are always consistent with runtime lookup.
-- **Permanent world base map** at low zoom always available for core map functionality, even on first-use/offline.
+### Offline Operations
+- **Smart area downloads**: Automatically calculate tile counts and storage requirements
+- **Camera caching**: Offline areas include camera data for complete functionality without network
+- **Global base map**: Permanent worldwide coverage at low zoom levels
+- **Robust downloads**: Exponential backoff, retry logic, and progress tracking for reliable area downloads
 
-### Modular, Future-friendly Codebase
-- **No network fetch code outside the provider and submodules.**
-- **All legacy/duplicate OSM/Overpass downloaders have been removed or marked for deprecation.**
+---
+
+## Quick Start
+
+1. **Install** the app on iOS or Android
+2. **Enable location** and grant camera permissions  
+3. **Choose a map type** from Settings → Tile Providers
+4. **Add your first camera**: Tap the + button, position the pin, set direction, select a profile
+5. **Upload to OpenStreetMap**: Set up OAuth2 credentials in Settings and choose upload mode
+
+**New to OpenStreetMap?** Visit [stopflock.com/app](https://stopflock.com/app) for complete setup instructions and community guidelines.
 
 ---
 
 ## For Developers
 
-**Highlights:**
-- To add a new data source, just drop in a new submodule and route fetch via MapDataProvider.
-- Any section of the app that needs tiles or camera data calls MapDataProvider with the relevant bounds/zoom/profiles and source preference.
-- Offline Mode and all core settings are strictly respected at a single data/control point.
+### Architecture Highlights
+- **Unified data provider**: All map tiles and camera data route through `MapDataProvider` with pluggable remote/local sources
+- **Modular settings**: Each settings section is a separate widget for maintainability
+- **State management**: Provider pattern with clean separation of concerns
+- **Offline-first**: Network calls are optional; app functions fully offline with downloaded data
 
----
+### Build Setup
+**Prerequisites**: Flutter SDK, Xcode (iOS), Android Studio  
+**OAuth Setup**: Register apps at [openstreetmap.org/oauth2](https://www.openstreetmap.org/oauth2/applications) and [OSM Sandbox](https://master.apis.dev.openstreetmap.org/oauth2/applications)
 
-## Roadmap (2025+)
+```shell
+# Basic setup
+flutter pub get
+cp lib/keys.dart.example lib/keys.dart
+# Add your OAuth2 client IDs to keys.dart
 
-- **COMPLETE:** Core provider logic, settings, robust downloading and modular prefetch/caching.
-- **IN PROGRESS:** Local/offline tile/camera fetch modules for runtime map viewing and offline area management.
-- **NEXT:** More map overlays, offline routing, and data visualization.
-- **SOON:** UX polish for download/error states, multi-layer base maps.
+# iOS additional setup
+cd ios && pod install
 
----
+# Run
+flutter run
+```
 
-*See prior README version for detailed setup/build/dependency notes—they remain unchanged!*
-
-
-### Map View
-- **Explore the Map:** View OSM raster tiles, live camera overlays, and a visual scale bar and zoom indicator in the lower left.
-- **Tag Cameras:** Add a camera by dropping a pin, setting direction, and choosing a camera profile. Camera tap/double-tap is smart—double-tap always zooms, single-tap opens camera info.
-- **Location:** Blue GPS dot shows your current location, always on top of map icons.
-
-### Camera Profiles
-- **Flexible, Private Profiles:** Enable/disable, create, edit, or delete camera types in Settings. At least one profile must be enabled at all times.
-- If the last enabled profile is disabled, the generic profile will be auto-enabled so the app always works.
-
-### Upload Destinations/Queue
-- **Full OSM OAuth2 Integration:** Upload to live OSM, OSM Sandbox for testing, or keep your changes private in simulate mode.
-- **Queue Management:** Settings screen shows a queue of pending uploads—clear or retry them as you wish.
-
-### Offline Map Areas
-- **Download Any Region, Any Zoom:** Save the current map area at any zoom for true offline viewing.
-- **Intelligent Tile Management:** World tiles at zooms 1–4 are permanently available (via a protected offline area). All downloads include accurate tile and storage estimates, and never request duplicate or unnecessary tiles.
-- **Robust Downloading:** All tile/download logic uses serial fetching and exponential backoff for network failures, minimizing risk of OSM rate-limits and always respecting API etiquette.
-- **No Duplicates:** Only one world area; can be re-downloaded (refreshed) but never deleted or renamed.
-- **Camera Cache:** Download areas keep camera points in sync for full offline visibility—except the global area, which never attempts to fetch all world cameras.
-- **Settings Management:** Cancel, refresh, or remove downloads as needed. Progress, tile count, storage consumption, and cached camera count always displayed.
-
-### Polished UX & Settings Architecture
-- **Permanent global base map:** Coverage for the entire world at zooms 1–4, always present.
-- **Smooth map gestures:** Double-tap to zoom even on markers; pinch zoom; camera popups distinguished from zoom.
-- **Modular Settings:** All major settings/queue/offline/camera management UI sections are cleanly separated for extensibility and rapid development.
-- **Order-preserving overlays:** Your location is always drawn on top for easy visibility.
-- **No more dead ends:** Disabling all profiles is impossible; canceling downloads is clean and instant.
-
----
-
-## OAuth & Build Setup
-
-**Before uploading to OSM:**
-- Register OAuth2 applications on both [Production OSM](https://www.openstreetmap.org/oauth2/applications) and [Sandbox OSM](https://master.apis.dev.openstreetmap.org/oauth2/applications).
-- Copy generated client IDs to `lib/keys.dart` (see template `.example` file).
-
-### Build Environment Notes
-- Requires Xcode, Android Studio, and standard Flutter dependencies. See notes at the end of this file for CLI setup details.
+**Full build environment details available at [stopflock.com/app](https://stopflock.com/app)**
 
 ---
 
 ## Roadmap
 
-- **COMPLETE**:  
-  - Offline map area download/storage/camera overlay; cancel/retry; fast tile/camera/size estimates; exponential backoff and robust retry logic for network outages or rate-limiting.
-  - Pro-grade map UX (zoom bar, marker tap/double-tap, robust FABs).
-  - Modularized, maintainable codebase using small service/helper files and section-separated UI components.
-- **SOON**:  
-  - "Offline mode" setting: map never hits the network and always provides a fallback tile for every view (no blank maps; graceful offline-first UX).
-  - Resumable/robust interrupted downloads.
-  - Further polish for edge cases (queue, error states).
-- **LATER**:
-  - Satellite base layers, north-up/satellite-mode.
-  - Offline wayfinding or routing.
-  - Fancier icons and overlays.
+### Current Todo List
+- **Performance**: 1000+ camera warning threshold for large datasets
+- **UX Polish**: 
+  - Fix "tiles loaded" indicator accuracy across different providers
+  - Generic tile provider error messages (not always "OSM tiles slow")
+  - Optional custom icons for camera profiles
+- **Data Management**: Clean up cache when submitted changesets appear in Overpass results
+- **Visual Improvements**: Upgrade camera marker design (considering nullplate's icon design)
+
+### Future Features & Wishlist
+- **Operator Profiles**: Additional tag sets for different surveillance operators
+- **Announcement Mode**: Location-based notifications when approaching known cameras  
+- **Enhanced Visualizations**:
+  - Different colored rings for cameras missing specific tag details
+  - iOS/Android native themes and dark mode support
+- **Advanced Offline**:
+  - "Cache accumulating" offline areas with size estimates per area
+  - Offline areas as direct tile providers
+- **Navigation & Search**:
+  - Jump to location by coordinates, address, or POI name
+  - Route planning that avoids surveillance cameras
+- **Data Sources**: Custom camera providers and OSM/Overpass alternatives
 
 ---
 
-## Build Environment Quick Setup
+## Contributing & Community
 
-# Install from GUI:
-Xcode, Android Studio.
-Xcode cmdline tools
-Android cmdline tools + NDK
+This app is part of the larger **Stop Flock** initiative. Join the community:
 
-# Terminal
-brew install openjdk@17
-sudo ln -sfn /usr/local/opt/openjdk@17/libexec/openjdk.jdk /Library/Java/JavaVirtualMachines/openjdk.jdk
+- **Documentation & Guides**: [stopflock.com/app](https://stopflock.com/app)
+- **Community Discussion**: [stopflock.com](https://stopflock.com)
+- **Issues & Feature Requests**: GitHub Issues
+- **Development**: See developer setup above
 
-brew install ruby
+**Privacy & Ethics**: This project helps make existing public surveillance infrastructure transparent and searchable. We only document cameras that are already installed and visible in public spaces.
 
-gem install cocoapods
+---
 
-sdkmanager --install "ndk;27.0.12077973"
+## License
 
-export PATH="/Users/bob/.gem/ruby/3.4.0/bin:$PATH"
-export PATH=$HOME/development/flutter/bin:$PATH
-
-flutter clean
-flutter pub get
-flutter run
+This project is open source. See [LICENSE](LICENSE) for details.
