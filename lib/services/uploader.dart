@@ -17,11 +17,12 @@ class Uploader {
       print('Uploader: Starting upload for camera at ${p.coord.latitude}, ${p.coord.longitude}');
       
       // 1. open changeset
+      final action = p.isEdit ? 'Update' : 'Add';
       final csXml = '''
         <osm>
           <changeset>
             <tag k="created_by" v="$kClientName $kClientVersion"/>
-            <tag k="comment" v="Add surveillance camera"/>
+            <tag k="comment" v="$action ${p.profile.name} surveillance camera"/>
           </changeset>
         </osm>''';
       print('Uploader: Creating changeset...');
