@@ -1,9 +1,32 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../app_state.dart';
+import '../../state/settings_state.dart';
 
 class QueueSection extends StatelessWidget {
   const QueueSection({super.key});
+
+  String _getUploadModeDisplayName(UploadMode mode) {
+    switch (mode) {
+      case UploadMode.production:
+        return 'Production';
+      case UploadMode.sandbox:
+        return 'Sandbox';
+      case UploadMode.simulate:
+        return 'Simulate';
+    }
+  }
+
+  Color _getUploadModeColor(UploadMode mode) {
+    switch (mode) {
+      case UploadMode.production:
+        return Colors.green; // Green for production (real)
+      case UploadMode.sandbox:
+        return Colors.orange; // Orange for sandbox (testing)
+      case UploadMode.simulate:
+        return Colors.grey; // Grey for simulate (fake)
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -73,10 +96,13 @@ class QueueSection extends StatelessWidget {
               return ListTile(
                 leading: Icon(
                   upload.error ? Icons.error : Icons.camera_alt,
-                  color: upload.error ? Colors.red : null,
+                  color: upload.error 
+                      ? Colors.red 
+                      : _getUploadModeColor(upload.uploadMode),
                 ),
                 title: Text('Camera ${index + 1}${upload.error ? " (Error)" : ""}'),
                 subtitle: Text(
+                  'Dest: ${_getUploadModeDisplayName(upload.uploadMode)}\n'
                   'Lat: ${upload.coord.latitude.toStringAsFixed(6)}\n'
                   'Lon: ${upload.coord.longitude.toStringAsFixed(6)}\n'
                   'Direction: ${upload.direction.round()}°\n'

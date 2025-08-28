@@ -25,11 +25,12 @@ class UploadQueueState extends ChangeNotifier {
   }
 
   // Add a completed session to the upload queue
-  void addFromSession(AddCameraSession session) {
+  void addFromSession(AddCameraSession session, {required UploadMode uploadMode}) {
     final upload = PendingUpload(
       coord: session.target!,
       direction: session.directionDegrees,
       profile: session.profile,
+      uploadMode: uploadMode,
     );
     
     _queue.add(upload);
@@ -57,11 +58,12 @@ class UploadQueueState extends ChangeNotifier {
   }
 
   // Add a completed edit session to the upload queue
-  void addFromEditSession(EditCameraSession session) {
+  void addFromEditSession(EditCameraSession session, {required UploadMode uploadMode}) {
     final upload = PendingUpload(
       coord: session.target,
       direction: session.directionDegrees,
       profile: session.profile,
+      uploadMode: uploadMode,
       originalNodeId: session.originalNode.id, // Track which node we're editing
     );
     
@@ -145,21 +147,24 @@ class UploadQueueState extends ChangeNotifier {
       if (access == null) return; // not logged in
 
       bool ok;
-      if (uploadMode == UploadMode.simulate) {
+      debugPrint('[UploadQueue] Processing item with uploadMode: ${item.uploadMode}');
+      if (item.uploadMode == UploadMode.simulate) {
         // Simulate successful upload without calling real API
+        debugPrint('[UploadQueue] Simulating upload (no real API call)');
         await Future.delayed(const Duration(seconds: 1)); // Simulate network delay
         ok = true;
       } else {
-        // Real upload -- pass uploadMode so uploader can switch between prod and sandbox
+        // Real upload -- use the upload mode that was saved when this item was queued
+        debugPrint('[UploadQueue] Real upload to: ${item.uploadMode}');
         final up = Uploader(access, () {
           _queue.remove(item);
           _saveQueue();
           notifyListeners();
-        }, uploadMode: uploadMode);
+        }, uploadMode: item.uploadMode);
         ok = await up.upload(item);
       }
 
-      if (ok && uploadMode == UploadMode.simulate) {
+      if (ok && item.uploadMode == UploadMode.simulate) {
         // Remove manually for simulate mode
         _queue.remove(item);
         _saveQueue();

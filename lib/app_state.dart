@@ -180,7 +180,7 @@ class AppState extends ChangeNotifier {
   void commitSession() {
     final session = _sessionState.commitSession();
     if (session != null) {
-      _uploadQueueState.addFromSession(session);
+      _uploadQueueState.addFromSession(session, uploadMode: uploadMode);
       _startUploader();
     }
   }
@@ -188,7 +188,7 @@ class AppState extends ChangeNotifier {
   void commitEditSession() {
     final session = _sessionState.commitEditSession();
     if (session != null) {
-      _uploadQueueState.addFromEditSession(session);
+      _uploadQueueState.addFromEditSession(session, uploadMode: uploadMode);
       _startUploader();
     }
   }
