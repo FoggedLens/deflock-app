@@ -417,8 +417,8 @@ class MapViewState extends State<MapView> {
         if (originalCoord != null) {
           lines.add(Polyline(
             points: [originalCoord, camera.coord],
-            color: Colors.orange.withOpacity(0.7),
-            strokeWidth: 2.0,
+            color: kCameraRingColorPending,
+            strokeWidth: 3.0,
           ));
         }
       }
