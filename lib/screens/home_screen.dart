@@ -7,6 +7,7 @@ import '../dev_config.dart';
 import '../widgets/map_view.dart';
 
 import '../widgets/add_camera_sheet.dart';
+import '../widgets/edit_camera_sheet.dart';
 import '../widgets/camera_provider_with_cache.dart';
 import '../widgets/download_area_dialog.dart';
 
@@ -28,6 +29,7 @@ class _HomeScreenState extends State<HomeScreen> {
   final GlobalKey<MapViewState> _mapViewKey = GlobalKey<MapViewState>();
   final MapController _mapController = MapController();
   FollowMeMode _followMeMode = FollowMeMode.northUp;
+  bool _editSheetShown = false;
 
   String _getFollowMeTooltip() {
     switch (_followMeMode) {
@@ -75,9 +77,29 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  void _openEditCameraSheet() {
+    // Disable follow-me when editing a camera so the map doesn't jump around
+    setState(() => _followMeMode = FollowMeMode.off);
+    
+    final appState = context.read<AppState>();
+    final session = appState.editSession!;     // should be non-null when this is called
+
+    _scaffoldKey.currentState!.showBottomSheet(
+      (ctx) => EditCameraSheet(session: session),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final appState = context.watch<AppState>();
+
+    // Auto-open edit sheet when edit session starts
+    if (appState.editSession != null && !_editSheetShown) {
+      _editSheetShown = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) => _openEditCameraSheet());
+    } else if (appState.editSession == null) {
+      _editSheetShown = false;
+    }
 
     return MultiProvider(
       providers: [

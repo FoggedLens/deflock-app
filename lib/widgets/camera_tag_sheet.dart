@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/osm_camera_node.dart';
 import '../app_state.dart';
-import 'edit_camera_sheet.dart';
 
 class CameraTagSheet extends StatelessWidget {
   final OsmCameraNode node;
@@ -19,17 +18,7 @@ class CameraTagSheet extends StatelessWidget {
     
     void _openEditSheet() {
       Navigator.pop(context); // Close this sheet first
-      appState.startEditSession(node);
-      
-      // Show the edit sheet using a post-frame callback to ensure proper context
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        final session = appState.editSession!;
-        showModalBottomSheet(
-          context: context,
-          builder: (_) => EditCameraSheet(session: session),
-          showDragHandle: true,
-        );
-      });
+      appState.startEditSession(node); // HomeScreen will auto-show the edit sheet
     }
 
     return SafeArea(
