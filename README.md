@@ -1,8 +1,8 @@
 # Flock Map App
 
-A comprehensive Flutter app for mapping surveillance cameras to OpenStreetMap with professional offline capabilities, robust editing features, and an intuitive interface.
+A comprehensive Flutter app for viewing and mapping surveillance cameras with OpenStreetMap. Includes offline capabilities, editing ability, and an intuitive interface.
 
-**Stop Flock** is a privacy-focused initiative to document the rapid expansion of automated license plate readers (ALPRs) and surveillance cameras. This app is the primary tool for contributors to map cameras in their communities and upload the data to OpenStreetMap, making surveillance infrastructure visible and searchable.
+**Stop Flock** is a privacy-focused initiative to document the rapid expansion of ALPRs and AI surveillance cameras. This app aims to be the go-to tool for contributors to map cameras in their communities and upload the data to OpenStreetMap, making surveillance infrastructure visible and searchable.
 
 **For complete documentation, tutorials, and community info, visit [stopflock.com/app](https://stopflock.com/app)**
 
@@ -11,27 +11,27 @@ A comprehensive Flutter app for mapping surveillance cameras to OpenStreetMap wi
 ## What This App Does
 
 - **Map surveillance cameras** with precise location, direction, and manufacturer details
-- **Work completely offline** with downloadable map areas and camera data
-- **Multiple map types** including satellite imagery from Google, Esri, Mapbox, and OpenStreetMap
-- **Professional editing tools** to update existing camera locations and properties
 - **Upload to OpenStreetMap** with OAuth2 integration (live or sandbox modes)
-- **Built-in camera profiles** for Flock Safety, Motorola, Genetec, Leonardo, and other major manufacturers
+- **Work completely offline** with downloadable map areas and camera data, plus upload queue
+- **Multiple map types** including satellite imagery from Google, Esri, Mapbox, and OpenStreetMap, plus custom map tile provider support
+- **Editing Ability** to update existing camera locations and properties
+- **Built-in camera profiles** for Flock Safety, Motorola, Genetec, Leonardo, and other major manufacturers, plus custom profiles for more specific tag sets
 
 ---
 
 ## Key Features
 
 ### Map & Navigation
-- **Multi-source tiles**: Switch between OpenStreetMap, Google Satellite, Esri imagery, and Mapbox
-- **Offline-first design**: Download any region at any zoom level for complete offline operation
-- **Smooth UX**: Intelligent zoom controls, follow-me mode with GPS rotation, and gesture-friendly interactions
-- **Camera visualization**: Color-coded markers showing real cameras (blue), pending uploads (purple), and cameras being edited (orange)
+- **Multi-source tiles**: Switch between OpenStreetMap, Google Satellite, Esri imagery, Mapbox, and any custom providers
+- **Offline-first design**: Download a region for complete offline operation
+- **Smooth UX**: Intuitive controls, follow-me mode with GPS rotation, and gesture-friendly interactions
+- **Camera visualization**: Color-coded markers showing real cameras (blue), pending uploads (purple), new cameras (white), edited cameras (grey), and cameras being edited (orange)
 
 ### Camera Management
 - **Comprehensive profiles**: Built-in profiles for major manufacturers (Flock, Motorola/Vigilant, Genetec, Leonardo/ELSAG, Neology) plus custom profile creation
-- **Full editing capabilities**: Update location, direction, and tags of existing cameras with sophisticated conflict resolution
+- **Editing capabilities**: Update location, direction, and tags of existing cameras
 - **Direction visualization**: Interactive field-of-view cones showing camera viewing angles
-- **Bulk operations**: Tag multiple cameras efficiently with profile-based workflows
+- **Bulk operations**: Tag multiple cameras efficiently with profile-based workflow
 
 ### Professional Upload & Sync
 - **OpenStreetMap integration**: Direct upload with full OAuth2 authentication
@@ -51,9 +51,8 @@ A comprehensive Flutter app for mapping surveillance cameras to OpenStreetMap wi
 
 1. **Install** the app on iOS or Android
 2. **Enable location** and grant camera permissions  
-3. **Choose a map type** from Settings → Tile Providers
-4. **Add your first camera**: Tap the + button, position the pin, set direction, select a profile
-5. **Upload to OpenStreetMap**: Set up OAuth2 credentials in Settings and choose upload mode
+3. **Log into OpenStreetMap**: Choose upload mode and get OAuth2 credentials
+4. **Add your first camera**: Tap the "tag camera" button, position the pin, set direction, select a profile, and tap submit
 
 **New to OpenStreetMap?** Visit [stopflock.com/app](https://stopflock.com/app) for complete setup instructions and community guidelines.
 
@@ -65,11 +64,11 @@ A comprehensive Flutter app for mapping surveillance cameras to OpenStreetMap wi
 - **Unified data provider**: All map tiles and camera data route through `MapDataProvider` with pluggable remote/local sources
 - **Modular settings**: Each settings section is a separate widget for maintainability
 - **State management**: Provider pattern with clean separation of concerns
-- **Offline-first**: Network calls are optional; app functions fully offline with downloaded data
+- **Offline-first**: Network calls are optional; app functions fully offline with downloaded data and queues uploads until online
 
 ### Build Setup
 **Prerequisites**: Flutter SDK, Xcode (iOS), Android Studio  
-**OAuth Setup**: Register apps at [openstreetmap.org/oauth2](https://www.openstreetmap.org/oauth2/applications) and [OSM Sandbox](https://master.apis.dev.openstreetmap.org/oauth2/applications)
+**OAuth Setup**: Register apps at [openstreetmap.org/oauth2](https://www.openstreetmap.org/oauth2/applications) and [OSM Sandbox](https://master.apis.dev.openstreetmap.org/oauth2/applications) to get a client ID
 
 ```shell
 # Basic setup
@@ -84,8 +83,6 @@ cd ios && pod install
 flutter run
 ```
 
-**Full build environment details available at [stopflock.com/app](https://stopflock.com/app)**
-
 ---
 
 ## Roadmap
@@ -97,21 +94,24 @@ flutter run
   - Generic tile provider error messages (not always "OSM tiles slow")
   - Optional custom icons for camera profiles
 - **Data Management**: Clean up cache when submitted changesets appear in Overpass results
-- **Visual Improvements**: Upgrade camera marker design (considering nullplate's icon design)
+- **Visual Improvements**: Upgrade camera marker design (considering nullplate's svg)
 
 ### Future Features & Wishlist
-- **Operator Profiles**: Additional tag sets for different surveillance operators
-- **Announcement Mode**: Location-based notifications when approaching known cameras  
+- **Operator Profiles**:
+  - Additional tag sets for different surveillance operators
+- **Announcement Mode**:
+  - Location-based notifications when approaching cameras
 - **Enhanced Visualizations**:
-  - Different colored rings for cameras missing specific tag details
+  - Red/yellow ring for cameras missing specific tag details
   - iOS/Android native themes and dark mode support
 - **Advanced Offline**:
   - "Cache accumulating" offline areas with size estimates per area
-  - Offline areas as direct tile providers
+  - "Offline areas" as tile provider?
 - **Navigation & Search**:
   - Jump to location by coordinates, address, or POI name
   - Route planning that avoids surveillance cameras
-- **Data Sources**: Custom camera providers and OSM/Overpass alternatives
+- **Data Sources**:
+  - Custom camera providers and OSM/Overpass alternatives
 
 ---
 
@@ -124,7 +124,13 @@ This app is part of the larger **Stop Flock** initiative. Join the community:
 - **Issues & Feature Requests**: GitHub Issues
 - **Development**: See developer setup above
 
-**Privacy & Ethics**: This project helps make existing public surveillance infrastructure transparent and searchable. We only document cameras that are already installed and visible in public spaces.
+---
+
+## Privacy & Ethics
+
+This project helps make existing public surveillance infrastructure transparent and searchable. We only document cameras that are already installed and visible in public spaces.
+
+No user information is ever collected, and no data leaves your device except submissions to OSM and whatever data your tile provider can glean from your requests.
 
 ---
 
