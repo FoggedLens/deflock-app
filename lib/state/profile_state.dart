@@ -25,6 +25,9 @@ class ProfileState extends ChangeNotifier {
     _profiles.add(CameraProfile.genetec());
     _profiles.add(CameraProfile.leonardo());
     _profiles.add(CameraProfile.neology());
+    _profiles.add(CameraProfile.genericGunshotDetector());
+    _profiles.add(CameraProfile.shotspotter());
+    _profiles.add(CameraProfile.flockRaven());
     _profiles.addAll(await ProfileService().load());
 
     // Load enabled profile IDs from prefs

@@ -64,9 +64,27 @@ class AddCameraSheet extends StatelessWidget {
               divisions: 359,
               value: session.directionDegrees,
               label: session.directionDegrees.round().toString(),
-              onChanged: (v) => appState.updateSession(directionDeg: v),
+              onChanged: session.profile.requiresDirection 
+                  ? (v) => appState.updateSession(directionDeg: v)
+                  : null, // Disables slider when requiresDirection is false
             ),
           ),
+          if (!session.profile.requiresDirection)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+              child: Row(
+                children: const [
+                  Icon(Icons.info_outline, color: Colors.grey, size: 16),
+                  SizedBox(width: 6),
+                  Expanded(
+                    child: Text(
+                      'This profile does not require a direction.',
+                      style: TextStyle(color: Colors.grey, fontSize: 12),
+                    ),
+                  ),
+                ],
+              ),
+            ),
           if (submittableProfiles.isEmpty)
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),

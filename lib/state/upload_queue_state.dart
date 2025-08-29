@@ -41,7 +41,9 @@ class UploadQueueState extends ChangeNotifier {
     // Using timestamp as negative ID to ensure uniqueness
     final tempId = -DateTime.now().millisecondsSinceEpoch;
     final tags = Map<String, String>.from(upload.profile.tags);
-    tags['direction'] = upload.direction.toStringAsFixed(0);
+    if (upload.profile.requiresDirection) {
+      tags['direction'] = upload.direction.toStringAsFixed(0);
+    }
     tags['_pending_upload'] = 'true'; // Mark as pending for potential UI distinction
     
     final tempNode = OsmCameraNode(
@@ -85,7 +87,9 @@ class UploadQueueState extends ChangeNotifier {
     // 2. Create new temp node for the edited camera (purple ring) at new location
     final tempId = -DateTime.now().millisecondsSinceEpoch;
     final editedTags = Map<String, String>.from(upload.profile.tags);
-    editedTags['direction'] = upload.direction.toStringAsFixed(0);
+    if (upload.profile.requiresDirection) {
+      editedTags['direction'] = upload.direction.toStringAsFixed(0);
+    }
     editedTags['_pending_upload'] = 'true'; // Mark as pending upload
     editedTags['_original_node_id'] = session.originalNode.id.toString(); // Track original for line drawing
     

@@ -17,6 +17,7 @@ class ProfileEditor extends StatefulWidget {
 class _ProfileEditorState extends State<ProfileEditor> {
   late TextEditingController _nameCtrl;
   late List<MapEntry<String, String>> _tags;
+  late bool _requiresDirection;
 
   static const _defaultTags = [
     MapEntry('man_made', 'surveillance'),
@@ -33,6 +34,7 @@ class _ProfileEditorState extends State<ProfileEditor> {
   void initState() {
     super.initState();
     _nameCtrl = TextEditingController(text: widget.profile.name);
+    _requiresDirection = widget.profile.requiresDirection;
 
     if (widget.profile.tags.isEmpty) {
       // New profile → start with sensible defaults
@@ -67,7 +69,16 @@ class _ProfileEditorState extends State<ProfileEditor> {
               hintText: 'e.g., Custom ALPR Camera',
             ),
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 16),
+          if (!widget.profile.builtin)
+            CheckboxListTile(
+              title: const Text('Requires Direction'),
+              subtitle: const Text('Whether cameras of this type need a direction tag'),
+              value: _requiresDirection,
+              onChanged: (value) => setState(() => _requiresDirection = value ?? true),
+              controlAffinity: ListTileControlAffinity.leading,
+            ),
+          const SizedBox(height: 8),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -170,6 +181,7 @@ class _ProfileEditorState extends State<ProfileEditor> {
       name: name,
       tags: tagMap,
       builtin: false,
+      requiresDirection: _requiresDirection,
     );
     
     context.read<AppState>().addOrUpdateProfile(newProfile);

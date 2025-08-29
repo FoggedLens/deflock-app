@@ -6,12 +6,14 @@ class CameraProfile {
   final String name;
   final Map<String, String> tags;
   final bool builtin;
+  final bool requiresDirection;
 
   CameraProfile({
     required this.id,
     required this.name,
     required this.tags,
     this.builtin = false,
+    this.requiresDirection = true,
   });
 
   /// Built‑in default: Generic ALPR camera (view-only)
@@ -23,6 +25,7 @@ class CameraProfile {
           'surveillance:type': 'ALPR',
         },
         builtin: true,
+        requiresDirection: true,
       );
 
   /// Built‑in: Flock Safety ALPR camera
@@ -39,6 +42,7 @@ class CameraProfile {
           'manufacturer:wikidata': 'Q108485435',
         },
         builtin: true,
+        requiresDirection: true,
       );
 
   /// Built‑in: Motorola Solutions/Vigilant ALPR camera
@@ -55,6 +59,7 @@ class CameraProfile {
           'manufacturer:wikidata': 'Q634815',
         },
         builtin: true,
+        requiresDirection: true,
       );
 
   /// Built‑in: Genetec ALPR camera
@@ -71,6 +76,7 @@ class CameraProfile {
           'manufacturer:wikidata': 'Q30295174',
         },
         builtin: true,
+        requiresDirection: true,
       );
 
   /// Built‑in: Leonardo/ELSAG ALPR camera
@@ -87,6 +93,7 @@ class CameraProfile {
           'manufacturer:wikidata': 'Q910379',
         },
         builtin: true,
+        requiresDirection: true,
       );
 
   /// Built‑in: Neology ALPR camera
@@ -102,6 +109,49 @@ class CameraProfile {
           'manufacturer': 'Neology, Inc.',
         },
         builtin: true,
+        requiresDirection: true,
+      );
+
+  /// Built‑in: Generic gunshot detector
+  factory CameraProfile.genericGunshotDetector() => CameraProfile(
+        id: 'builtin-generic-gunshot',
+        name: 'Generic Gunshot Detector',
+        tags: const {
+          'man_made': 'surveillance',
+          'surveillance:type': 'gunshot_detector',
+        },
+        builtin: true,
+        requiresDirection: false,
+      );
+
+  /// Built‑in: ShotSpotter gunshot detector
+  factory CameraProfile.shotspotter() => CameraProfile(
+        id: 'builtin-shotspotter',
+        name: 'ShotSpotter',
+        tags: const {
+          'man_made': 'surveillance',
+          'surveillance': 'public',
+          'surveillance:type': 'gunshot_detector',
+          'surveillance:brand': 'ShotSpotter',
+          'surveillance:brand:wikidata': 'Q107740188',
+        },
+        builtin: true,
+        requiresDirection: false,
+      );
+
+  /// Built‑in: Flock Raven gunshot detector
+  factory CameraProfile.flockRaven() => CameraProfile(
+        id: 'builtin-flock-raven',
+        name: 'Flock Raven',
+        tags: const {
+          'man_made': 'surveillance',
+          'surveillance': 'public',
+          'surveillance:type': 'gunshot_detector',
+          'brand': 'Flock Safety',
+          'brand:wikidata': 'Q108485435',
+        },
+        builtin: true,
+        requiresDirection: false,
       );
 
   /// Returns true if this profile can be used for submissions
@@ -116,22 +166,30 @@ class CameraProfile {
     String? name,
     Map<String, String>? tags,
     bool? builtin,
+    bool? requiresDirection,
   }) =>
       CameraProfile(
         id: id ?? this.id,
         name: name ?? this.name,
         tags: tags ?? this.tags,
         builtin: builtin ?? this.builtin,
+        requiresDirection: requiresDirection ?? this.requiresDirection,
       );
 
-  Map<String, dynamic> toJson() =>
-      {'id': id, 'name': name, 'tags': tags, 'builtin': builtin};
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'name': name,
+        'tags': tags,
+        'builtin': builtin,
+        'requiresDirection': requiresDirection,
+      };
 
   factory CameraProfile.fromJson(Map<String, dynamic> j) => CameraProfile(
         id: j['id'],
         name: j['name'],
         tags: Map<String, String>.from(j['tags']),
         builtin: j['builtin'] ?? false,
+        requiresDirection: j['requiresDirection'] ?? true, // Default to true for backward compatibility
       );
 
   @override
