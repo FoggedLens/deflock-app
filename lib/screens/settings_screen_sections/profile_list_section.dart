@@ -44,7 +44,7 @@ class ProfileListSection extends StatelessWidget {
             ),
             title: Text(p.name),
             subtitle: Text(p.builtin ? 'Built-in' : 'Custom'),
-            trailing: p.builtin 
+            trailing: !p.editable 
               ? PopupMenuButton(
                   itemBuilder: (context) => [
                     PopupMenuItem(

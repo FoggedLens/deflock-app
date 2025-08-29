@@ -7,6 +7,8 @@ class CameraProfile {
   final Map<String, String> tags;
   final bool builtin;
   final bool requiresDirection;
+  final bool submittable;
+  final bool editable;
 
   CameraProfile({
     required this.id,
@@ -14,9 +16,11 @@ class CameraProfile {
     required this.tags,
     this.builtin = false,
     this.requiresDirection = true,
+    this.submittable = true,
+    this.editable = true,
   });
 
-  /// Built‑in default: Generic ALPR camera (view-only)
+  /// Built‑in default: Generic ALPR camera (customizable template, not submittable)
   factory CameraProfile.genericAlpr() => CameraProfile(
         id: 'builtin-generic-alpr',
         name: 'Generic ALPR',
@@ -26,6 +30,8 @@ class CameraProfile {
         },
         builtin: true,
         requiresDirection: true,
+        submittable: false,
+        editable: false,
       );
 
   /// Built‑in: Flock Safety ALPR camera
@@ -43,6 +49,8 @@ class CameraProfile {
         },
         builtin: true,
         requiresDirection: true,
+        submittable: true,
+        editable: false,
       );
 
   /// Built‑in: Motorola Solutions/Vigilant ALPR camera
@@ -60,6 +68,8 @@ class CameraProfile {
         },
         builtin: true,
         requiresDirection: true,
+        submittable: true,
+        editable: false,
       );
 
   /// Built‑in: Genetec ALPR camera
@@ -77,6 +87,8 @@ class CameraProfile {
         },
         builtin: true,
         requiresDirection: true,
+        submittable: true,
+        editable: false,
       );
 
   /// Built‑in: Leonardo/ELSAG ALPR camera
@@ -94,6 +106,8 @@ class CameraProfile {
         },
         builtin: true,
         requiresDirection: true,
+        submittable: true,
+        editable: false,
       );
 
   /// Built‑in: Neology ALPR camera
@@ -110,9 +124,11 @@ class CameraProfile {
         },
         builtin: true,
         requiresDirection: true,
+        submittable: true,
+        editable: false,
       );
 
-  /// Built‑in: Generic gunshot detector
+  /// Built‑in: Generic gunshot detector (customizable template, not submittable)
   factory CameraProfile.genericGunshotDetector() => CameraProfile(
         id: 'builtin-generic-gunshot',
         name: 'Generic Gunshot Detector',
@@ -122,6 +138,8 @@ class CameraProfile {
         },
         builtin: true,
         requiresDirection: false,
+        submittable: false,
+        editable: false,
       );
 
   /// Built‑in: ShotSpotter gunshot detector
@@ -137,6 +155,8 @@ class CameraProfile {
         },
         builtin: true,
         requiresDirection: false,
+        submittable: true,
+        editable: false,
       );
 
   /// Built‑in: Flock Raven gunshot detector
@@ -152,14 +172,12 @@ class CameraProfile {
         },
         builtin: true,
         requiresDirection: false,
+        submittable: true,
+        editable: false,
       );
 
   /// Returns true if this profile can be used for submissions
-  bool get isSubmittable {
-    if (!builtin) return true; // All custom profiles are submittable
-    // Only the generic ALPR builtin profile is not submittable
-    return id != 'builtin-generic-alpr';
-  }
+  bool get isSubmittable => submittable;
 
   CameraProfile copyWith({
     String? id,
@@ -167,6 +185,8 @@ class CameraProfile {
     Map<String, String>? tags,
     bool? builtin,
     bool? requiresDirection,
+    bool? submittable,
+    bool? editable,
   }) =>
       CameraProfile(
         id: id ?? this.id,
@@ -174,6 +194,8 @@ class CameraProfile {
         tags: tags ?? this.tags,
         builtin: builtin ?? this.builtin,
         requiresDirection: requiresDirection ?? this.requiresDirection,
+        submittable: submittable ?? this.submittable,
+        editable: editable ?? this.editable,
       );
 
   Map<String, dynamic> toJson() => {
@@ -182,6 +204,8 @@ class CameraProfile {
         'tags': tags,
         'builtin': builtin,
         'requiresDirection': requiresDirection,
+        'submittable': submittable,
+        'editable': editable,
       };
 
   factory CameraProfile.fromJson(Map<String, dynamic> j) => CameraProfile(
@@ -190,6 +214,8 @@ class CameraProfile {
         tags: Map<String, String>.from(j['tags']),
         builtin: j['builtin'] ?? false,
         requiresDirection: j['requiresDirection'] ?? true, // Default to true for backward compatibility
+        submittable: j['submittable'] ?? true, // Default to true for backward compatibility
+        editable: j['editable'] ?? true, // Default to true for backward compatibility
       );
 
   @override

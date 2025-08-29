@@ -71,7 +71,7 @@ class ProfileState extends ChangeNotifier {
   }
 
   void deleteProfile(CameraProfile p) {
-    if (p.builtin) return;
+    if (!p.editable) return;
     _enabled.remove(p);
     _profiles.removeWhere((x) => x.id == p.id);
     // Safety: Always have at least one enabled profile

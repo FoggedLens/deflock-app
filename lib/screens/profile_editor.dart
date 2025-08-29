@@ -18,6 +18,8 @@ class _ProfileEditorState extends State<ProfileEditor> {
   late TextEditingController _nameCtrl;
   late List<MapEntry<String, String>> _tags;
   late bool _requiresDirection;
+  late bool _submittable;
+  late bool _editable;
 
   static const _defaultTags = [
     MapEntry('man_made', 'surveillance'),
@@ -35,6 +37,8 @@ class _ProfileEditorState extends State<ProfileEditor> {
     super.initState();
     _nameCtrl = TextEditingController(text: widget.profile.name);
     _requiresDirection = widget.profile.requiresDirection;
+    _submittable = widget.profile.submittable;
+    _editable = widget.profile.editable;
 
     if (widget.profile.tags.isEmpty) {
       // New profile → start with sensible defaults
@@ -54,7 +58,7 @@ class _ProfileEditorState extends State<ProfileEditor> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.profile.builtin 
+        title: Text(!widget.profile.editable 
             ? 'View Profile' 
             : (widget.profile.name.isEmpty ? 'New Profile' : 'Edit Profile')),
       ),
@@ -63,14 +67,14 @@ class _ProfileEditorState extends State<ProfileEditor> {
         children: [
           TextField(
             controller: _nameCtrl,
-            readOnly: widget.profile.builtin,
+            readOnly: !widget.profile.editable,
             decoration: const InputDecoration(
               labelText: 'Profile name',
               hintText: 'e.g., Custom ALPR Camera',
             ),
           ),
           const SizedBox(height: 16),
-          if (!widget.profile.builtin)
+          if (widget.profile.editable) ...[
             CheckboxListTile(
               title: const Text('Requires Direction'),
               subtitle: const Text('Whether cameras of this type need a direction tag'),
@@ -78,24 +82,41 @@ class _ProfileEditorState extends State<ProfileEditor> {
               onChanged: (value) => setState(() => _requiresDirection = value ?? true),
               controlAffinity: ListTileControlAffinity.leading,
             ),
-          const SizedBox(height: 8),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Text('OSM Tags',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-              if (!widget.profile.builtin)
-                TextButton.icon(
-                  onPressed: () => setState(() => _tags.add(const MapEntry('', ''))),
-                  icon: const Icon(Icons.add),
-                  label: const Text('Add tag'),
-                ),
+            if (!widget.profile.builtin) ...[
+              CheckboxListTile(
+                title: const Text('Submittable'),
+                subtitle: const Text('Whether this profile can be used for submissions'),
+                value: _submittable,
+                onChanged: (value) => setState(() => _submittable = value ?? true),
+                controlAffinity: ListTileControlAffinity.leading,
+              ),
+              CheckboxListTile(
+                title: const Text('Editable'),
+                subtitle: const Text('Whether this profile can be modified after creation'),
+                value: _editable,
+                onChanged: (value) => setState(() => _editable = value ?? true),
+                controlAffinity: ListTileControlAffinity.leading,
+              ),
             ],
-          ),
+          ],
+          const SizedBox(height: 8),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text('OSM Tags',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                if (widget.profile.editable)
+                  TextButton.icon(
+                    onPressed: () => setState(() => _tags.add(const MapEntry('', ''))),
+                    icon: const Icon(Icons.add),
+                    label: const Text('Add tag'),
+                  ),
+              ],
+            ),
           const SizedBox(height: 8),
           ..._buildTagRows(),
           const SizedBox(height: 24),
-          if (!widget.profile.builtin)
+          if (widget.profile.editable)
             ElevatedButton(
               onPressed: _save,
               child: const Text('Save Profile'),
@@ -123,8 +144,8 @@ class _ProfileEditorState extends State<ProfileEditor> {
                   isDense: true,
                 ),
                 controller: keyController,
-                readOnly: widget.profile.builtin,
-                onChanged: widget.profile.builtin 
+                readOnly: !widget.profile.editable,
+                onChanged: !widget.profile.editable 
                     ? null 
                     : (v) => _tags[i] = MapEntry(v, _tags[i].value),
               ),
@@ -139,13 +160,13 @@ class _ProfileEditorState extends State<ProfileEditor> {
                   isDense: true,
                 ),
                 controller: valueController,
-                readOnly: widget.profile.builtin,
-                onChanged: widget.profile.builtin 
+                readOnly: !widget.profile.editable,
+                onChanged: !widget.profile.editable 
                     ? null 
                     : (v) => _tags[i] = MapEntry(_tags[i].key, v),
               ),
             ),
-            if (!widget.profile.builtin)
+            if (widget.profile.editable)
               IconButton(
                 icon: const Icon(Icons.delete, color: Colors.red),
                 onPressed: () => setState(() => _tags.removeAt(i)),
@@ -182,6 +203,8 @@ class _ProfileEditorState extends State<ProfileEditor> {
       tags: tagMap,
       builtin: false,
       requiresDirection: _requiresDirection,
+      submittable: _submittable,
+      editable: _editable,
     );
     
     context.read<AppState>().addOrUpdateProfile(newProfile);
