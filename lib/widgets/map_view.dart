@@ -1,12 +1,8 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_map_animations/flutter_map_animations.dart';
 import 'package:latlong2/latlong.dart';
-import 'package:geolocator/geolocator.dart';
 import 'package:provider/provider.dart';
-import 'package:http/http.dart' as http;
-import 'package:collection/collection.dart';
 
 import '../app_state.dart';
 import '../services/offline_area_service.dart';
@@ -22,6 +18,7 @@ import 'map/map_overlays.dart';
 import 'map/map_position_manager.dart';
 import 'map/tile_layer_manager.dart';
 import 'map/camera_refresh_controller.dart';
+import 'map/gps_controller.dart';
 import 'network_status_indicator.dart';
 import '../dev_config.dart';
 import '../screens/home_screen.dart' show FollowMeMode;
@@ -48,12 +45,10 @@ class MapViewState extends State<MapView> {
   final Debouncer _tileDebounce = Debouncer(const Duration(milliseconds: 150));
   final Debouncer _mapPositionDebounce = Debouncer(const Duration(milliseconds: 1000));
 
-  StreamSubscription<Position>? _positionSub;
-  LatLng? _currentLatLng;
-
   late final MapPositionManager _positionManager;
   late final TileLayerManager _tileManager;
   late final CameraRefreshController _cameraController;
+  late final GpsController _gpsController;
   
   // Track zoom to clear queue on zoom changes
   double? _lastZoom;
@@ -68,6 +63,7 @@ class MapViewState extends State<MapView> {
     _tileManager.initialize();
     _cameraController = CameraRefreshController();
     _cameraController.initialize(onCamerasUpdated: _onCamerasUpdated);
+    _gpsController = GpsController();
     
     // Load last map position before initializing GPS
     _positionManager.loadLastMapPosition().then((_) {
@@ -76,7 +72,13 @@ class MapViewState extends State<MapView> {
         _positionManager.moveToInitialLocationIfNeeded(_controller);
       });
     });
-    _initLocation();
+    
+    // Initialize GPS with callback for position updates and follow-me
+    _gpsController.initializeWithCallback(
+      followMeMode: widget.followMeMode,
+      controller: _controller,
+      onLocationUpdated: () => setState(() {}),
+    );
 
     // Fetch initial cameras
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -90,12 +92,12 @@ class MapViewState extends State<MapView> {
 
   @override
   void dispose() {
-    _positionSub?.cancel();
     _cameraDebounce.dispose();
     _tileDebounce.dispose();
     _mapPositionDebounce.dispose();
     _cameraController.dispose();
     _tileManager.dispose();
+    _gpsController.dispose();
     super.dispose();
   }
 
@@ -105,8 +107,7 @@ class MapViewState extends State<MapView> {
 
   /// Public method to retry location initialization (e.g., after permission granted)
   void retryLocationInit() {
-    debugPrint('[MapView] Retrying location initialization');
-    _initLocation();
+    _gpsController.retryLocationInit();
   }
 
   /// Expose static methods from MapPositionManager for external access
@@ -138,78 +139,12 @@ class MapViewState extends State<MapView> {
   @override
   void didUpdateWidget(covariant MapView oldWidget) {
     super.didUpdateWidget(oldWidget);
-    // Back to original pattern - simple check
-    if (widget.followMeMode != FollowMeMode.off && 
-        oldWidget.followMeMode == FollowMeMode.off && 
-        _currentLatLng != null) {
-      // Move to current location when follow me is first enabled - smooth animation
-      if (widget.followMeMode == FollowMeMode.northUp) {
-        _controller.animateTo(
-          dest: _currentLatLng!,
-          zoom: _controller.mapController.camera.zoom,
-          duration: kFollowMeAnimationDuration,
-          curve: Curves.easeOut,
-        );
-      } else if (widget.followMeMode == FollowMeMode.rotating) {
-        // When switching to rotating mode, reset to north-up first - smooth animation
-        _controller.animateTo(
-          dest: _currentLatLng!,
-          zoom: _controller.mapController.camera.zoom,
-          rotation: 0.0,
-          duration: kFollowMeAnimationDuration,
-          curve: Curves.easeOut,
-        );
-      }
-    }
-  }
-
-  Future<void> _initLocation() async {
-    final perm = await Geolocator.requestPermission();
-    if (perm == LocationPermission.denied ||
-        perm == LocationPermission.deniedForever) return;
-
-    _positionSub =
-        Geolocator.getPositionStream().listen((Position position) {
-      final latLng = LatLng(position.latitude, position.longitude);
-      setState(() => _currentLatLng = latLng);
-      
-      // Back to original pattern - directly check widget parameter
-      if (widget.followMeMode != FollowMeMode.off) {
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (mounted) {
-            try {
-              if (widget.followMeMode == FollowMeMode.northUp) {
-                // Follow position only, keep current rotation - smooth animation
-                _controller.animateTo(
-                  dest: latLng,
-                  zoom: _controller.mapController.camera.zoom,
-                  duration: kFollowMeAnimationDuration,
-                  curve: Curves.easeOut,
-                );
-              } else if (widget.followMeMode == FollowMeMode.rotating) {
-                // Follow position and rotation based on heading - smooth animation
-                final heading = position.heading;
-                final speed = position.speed; // Speed in m/s
-                
-                // Only apply rotation if moving fast enough to avoid wild spinning when stationary
-                final shouldRotate = !speed.isNaN && speed >= kMinSpeedForRotationMps && !heading.isNaN;
-                final rotation = shouldRotate ? -heading : _controller.mapController.camera.rotation;
-                
-                _controller.animateTo(
-                  dest: latLng,
-                  zoom: _controller.mapController.camera.zoom,
-                  rotation: rotation,
-                  duration: kFollowMeAnimationDuration,
-                  curve: Curves.easeOut,
-                );
-              }
-            } catch (e) {
-              debugPrint('MapController not ready yet: $e');
-            }
-          }
-        });
-      }
-    });
+    // Handle follow-me mode changes
+    _gpsController.handleFollowMeModeChange(
+      newMode: widget.followMeMode,
+      oldMode: oldWidget.followMeMode,
+      controller: _controller,
+    );
   }
 
   double _safeZoom() {
@@ -288,7 +223,7 @@ class MapViewState extends State<MapView> {
         final markers = CameraMarkersBuilder.buildCameraMarkers(
           cameras: cameras,
           mapController: _controller.mapController,
-          userLocation: _currentLatLng,
+          userLocation: _gpsController.currentLocation,
         );
 
         final overlays = DirectionConesBuilder.buildDirectionCones(
@@ -317,7 +252,7 @@ class MapViewState extends State<MapView> {
           key: ValueKey('map_${appState.offlineMode}_${appState.selectedTileType?.id ?? 'none'}_${_tileManager.mapRebuildKey}'),
           mapController: _controller.mapController,
           options: MapOptions(
-            initialCenter: _currentLatLng ?? _positionManager.initialLocation ?? LatLng(37.7749, -122.4194),
+            initialCenter: _gpsController.currentLocation ?? _positionManager.initialLocation ?? LatLng(37.7749, -122.4194),
             initialZoom: _positionManager.initialZoom ?? 15,
             maxZoom: 19,
             onPositionChanged: (pos, gesture) {
