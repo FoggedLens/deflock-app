@@ -157,18 +157,14 @@ class UploadQueueState extends ChangeNotifier {
         // Real upload -- use the upload mode that was saved when this item was queued
         debugPrint('[UploadQueue] Real upload to: ${item.uploadMode}');
         final up = Uploader(access, () {
-          _queue.remove(item);
-          _saveQueue();
-          notifyListeners();
+          _markAsCompleting(item);
         }, uploadMode: item.uploadMode);
         ok = await up.upload(item);
       }
 
       if (ok && item.uploadMode == UploadMode.simulate) {
-        // Remove manually for simulate mode
-        _queue.remove(item);
-        _saveQueue();
-        notifyListeners();
+        // Mark as completing for simulate mode too
+        _markAsCompleting(item);
       }
       if (!ok) {
         item.attempts++;
@@ -187,6 +183,20 @@ class UploadQueueState extends ChangeNotifier {
 
   void stopUploader() {
     _uploadTimer?.cancel();
+  }
+
+  // Mark an item as completing (shows checkmark) and schedule removal after 1 second
+  void _markAsCompleting(PendingUpload item) {
+    item.completing = true;
+    _saveQueue();
+    notifyListeners();
+    
+    // Remove the item after 1 second
+    Timer(const Duration(seconds: 1), () {
+      _queue.remove(item);
+      _saveQueue();
+      notifyListeners();
+    });
   }
 
   // ---------- Queue persistence ----------

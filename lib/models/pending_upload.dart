@@ -10,6 +10,7 @@ class PendingUpload {
   final int? originalNodeId; // If this is an edit, the ID of the original OSM node
   int attempts;
   bool error;
+  bool completing; // True when upload succeeded but item is showing checkmark briefly
 
   PendingUpload({
     required this.coord,
@@ -19,6 +20,7 @@ class PendingUpload {
     this.originalNodeId,
     this.attempts = 0,
     this.error = false,
+    this.completing = false,
   });
 
   // True if this is an edit of an existing camera, false if it's a new camera
@@ -45,6 +47,7 @@ class PendingUpload {
         'originalNodeId': originalNodeId,
         'attempts': attempts,
         'error': error,
+        'completing': completing,
       };
 
   factory PendingUpload.fromJson(Map<String, dynamic> j) => PendingUpload(
@@ -59,6 +62,7 @@ class PendingUpload {
         originalNodeId: j['originalNodeId'],
         attempts: j['attempts'] ?? 0,
         error: j['error'] ?? false,
+        completing: j['completing'] ?? false, // Default to false for legacy entries
       );
 }
 

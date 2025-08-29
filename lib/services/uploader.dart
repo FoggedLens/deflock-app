@@ -45,10 +45,29 @@ class Uploader {
       final String nodeId;
       
       if (p.isEdit) {
-        // Update existing node
+        // First, fetch the current node to get its version
+        print('Uploader: Fetching current node ${p.originalNodeId} to get version...');
+        final currentNodeResp = await _get('/api/0.6/node/${p.originalNodeId}');
+        print('Uploader: Current node response: ${currentNodeResp.statusCode}');
+        if (currentNodeResp.statusCode != 200) {
+          print('Uploader: Failed to fetch current node');
+          return false;
+        }
+        
+        // Parse version from the response XML
+        final currentNodeXml = currentNodeResp.body;
+        final versionMatch = RegExp(r'version="(\d+)"').firstMatch(currentNodeXml);
+        if (versionMatch == null) {
+          print('Uploader: Could not parse version from current node XML');
+          return false;
+        }
+        final currentVersion = versionMatch.group(1)!;
+        print('Uploader: Current node version: $currentVersion');
+        
+        // Update existing node with version
         final nodeXml = '''
         <osm>
-          <node changeset="$csId" id="${p.originalNodeId}" lat="${p.coord.latitude}" lon="${p.coord.longitude}">
+          <node changeset="$csId" id="${p.originalNodeId}" version="$currentVersion" lat="${p.coord.latitude}" lon="${p.coord.longitude}">
             $tagsXml
           </node>
         </osm>''';
@@ -98,6 +117,11 @@ class Uploader {
         return 'api.openstreetmap.org';
     }
   }
+
+  Future<http.Response> _get(String path) => http.get(
+        Uri.https(_host, path),
+        headers: _headers,
+      );
 
   Future<http.Response> _post(String path, String body) => http.post(
         Uri.https(_host, path),
