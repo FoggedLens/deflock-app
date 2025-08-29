@@ -87,34 +87,25 @@ flutter run
 
 ## Roadmap
 
-### Current Todo List
-- **UX Polish**: 
-  - Fix "tiles loaded" indicator accuracy across different providers
-  - Generic tile provider error messages (not always "OSM tiles slow")
-  - Optional custom icons for camera profiles
-  - Camera deletions
-  - Direction requirement specified by profile; support shotspotter/raven
-- **Data Management**:
-  - Clean up cache when submitted changesets appear in Overpass results
-- **Visual Improvements**:
-  - Upgrade camera marker design (considering nullplate's svg)
+### v1 todo/bug List
+- Fix "tiles loaded" indicator accuracy across different providers
+- Generic tile provider error messages (not always "OSM tiles slow")
+- Optional custom icons for camera profiles
+- Camera deletions
+- Direction requirement specified by profile; support shotspotter/raven
+- Clean up cache when submitted changesets appear in Overpass results
+- Upgrade camera marker design (considering nullplate's svg)
 
 ### Future Features & Wishlist
-- **Operator Profiles**:
-  - Additional tag sets for different surveillance operators
-- **Announcement Mode**:
-  - Location-based notifications when approaching cameras
-- **Enhanced Visualizations**:
-  - Red/yellow ring for cameras missing specific tag details
-  - iOS/Android native themes and dark mode support
-- **Advanced Offline**:
-  - "Cache accumulating" offline areas with size estimates per area
-  - "Offline areas" as tile provider?
-- **Navigation & Search**:
-  - Jump to location by coordinates, address, or POI name
-  - Route planning that avoids surveillance cameras
-- **Data Sources**:
-  - Custom camera providers and OSM/Overpass alternatives
+- Additional tag sets for different surveillance operators
+- Location-based notifications when approaching cameras
+- Red/yellow ring for cameras missing specific tag details
+- iOS/Android native themes and dark mode support
+- "Cache accumulating" offline areas with size estimates per area
+- "Offline areas" as tile provider?
+- Jump to location by coordinates, address, or POI name
+- Route planning that avoids surveillance cameras
+- Custom camera providers and OSM/Overpass alternatives
 
 ---
 
