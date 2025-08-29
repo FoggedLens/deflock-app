@@ -82,14 +82,14 @@ class _ProfileEditorState extends State<ProfileEditor> {
               onChanged: (value) => setState(() => _requiresDirection = value ?? true),
               controlAffinity: ListTileControlAffinity.leading,
             ),
-            if (!widget.profile.builtin) ...[
-              CheckboxListTile(
-                title: const Text('Submittable'),
-                subtitle: const Text('Whether this profile can be used for submissions'),
-                value: _submittable,
-                onChanged: (value) => setState(() => _submittable = value ?? true),
-                controlAffinity: ListTileControlAffinity.leading,
-              ),
+            CheckboxListTile(
+              title: const Text('Submittable'),
+              subtitle: const Text('Whether this profile can be used for camera submissions'),
+              value: _submittable,
+              onChanged: (value) => setState(() => _submittable = value ?? true),
+              controlAffinity: ListTileControlAffinity.leading,
+            ),
+            if (!widget.profile.builtin)
               CheckboxListTile(
                 title: const Text('Editable'),
                 subtitle: const Text('Whether this profile can be modified after creation'),
@@ -97,7 +97,6 @@ class _ProfileEditorState extends State<ProfileEditor> {
                 onChanged: (value) => setState(() => _editable = value ?? true),
                 controlAffinity: ListTileControlAffinity.leading,
               ),
-            ],
           ],
           const SizedBox(height: 8),
             Row(
