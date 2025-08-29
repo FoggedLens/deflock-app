@@ -36,10 +36,7 @@ class Uploader {
       print('Uploader: Created changeset ID: $csId');
 
       // 2. create or update node
-      final mergedTags = Map<String, String>.from(p.profile.tags);
-      if (p.profile.requiresDirection) {
-        mergedTags['direction'] = p.direction.round().toString();
-      }
+      final mergedTags = p.getCombinedTags();
       final tagsXml = mergedTags.entries.map((e) =>
         '<tag k="${e.key}" v="${e.value}"/>').join('\n            ');
       

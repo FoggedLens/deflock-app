@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'settings_screen_sections/auth_section.dart';
 import 'settings_screen_sections/upload_mode_section.dart';
 import 'settings_screen_sections/profile_list_section.dart';
+import 'settings_screen_sections/operator_profile_list_section.dart';
 import 'settings_screen_sections/queue_section.dart';
 import 'settings_screen_sections/offline_areas_section.dart';
 import 'settings_screen_sections/offline_mode_section.dart';
@@ -26,6 +27,8 @@ class SettingsScreen extends StatelessWidget {
           QueueSection(),
           Divider(),
           ProfileListSection(),
+          Divider(),
+          OperatorProfileListSection(),
           Divider(),
           MaxCamerasSection(),
           Divider(),

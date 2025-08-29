@@ -3,7 +3,9 @@ import 'package:provider/provider.dart';
 
 import '../app_state.dart';
 import '../models/camera_profile.dart';
+import '../models/operator_profile.dart';
 import '../state/settings_state.dart';
+import 'refine_tags_sheet.dart';
 
 class EditCameraSheet extends StatelessWidget {
   const EditCameraSheet({super.key, required this.session});
@@ -30,6 +32,21 @@ class EditCameraSheet extends StatelessWidget {
     final submittableProfiles = appState.enabledProfiles.where((p) => p.isSubmittable).toList();
     final isSandboxMode = appState.uploadMode == UploadMode.sandbox;
     final allowSubmit = submittableProfiles.isNotEmpty && session.profile.isSubmittable && !isSandboxMode;
+    
+    void _openRefineTags() async {
+      final result = await Navigator.push<OperatorProfile?>(
+        context,
+        MaterialPageRoute(
+          builder: (context) => RefineTagsSheet(
+            selectedOperatorProfile: session.operatorProfile,
+          ),
+          fullscreenDialog: true,
+        ),
+      );
+      if (result != session.operatorProfile) {
+        appState.updateEditSession(operatorProfile: result);
+      }
+    }
 
     return Padding(
       padding:
@@ -140,6 +157,20 @@ class EditCameraSheet extends StatelessWidget {
                 ],
               ),
             ),
+          const SizedBox(height: 8),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            child: SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                onPressed: _openRefineTags,
+                icon: const Icon(Icons.tune),
+                label: Text(session.operatorProfile != null
+                    ? 'Refine Tags (${session.operatorProfile!.name})'
+                    : 'Refine Tags'),
+              ),
+            ),
+          ),
           const SizedBox(height: 8),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0),

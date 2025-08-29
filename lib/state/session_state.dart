@@ -2,12 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:latlong2/latlong.dart';
 
 import '../models/camera_profile.dart';
+import '../models/operator_profile.dart';
 import '../models/osm_camera_node.dart';
 
 // ------------------ AddCameraSession ------------------
 class AddCameraSession {
   AddCameraSession({required this.profile, this.directionDegrees = 0});
   CameraProfile profile;
+  OperatorProfile? operatorProfile;
   double directionDegrees;
   LatLng? target;
 }
@@ -23,6 +25,7 @@ class EditCameraSession {
   
   final OsmCameraNode originalNode; // The original camera being edited
   CameraProfile profile;
+  OperatorProfile? operatorProfile;
   double directionDegrees;
   LatLng target; // Current position (can be dragged)
 }
@@ -84,6 +87,7 @@ class SessionState extends ChangeNotifier {
   void updateSession({
     double? directionDeg,
     CameraProfile? profile,
+    OperatorProfile? operatorProfile,
     LatLng? target,
   }) {
     if (_session == null) return;
@@ -97,6 +101,10 @@ class SessionState extends ChangeNotifier {
       _session!.profile = profile;
       dirty = true;
     }
+    if (operatorProfile != _session!.operatorProfile) {
+      _session!.operatorProfile = operatorProfile;
+      dirty = true;
+    }
     if (target != null) {
       _session!.target = target;
       dirty = true;
@@ -107,6 +115,7 @@ class SessionState extends ChangeNotifier {
   void updateEditSession({
     double? directionDeg,
     CameraProfile? profile,
+    OperatorProfile? operatorProfile,
     LatLng? target,
   }) {
     if (_editSession == null) return;
@@ -118,6 +127,10 @@ class SessionState extends ChangeNotifier {
     }
     if (profile != null && profile != _editSession!.profile) {
       _editSession!.profile = profile;
+      dirty = true;
+    }
+    if (operatorProfile != _editSession!.operatorProfile) {
+      _editSession!.operatorProfile = operatorProfile;
       dirty = true;
     }
     if (target != null && target != _editSession!.target) {

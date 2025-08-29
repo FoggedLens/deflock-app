@@ -3,11 +3,13 @@ import 'package:flutter/foundation.dart';
 import 'package:latlong2/latlong.dart';
 
 import 'models/camera_profile.dart';
+import 'models/operator_profile.dart';
 import 'models/osm_camera_node.dart';
 import 'models/pending_upload.dart';
 import 'models/tile_provider.dart';
 import 'services/offline_area_service.dart';
 import 'state/auth_state.dart';
+import 'state/operator_profile_state.dart';
 import 'state/profile_state.dart';
 import 'state/session_state.dart';
 import 'state/settings_state.dart';
@@ -23,6 +25,7 @@ class AppState extends ChangeNotifier {
   
   // State modules
   late final AuthState _authState;
+  late final OperatorProfileState _operatorProfileState;
   late final ProfileState _profileState;
   late final SessionState _sessionState;
   late final SettingsState _settingsState;
@@ -33,6 +36,7 @@ class AppState extends ChangeNotifier {
   AppState() {
     instance = this;
     _authState = AuthState();
+    _operatorProfileState = OperatorProfileState();
     _profileState = ProfileState();
     _sessionState = SessionState();
     _settingsState = SettingsState();
@@ -40,6 +44,7 @@ class AppState extends ChangeNotifier {
     
     // Set up state change listeners
     _authState.addListener(_onStateChanged);
+    _operatorProfileState.addListener(_onStateChanged);
     _profileState.addListener(_onStateChanged);
     _sessionState.addListener(_onStateChanged);
     _settingsState.addListener(_onStateChanged);
@@ -59,6 +64,9 @@ class AppState extends ChangeNotifier {
   List<CameraProfile> get profiles => _profileState.profiles;
   List<CameraProfile> get enabledProfiles => _profileState.enabledProfiles;
   bool isEnabled(CameraProfile p) => _profileState.isEnabled(p);
+  
+  // Operator profile state
+  List<OperatorProfile> get operatorProfiles => _operatorProfileState.profiles;
   
   // Session state
   AddCameraSession? get session => _sessionState.session;
@@ -89,6 +97,7 @@ class AppState extends ChangeNotifier {
   Future<void> _init() async {
     // Initialize all state modules
     await _settingsState.init();
+    await _operatorProfileState.init();
     await _profileState.init();
     await _uploadQueueState.init();
     await _authState.init(_settingsState.uploadMode);
@@ -137,6 +146,15 @@ class AppState extends ChangeNotifier {
     _profileState.deleteProfile(p);
   }
 
+  // ---------- Operator Profile Methods ----------
+  void addOrUpdateOperatorProfile(OperatorProfile p) {
+    _operatorProfileState.addOrUpdateProfile(p);
+  }
+
+  void deleteOperatorProfile(OperatorProfile p) {
+    _operatorProfileState.deleteProfile(p);
+  }
+
   // ---------- Session Methods ----------
   void startAddSession() {
     _sessionState.startAddSession(enabledProfiles);
@@ -149,11 +167,13 @@ class AppState extends ChangeNotifier {
   void updateSession({
     double? directionDeg,
     CameraProfile? profile,
+    OperatorProfile? operatorProfile,
     LatLng? target,
   }) {
     _sessionState.updateSession(
       directionDeg: directionDeg,
       profile: profile,
+      operatorProfile: operatorProfile,
       target: target,
     );
   }
@@ -161,11 +181,13 @@ class AppState extends ChangeNotifier {
   void updateEditSession({
     double? directionDeg,
     CameraProfile? profile,
+    OperatorProfile? operatorProfile,
     LatLng? target,
   }) {
     _sessionState.updateEditSession(
       directionDeg: directionDeg,
       profile: profile,
+      operatorProfile: operatorProfile,
       target: target,
     );
   }
@@ -262,6 +284,7 @@ class AppState extends ChangeNotifier {
   @override
   void dispose() {
     _authState.removeListener(_onStateChanged);
+    _operatorProfileState.removeListener(_onStateChanged);
     _profileState.removeListener(_onStateChanged);
     _sessionState.removeListener(_onStateChanged);
     _settingsState.removeListener(_onStateChanged);

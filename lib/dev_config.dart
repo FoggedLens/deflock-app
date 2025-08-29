@@ -11,7 +11,7 @@ const double kTileEstimateKb = 25.0;
 // Direction cone for map view
 const double kDirectionConeHalfAngle = 30.0; // degrees
 const double kDirectionConeBaseLength = 0.001; // multiplier
-const Color kDirectionConeColor = Color(0xFF111111); // FOV cone color
+const Color kDirectionConeColor = Color(0xFF000000); // FOV cone color
 
 // Margin (bottom) for positioning the floating bottom button bar
 const double kBottomButtonBarMargin = 4.0;
