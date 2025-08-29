@@ -7,7 +7,6 @@ import 'package:geolocator/geolocator.dart';
 import 'package:provider/provider.dart';
 import 'package:http/http.dart' as http;
 import 'package:collection/collection.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import '../app_state.dart';
 import '../services/offline_area_service.dart';
@@ -21,6 +20,7 @@ import 'camera_provider_with_cache.dart';
 import 'map/camera_markers.dart';
 import 'map/direction_cones.dart';
 import 'map/map_overlays.dart';
+import 'map/map_position_manager.dart';
 import 'network_status_indicator.dart';
 import '../dev_config.dart';
 import '../screens/home_screen.dart' show FollowMeMode;
@@ -49,12 +49,10 @@ class MapViewState extends State<MapView> {
 
   StreamSubscription<Position>? _positionSub;
   LatLng? _currentLatLng;
-  LatLng? _initialLocation;
-  double? _initialZoom;
-  bool _hasMovedToInitialLocation = false;
 
   late final CameraProviderWithCache _cameraProvider;
   late final SimpleTileHttpClient _tileHttpClient;
+  late final MapPositionManager _positionManager;
   
   // Track profile changes to trigger camera refresh
   List<CameraProfile>? _lastEnabledProfiles;
@@ -73,12 +71,13 @@ class MapViewState extends State<MapView> {
     OfflineAreaService();
     _controller = widget.controller;
     _tileHttpClient = SimpleTileHttpClient();
+    _positionManager = MapPositionManager();
     
     // Load last map position before initializing GPS
-    _loadLastMapPosition().then((_) {
+    _positionManager.loadLastMapPosition().then((_) {
       // Move to last known position after loading and widget is built
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        _moveToInitialLocationIfNeeded();
+        _positionManager.moveToInitialLocationIfNeeded(_controller);
       });
     });
     _initLocation();
@@ -93,42 +92,7 @@ class MapViewState extends State<MapView> {
     });
   }
 
-  /// Move to initial location if we have one and haven't moved yet
-  void _moveToInitialLocationIfNeeded() {
-    if (!_hasMovedToInitialLocation && _initialLocation != null && mounted) {
-      try {
-        final zoom = _initialZoom ?? 15.0;
-        // Double-check coordinates are valid before moving
-        if (_isValidCoordinate(_initialLocation!.latitude) && 
-            _isValidCoordinate(_initialLocation!.longitude) && 
-            _isValidZoom(zoom)) {
-          _controller.mapController.move(_initialLocation!, zoom);
-          _hasMovedToInitialLocation = true;
-          debugPrint('[MapView] Moved to initial location: ${_initialLocation!.latitude}, ${_initialLocation!.longitude}');
-        } else {
-          debugPrint('[MapView] Invalid initial location, not moving: ${_initialLocation!.latitude}, ${_initialLocation!.longitude}, zoom: $zoom');
-        }
-      } catch (e) {
-        debugPrint('[MapView] Failed to move to initial location: $e');
-      }
-    }
-  }
 
-  /// Validate that a coordinate value is valid (not NaN, not infinite, within bounds)
-  bool _isValidCoordinate(double value) {
-    return !value.isNaN && 
-           !value.isInfinite && 
-           value >= -180.0 && 
-           value <= 180.0;
-  }
-
-  /// Validate that a zoom level is valid
-  bool _isValidZoom(double zoom) {
-    return !zoom.isNaN && 
-           !zoom.isInfinite && 
-           zoom >= 1.0 && 
-           zoom <= 25.0;
-  }
 
 
 
@@ -153,89 +117,15 @@ class MapViewState extends State<MapView> {
     _initLocation();
   }
 
-  /// Save the last map position to persistent storage
-  Future<void> _saveLastMapPosition(LatLng location, double zoom) async {
-    try {
-      // Validate coordinates and zoom before saving
-      if (!_isValidCoordinate(location.latitude) || 
-          !_isValidCoordinate(location.longitude) || 
-          !_isValidZoom(zoom)) {
-        debugPrint('[MapView] Invalid map position, not saving: lat=${location.latitude}, lng=${location.longitude}, zoom=$zoom');
-        return;
-      }
-      
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setDouble(kLastMapLatKey, location.latitude);
-      await prefs.setDouble(kLastMapLngKey, location.longitude);
-      await prefs.setDouble(kLastMapZoomKey, zoom);
-      debugPrint('[MapView] Saved last map position: ${location.latitude}, ${location.longitude}, zoom: $zoom');
-    } catch (e) {
-      debugPrint('[MapView] Failed to save last map position: $e');
-    }
-  }
-
-  /// Load the last map position from persistent storage
-  Future<void> _loadLastMapPosition() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final lat = prefs.getDouble(kLastMapLatKey);
-      final lng = prefs.getDouble(kLastMapLngKey);
-      final zoom = prefs.getDouble(kLastMapZoomKey);
-      
-      if (lat != null && lng != null && 
-          _isValidCoordinate(lat) && _isValidCoordinate(lng)) {
-        final validZoom = zoom != null && _isValidZoom(zoom) ? zoom : 15.0;
-        _initialLocation = LatLng(lat, lng);
-        _initialZoom = validZoom;
-        debugPrint('[MapView] Loaded last map position: ${_initialLocation!.latitude}, ${_initialLocation!.longitude}, zoom: $_initialZoom');
-      } else {
-        debugPrint('[MapView] Invalid saved coordinates, using defaults');
-      }
-    } catch (e) {
-      debugPrint('[MapView] Failed to load last map position: $e');
-    }
-  }
-
-  /// Save the follow-me mode to persistent storage
-  static Future<void> saveFollowMeMode(FollowMeMode mode) async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setInt(kFollowMeModeKey, mode.index);
-      debugPrint('[MapView] Saved follow-me mode: $mode');
-    } catch (e) {
-      debugPrint('[MapView] Failed to save follow-me mode: $e');
-    }
-  }
-
-  /// Load the follow-me mode from persistent storage
-  static Future<FollowMeMode> loadFollowMeMode() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final modeIndex = prefs.getInt(kFollowMeModeKey);
-      if (modeIndex != null && modeIndex < FollowMeMode.values.length) {
-        final mode = FollowMeMode.values[modeIndex];
-        debugPrint('[MapView] Loaded follow-me mode: $mode');
-        return mode;
-      }
-    } catch (e) {
-      debugPrint('[MapView] Failed to load follow-me mode: $e');
-    }
-    // Default to northUp if no saved mode
-    return FollowMeMode.northUp;
-  }
-
-  /// Clear any stored map position (useful for recovery from invalid data)
-  static Future<void> clearStoredMapPosition() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.remove(kLastMapLatKey);
-      await prefs.remove(kLastMapLngKey);
-      await prefs.remove(kLastMapZoomKey);
-      debugPrint('[MapView] Cleared stored map position');
-    } catch (e) {
-      debugPrint('[MapView] Failed to clear stored map position: $e');
-    }
-  }
+  /// Expose static methods from MapPositionManager for external access
+  static Future<void> saveFollowMeMode(FollowMeMode mode) => 
+      MapPositionManager.saveFollowMeMode(mode);
+  
+  static Future<FollowMeMode> loadFollowMeMode() => 
+      MapPositionManager.loadFollowMeMode();
+  
+  static Future<void> clearStoredMapPosition() => 
+      MapPositionManager.clearStoredMapPosition();
 
 
 
@@ -496,8 +386,8 @@ class MapViewState extends State<MapView> {
           key: ValueKey('map_${appState.offlineMode}_${appState.selectedTileType?.id ?? 'none'}_$_mapRebuildKey'),
           mapController: _controller.mapController,
           options: MapOptions(
-            initialCenter: _currentLatLng ?? _initialLocation ?? LatLng(37.7749, -122.4194),
-            initialZoom: _initialZoom ?? 15,
+            initialCenter: _currentLatLng ?? _positionManager.initialLocation ?? LatLng(37.7749, -122.4194),
+            initialZoom: _positionManager.initialZoom ?? 15,
             maxZoom: 19,
             onPositionChanged: (pos, gesture) {
               setState(() {}); // Instant UI update for zoom, etc.
@@ -526,12 +416,7 @@ class MapViewState extends State<MapView> {
               
               // Save map position (debounced to avoid excessive writes)
               _mapPositionDebounce(() {
-                // Only save if position and zoom are valid
-                if (_isValidCoordinate(pos.center.latitude) && 
-                    _isValidCoordinate(pos.center.longitude) && 
-                    _isValidZoom(pos.zoom)) {
-                  _saveLastMapPosition(pos.center, pos.zoom);
-                }
+                _positionManager.saveMapPosition(pos.center, pos.zoom);
               });
               
               // Request more cameras on any map movement/zoom at valid zoom level (slower debounce)
