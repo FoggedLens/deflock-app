@@ -50,8 +50,7 @@ class MapDataProvider {
         bounds: bounds,
         profiles: profiles,
         uploadMode: uploadMode,
-        pageSize: AppState.instance.maxCameras,
-        fetchAllPages: false,
+        maxResults: AppState.instance.maxCameras,
       );
     }
 
@@ -76,7 +75,7 @@ class MapDataProvider {
           bounds: bounds,
           profiles: profiles,
           uploadMode: uploadMode,
-          pageSize: AppState.instance.maxCameras,
+          maxResults: AppState.instance.maxCameras,
         );
       } catch (e) {
         debugPrint('[MapDataProvider] Remote node fetch failed, error: $e. Falling back to local.');
@@ -106,9 +105,7 @@ class MapDataProvider {
       bounds: bounds,
       profiles: profiles,
       uploadMode: uploadMode,
-      fetchAllPages: true,
-      pageSize: pageSize,
-      maxTries: maxTries,
+      maxResults: pageSize,
     );
   }
 
