@@ -12,9 +12,13 @@ import '../../screens/home_screen.dart' show FollowMeMode;
 class GpsController {
   StreamSubscription<Position>? _positionSub;
   LatLng? _currentLatLng;
+  FollowMeMode _currentFollowMeMode = FollowMeMode.off;
 
   /// Get the current GPS location (if available)
   LatLng? get currentLocation => _currentLatLng;
+  
+  /// Get the current follow-me mode
+  FollowMeMode get currentFollowMeMode => _currentFollowMeMode;
 
   /// Initialize GPS location tracking
   Future<void> initializeLocation() async {
@@ -44,6 +48,10 @@ class GpsController {
     required FollowMeMode oldMode,
     required AnimatedMapController controller,
   }) {
+    // Update the stored follow-me mode
+    _currentFollowMeMode = newMode;
+    debugPrint('[GpsController] Follow-me mode changed: $oldMode → $newMode');
+    
     // Only act when follow-me is first enabled and we have a current location
     if (newMode != FollowMeMode.off && 
         oldMode == FollowMeMode.off && 
@@ -76,7 +84,6 @@ class GpsController {
   /// Process GPS position updates and handle follow-me animations
   void processPositionUpdate({
     required Position position,
-    required FollowMeMode followMeMode,
     required AnimatedMapController controller,
     required VoidCallback onLocationUpdated,
   }) {
@@ -86,11 +93,12 @@ class GpsController {
     // Notify that location was updated (for setState, etc.)
     onLocationUpdated();
     
-    // Handle follow-me animations if enabled
-    if (followMeMode != FollowMeMode.off) {
+    // Handle follow-me animations if enabled - use current stored mode, not parameter
+    if (_currentFollowMeMode != FollowMeMode.off) {
+      debugPrint('[GpsController] GPS position update: ${latLng.latitude}, ${latLng.longitude}, follow-me: $_currentFollowMeMode');
       WidgetsBinding.instance.addPostFrameCallback((_) {
         try {
-          if (followMeMode == FollowMeMode.northUp) {
+          if (_currentFollowMeMode == FollowMeMode.northUp) {
             // Follow position only, keep current rotation
             controller.animateTo(
               dest: latLng,
@@ -98,7 +106,7 @@ class GpsController {
               duration: kFollowMeAnimationDuration,
               curve: Curves.easeOut,
             );
-          } else if (followMeMode == FollowMeMode.rotating) {
+          } else if (_currentFollowMeMode == FollowMeMode.rotating) {
             // Follow position and rotation based on heading
             final heading = position.heading;
             final speed = position.speed; // Speed in m/s
@@ -128,6 +136,9 @@ class GpsController {
     required AnimatedMapController controller,
     required VoidCallback onLocationUpdated,
   }) async {
+    // Store the initial follow-me mode
+    _currentFollowMeMode = followMeMode;
+    
     final perm = await Geolocator.requestPermission();
     if (perm == LocationPermission.denied ||
         perm == LocationPermission.deniedForever) {
@@ -138,7 +149,6 @@ class GpsController {
     _positionSub = Geolocator.getPositionStream().listen((Position position) {
       processPositionUpdate(
         position: position,
-        followMeMode: followMeMode,
         controller: controller,
         onLocationUpdated: onLocationUpdated,
       );

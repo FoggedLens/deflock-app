@@ -92,6 +92,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   void _openAddCameraSheet() {
     // Disable follow-me when adding a camera so the map doesn't jump around
     setState(() => _followMeMode = FollowMeMode.off);
+    // Save the disabled follow-me mode
+    MapViewState.saveFollowMeMode(_followMeMode);
     
     final appState = context.read<AppState>();
     appState.startAddSession();
@@ -105,6 +107,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   void _openEditCameraSheet() {
     // Disable follow-me when editing a camera so the map doesn't jump around
     setState(() => _followMeMode = FollowMeMode.off);
+    // Save the disabled follow-me mode
+    MapViewState.saveFollowMeMode(_followMeMode);
     
     final appState = context.read<AppState>();
     final session = appState.editSession!;     // should be non-null when this is called
@@ -167,6 +171,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               onUserGesture: () {
                 if (_followMeMode != FollowMeMode.off) {
                   setState(() => _followMeMode = FollowMeMode.off);
+                  // Save the disabled follow-me mode when user interacts with map
+                  MapViewState.saveFollowMeMode(_followMeMode);
                 }
               },
             ),
