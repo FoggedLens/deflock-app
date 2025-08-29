@@ -145,12 +145,14 @@ class MapViewState extends State<MapView> {
   @override
   void didUpdateWidget(covariant MapView oldWidget) {
     super.didUpdateWidget(oldWidget);
-    // Handle follow-me mode changes
-    _gpsController.handleFollowMeModeChange(
-      newMode: widget.followMeMode,
-      oldMode: oldWidget.followMeMode,
-      controller: _controller,
-    );
+    // Handle follow-me mode changes - only if it actually changed
+    if (widget.followMeMode != oldWidget.followMeMode) {
+      _gpsController.handleFollowMeModeChange(
+        newMode: widget.followMeMode,
+        oldMode: oldWidget.followMeMode,
+        controller: _controller,
+      );
+    }
   }
 
   double _safeZoom() {
