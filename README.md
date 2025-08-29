@@ -92,16 +92,14 @@ flutter run
 - Generic tile provider error messages (not always "OSM tiles slow")
 - Optional custom icons for camera profiles
 - Camera deletions
-- Direction requirement specified by profile; support shotspotter/raven
 - Clean up cache when submitted changesets appear in Overpass results
 - Upgrade camera marker design (considering nullplate's svg)
 
 ### Future Features & Wishlist
-- Additional tag sets for different surveillance operators
 - Location-based notifications when approaching cameras
 - Red/yellow ring for cameras missing specific tag details
 - iOS/Android native themes and dark mode support
-- "Cache accumulating" offline areas with size estimates per area
+- "Cache accumulating" offline areas?
 - "Offline areas" as tile provider?
 - Jump to location by coordinates, address, or POI name
 - Route planning that avoids surveillance cameras
