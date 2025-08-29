@@ -21,6 +21,7 @@ import 'map/direction_cones.dart';
 import 'map/map_overlays.dart';
 import 'map/map_position_manager.dart';
 import 'map/tile_layer_manager.dart';
+import 'map/camera_refresh_controller.dart';
 import 'network_status_indicator.dart';
 import '../dev_config.dart';
 import '../screens/home_screen.dart' show FollowMeMode;
@@ -50,12 +51,9 @@ class MapViewState extends State<MapView> {
   StreamSubscription<Position>? _positionSub;
   LatLng? _currentLatLng;
 
-  late final CameraProviderWithCache _cameraProvider;
   late final MapPositionManager _positionManager;
   late final TileLayerManager _tileManager;
-  
-  // Track profile changes to trigger camera refresh
-  List<CameraProfile>? _lastEnabledProfiles;
+  late final CameraRefreshController _cameraController;
   
   // Track zoom to clear queue on zoom changes
   double? _lastZoom;
@@ -68,6 +66,8 @@ class MapViewState extends State<MapView> {
     _positionManager = MapPositionManager();
     _tileManager = TileLayerManager();
     _tileManager.initialize();
+    _cameraController = CameraRefreshController();
+    _cameraController.initialize(onCamerasUpdated: _onCamerasUpdated);
     
     // Load last map position before initializing GPS
     _positionManager.loadLastMapPosition().then((_) {
@@ -78,10 +78,6 @@ class MapViewState extends State<MapView> {
     });
     _initLocation();
 
-    // Set up camera overlay caching
-    _cameraProvider = CameraProviderWithCache.instance;
-    _cameraProvider.addListener(_onCamerasUpdated);
-    
     // Fetch initial cameras
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _refreshCamerasFromProvider();
@@ -98,7 +94,7 @@ class MapViewState extends State<MapView> {
     _cameraDebounce.dispose();
     _tileDebounce.dispose();
     _mapPositionDebounce.dispose();
-    _cameraProvider.removeListener(_onCamerasUpdated);
+    _cameraController.dispose();
     _tileManager.dispose();
     super.dispose();
   }
@@ -127,29 +123,11 @@ class MapViewState extends State<MapView> {
 
   void _refreshCamerasFromProvider() {
     final appState = context.read<AppState>();
-    LatLngBounds? bounds;
-    try {
-      bounds = _controller.mapController.camera.visibleBounds;
-    } catch (_) {
-      return;
-    }
-    final zoom = _controller.mapController.camera.zoom;
-    if (zoom < kCameraMinZoomLevel) {
-      // Show a snackbar-style bubble, if desired
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Cameras not drawn below zoom level $kCameraMinZoomLevel'),
-            duration: const Duration(seconds: 2),
-          ),
-        );
-      }
-      return;
-    }
-    _cameraProvider.fetchAndUpdate(
-      bounds: bounds,
-      profiles: appState.enabledProfiles,
+    _cameraController.refreshCamerasFromProvider(
+      controller: _controller,
+      enabledProfiles: appState.enabledProfiles,
       uploadMode: appState.uploadMode,
+      context: context,
     );
   }
 
@@ -242,14 +220,7 @@ class MapViewState extends State<MapView> {
     }
   }
 
-  /// Helper to check if two profile lists are equal
-  bool _profileListsEqual(List<CameraProfile> list1, List<CameraProfile> list2) {
-    if (list1.length != list2.length) return false;
-    // Compare by profile IDs since profiles are value objects
-    final ids1 = list1.map((p) => p.id).toSet();
-    final ids2 = list2.map((p) => p.id).toSet();
-    return ids1.length == ids2.length && ids1.containsAll(ids2);
-  }
+
 
 
 
@@ -262,20 +233,10 @@ class MapViewState extends State<MapView> {
     final editSession = appState.editSession;
 
     // Check if enabled profiles changed and refresh cameras if needed
-    final currentEnabledProfiles = appState.enabledProfiles;
-    if (_lastEnabledProfiles == null || 
-        !_profileListsEqual(_lastEnabledProfiles!, currentEnabledProfiles)) {
-      _lastEnabledProfiles = List.from(currentEnabledProfiles);
-      // Refresh cameras when profiles change
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        // Clear camera cache to ensure fresh data for new profile combination
-        _cameraProvider.clearCache();
-        // Force display refresh first (for immediate UI update)
-        _cameraProvider.refreshDisplay();
-        // Then fetch new cameras for newly enabled profiles
-        _refreshCamerasFromProvider();
-      });
-    }
+    _cameraController.checkAndHandleProfileChanges(
+      currentEnabledProfiles: appState.enabledProfiles,
+      onProfilesChanged: _refreshCamerasFromProvider,
+    );
 
     // Check if tile type OR offline mode changed and clear cache if needed
     final cacheCleared = _tileManager.checkAndClearCacheIfNeeded(
