@@ -40,7 +40,7 @@ class OperatorProfileListSection extends StatelessWidget {
           const Padding(
             padding: EdgeInsets.all(16.0),
             child: Text(
-              'No operator profiles defined. Create one to apply operator tags to camera submissions.',
+              'No operator profiles defined. Create one to apply operator tags to node submissions.',
               style: TextStyle(color: Colors.grey),
               textAlign: TextAlign.center,
             ),

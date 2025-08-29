@@ -2,21 +2,21 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../app_state.dart';
 
-class MaxCamerasSection extends StatefulWidget {
-  const MaxCamerasSection({super.key});
+class MaxNodesSection extends StatefulWidget {
+  const MaxNodesSection({super.key});
 
   @override
-  State<MaxCamerasSection> createState() => _MaxCamerasSectionState();
+  State<MaxNodesSection> createState() => _MaxNodesSectionState();
 }
 
-class _MaxCamerasSectionState extends State<MaxCamerasSection> {
+class _MaxNodesSectionState extends State<MaxNodesSection> {
   late TextEditingController _controller;
 
   @override
   void initState() {
     super.initState();
-    final maxCameras = context.read<AppState>().maxCameras;
-    _controller = TextEditingController(text: maxCameras.toString());
+    final maxNodes = context.read<AppState>().maxCameras;
+    _controller = TextEditingController(text: maxNodes.toString());
   }
 
   @override
@@ -35,11 +35,11 @@ class _MaxCamerasSectionState extends State<MaxCamerasSection> {
       children: [
         ListTile(
           leading: const Icon(Icons.filter_alt),
-          title: const Text('Max cameras fetched/drawn'),
+          title: const Text('Max nodes fetched/drawn'),
           subtitle: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text('Set an upper limit for the number of cameras on the map (default: 250).'),
+              const Text('Set an upper limit for the number of nodes on the map (default: 250).'),
               if (showWarning)
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 4.0),

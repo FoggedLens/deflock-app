@@ -7,8 +7,8 @@ import '../app_state.dart';
 import '../dev_config.dart';
 import '../widgets/map_view.dart';
 
-import '../widgets/add_camera_sheet.dart';
-import '../widgets/edit_camera_sheet.dart';
+import '../widgets/add_node_sheet.dart';
+import '../widgets/edit_node_sheet.dart';
 import '../widgets/camera_provider_with_cache.dart';
 import '../widgets/download_area_dialog.dart';
 
@@ -70,7 +70,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     }
   }
 
-  void _openAddCameraSheet() {
+  void _openAddNodeSheet() {
     final appState = context.read<AppState>();
     // Disable follow-me when adding a camera so the map doesn't jump around
     appState.setFollowMeMode(FollowMeMode.off);
@@ -79,11 +79,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     final session = appState.session!;          // guaranteed non‑null now
 
     _scaffoldKey.currentState!.showBottomSheet(
-      (ctx) => AddCameraSheet(session: session),
+      (ctx) => AddNodeSheet(session: session),
     );
   }
 
-  void _openEditCameraSheet() {
+  void _openEditNodeSheet() {
     final appState = context.read<AppState>();
     // Disable follow-me when editing a camera so the map doesn't jump around
     appState.setFollowMeMode(FollowMeMode.off);
@@ -91,7 +91,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     final session = appState.editSession!;     // should be non-null when this is called
 
     _scaffoldKey.currentState!.showBottomSheet(
-      (ctx) => EditCameraSheet(session: session),
+      (ctx) => EditNodeSheet(session: session),
     );
   }
 
@@ -102,7 +102,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     // Auto-open edit sheet when edit session starts
     if (appState.editSession != null && !_editSheetShown) {
       _editSheetShown = true;
-      WidgetsBinding.instance.addPostFrameCallback((_) => _openEditCameraSheet());
+      WidgetsBinding.instance.addPostFrameCallback((_) => _openEditNodeSheet());
     } else if (appState.editSession == null) {
       _editSheetShown = false;
     }
@@ -169,8 +169,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                       Expanded(
                         child: ElevatedButton.icon(
                           icon: Icon(Icons.add_location_alt),
-                          label: Text('Tag Camera'),
-                          onPressed: _openAddCameraSheet,
+                          label: Text('Tag Node'),
+                          onPressed: _openAddNodeSheet,
                           style: ElevatedButton.styleFrom(
                             minimumSize: Size(0, 48),
                             textStyle: TextStyle(fontSize: 16),

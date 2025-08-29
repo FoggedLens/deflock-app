@@ -10,8 +10,8 @@ import 'layer_selector_button.dart';
 class MapOverlays extends StatelessWidget {
   final MapController mapController;
   final UploadMode uploadMode;
-  final AddCameraSession? session;
-  final EditCameraSession? editSession;
+  final AddNodeSession? session;
+  final EditNodeSession? editSession;
   final String? attribution; // Attribution for current tile provider
 
   const MapOverlays({

@@ -66,7 +66,7 @@ class _RefineTagsSheetState extends State<RefineTagsSheet> {
                     ),
                     SizedBox(height: 4),
                     Text(
-                      'Create operator profiles in Settings to apply additional tags to your camera submissions.',
+                      'Create operator profiles in Settings to apply additional tags to your node submissions.',
                       style: TextStyle(color: Colors.grey),
                       textAlign: TextAlign.center,
                     ),

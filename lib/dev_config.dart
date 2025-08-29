@@ -28,8 +28,8 @@ const double kAddPinYOffset = 0.0;
 const String kClientName = 'FlockMap';
 const String kClientVersion = '0.9.7';
 
-// Marker/camera interaction
-const int kCameraMinZoomLevel = 10; // Minimum zoom to show cameras or warning
+// Marker/node interaction
+const int kCameraMinZoomLevel = 10; // Minimum zoom to show nodes or warning
 const Duration kMarkerTapTimeout = Duration(milliseconds: 250);
 const Duration kDebounceCameraRefresh = Duration(milliseconds: 500);
 
@@ -62,8 +62,8 @@ const int kAbsoluteMaxZoom = 19;
 const double kCameraIconDiameter = 20.0;
 const double kCameraRingThickness = 4.0;
 const double kCameraDotOpacity = 0.4; // Opacity for the grey dot interior
-const Color kCameraRingColorReal = Color(0xC43F55F3); // Real cameras from OSM - blue
-const Color kCameraRingColorMock = Color(0xC4FFFFFF); // Add camera mock point - white
-const Color kCameraRingColorPending = Color(0xC49C27B0); // Submitted/pending cameras - purple
-const Color kCameraRingColorEditing = Color(0xC4FF9800); // Camera being edited - orange
-const Color kCameraRingColorPendingEdit = Color(0xC4757575); // Original camera with pending edit - grey
+const Color kCameraRingColorReal = Color(0xC43F55F3); // Real nodes from OSM - blue
+const Color kCameraRingColorMock = Color(0xC4FFFFFF); // Add node mock point - white
+const Color kCameraRingColorPending = Color(0xC49C27B0); // Submitted/pending nodes - purple
+const Color kCameraRingColorEditing = Color(0xC4FF9800); // Node being edited - orange
+const Color kCameraRingColorPendingEdit = Color(0xC4757575); // Original node with pending edit - grey

@@ -7,7 +7,7 @@ import 'settings_screen_sections/queue_section.dart';
 import 'settings_screen_sections/offline_areas_section.dart';
 import 'settings_screen_sections/offline_mode_section.dart';
 import 'settings_screen_sections/about_section.dart';
-import 'settings_screen_sections/max_cameras_section.dart';
+import 'settings_screen_sections/max_nodes_section.dart';
 import 'settings_screen_sections/tile_provider_section.dart';
 
 class SettingsScreen extends StatelessWidget {
@@ -30,7 +30,7 @@ class SettingsScreen extends StatelessWidget {
           Divider(),
           OperatorProfileListSection(),
           Divider(),
-          MaxCamerasSection(),
+          MaxNodesSection(),
           Divider(),
           TileProviderSection(),
           Divider(),

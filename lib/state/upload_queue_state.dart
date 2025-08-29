@@ -25,7 +25,7 @@ class UploadQueueState extends ChangeNotifier {
   }
 
   // Add a completed session to the upload queue
-  void addFromSession(AddCameraSession session, {required UploadMode uploadMode}) {
+  void addFromSession(AddNodeSession session, {required UploadMode uploadMode}) {
     final upload = PendingUpload(
       coord: session.target!,
       direction: session.directionDegrees,
@@ -58,7 +58,7 @@ class UploadQueueState extends ChangeNotifier {
   }
 
   // Add a completed edit session to the upload queue
-  void addFromEditSession(EditCameraSession session, {required UploadMode uploadMode}) {
+  void addFromEditSession(EditNodeSession session, {required UploadMode uploadMode}) {
     final upload = PendingUpload(
       coord: session.target,
       direction: session.directionDegrees,

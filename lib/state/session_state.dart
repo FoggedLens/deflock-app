@@ -5,25 +5,25 @@ import '../models/camera_profile.dart';
 import '../models/operator_profile.dart';
 import '../models/osm_camera_node.dart';
 
-// ------------------ AddCameraSession ------------------
-class AddCameraSession {
-  AddCameraSession({required this.profile, this.directionDegrees = 0});
+// ------------------ AddNodeSession ------------------
+class AddNodeSession {
+  AddNodeSession({required this.profile, this.directionDegrees = 0});
   CameraProfile profile;
   OperatorProfile? operatorProfile;
   double directionDegrees;
   LatLng? target;
 }
 
-// ------------------ EditCameraSession ------------------
-class EditCameraSession {
-  EditCameraSession({
+// ------------------ EditNodeSession ------------------
+class EditNodeSession {
+  EditNodeSession({
     required this.originalNode,
     required this.profile,
     required this.directionDegrees,
     required this.target,
   });
   
-  final OsmCameraNode originalNode; // The original camera being edited
+  final OsmCameraNode originalNode; // The original node being edited
   CameraProfile profile;
   OperatorProfile? operatorProfile;
   double directionDegrees;
@@ -31,19 +31,19 @@ class EditCameraSession {
 }
 
 class SessionState extends ChangeNotifier {
-  AddCameraSession? _session;
-  EditCameraSession? _editSession;
+  AddNodeSession? _session;
+  EditNodeSession? _editSession;
 
   // Getters
-  AddCameraSession? get session => _session;
-  EditCameraSession? get editSession => _editSession;
+  AddNodeSession? get session => _session;
+  EditNodeSession? get editSession => _editSession;
 
   void startAddSession(List<CameraProfile> enabledProfiles) {
     final submittableProfiles = enabledProfiles.where((p) => p.isSubmittable).toList();
     final defaultProfile = submittableProfiles.isNotEmpty 
         ? submittableProfiles.first 
         : enabledProfiles.first; // Fallback to any enabled profile
-    _session = AddCameraSession(profile: defaultProfile);
+    _session = AddNodeSession(profile: defaultProfile);
     _editSession = null; // Clear any edit session
     notifyListeners();
   }
@@ -64,7 +64,7 @@ class SessionState extends ChangeNotifier {
       }
     }
     
-    _editSession = EditCameraSession(
+    _editSession = EditNodeSession(
       originalNode: node,
       profile: matchingProfile,
       directionDegrees: node.directionDeg ?? 0,
@@ -150,7 +150,7 @@ class SessionState extends ChangeNotifier {
     notifyListeners();
   }
 
-  AddCameraSession? commitSession() {
+  AddNodeSession? commitSession() {
     if (_session?.target == null) return null;
     
     final session = _session!;
@@ -159,7 +159,7 @@ class SessionState extends ChangeNotifier {
     return session;
   }
 
-  EditCameraSession? commitEditSession() {
+  EditNodeSession? commitEditSession() {
     if (_editSession == null) return null;
     
     final session = _editSession!;

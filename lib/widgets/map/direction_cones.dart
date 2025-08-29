@@ -12,8 +12,8 @@ class DirectionConesBuilder {
   static List<Polygon> buildDirectionCones({
     required List<OsmCameraNode> cameras,
     required double zoom,
-    AddCameraSession? session,
-    EditCameraSession? editSession,
+    AddNodeSession? session,
+    EditNodeSession? editSession,
   }) {
     final overlays = <Polygon>[];
     

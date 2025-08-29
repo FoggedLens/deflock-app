@@ -31,7 +31,7 @@ class MapDataProvider {
     AppState.instance.setOfflineMode(enabled);
   }
 
-  /// Fetch cameras from OSM/Overpass or local storage.
+  /// Fetch surveillance nodes from OSM/Overpass or local storage.
   /// Remote is default. If source is MapSource.auto, remote is tried first unless offline.
   Future<List<OsmCameraNode>> getCameras({
     required LatLngBounds bounds,
@@ -44,7 +44,7 @@ class MapDataProvider {
     // Explicit remote request: error if offline, else always remote
     if (source == MapSource.remote) {
       if (offline) {
-        throw OfflineModeException("Cannot fetch remote cameras in offline mode.");
+        throw OfflineModeException("Cannot fetch remote nodes in offline mode.");
       }
       return camerasFromOverpass(
         bounds: bounds,
@@ -79,7 +79,7 @@ class MapDataProvider {
           pageSize: AppState.instance.maxCameras,
         );
       } catch (e) {
-        debugPrint('[MapDataProvider] Remote camera fetch failed, error: $e. Falling back to local.');
+        debugPrint('[MapDataProvider] Remote node fetch failed, error: $e. Falling back to local.');
         return fetchLocalCameras(
           bounds: bounds,
           profiles: profiles,
@@ -89,7 +89,7 @@ class MapDataProvider {
     }
   }
 
-  /// Bulk/paged camera fetch for offline downloads (handling paging, dedup, and Overpass retries)
+  /// Bulk/paged node fetch for offline downloads (handling paging, dedup, and Overpass retries)
   /// Only use for offline area download, not for map browsing! Ignores maxCameras config.
   Future<List<OsmCameraNode>> getAllCamerasForDownload({
     required LatLngBounds bounds,
@@ -100,7 +100,7 @@ class MapDataProvider {
   }) async {
     final offline = AppState.instance.offlineMode;
     if (offline) {
-      throw OfflineModeException("Cannot fetch remote cameras for offline area download in offline mode.");
+      throw OfflineModeException("Cannot fetch remote nodes for offline area download in offline mode.");
     }
     return camerasFromOverpass(
       bounds: bounds,

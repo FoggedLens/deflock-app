@@ -17,7 +17,7 @@ import 'state/upload_queue_state.dart';
 
 // Re-export types
 export 'state/settings_state.dart' show UploadMode, FollowMeMode;
-export 'state/session_state.dart' show AddCameraSession, EditCameraSession;
+export 'state/session_state.dart' show AddNodeSession, EditNodeSession;
 
 // ------------------ AppState ------------------
 class AppState extends ChangeNotifier {
@@ -69,8 +69,8 @@ class AppState extends ChangeNotifier {
   List<OperatorProfile> get operatorProfiles => _operatorProfileState.profiles;
   
   // Session state
-  AddCameraSession? get session => _sessionState.session;
-  EditCameraSession? get editSession => _sessionState.editSession;
+  AddNodeSession? get session => _sessionState.session;
+  EditNodeSession? get editSession => _sessionState.editSession;
   
   // Settings state
   bool get offlineMode => _settingsState.offlineMode;

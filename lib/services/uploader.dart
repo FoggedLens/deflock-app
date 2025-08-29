@@ -14,7 +14,7 @@ class Uploader {
 
   Future<bool> upload(PendingUpload p) async {
     try {
-      print('Uploader: Starting upload for camera at ${p.coord.latitude}, ${p.coord.longitude}');
+      print('Uploader: Starting upload for node at ${p.coord.latitude}, ${p.coord.longitude}');
       
       // 1. open changeset
       final action = p.isEdit ? 'Update' : 'Add';
@@ -22,7 +22,7 @@ class Uploader {
         <osm>
           <changeset>
             <tag k="created_by" v="$kClientName $kClientVersion"/>
-            <tag k="comment" v="$action ${p.profile.name} surveillance camera"/>
+            <tag k="comment" v="$action ${p.profile.name} surveillance node"/>
           </changeset>
         </osm>''';
       print('Uploader: Creating changeset...');
