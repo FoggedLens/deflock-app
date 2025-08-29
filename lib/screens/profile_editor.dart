@@ -19,7 +19,6 @@ class _ProfileEditorState extends State<ProfileEditor> {
   late List<MapEntry<String, String>> _tags;
   late bool _requiresDirection;
   late bool _submittable;
-  late bool _editable;
 
   static const _defaultTags = [
     MapEntry('man_made', 'surveillance'),
@@ -38,7 +37,6 @@ class _ProfileEditorState extends State<ProfileEditor> {
     _nameCtrl = TextEditingController(text: widget.profile.name);
     _requiresDirection = widget.profile.requiresDirection;
     _submittable = widget.profile.submittable;
-    _editable = widget.profile.editable;
 
     if (widget.profile.tags.isEmpty) {
       // New profile → start with sensible defaults
@@ -89,14 +87,6 @@ class _ProfileEditorState extends State<ProfileEditor> {
               onChanged: (value) => setState(() => _submittable = value ?? true),
               controlAffinity: ListTileControlAffinity.leading,
             ),
-            if (!widget.profile.builtin)
-              CheckboxListTile(
-                title: const Text('Editable'),
-                subtitle: const Text('Whether this profile can be modified after creation'),
-                value: _editable,
-                onChanged: (value) => setState(() => _editable = value ?? true),
-                controlAffinity: ListTileControlAffinity.leading,
-              ),
           ],
           const SizedBox(height: 8),
             Row(
@@ -203,7 +193,7 @@ class _ProfileEditorState extends State<ProfileEditor> {
       builtin: false,
       requiresDirection: _requiresDirection,
       submittable: _submittable,
-      editable: _editable,
+      editable: true, // All custom profiles are editable by definition
     );
     
     context.read<AppState>().addOrUpdateProfile(newProfile);

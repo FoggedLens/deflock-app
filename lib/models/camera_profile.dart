@@ -50,7 +50,7 @@ class CameraProfile {
         builtin: true,
         requiresDirection: true,
         submittable: true,
-        editable: false,
+        editable: true,
       );
 
   /// Built‑in: Motorola Solutions/Vigilant ALPR camera
@@ -69,7 +69,7 @@ class CameraProfile {
         builtin: true,
         requiresDirection: true,
         submittable: true,
-        editable: false,
+        editable: true,
       );
 
   /// Built‑in: Genetec ALPR camera
@@ -88,7 +88,7 @@ class CameraProfile {
         builtin: true,
         requiresDirection: true,
         submittable: true,
-        editable: false,
+        editable: true,
       );
 
   /// Built‑in: Leonardo/ELSAG ALPR camera
@@ -107,7 +107,7 @@ class CameraProfile {
         builtin: true,
         requiresDirection: true,
         submittable: true,
-        editable: false,
+        editable: true,
       );
 
   /// Built‑in: Neology ALPR camera
@@ -125,7 +125,7 @@ class CameraProfile {
         builtin: true,
         requiresDirection: true,
         submittable: true,
-        editable: false,
+        editable: true,
       );
 
   /// Built‑in: Generic gunshot detector (customizable template, not submittable)
@@ -156,7 +156,7 @@ class CameraProfile {
         builtin: true,
         requiresDirection: false,
         submittable: true,
-        editable: false,
+        editable: true,
       );
 
   /// Built‑in: Flock Raven gunshot detector
@@ -173,7 +173,7 @@ class CameraProfile {
         builtin: true,
         requiresDirection: false,
         submittable: true,
-        editable: false,
+        editable: true,
       );
 
   /// Returns true if this profile can be used for submissions
