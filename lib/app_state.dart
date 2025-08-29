@@ -14,7 +14,7 @@ import 'state/settings_state.dart';
 import 'state/upload_queue_state.dart';
 
 // Re-export types
-export 'state/settings_state.dart' show UploadMode;
+export 'state/settings_state.dart' show UploadMode, FollowMeMode;
 export 'state/session_state.dart' show AddCameraSession, EditCameraSession;
 
 // ------------------ AppState ------------------
@@ -68,6 +68,7 @@ class AppState extends ChangeNotifier {
   bool get offlineMode => _settingsState.offlineMode;
   int get maxCameras => _settingsState.maxCameras;
   UploadMode get uploadMode => _settingsState.uploadMode;
+  FollowMeMode get followMeMode => _settingsState.followMeMode;
   
   // Tile provider state
   List<TileProvider> get tileProviders => _settingsState.tileProviders;
@@ -230,7 +231,10 @@ class AppState extends ChangeNotifier {
     await _settingsState.deleteTileProvider(providerId);
   }
 
-
+  /// Set follow-me mode
+  Future<void> setFollowMeMode(FollowMeMode mode) async {
+    await _settingsState.setFollowMeMode(mode);
+  }
 
   // ---------- Queue Methods ----------
   void clearQueue() {

@@ -21,7 +21,7 @@ import 'map/camera_refresh_controller.dart';
 import 'map/gps_controller.dart';
 import 'network_status_indicator.dart';
 import '../dev_config.dart';
-import '../screens/home_screen.dart' show FollowMeMode;
+import '../app_state.dart' show FollowMeMode;
 
 class MapView extends StatefulWidget {
   final AnimatedMapController controller;
@@ -78,6 +78,18 @@ class MapViewState extends State<MapView> {
       followMeMode: widget.followMeMode,
       controller: _controller,
       onLocationUpdated: () => setState(() {}),
+      getCurrentFollowMeMode: () {
+        // Use mounted check to avoid calling context when widget is disposed
+        if (mounted) {
+          try {
+            return context.read<AppState>().followMeMode;
+          } catch (e) {
+            debugPrint('[MapView] Could not read AppState, defaulting to off: $e');
+            return FollowMeMode.off;
+          }
+        }
+        return FollowMeMode.off;
+      },
     );
 
     // Fetch initial cameras
@@ -111,12 +123,6 @@ class MapViewState extends State<MapView> {
   }
 
   /// Expose static methods from MapPositionManager for external access
-  static Future<void> saveFollowMeMode(FollowMeMode mode) => 
-      MapPositionManager.saveFollowMeMode(mode);
-  
-  static Future<FollowMeMode> loadFollowMeMode() => 
-      MapPositionManager.loadFollowMeMode();
-  
   static Future<void> clearStoredMapPosition() => 
       MapPositionManager.clearStoredMapPosition();
 

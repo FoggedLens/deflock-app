@@ -4,9 +4,9 @@ import 'package:latlong2/latlong.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../dev_config.dart';
-import '../../screens/home_screen.dart' show FollowMeMode;
 
-/// Manages map position persistence, initial positioning, and follow-me mode storage.
+
+/// Manages map position persistence and initial positioning.
 /// Handles saving/loading last map position and moving to initial locations.
 class MapPositionManager {
   LatLng? _initialLocation;
@@ -89,33 +89,7 @@ class MapPositionManager {
     }
   }
 
-  /// Save the follow-me mode to persistent storage
-  static Future<void> saveFollowMeMode(FollowMeMode mode) async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setInt(kFollowMeModeKey, mode.index);
-      debugPrint('[MapPositionManager] Saved follow-me mode: $mode');
-    } catch (e) {
-      debugPrint('[MapPositionManager] Failed to save follow-me mode: $e');
-    }
-  }
 
-  /// Load the follow-me mode from persistent storage
-  static Future<FollowMeMode> loadFollowMeMode() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final modeIndex = prefs.getInt(kFollowMeModeKey);
-      if (modeIndex != null && modeIndex < FollowMeMode.values.length) {
-        final mode = FollowMeMode.values[modeIndex];
-        debugPrint('[MapPositionManager] Loaded follow-me mode: $mode');
-        return mode;
-      }
-    } catch (e) {
-      debugPrint('[MapPositionManager] Failed to load follow-me mode: $e');
-    }
-    // Default to northUp if no saved mode
-    return FollowMeMode.northUp;
-  }
 
   /// Clear any stored map position (useful for recovery from invalid data)
   static Future<void> clearStoredMapPosition() async {

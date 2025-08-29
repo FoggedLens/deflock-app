@@ -8,6 +8,13 @@ import '../models/tile_provider.dart';
 // Enum for upload mode (Production, OSM Sandbox, Simulate)
 enum UploadMode { production, sandbox, simulate }
 
+// Enum for follow-me mode (moved from HomeScreen to centralized state)
+enum FollowMeMode {
+  off,      // No following
+  northUp,  // Follow position, keep north up
+  rotating, // Follow position and rotation
+}
+
 class SettingsState extends ChangeNotifier {
   static const String _offlineModePrefsKey = 'offline_mode';
   static const String _maxCamerasPrefsKey = 'max_cameras';
@@ -15,10 +22,12 @@ class SettingsState extends ChangeNotifier {
   static const String _tileProvidersPrefsKey = 'tile_providers';
   static const String _selectedTileTypePrefsKey = 'selected_tile_type';
   static const String _legacyTestModePrefsKey = 'test_mode';
+  static const String _followMeModePrefsKey = 'follow_me_mode';
 
   bool _offlineMode = false;
   int _maxCameras = 250;
   UploadMode _uploadMode = UploadMode.simulate;
+  FollowMeMode _followMeMode = FollowMeMode.northUp;
   List<TileProvider> _tileProviders = [];
   String _selectedTileTypeId = '';
 
@@ -26,6 +35,7 @@ class SettingsState extends ChangeNotifier {
   bool get offlineMode => _offlineMode;
   int get maxCameras => _maxCameras;
   UploadMode get uploadMode => _uploadMode;
+  FollowMeMode get followMeMode => _followMeMode;
   List<TileProvider> get tileProviders => List.unmodifiable(_tileProviders);
   String get selectedTileTypeId => _selectedTileTypeId;
   
@@ -90,6 +100,14 @@ class SettingsState extends ChangeNotifier {
     
     // Load tile providers (default to built-in providers if none saved)
     await _loadTileProviders(prefs);
+    
+    // Load follow-me mode
+    if (prefs.containsKey(_followMeModePrefsKey)) {
+      final modeIndex = prefs.getInt(_followMeModePrefsKey) ?? 0;
+      if (modeIndex >= 0 && modeIndex < FollowMeMode.values.length) {
+        _followMeMode = FollowMeMode.values[modeIndex];
+      }
+    }
     
     // Load selected tile type (default to first available)
     _selectedTileTypeId = prefs.getString(_selectedTileTypePrefsKey) ?? '';
@@ -211,5 +229,14 @@ class SettingsState extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Set follow-me mode
+  Future<void> setFollowMeMode(FollowMeMode mode) async {
+    if (_followMeMode != mode) {
+      _followMeMode = mode;
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setInt(_followMeModePrefsKey, mode.index);
+      notifyListeners();
+    }
+  }
 
 }

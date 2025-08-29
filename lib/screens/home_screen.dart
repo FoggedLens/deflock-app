@@ -12,12 +12,6 @@ import '../widgets/edit_camera_sheet.dart';
 import '../widgets/camera_provider_with_cache.dart';
 import '../widgets/download_area_dialog.dart';
 
-enum FollowMeMode {
-  off,      // No following
-  northUp,  // Follow position, keep north up
-  rotating, // Follow position and rotation
-}
-
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -29,25 +23,12 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final GlobalKey<MapViewState> _mapViewKey = GlobalKey<MapViewState>();
   late final AnimatedMapController _mapController;
-  FollowMeMode _followMeMode = FollowMeMode.northUp;
   bool _editSheetShown = false;
 
   @override
   void initState() {
     super.initState();
     _mapController = AnimatedMapController(vsync: this);
-    // Load saved follow-me mode
-    _loadFollowMeMode();
-  }
-
-  /// Load the saved follow-me mode
-  Future<void> _loadFollowMeMode() async {
-    final savedMode = await MapViewState.loadFollowMeMode();
-    if (mounted) {
-      setState(() {
-        _followMeMode = savedMode;
-      });
-    }
   }
 
   @override
@@ -56,8 +37,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     super.dispose();
   }
 
-  String _getFollowMeTooltip() {
-    switch (_followMeMode) {
+  String _getFollowMeTooltip(FollowMeMode mode) {
+    switch (mode) {
       case FollowMeMode.off:
         return 'Enable follow-me (north up)';
       case FollowMeMode.northUp:
@@ -67,8 +48,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     }
   }
 
-  IconData _getFollowMeIcon() {
-    switch (_followMeMode) {
+  IconData _getFollowMeIcon(FollowMeMode mode) {
+    switch (mode) {
       case FollowMeMode.off:
         return Icons.gps_off;
       case FollowMeMode.northUp:
@@ -78,8 +59,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     }
   }
 
-  FollowMeMode _getNextFollowMeMode() {
-    switch (_followMeMode) {
+  FollowMeMode _getNextFollowMeMode(FollowMeMode mode) {
+    switch (mode) {
       case FollowMeMode.off:
         return FollowMeMode.northUp;
       case FollowMeMode.northUp:
@@ -90,12 +71,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   }
 
   void _openAddCameraSheet() {
-    // Disable follow-me when adding a camera so the map doesn't jump around
-    setState(() => _followMeMode = FollowMeMode.off);
-    // Save the disabled follow-me mode
-    MapViewState.saveFollowMeMode(_followMeMode);
-    
     final appState = context.read<AppState>();
+    // Disable follow-me when adding a camera so the map doesn't jump around
+    appState.setFollowMeMode(FollowMeMode.off);
+    
     appState.startAddSession();
     final session = appState.session!;          // guaranteed non‑null now
 
@@ -105,12 +84,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   }
 
   void _openEditCameraSheet() {
-    // Disable follow-me when editing a camera so the map doesn't jump around
-    setState(() => _followMeMode = FollowMeMode.off);
-    // Save the disabled follow-me mode
-    MapViewState.saveFollowMeMode(_followMeMode);
-    
     final appState = context.read<AppState>();
+    // Disable follow-me when editing a camera so the map doesn't jump around
+    appState.setFollowMeMode(FollowMeMode.off);
+    
     final session = appState.editSession!;     // should be non-null when this is called
 
     _scaffoldKey.currentState!.showBottomSheet(
@@ -140,18 +117,15 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           title: const Text('Flock Map'),
           actions: [
             IconButton(
-              tooltip: _getFollowMeTooltip(),
-              icon: Icon(_getFollowMeIcon()),
+              tooltip: _getFollowMeTooltip(appState.followMeMode),
+              icon: Icon(_getFollowMeIcon(appState.followMeMode)),
               onPressed: () {
-                setState(() {
-                  final oldMode = _followMeMode;
-                  _followMeMode = _getNextFollowMeMode();
-                  debugPrint('[HomeScreen] Follow mode changed: $oldMode → $_followMeMode');
-                });
-                // Save the new follow-me mode
-                MapViewState.saveFollowMeMode(_followMeMode);
+                final oldMode = appState.followMeMode;
+                final newMode = _getNextFollowMeMode(oldMode);
+                debugPrint('[HomeScreen] Follow mode changed: $oldMode → $newMode');
+                appState.setFollowMeMode(newMode);
                 // If enabling follow-me, retry location init in case permission was granted
-                if (_followMeMode != FollowMeMode.off) {
+                if (newMode != FollowMeMode.off) {
                   _mapViewKey.currentState?.retryLocationInit();
                 }
               },
@@ -167,12 +141,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             MapView(
               key: _mapViewKey,
               controller: _mapController,
-              followMeMode: _followMeMode,
+              followMeMode: appState.followMeMode,
               onUserGesture: () {
-                if (_followMeMode != FollowMeMode.off) {
-                  setState(() => _followMeMode = FollowMeMode.off);
-                  // Save the disabled follow-me mode when user interacts with map
-                  MapViewState.saveFollowMeMode(_followMeMode);
+                if (appState.followMeMode != FollowMeMode.off) {
+                  appState.setFollowMeMode(FollowMeMode.off);
                 }
               },
             ),

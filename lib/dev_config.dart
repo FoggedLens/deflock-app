@@ -41,7 +41,6 @@ const double kMinSpeedForRotationMps = 1.0; // Minimum speed (m/s) to apply rota
 const String kLastMapLatKey = 'last_map_latitude';
 const String kLastMapLngKey = 'last_map_longitude';
 const String kLastMapZoomKey = 'last_map_zoom';
-const String kFollowMeModeKey = 'follow_me_mode';
 
 // Tile/OSM fetch retry parameters (for tunable backoff)
 const int kTileFetchMaxAttempts = 3;
