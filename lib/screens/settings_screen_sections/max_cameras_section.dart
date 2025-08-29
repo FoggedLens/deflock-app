@@ -29,7 +29,7 @@ class _MaxCamerasSectionState extends State<MaxCamerasSection> {
   Widget build(BuildContext context) {
     final appState = context.watch<AppState>();
     final current = appState.maxCameras;
-    final showWarning = current > 250;
+    final showWarning = current > 1000;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [

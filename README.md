@@ -88,8 +88,6 @@ flutter run
 ## Roadmap
 
 ### Current Todo List
-- **Performance**:
-  - 1000+ camera warning threshold for large datasets
 - **UX Polish**: 
   - Fix "tiles loaded" indicator accuracy across different providers
   - Generic tile provider error messages (not always "OSM tiles slow")
