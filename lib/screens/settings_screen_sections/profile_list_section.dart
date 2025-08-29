@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
 import 'package:provider/provider.dart';
 import '../../app_state.dart';
-import '../../models/camera_profile.dart';
+import '../../models/node_profile.dart';
 import '../profile_editor.dart';
 
 class ProfileListSection extends StatelessWidget {
@@ -17,13 +17,13 @@ class ProfileListSection extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text('Camera Profiles', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            const Text('Node Profiles', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
             TextButton.icon(
               onPressed: () => Navigator.push(
                 context,
                 MaterialPageRoute(
                   builder: (_) => ProfileEditor(
-                    profile: CameraProfile(
+                    profile: NodeProfile(
                       id: const Uuid().v4(),
                       name: '',
                       tags: const {},
@@ -111,7 +111,7 @@ class ProfileListSection extends StatelessWidget {
     );
   }
 
-void _showDeleteProfileDialog(BuildContext context, CameraProfile profile) {
+void _showDeleteProfileDialog(BuildContext context, NodeProfile profile) {
   final appState = context.read<AppState>();
   showDialog(
     context: context,

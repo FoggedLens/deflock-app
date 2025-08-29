@@ -8,7 +8,7 @@ import '../app_state.dart';
 import '../services/offline_area_service.dart';
 import '../services/network_status.dart';
 import '../models/osm_camera_node.dart';
-import '../models/camera_profile.dart';
+import '../models/node_profile.dart';
 import '../models/tile_provider.dart';
 import 'debouncer.dart';
 import 'camera_provider_with_cache.dart';

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../app_state.dart';
-import '../models/camera_profile.dart';
+import '../models/node_profile.dart';
 import '../models/operator_profile.dart';
 import '../state/settings_state.dart';
 import 'refine_tags_sheet.dart';
@@ -71,7 +71,7 @@ class EditNodeSheet extends StatelessWidget {
           const SizedBox(height: 16),
           ListTile(
             title: const Text('Profile'),
-            trailing: DropdownButton<CameraProfile>(
+            trailing: DropdownButton<NodeProfile>(
               value: session.profile,
               items: submittableProfiles
                   .map((p) => DropdownMenuItem(value: p, child: Text(p.name)))

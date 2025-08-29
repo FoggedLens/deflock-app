@@ -2,13 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:uuid/uuid.dart';
 
-import '../models/camera_profile.dart';
+import '../models/node_profile.dart';
 import '../app_state.dart';
 
 class ProfileEditor extends StatefulWidget {
   const ProfileEditor({super.key, required this.profile});
 
-  final CameraProfile profile;
+  final NodeProfile profile;
 
   @override
   State<ProfileEditor> createState() => _ProfileEditorState();

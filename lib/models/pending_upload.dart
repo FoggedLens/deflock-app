@@ -1,12 +1,12 @@
 import 'package:latlong2/latlong.dart';
-import 'camera_profile.dart';
+import 'node_profile.dart';
 import 'operator_profile.dart';
 import '../state/settings_state.dart';
 
 class PendingUpload {
   final LatLng coord;
   final double direction;
-  final CameraProfile profile;
+  final NodeProfile profile;
   final OperatorProfile? operatorProfile;
   final UploadMode uploadMode; // Capture upload destination when queued
   final int? originalNodeId; // If this is an edit, the ID of the original OSM node
@@ -75,8 +75,8 @@ class PendingUpload {
         coord: LatLng(j['lat'], j['lon']),
         direction: j['dir'],
         profile: j['profile'] is Map<String, dynamic>
-            ? CameraProfile.fromJson(j['profile'])
-            : CameraProfile.genericAlpr(),
+            ? NodeProfile.fromJson(j['profile'])
+            : NodeProfile.genericAlpr(),
         operatorProfile: j['operatorProfile'] != null
             ? OperatorProfile.fromJson(j['operatorProfile'])
             : null,

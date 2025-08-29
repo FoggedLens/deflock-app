@@ -1,33 +1,33 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../models/camera_profile.dart';
+import '../models/node_profile.dart';
 import '../services/profile_service.dart';
 
 class ProfileState extends ChangeNotifier {
   static const String _enabledPrefsKey = 'enabled_profiles';
 
-  final List<CameraProfile> _profiles = [];
-  final Set<CameraProfile> _enabled = {};
+  final List<NodeProfile> _profiles = [];
+  final Set<NodeProfile> _enabled = {};
 
   // Getters
-  List<CameraProfile> get profiles => List.unmodifiable(_profiles);
-  bool isEnabled(CameraProfile p) => _enabled.contains(p);
-  List<CameraProfile> get enabledProfiles =>
+  List<NodeProfile> get profiles => List.unmodifiable(_profiles);
+  bool isEnabled(NodeProfile p) => _enabled.contains(p);
+  List<NodeProfile> get enabledProfiles =>
       _profiles.where(isEnabled).toList(growable: false);
 
   // Initialize profiles from built-in and custom sources
   Future<void> init() async {
     // Initialize profiles: built-in + custom
-    _profiles.add(CameraProfile.genericAlpr());
-    _profiles.add(CameraProfile.flock());
-    _profiles.add(CameraProfile.motorola());
-    _profiles.add(CameraProfile.genetec());
-    _profiles.add(CameraProfile.leonardo());
-    _profiles.add(CameraProfile.neology());
-    _profiles.add(CameraProfile.genericGunshotDetector());
-    _profiles.add(CameraProfile.shotspotter());
-    _profiles.add(CameraProfile.flockRaven());
+    _profiles.add(NodeProfile.genericAlpr());
+    _profiles.add(NodeProfile.flock());
+    _profiles.add(NodeProfile.motorola());
+    _profiles.add(NodeProfile.genetec());
+    _profiles.add(NodeProfile.leonardo());
+    _profiles.add(NodeProfile.neology());
+    _profiles.add(NodeProfile.genericGunshotDetector());
+    _profiles.add(NodeProfile.shotspotter());
+    _profiles.add(NodeProfile.flockRaven());
     _profiles.addAll(await ProfileService().load());
 
     // Load enabled profile IDs from prefs
@@ -42,7 +42,7 @@ class ProfileState extends ChangeNotifier {
     }
   }
 
-  void toggleProfile(CameraProfile p, bool e) {
+  void toggleProfile(NodeProfile p, bool e) {
     if (e) {
       _enabled.add(p);
     } else {
@@ -57,7 +57,7 @@ class ProfileState extends ChangeNotifier {
     notifyListeners();
   }
 
-  void addOrUpdateProfile(CameraProfile p) {
+  void addOrUpdateProfile(NodeProfile p) {
     final idx = _profiles.indexWhere((x) => x.id == p.id);
     if (idx >= 0) {
       _profiles[idx] = p;
@@ -70,7 +70,7 @@ class ProfileState extends ChangeNotifier {
     notifyListeners();
   }
 
-  void deleteProfile(CameraProfile p) {
+  void deleteProfile(NodeProfile p) {
     if (!p.editable) return;
     _enabled.remove(p);
     _profiles.removeWhere((x) => x.id == p.id);

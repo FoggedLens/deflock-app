@@ -3,7 +3,7 @@ import 'package:flutter_map_animations/flutter_map_animations.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 
-import '../../models/camera_profile.dart';
+import '../../models/node_profile.dart';
 import '../../app_state.dart' show UploadMode;
 import '../camera_provider_with_cache.dart';
 import '../../dev_config.dart';
@@ -12,7 +12,7 @@ import '../../dev_config.dart';
 /// Handles debounced camera fetching and profile-based cache invalidation.
 class CameraRefreshController {
   late final CameraProviderWithCache _cameraProvider;
-  List<CameraProfile>? _lastEnabledProfiles;
+  List<NodeProfile>? _lastEnabledProfiles;
   VoidCallback? _onCamerasUpdated;
 
   /// Initialize the camera refresh controller
@@ -32,7 +32,7 @@ class CameraRefreshController {
   /// Check if camera profiles changed and handle cache clearing if needed.
   /// Returns true if profiles changed (triggering a refresh).
   bool checkAndHandleProfileChanges({
-    required List<CameraProfile> currentEnabledProfiles,
+    required List<NodeProfile> currentEnabledProfiles,
     required VoidCallback onProfilesChanged,
   }) {
     if (_lastEnabledProfiles == null || 
@@ -57,7 +57,7 @@ class CameraRefreshController {
   /// Refresh cameras from provider for the current map view
   void refreshCamerasFromProvider({
     required AnimatedMapController controller,
-    required List<CameraProfile> enabledProfiles,
+    required List<NodeProfile> enabledProfiles,
     required UploadMode uploadMode,
     required BuildContext context,
   }) {
@@ -93,7 +93,7 @@ class CameraRefreshController {
   CameraProviderWithCache get cameraProvider => _cameraProvider;
 
   /// Helper to check if two profile lists are equal by comparing IDs
-  bool _profileListsEqual(List<CameraProfile> list1, List<CameraProfile> list2) {
+  bool _profileListsEqual(List<NodeProfile> list1, List<NodeProfile> list2) {
     if (list1.length != list2.length) return false;
     // Compare by profile IDs since profiles are value objects
     final ids1 = list1.map((p) => p.id).toSet();

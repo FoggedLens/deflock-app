@@ -1,7 +1,7 @@
 import 'package:uuid/uuid.dart';
 
-/// A bundle of preset OSM tags that describe a particular camera model/type.
-class CameraProfile {
+/// A bundle of preset OSM tags that describe a particular surveillance node model/type.
+class NodeProfile {
   final String id;
   final String name;
   final Map<String, String> tags;
@@ -10,7 +10,7 @@ class CameraProfile {
   final bool submittable;
   final bool editable;
 
-  CameraProfile({
+  NodeProfile({
     required this.id,
     required this.name,
     required this.tags,
@@ -21,7 +21,7 @@ class CameraProfile {
   });
 
   /// Built‑in default: Generic ALPR camera (customizable template, not submittable)
-  factory CameraProfile.genericAlpr() => CameraProfile(
+  factory NodeProfile.genericAlpr() => NodeProfile(
         id: 'builtin-generic-alpr',
         name: 'Generic ALPR',
         tags: const {
@@ -35,7 +35,7 @@ class CameraProfile {
       );
 
   /// Built‑in: Flock Safety ALPR camera
-  factory CameraProfile.flock() => CameraProfile(
+  factory NodeProfile.flock() => NodeProfile(
         id: 'builtin-flock',
         name: 'Flock',
         tags: const {
@@ -54,7 +54,7 @@ class CameraProfile {
       );
 
   /// Built‑in: Motorola Solutions/Vigilant ALPR camera
-  factory CameraProfile.motorola() => CameraProfile(
+  factory NodeProfile.motorola() => NodeProfile(
         id: 'builtin-motorola',
         name: 'Motorola/Vigilant',
         tags: const {
@@ -73,7 +73,7 @@ class CameraProfile {
       );
 
   /// Built‑in: Genetec ALPR camera
-  factory CameraProfile.genetec() => CameraProfile(
+  factory NodeProfile.genetec() => NodeProfile(
         id: 'builtin-genetec',
         name: 'Genetec',
         tags: const {
@@ -92,7 +92,7 @@ class CameraProfile {
       );
 
   /// Built‑in: Leonardo/ELSAG ALPR camera
-  factory CameraProfile.leonardo() => CameraProfile(
+  factory NodeProfile.leonardo() => NodeProfile(
         id: 'builtin-leonardo',
         name: 'Leonardo/ELSAG',
         tags: const {
@@ -111,7 +111,7 @@ class CameraProfile {
       );
 
   /// Built‑in: Neology ALPR camera
-  factory CameraProfile.neology() => CameraProfile(
+  factory NodeProfile.neology() => NodeProfile(
         id: 'builtin-neology',
         name: 'Neology',
         tags: const {
@@ -129,7 +129,7 @@ class CameraProfile {
       );
 
   /// Built‑in: Generic gunshot detector (customizable template, not submittable)
-  factory CameraProfile.genericGunshotDetector() => CameraProfile(
+  factory NodeProfile.genericGunshotDetector() => NodeProfile(
         id: 'builtin-generic-gunshot',
         name: 'Generic Gunshot Detector',
         tags: const {
@@ -143,7 +143,7 @@ class CameraProfile {
       );
 
   /// Built‑in: ShotSpotter gunshot detector
-  factory CameraProfile.shotspotter() => CameraProfile(
+  factory NodeProfile.shotspotter() => NodeProfile(
         id: 'builtin-shotspotter',
         name: 'ShotSpotter',
         tags: const {
@@ -160,7 +160,7 @@ class CameraProfile {
       );
 
   /// Built‑in: Flock Raven gunshot detector
-  factory CameraProfile.flockRaven() => CameraProfile(
+  factory NodeProfile.flockRaven() => NodeProfile(
         id: 'builtin-flock-raven',
         name: 'Flock Raven',
         tags: const {
@@ -179,7 +179,7 @@ class CameraProfile {
   /// Returns true if this profile can be used for submissions
   bool get isSubmittable => submittable;
 
-  CameraProfile copyWith({
+  NodeProfile copyWith({
     String? id,
     String? name,
     Map<String, String>? tags,
@@ -188,7 +188,7 @@ class CameraProfile {
     bool? submittable,
     bool? editable,
   }) =>
-      CameraProfile(
+      NodeProfile(
         id: id ?? this.id,
         name: name ?? this.name,
         tags: tags ?? this.tags,
@@ -208,7 +208,7 @@ class CameraProfile {
         'editable': editable,
       };
 
-  factory CameraProfile.fromJson(Map<String, dynamic> j) => CameraProfile(
+  factory NodeProfile.fromJson(Map<String, dynamic> j) => NodeProfile(
         id: j['id'],
         name: j['name'],
         tags: Map<String, String>.from(j['tags']),
@@ -221,7 +221,7 @@ class CameraProfile {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is CameraProfile &&
+      other is NodeProfile &&
           runtimeType == other.runtimeType &&
           id == other.id;
 

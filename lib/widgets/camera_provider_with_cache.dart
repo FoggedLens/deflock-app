@@ -6,7 +6,7 @@ import 'package:flutter_map/flutter_map.dart' show LatLngBounds;
 import '../services/map_data_provider.dart';
 import '../services/camera_cache.dart';
 import '../services/network_status.dart';
-import '../models/camera_profile.dart';
+import '../models/node_profile.dart';
 import '../models/osm_camera_node.dart';
 import '../app_state.dart';
 
@@ -38,7 +38,7 @@ class CameraProviderWithCache extends ChangeNotifier {
   /// and notifies listeners/UI when new data is available.
   void fetchAndUpdate({
     required LatLngBounds bounds,
-    required List<CameraProfile> profiles,
+    required List<NodeProfile> profiles,
     UploadMode uploadMode = UploadMode.production,
   }) {
     // Fast: serve cached immediately
@@ -48,7 +48,7 @@ class CameraProviderWithCache extends ChangeNotifier {
     _debounceTimer = Timer(const Duration(milliseconds: 400), () async {
       try {
         // Use MapSource.auto to handle both offline and online modes appropriately
-        final fresh = await MapDataProvider().getCameras(
+        final fresh = await MapDataProvider().getNodes(
           bounds: bounds,
           profiles: profiles,
           uploadMode: uploadMode,
@@ -79,7 +79,7 @@ class CameraProviderWithCache extends ChangeNotifier {
   }
 
   /// Check if a camera matches any of the provided profiles
-  bool _matchesAnyProfile(OsmCameraNode camera, List<CameraProfile> profiles) {
+  bool _matchesAnyProfile(OsmCameraNode camera, List<NodeProfile> profiles) {
     for (final profile in profiles) {
       if (_cameraMatchesProfile(camera, profile)) return true;
     }
@@ -87,7 +87,7 @@ class CameraProviderWithCache extends ChangeNotifier {
   }
 
   /// Check if a camera matches a specific profile (all profile tags must match)
-  bool _cameraMatchesProfile(OsmCameraNode camera, CameraProfile profile) {
+  bool _cameraMatchesProfile(OsmCameraNode camera, NodeProfile profile) {
     for (final entry in profile.tags.entries) {
       if (camera.tags[entry.key] != entry.value) return false;
     }

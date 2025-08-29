@@ -2,12 +2,12 @@ import 'package:latlong2/latlong.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter/foundation.dart';
 
-import '../models/camera_profile.dart';
+import '../models/node_profile.dart';
 import '../models/osm_camera_node.dart';
 import '../app_state.dart';
-import 'map_data_submodules/cameras_from_overpass.dart';
+import 'map_data_submodules/nodes_from_overpass.dart';
 import 'map_data_submodules/tiles_from_remote.dart';
-import 'map_data_submodules/cameras_from_local.dart';
+import 'map_data_submodules/nodes_from_local.dart';
 import 'map_data_submodules/tiles_from_local.dart';
 
 enum MapSource { local, remote, auto } // For future use
@@ -33,9 +33,9 @@ class MapDataProvider {
 
   /// Fetch surveillance nodes from OSM/Overpass or local storage.
   /// Remote is default. If source is MapSource.auto, remote is tried first unless offline.
-  Future<List<OsmCameraNode>> getCameras({
+  Future<List<OsmCameraNode>> getNodes({
     required LatLngBounds bounds,
-    required List<CameraProfile> profiles,
+    required List<NodeProfile> profiles,
     UploadMode uploadMode = UploadMode.production,
     MapSource source = MapSource.auto,
   }) async {
@@ -46,7 +46,7 @@ class MapDataProvider {
       if (offline) {
         throw OfflineModeException("Cannot fetch remote nodes in offline mode.");
       }
-      return camerasFromOverpass(
+      return fetchOverpassNodes(
         bounds: bounds,
         profiles: profiles,
         uploadMode: uploadMode,
@@ -56,7 +56,7 @@ class MapDataProvider {
 
     // Explicit local request: always use local
     if (source == MapSource.local) {
-      return fetchLocalCameras(
+      return fetchLocalNodes(
         bounds: bounds,
         profiles: profiles,
       );
@@ -64,14 +64,15 @@ class MapDataProvider {
 
     // AUTO: default = remote first, fallback to local only if offline
     if (offline) {
-      return fetchLocalCameras(
+      return fetchLocalNodes(
         bounds: bounds,
         profiles: profiles,
+        maxNodes: AppState.instance.maxCameras,
       );
     } else {
       // Try remote, fallback to local ONLY if remote throws (optional, could be removed for stricter behavior)
       try {
-        return await camerasFromOverpass(
+        return await fetchOverpassNodes(
           bounds: bounds,
           profiles: profiles,
           uploadMode: uploadMode,
@@ -79,20 +80,20 @@ class MapDataProvider {
         );
       } catch (e) {
         debugPrint('[MapDataProvider] Remote node fetch failed, error: $e. Falling back to local.');
-        return fetchLocalCameras(
-          bounds: bounds,
-          profiles: profiles,
-          maxCameras: AppState.instance.maxCameras,
-        );
+      return fetchLocalNodes(
+        bounds: bounds,
+        profiles: profiles,
+        maxNodes: AppState.instance.maxCameras,
+      );
       }
     }
   }
 
   /// Bulk/paged node fetch for offline downloads (handling paging, dedup, and Overpass retries)
   /// Only use for offline area download, not for map browsing! Ignores maxCameras config.
-  Future<List<OsmCameraNode>> getAllCamerasForDownload({
+  Future<List<OsmCameraNode>> getAllNodesForDownload({
     required LatLngBounds bounds,
-    required List<CameraProfile> profiles,
+    required List<NodeProfile> profiles,
     UploadMode uploadMode = UploadMode.production,
     int pageSize = 500,
     int maxTries = 3,
@@ -101,7 +102,7 @@ class MapDataProvider {
     if (offline) {
       throw OfflineModeException("Cannot fetch remote nodes for offline area download in offline mode.");
     }
-    return camerasFromOverpass(
+    return fetchOverpassNodes(
       bounds: bounds,
       profiles: profiles,
       uploadMode: uploadMode,

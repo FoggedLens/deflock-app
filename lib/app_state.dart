@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:latlong2/latlong.dart';
 
-import 'models/camera_profile.dart';
+import 'models/node_profile.dart';
 import 'models/operator_profile.dart';
 import 'models/osm_camera_node.dart';
 import 'models/pending_upload.dart';
@@ -61,9 +61,9 @@ class AppState extends ChangeNotifier {
   String get username => _authState.username;
   
   // Profile state
-  List<CameraProfile> get profiles => _profileState.profiles;
-  List<CameraProfile> get enabledProfiles => _profileState.enabledProfiles;
-  bool isEnabled(CameraProfile p) => _profileState.isEnabled(p);
+  List<NodeProfile> get profiles => _profileState.profiles;
+  List<NodeProfile> get enabledProfiles => _profileState.enabledProfiles;
+  bool isEnabled(NodeProfile p) => _profileState.isEnabled(p);
   
   // Operator profile state
   List<OperatorProfile> get operatorProfiles => _operatorProfileState.profiles;
@@ -134,15 +134,15 @@ class AppState extends ChangeNotifier {
   }
 
   // ---------- Profile Methods ----------
-  void toggleProfile(CameraProfile p, bool e) {
+  void toggleProfile(NodeProfile p, bool e) {
     _profileState.toggleProfile(p, e);
   }
 
-  void addOrUpdateProfile(CameraProfile p) {
+  void addOrUpdateProfile(NodeProfile p) {
     _profileState.addOrUpdateProfile(p);
   }
 
-  void deleteProfile(CameraProfile p) {
+  void deleteProfile(NodeProfile p) {
     _profileState.deleteProfile(p);
   }
 
@@ -166,7 +166,7 @@ class AppState extends ChangeNotifier {
 
   void updateSession({
     double? directionDeg,
-    CameraProfile? profile,
+    NodeProfile? profile,
     OperatorProfile? operatorProfile,
     LatLng? target,
   }) {
@@ -180,7 +180,7 @@ class AppState extends ChangeNotifier {
 
   void updateEditSession({
     double? directionDeg,
-    CameraProfile? profile,
+    NodeProfile? profile,
     OperatorProfile? operatorProfile,
     LatLng? target,
   }) {

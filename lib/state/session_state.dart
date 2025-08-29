@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:latlong2/latlong.dart';
 
-import '../models/camera_profile.dart';
+import '../models/node_profile.dart';
 import '../models/operator_profile.dart';
 import '../models/osm_camera_node.dart';
 
 // ------------------ AddNodeSession ------------------
 class AddNodeSession {
   AddNodeSession({required this.profile, this.directionDegrees = 0});
-  CameraProfile profile;
+  NodeProfile profile;
   OperatorProfile? operatorProfile;
   double directionDegrees;
   LatLng? target;
@@ -24,7 +24,7 @@ class EditNodeSession {
   });
   
   final OsmCameraNode originalNode; // The original node being edited
-  CameraProfile profile;
+  NodeProfile profile;
   OperatorProfile? operatorProfile;
   double directionDegrees;
   LatLng target; // Current position (can be dragged)
@@ -38,7 +38,7 @@ class SessionState extends ChangeNotifier {
   AddNodeSession? get session => _session;
   EditNodeSession? get editSession => _editSession;
 
-  void startAddSession(List<CameraProfile> enabledProfiles) {
+  void startAddSession(List<NodeProfile> enabledProfiles) {
     final submittableProfiles = enabledProfiles.where((p) => p.isSubmittable).toList();
     final defaultProfile = submittableProfiles.isNotEmpty 
         ? submittableProfiles.first 
@@ -48,11 +48,11 @@ class SessionState extends ChangeNotifier {
     notifyListeners();
   }
 
-  void startEditSession(OsmCameraNode node, List<CameraProfile> enabledProfiles) {
+  void startEditSession(OsmCameraNode node, List<NodeProfile> enabledProfiles) {
     final submittableProfiles = enabledProfiles.where((p) => p.isSubmittable).toList();
     
     // Try to find a matching profile based on the node's tags
-    CameraProfile matchingProfile = submittableProfiles.isNotEmpty 
+    NodeProfile matchingProfile = submittableProfiles.isNotEmpty 
         ? submittableProfiles.first 
         : enabledProfiles.first;
     
@@ -74,7 +74,7 @@ class SessionState extends ChangeNotifier {
     notifyListeners();
   }
 
-  bool _profileMatchesTags(CameraProfile profile, Map<String, String> tags) {
+  bool _profileMatchesTags(NodeProfile profile, Map<String, String> tags) {
     // Simple matching: check if all profile tags are present in node tags
     for (final entry in profile.tags.entries) {
       if (tags[entry.key] != entry.value) {
@@ -86,7 +86,7 @@ class SessionState extends ChangeNotifier {
 
   void updateSession({
     double? directionDeg,
-    CameraProfile? profile,
+    NodeProfile? profile,
     OperatorProfile? operatorProfile,
     LatLng? target,
   }) {
@@ -114,7 +114,7 @@ class SessionState extends ChangeNotifier {
 
   void updateEditSession({
     double? directionDeg,
-    CameraProfile? profile,
+    NodeProfile? profile,
     OperatorProfile? operatorProfile,
     LatLng? target,
   }) {

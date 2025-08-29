@@ -147,7 +147,7 @@ class OfflineAreaDownloader {
   }) async {
     // Calculate expanded camera bounds that cover the entire tile area at minimum zoom
     final cameraBounds = _calculateCameraBounds(bounds, minZoom);
-    final cameras = await MapDataProvider().getAllCamerasForDownload(
+    final cameras = await MapDataProvider().getAllNodesForDownload(
       bounds: cameraBounds,
       profiles: AppState.instance.profiles, // Use ALL profiles, not just enabled ones
     );
