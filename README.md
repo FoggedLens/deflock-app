@@ -95,6 +95,7 @@ flutter run
   - Generic tile provider error messages (not always "OSM tiles slow")
   - Optional custom icons for camera profiles
   - Camera deletions
+  - Direction requirement specified by profile; support shotspotter/raven
 - **Data Management**:
   - Clean up cache when submitted changesets appear in Overpass results
 - **Visual Improvements**:
