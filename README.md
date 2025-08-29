@@ -88,13 +88,17 @@ flutter run
 ## Roadmap
 
 ### Current Todo List
-- **Performance**: 1000+ camera warning threshold for large datasets
+- **Performance**:
+  - 1000+ camera warning threshold for large datasets
 - **UX Polish**: 
   - Fix "tiles loaded" indicator accuracy across different providers
   - Generic tile provider error messages (not always "OSM tiles slow")
   - Optional custom icons for camera profiles
-- **Data Management**: Clean up cache when submitted changesets appear in Overpass results
-- **Visual Improvements**: Upgrade camera marker design (considering nullplate's svg)
+  - Camera deletions
+- **Data Management**:
+  - Clean up cache when submitted changesets appear in Overpass results
+- **Visual Improvements**:
+  - Upgrade camera marker design (considering nullplate's svg)
 
 ### Future Features & Wishlist
 - **Operator Profiles**:
