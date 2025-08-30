@@ -12,6 +12,7 @@ import '../models/node_profile.dart';
 import '../models/tile_provider.dart';
 import 'debouncer.dart';
 import 'camera_provider_with_cache.dart';
+import 'camera_icon.dart';
 import 'map/camera_markers.dart';
 import 'map/direction_cones.dart';
 import 'map/map_overlays.dart';
@@ -30,10 +31,12 @@ class MapView extends StatefulWidget {
     required this.controller,
     required this.followMeMode,
     required this.onUserGesture,
+    this.bottomPadding = 0.0,
   });
 
   final FollowMeMode followMeMode;
   final VoidCallback onUserGesture;
+  final double bottomPadding;
 
   @override
   State<MapView> createState() => MapViewState();
@@ -244,11 +247,31 @@ class MapViewState extends State<MapView> {
         // Build edit lines connecting original cameras to their edited positions
         final editLines = _buildEditLines(cameras);
 
+        // Build center marker for add/edit sessions
+        final centerMarkers = <Marker>[];
+        if (session != null || editSession != null) {
+          try {
+            final center = _controller.mapController.camera.center;
+            centerMarkers.add(
+              Marker(
+                point: center,
+                width: kCameraIconDiameter,
+                height: kCameraIconDiameter,
+                child: CameraIcon(
+                  type: editSession != null ? CameraIconType.editing : CameraIconType.mock,
+                ),
+              ),
+            );
+          } catch (_) {
+            // Controller not ready yet
+          }
+        }
+
         return Stack(
           children: [
             PolygonLayer(polygons: overlays),
             if (editLines.isNotEmpty) PolylineLayer(polylines: editLines),
-            MarkerLayer(markers: markers),
+            MarkerLayer(markers: [...markers, ...centerMarkers]),
           ],
         );
       }
@@ -256,11 +279,15 @@ class MapViewState extends State<MapView> {
 
     return Stack(
       children: [
-        FlutterMap(
-          key: ValueKey('map_${appState.offlineMode}_${appState.selectedTileType?.id ?? 'none'}_${_tileManager.mapRebuildKey}'),
-          mapController: _controller.mapController,
-          options: MapOptions(
-            initialCenter: _gpsController.currentLocation ?? _positionManager.initialLocation ?? LatLng(37.7749, -122.4194),
+        AnimatedPadding(
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOut,
+          padding: EdgeInsets.only(bottom: widget.bottomPadding),
+          child: FlutterMap(
+            key: ValueKey('map_${appState.offlineMode}_${appState.selectedTileType?.id ?? 'none'}_${_tileManager.mapRebuildKey}'),
+            mapController: _controller.mapController,
+            options: MapOptions(
+              initialCenter: _gpsController.currentLocation ?? _positionManager.initialLocation ?? LatLng(37.7749, -122.4194),
             initialZoom: _positionManager.initialZoom ?? 15,
             maxZoom: 19,
             onPositionChanged: (pos, gesture) {
@@ -315,6 +342,7 @@ class MapViewState extends State<MapView> {
               // backgroundColor removed in flutter_map >=8 (wrap in Container if needed)
             ),
           ],
+          ),
         ),
 
         // All map overlays (mode indicator, zoom, attribution, add pin)

@@ -132,18 +132,7 @@ class MapOverlays extends StatelessWidget {
           ),
         ),
 
-        // Fixed pin when adding or editing camera
-        if (session != null || editSession != null)
-          IgnorePointer(
-            child: Center(
-              child: Transform.translate(
-                offset: const Offset(0, kAddPinYOffset),
-                child: CameraIcon(
-                  type: editSession != null ? CameraIconType.editing : CameraIconType.mock
-                ),
-              ),
-            ),
-          ),
+
       ],
     );
   }

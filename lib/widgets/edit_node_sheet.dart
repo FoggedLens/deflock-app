@@ -31,7 +31,7 @@ class EditNodeSheet extends StatelessWidget {
 
     final submittableProfiles = appState.enabledProfiles.where((p) => p.isSubmittable).toList();
     final isSandboxMode = appState.uploadMode == UploadMode.sandbox;
-    final allowSubmit = submittableProfiles.isNotEmpty && session.profile.isSubmittable && !isSandboxMode;
+    final allowSubmit = appState.isLoggedIn && submittableProfiles.isNotEmpty && session.profile.isSubmittable && !isSandboxMode;
     
     void _openRefineTags() async {
       final result = await Navigator.push<OperatorProfile?>(
@@ -97,7 +97,7 @@ class EditNodeSheet extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
               child: Row(
-                children: const [
+                children: [
                   Icon(Icons.info_outline, color: Colors.grey, size: 16),
                   SizedBox(width: 6),
                   Expanded(
@@ -109,11 +109,27 @@ class EditNodeSheet extends StatelessWidget {
                 ],
               ),
             ),
-          if (isSandboxMode)
+          if (!appState.isLoggedIn)
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
               child: Row(
-                children: const [
+                children: [
+                  Icon(Icons.info_outline, color: Colors.red, size: 20),
+                  SizedBox(width: 6),
+                  Expanded(
+                    child: Text(
+                      'You must be logged in to edit nodes. Please log in via Settings.',
+                      style: TextStyle(color: Colors.red, fontSize: 13),
+                    ),
+                  ),
+                ],
+              ),
+            )
+          else if (isSandboxMode)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+              child: Row(
+                children: [
                   Icon(Icons.info_outline, color: Colors.blue, size: 20),
                   SizedBox(width: 6),
                   Expanded(
@@ -129,7 +145,7 @@ class EditNodeSheet extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
               child: Row(
-                children: const [
+                children: [
                   Icon(Icons.info_outline, color: Colors.red, size: 20),
                   SizedBox(width: 6),
                   Expanded(
@@ -145,7 +161,7 @@ class EditNodeSheet extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
               child: Row(
-                children: const [
+                children: [
                   Icon(Icons.info_outline, color: Colors.orange, size: 20),
                   SizedBox(width: 6),
                   Expanded(

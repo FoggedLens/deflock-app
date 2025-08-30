@@ -29,7 +29,7 @@ class AddNodeSheet extends StatelessWidget {
     }
 
     final submittableProfiles = appState.enabledProfiles.where((p) => p.isSubmittable).toList();
-    final allowSubmit = submittableProfiles.isNotEmpty && session.profile.isSubmittable;
+    final allowSubmit = appState.isLoggedIn && submittableProfiles.isNotEmpty && session.profile.isSubmittable;
     
     void _openRefineTags() async {
       final result = await Navigator.push<OperatorProfile?>(
@@ -90,7 +90,7 @@ class AddNodeSheet extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
               child: Row(
-                children: const [
+                children: [
                   Icon(Icons.info_outline, color: Colors.grey, size: 16),
                   SizedBox(width: 6),
                   Expanded(
@@ -102,11 +102,27 @@ class AddNodeSheet extends StatelessWidget {
                 ],
               ),
             ),
-          if (submittableProfiles.isEmpty)
+          if (!appState.isLoggedIn)
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
               child: Row(
-                children: const [
+                children: [
+                  Icon(Icons.info_outline, color: Colors.red, size: 20),
+                  SizedBox(width: 6),
+                  Expanded(
+                    child: Text(
+                      'You must be logged in to submit new nodes. Please log in via Settings.',
+                      style: TextStyle(color: Colors.red, fontSize: 13),
+                    ),
+                  ),
+                ],
+              ),
+            )
+          else if (submittableProfiles.isEmpty)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+              child: Row(
+                children: [
                   Icon(Icons.info_outline, color: Colors.red, size: 20),
                   SizedBox(width: 6),
                   Expanded(
@@ -122,7 +138,7 @@ class AddNodeSheet extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
               child: Row(
-                children: const [
+                children: [
                   Icon(Icons.info_outline, color: Colors.orange, size: 20),
                   SizedBox(width: 6),
                   Expanded(

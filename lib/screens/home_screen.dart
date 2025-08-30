@@ -11,6 +11,7 @@ import '../widgets/add_node_sheet.dart';
 import '../widgets/edit_node_sheet.dart';
 import '../widgets/camera_provider_with_cache.dart';
 import '../widgets/download_area_dialog.dart';
+import '../widgets/measured_sheet.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -24,6 +25,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   final GlobalKey<MapViewState> _mapViewKey = GlobalKey<MapViewState>();
   late final AnimatedMapController _mapController;
   bool _editSheetShown = false;
+  
+  // Track sheet heights for map padding
+  double _addSheetHeight = 0.0;
+  double _editSheetHeight = 0.0;
 
   @override
   void initState() {
@@ -78,9 +83,23 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     appState.startAddSession();
     final session = appState.session!;          // guaranteed non‑null now
 
-    _scaffoldKey.currentState!.showBottomSheet(
-      (ctx) => AddNodeSheet(session: session),
+    final controller = _scaffoldKey.currentState!.showBottomSheet(
+      (ctx) => MeasuredSheet(
+        onHeightChanged: (height) {
+          setState(() {
+            _addSheetHeight = height;
+          });
+        },
+        child: AddNodeSheet(session: session),
+      ),
     );
+    
+    // Reset height when sheet is dismissed
+    controller.closed.then((_) {
+      setState(() {
+        _addSheetHeight = 0.0;
+      });
+    });
   }
 
   void _openEditNodeSheet() {
@@ -90,9 +109,23 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     
     final session = appState.editSession!;     // should be non-null when this is called
 
-    _scaffoldKey.currentState!.showBottomSheet(
-      (ctx) => EditNodeSheet(session: session),
+    final controller = _scaffoldKey.currentState!.showBottomSheet(
+      (ctx) => MeasuredSheet(
+        onHeightChanged: (height) {
+          setState(() {
+            _editSheetHeight = height;
+          });
+        },
+        child: EditNodeSheet(session: session),
+      ),
     );
+    
+    // Reset height when sheet is dismissed
+    controller.closed.then((_) {
+      setState(() {
+        _editSheetHeight = 0.0;
+      });
+    });
   }
 
   @override
@@ -106,6 +139,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     } else if (appState.editSession == null) {
       _editSheetShown = false;
     }
+
+    // Calculate bottom padding for map (90% of active sheet height)
+    final activeSheetHeight = _addSheetHeight > 0 ? _addSheetHeight : _editSheetHeight;
+    final mapBottomPadding = activeSheetHeight * 0.9;
 
     return MultiProvider(
       providers: [
@@ -142,6 +179,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               key: _mapViewKey,
               controller: _mapController,
               followMeMode: appState.followMeMode,
+              bottomPadding: mapBottomPadding,
               onUserGesture: () {
                 if (appState.followMeMode != FollowMeMode.off) {
                   appState.setFollowMeMode(FollowMeMode.off);
