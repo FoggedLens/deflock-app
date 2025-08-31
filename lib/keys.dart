@@ -2,5 +2,6 @@
 //
 // NEVER commit real secrets to public repos. For open source, use keys.dart.example instead.
 
-const String kOsmProdClientId = 'Js6Fn3NR3HEGaD0ZIiHBQlV9LrVcHmsOsDmApHtSyuY'; // example - replace with real
-const String kOsmSandboxClientId = 'x26twxRKTZwf1a4Ha1a-wkXncBzqnJv8JwtacJope9Q'; // example - replace with real
+const String kOsmProdClientId = 'U8p_n6IjZfQiL1KtdiwbB0-o9nto6CAKz7LC2GifJzk'; // example - replace with real
+const String kOsmSandboxClientId = 'SBHWpWTKf31EdSiTApnah3Fj2rLnk2pEwBORlX0NyZI'; // example - replace with real
+
