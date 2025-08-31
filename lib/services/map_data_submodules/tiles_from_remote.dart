@@ -3,7 +3,7 @@ import 'dart:io';
 import 'dart:async';
 import 'package:http/http.dart' as http;
 import 'package:flutter/foundation.dart';
-import 'package:flock_map_app/dev_config.dart';
+import 'package:deflockapp/dev_config.dart';
 import '../network_status.dart';
 
 /// Global semaphore to limit simultaneous tile fetches

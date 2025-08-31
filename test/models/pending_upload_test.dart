@@ -1,8 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:latlong2/latlong.dart';
-import 'package:flock_map_app/models/pending_upload.dart';
-import 'package:flock_map_app/models/camera_profile.dart';
-import 'package:flock_map_app/state/settings_state.dart';
+import 'package:deflockapp/models/pending_upload.dart';
+import 'package:deflockapp/models/node_profile.dart';
+import 'package:deflockapp/state/settings_state.dart';
 
 void main() {
   group('PendingUpload', () {
@@ -18,7 +18,7 @@ void main() {
         final original = PendingUpload(
           coord: LatLng(37.7749, -122.4194),
           direction: 90.0,
-          profile: CameraProfile.flock(),
+          profile: NodeProfile.flock(),
           uploadMode: mode,
         );
 
@@ -46,7 +46,7 @@ void main() {
         'lat': 37.7749,
         'lon': -122.4194,
         'dir': 90.0,
-        'profile': CameraProfile.flock().toJson(),
+        'profile': NodeProfile.flock().toJson(),
         'originalNodeId': null,
         'attempts': 0,
         'error': false,
@@ -64,7 +64,7 @@ void main() {
       final newCamera = PendingUpload(
         coord: LatLng(37.7749, -122.4194),
         direction: 90.0,
-        profile: CameraProfile.flock(),
+        profile: NodeProfile.flock(),
         uploadMode: UploadMode.production,
       );
 

@@ -9,7 +9,7 @@
 
     <application
         android:name="${applicationName}"
-        android:label="flock_map_app"
+        android:label="DeFlock"
         android:icon="@mipmap/ic_launcher"
         android:enableOnBackInvokedCallback="true">
         <!-- Main Flutter activity -->
@@ -44,8 +44,8 @@
                 <action android:name="android.intent.action.VIEW"/>
                 <category android:name="android.intent.category.DEFAULT"/>
                 <category android:name="android.intent.category.BROWSABLE"/>
-                <!-- flockmap://auth -->
-                <data android:scheme="flockmap" android:host="auth"/>
+                <!-- deflockapp://auth -->
+                <data android:scheme="deflockapp" android:host="auth"/>
             </intent-filter>
         </activity>
 

@@ -151,7 +151,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       child: Scaffold(
         key: _scaffoldKey,
         appBar: AppBar(
-          title: const Text('Flock Map'),
+          title: const Text('DeFlock'),
           actions: [
             IconButton(
               tooltip: _getFollowMeTooltip(appState.followMeMode),

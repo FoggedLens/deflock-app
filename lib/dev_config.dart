@@ -25,7 +25,7 @@ const double kScaleBarBottomOffset = 170.0;
 const double kAddPinYOffset = 0.0;
 
 // Client name and version for OSM uploads ("created_by" tag)
-const String kClientName = 'FlockMap';
+const String kClientName = 'DeFlock';
 const String kClientVersion = '0.9.7';
 
 // Marker/node interaction

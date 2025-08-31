@@ -1,5 +1,5 @@
-name: flock_map_app
-description: Simple OSM camera‑mapping client
+name: deflockapp
+description: Map public surveillance infrastructure with OpenStreetMap
 publish_to: "none"
 version: 0.5.0
 

@@ -5,7 +5,7 @@ import 'package:path_provider/path_provider.dart';
 
 import 'offline_area_models.dart';
 import 'offline_tile_utils.dart';
-import 'package:flock_map_app/dev_config.dart';
+import 'package:deflockapp/dev_config.dart';
 
 /// Manages the world area (permanent offline area for base map)
 class WorldAreaManager {

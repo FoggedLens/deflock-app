@@ -1,7 +1,9 @@
-Flock Map App
+DeFlock
 
-Built with Flutter.
+Map public surveillance infrastructure with OpenStreetMap.
 
-Offline areas, privacy-respecting, designed for OpenStreetMap camera tagging.
+Built with Flutter. Offline-capable, privacy-respecting, designed for documenting cameras, ALPRs, and other surveillance devices in your community.
+
+Part of the DeFlock initiative to make surveillance infrastructure transparent and searchable.
 
 This text is loaded from assets/info.txt.

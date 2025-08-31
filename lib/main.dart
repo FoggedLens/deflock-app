@@ -30,22 +30,25 @@ Future<void> main() async {
               ),
             );
           }
-          return const FlockMapApp();
+          return const DeFlockApp();
         },
       ),
     ),
   );
 }
 
-class FlockMapApp extends StatelessWidget {
-  const FlockMapApp({super.key});
+class DeFlockApp extends StatelessWidget {
+  const DeFlockApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flock Map',
+      title: 'DeFlock',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.green),
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: const Color(0xFF0080BC), // DeFlock blue
+          brightness: Brightness.dark,
+        ),
         useMaterial3: true,
       ),
       routes: {

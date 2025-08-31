@@ -6,7 +6,7 @@ plugins {
 }
 
 android {
-    namespace = "com.example.flock_map_app"
+    namespace = "me.deflock.deflockapp"
 
     // Matches current stable Flutter (compileSdk 34 as of July 2025)
     compileSdk = 35
@@ -24,7 +24,7 @@ android {
 
     defaultConfig {
         // Application ID (package name)
-        applicationId = "com.example.flock_map_app"
+        applicationId = "me.deflock.deflockapp"
 
         // ────────────────────────────────────────────────────────────
         // oauth2_client 4.x & flutter_web_auth_2 5.x require minSdk 23
