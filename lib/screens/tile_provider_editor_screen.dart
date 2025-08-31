@@ -6,6 +6,7 @@ import 'package:collection/collection.dart';
 
 import '../app_state.dart';
 import '../models/tile_provider.dart';
+import '../services/localization_service.dart';
 
 class TileProviderEditorScreen extends StatefulWidget {
   final TileProvider? provider; // null for adding new provider
@@ -44,107 +45,114 @@ class _TileProviderEditorScreenState extends State<TileProviderEditorScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(_isEditing ? 'Edit Provider' : 'Add Provider'),
-        actions: [
-          TextButton(
-            onPressed: _saveProvider,
-            child: const Text('Save'),
+    return AnimatedBuilder(
+      animation: LocalizationService.instance,
+      builder: (context, child) {
+        final locService = LocalizationService.instance;
+        
+        return Scaffold(
+          appBar: AppBar(
+            title: Text(_isEditing ? locService.t('tileProviders.editProvider') : locService.t('tileProviders.addProvider')),
+            actions: [
+              TextButton(
+                onPressed: _saveProvider,
+                child: Text(locService.t('tileTypeEditor.save')),
+              ),
+            ],
           ),
-        ],
-      ),
-      body: Form(
-        key: _formKey,
-        child: ListView(
-          padding: const EdgeInsets.all(16),
-          children: [
-            TextFormField(
-              controller: _nameController,
-              decoration: const InputDecoration(
-                labelText: 'Provider Name',
-                hintText: 'e.g., Custom Maps Inc.',
-              ),
-              validator: (value) {
-                if (value == null || value.trim().isEmpty) {
-                  return 'Provider name is required';
-                }
-                return null;
-              },
-            ),
-            const SizedBox(height: 16),
-            TextFormField(
-              controller: _apiKeyController,
-              decoration: const InputDecoration(
-                labelText: 'API Key (Optional)',
-                hintText: 'Enter API key if required by tile types',
-              ),
-              obscureText: true,
-            ),
-            const SizedBox(height: 32),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          body: Form(
+            key: _formKey,
+            child: ListView(
+              padding: const EdgeInsets.all(16),
               children: [
-                Text(
-                  'Tile Types',
-                  style: Theme.of(context).textTheme.headlineSmall,
+                TextFormField(
+                  controller: _nameController,
+                  decoration: InputDecoration(
+                    labelText: locService.t('tileProviders.providerName'),
+                    hintText: locService.t('tileProviders.providerNameHint'),
+                  ),
+                  validator: (value) {
+                    if (value == null || value.trim().isEmpty) {
+                      return locService.t('tileProviders.providerNameRequired');
+                    }
+                    return null;
+                  },
                 ),
-                TextButton.icon(
-                  onPressed: _addTileType,
-                  icon: const Icon(Icons.add),
-                  label: const Text('Add Type'),
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: _apiKeyController,
+                  decoration: InputDecoration(
+                    labelText: locService.t('tileProviders.apiKey'),
+                    hintText: locService.t('tileProviders.apiKeyHint'),
+                  ),
+                  obscureText: true,
                 ),
+                const SizedBox(height: 32),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      locService.t('tileProviders.tileTypes'),
+                      style: Theme.of(context).textTheme.headlineSmall,
+                    ),
+                    TextButton.icon(
+                      onPressed: _addTileType,
+                      icon: const Icon(Icons.add),
+                      label: Text(locService.t('tileProviders.addType')),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                if (_tileTypes.isEmpty)
+                  Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Text(locService.t('tileProviders.noTileTypesConfigured')),
+                    ),
+                  )
+                else
+                  ..._tileTypes.asMap().entries.map((entry) {
+                    final index = entry.key;
+                    final tileType = entry.value;
+                    
+                    return Card(
+                      margin: const EdgeInsets.only(bottom: 8),
+                      child: ListTile(
+                        title: Text(tileType.name),
+                        subtitle: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(tileType.urlTemplate),
+                            Text(
+                              tileType.attribution,
+                              style: Theme.of(context).textTheme.bodySmall,
+                            ),
+                          ],
+                        ),
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            IconButton(
+                              icon: const Icon(Icons.edit),
+                              onPressed: () => _editTileType(index),
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.delete),
+                              onPressed: _tileTypes.length > 1 
+                                  ? () => _deleteTileType(index)
+                                  : null, // Can't delete last tile type
+                            ),
+                          ],
+                        ),
+                        onTap: () => _editTileType(index),
+                      ),
+                    );
+                  }),
               ],
             ),
-            const SizedBox(height: 16),
-            if (_tileTypes.isEmpty)
-              const Card(
-                child: Padding(
-                  padding: EdgeInsets.all(16),
-                  child: Text('No tile types configured'),
-                ),
-              )
-            else
-              ..._tileTypes.asMap().entries.map((entry) {
-                final index = entry.key;
-                final tileType = entry.value;
-                
-                return Card(
-                  margin: const EdgeInsets.only(bottom: 8),
-                  child: ListTile(
-                    title: Text(tileType.name),
-                    subtitle: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(tileType.urlTemplate),
-                        Text(
-                          tileType.attribution,
-                          style: Theme.of(context).textTheme.bodySmall,
-                        ),
-                      ],
-                    ),
-                    trailing: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        IconButton(
-                          icon: const Icon(Icons.edit),
-                          onPressed: () => _editTileType(index),
-                        ),
-                        IconButton(
-                          icon: const Icon(Icons.delete),
-                          onPressed: _tileTypes.length > 1 
-                              ? () => _deleteTileType(index)
-                              : null, // Can't delete last tile type
-                        ),
-                      ],
-                    ),
-                    onTap: () => _editTileType(index),
-                  ),
-                );
-              }),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 
@@ -207,10 +215,11 @@ class _TileProviderEditorScreenState extends State<TileProviderEditorScreen> {
   }
 
   void _saveProvider() {
+    final locService = LocalizationService.instance;
     if (!_formKey.currentState!.validate()) return;
     if (_tileTypes.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('At least one tile type is required')),
+        SnackBar(content: Text(locService.t('tileProviders.atLeastOneTileTypeRequired'))),
       );
       return;
     }
@@ -269,91 +278,99 @@ class _TileTypeDialogState extends State<_TileTypeDialog> {
 
   @override
   Widget build(BuildContext context) {
-    return AlertDialog(
-      title: Text(widget.tileType != null ? 'Edit Tile Type' : 'Add Tile Type'),
-      content: SizedBox(
-        width: double.maxFinite,
-        child: Form(
-          key: _formKey,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextFormField(
-                controller: _nameController,
-                decoration: const InputDecoration(
-                  labelText: 'Name',
-                  hintText: 'e.g., Satellite',
-                ),
-                validator: (value) => value?.trim().isEmpty == true ? 'Name is required' : null,
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: _urlController,
-                decoration: const InputDecoration(
-                  labelText: 'URL Template',
-                  hintText: 'https://example.com/{z}/{x}/{y}.png',
-                ),
-                validator: (value) {
-                  if (value?.trim().isEmpty == true) return 'URL template is required';
-                  if (!value!.contains('{z}') || !value.contains('{x}') || !value.contains('{y}')) {
-                    return 'URL must contain {z}, {x}, and {y} placeholders';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: _attributionController,
-                decoration: const InputDecoration(
-                  labelText: 'Attribution',
-                  hintText: '© Map Provider',
-                ),
-                validator: (value) => value?.trim().isEmpty == true ? 'Attribution is required' : null,
-              ),
-              const SizedBox(height: 16),
-              Row(
+    return AnimatedBuilder(
+      animation: LocalizationService.instance,
+      builder: (context, child) {
+        final locService = LocalizationService.instance;
+        
+        return AlertDialog(
+          title: Text(widget.tileType != null ? locService.t('tileTypeEditor.editTileType') : locService.t('tileTypeEditor.addTileType')),
+          content: SizedBox(
+            width: double.maxFinite,
+            child: Form(
+              key: _formKey,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  TextButton.icon(
-                    onPressed: _isLoadingPreview ? null : _fetchPreviewTile,
-                    icon: _isLoadingPreview 
-                        ? const SizedBox(
-                            width: 16,
-                            height: 16,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          )
-                        : const Icon(Icons.preview),
-                    label: const Text('Fetch Preview'),
-                  ),
-                  const SizedBox(width: 8),
-                  if (_previewTile != null)
-                    Container(
-                      width: 32,
-                      height: 32,
-                      decoration: BoxDecoration(
-                        border: Border.all(color: Colors.grey),
-                      ),
-                      child: Image.memory(_previewTile!, fit: BoxFit.cover),
+                  TextFormField(
+                    controller: _nameController,
+                    decoration: InputDecoration(
+                      labelText: locService.t('tileTypeEditor.name'),
+                      hintText: locService.t('tileTypeEditor.nameHint'),
                     ),
+                    validator: (value) => value?.trim().isEmpty == true ? locService.t('tileTypeEditor.nameRequired') : null,
+                  ),
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    controller: _urlController,
+                    decoration: InputDecoration(
+                      labelText: locService.t('tileTypeEditor.urlTemplate'),
+                      hintText: locService.t('tileTypeEditor.urlTemplateHint'),
+                    ),
+                    validator: (value) {
+                      if (value?.trim().isEmpty == true) return locService.t('tileTypeEditor.urlTemplateRequired');
+                      if (!value!.contains('{z}') || !value.contains('{x}') || !value.contains('{y}')) {
+                        return locService.t('tileTypeEditor.urlTemplatePlaceholders');
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    controller: _attributionController,
+                    decoration: InputDecoration(
+                      labelText: locService.t('tileTypeEditor.attribution'),
+                      hintText: locService.t('tileTypeEditor.attributionHint'),
+                    ),
+                    validator: (value) => value?.trim().isEmpty == true ? locService.t('tileTypeEditor.attributionRequired') : null,
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    children: [
+                      TextButton.icon(
+                        onPressed: _isLoadingPreview ? null : _fetchPreviewTile,
+                        icon: _isLoadingPreview 
+                            ? const SizedBox(
+                                width: 16,
+                                height: 16,
+                                child: CircularProgressIndicator(strokeWidth: 2),
+                              )
+                            : const Icon(Icons.preview),
+                        label: Text(locService.t('tileTypeEditor.fetchPreview')),
+                      ),
+                      const SizedBox(width: 8),
+                      if (_previewTile != null)
+                        Container(
+                          width: 32,
+                          height: 32,
+                          decoration: BoxDecoration(
+                            border: Border.all(color: Colors.grey),
+                          ),
+                          child: Image.memory(_previewTile!, fit: BoxFit.cover),
+                        ),
+                    ],
+                  ),
                 ],
               ),
-            ],
+            ),
           ),
-        ),
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Cancel'),
-        ),
-        TextButton(
-          onPressed: _saveTileType,
-          child: const Text('Save'),
-        ),
-      ],
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text(locService.cancel),
+            ),
+            TextButton(
+              onPressed: _saveTileType,
+              child: Text(locService.t('tileTypeEditor.save')),
+            ),
+          ],
+        );
+      },
     );
   }
 
   Future<void> _fetchPreviewTile() async {
+    final locService = LocalizationService.instance;
     if (!_formKey.currentState!.validate()) return;
     
     setState(() {
@@ -376,7 +393,7 @@ class _TileTypeDialogState extends State<_TileTypeDialog> {
         
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Preview tile loaded successfully')),
+            SnackBar(content: Text(locService.t('tileTypeEditor.previewTileLoaded'))),
           );
         }
       } else {
@@ -385,7 +402,7 @@ class _TileTypeDialogState extends State<_TileTypeDialog> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to fetch preview: $e')),
+          SnackBar(content: Text(locService.t('tileTypeEditor.previewTileFailed', params: [e.toString()]))),
         );
       }
     } finally {

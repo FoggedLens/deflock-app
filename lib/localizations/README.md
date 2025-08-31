@@ -26,7 +26,9 @@ Want to add support for your language? It's simple:
    }
    ```
 
-3. **Submit a PR** with just that one file. Done!
+3. **Add your language to the About screen**: Edit `assets/info.txt` and add your language section at the bottom (copy the English section and translate it)
+
+4. **Submit a PR** with your JSON file and the updated about.txt. Done!
 
 The new language will automatically appear in Settings → Language.
 
@@ -44,6 +46,12 @@ The new language will automatically appear in Settings → Language.
 - `fr.json` - Français
 - `de.json` - Deutsch
 
+## Files to Update
+
+For a complete translation, you'll need to touch:
+1. **`lib/localizations/xx.json`** - Main UI translations (buttons, menus, etc.)
+2. **`assets/info.txt`** - About screen content (add your language section)
+
 ## That's It!
 
-No configuration files, no build steps, no complex setup. Just add your JSON file and it works.
+No configuration files, no build steps, no complex setup. Add your files and it works.

@@ -84,7 +84,7 @@ class LocalizationService extends ChangeNotifier {
     notifyListeners();
   }
 
-  String t(String key) {
+  String t(String key, {List<String>? params}) {
     List<String> keys = key.split('.');
     dynamic current = _strings;
     
@@ -97,7 +97,16 @@ class LocalizationService extends ChangeNotifier {
       }
     }
     
-    return current is String ? current : key;
+    String result = current is String ? current : key;
+    
+    // Replace parameters if provided
+    if (params != null) {
+      for (int i = 0; i < params.length; i++) {
+        result = result.replaceAll('{}', params[i]);
+      }
+    }
+    
+    return result;
   }
 
   // Get display name for a specific language code
