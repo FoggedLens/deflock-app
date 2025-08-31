@@ -176,5 +176,40 @@
   "mapTiles": {
     "title": "Karten-Kacheln",
     "manageProviders": "Anbieter Verwalten"
+  },
+  "profileEditor": {
+    "viewProfile": "Profil Anzeigen",
+    "newProfile": "Neues Profil",
+    "editProfile": "Profil Bearbeiten",
+    "profileName": "Profil-Name",
+    "profileNameHint": "z.B. Benutzerdefinierte ALPR-Kamera",
+    "profileNameRequired": "Profil-Name ist erforderlich",
+    "requiresDirection": "Benötigt Richtung",
+    "requiresDirectionSubtitle": "Ob Kameras dieses Typs ein Richtungs-Tag benötigen",
+    "submittable": "Übertragbar",
+    "submittableSubtitle": "Ob dieses Profil für Kamera-Übertragungen verwendet werden kann",
+    "osmTags": "OSM-Tags",
+    "addTag": "Tag Hinzufügen",
+    "saveProfile": "Profil Speichern",
+    "keyHint": "Schlüssel",
+    "valueHint": "Wert",
+    "atLeastOneTagRequired": "Mindestens ein Tag ist erforderlich",
+    "profileSaved": "Profil \"{}\" gespeichert"
+  },
+  "operatorProfileEditor": {
+    "newOperatorProfile": "Neues Betreiber-Profil",
+    "editOperatorProfile": "Betreiber-Profil Bearbeiten", 
+    "operatorName": "Betreiber-Name",
+    "operatorNameHint": "z.B. Polizei Austin",
+    "operatorNameRequired": "Betreiber-Name ist erforderlich",
+    "operatorProfileSaved": "Betreiber-Profil \"{}\" gespeichert"
+  },
+  "operatorProfiles": {
+    "title": "Betreiber-Profile",
+    "noProfilesMessage": "Keine Betreiber-Profile definiert. Erstellen Sie eines, um Betreiber-Tags auf Knoten-Übertragungen anzuwenden.",
+    "tagsCount": "{} Tags",
+    "deleteOperatorProfile": "Betreiber-Profil Löschen",
+    "deleteOperatorProfileConfirm": "Sind Sie sicher, dass Sie \"{}\" löschen möchten?",
+    "operatorProfileDeleted": "Betreiber-Profil gelöscht"
   }
 }

@@ -176,5 +176,40 @@
   "mapTiles": {
     "title": "Tuiles de Carte",
     "manageProviders": "Gérer Fournisseurs"
+  },
+  "profileEditor": {
+    "viewProfile": "Voir Profil",
+    "newProfile": "Nouveau Profil",
+    "editProfile": "Modifier Profil",
+    "profileName": "Nom du profil",
+    "profileNameHint": "ex., Caméra ALPR Personnalisée",
+    "profileNameRequired": "Le nom du profil est requis",
+    "requiresDirection": "Nécessite Direction",
+    "requiresDirectionSubtitle": "Si les caméras de ce type ont besoin d'une balise de direction",
+    "submittable": "Soumissible",
+    "submittableSubtitle": "Si ce profil peut être utilisé pour les soumissions de caméras",
+    "osmTags": "Balises OSM",
+    "addTag": "Ajouter Balise",
+    "saveProfile": "Sauvegarder Profil",
+    "keyHint": "clé",
+    "valueHint": "valeur",
+    "atLeastOneTagRequired": "Au moins une balise est requise",
+    "profileSaved": "Profil \"{}\" sauvegardé"
+  },
+  "operatorProfileEditor": {
+    "newOperatorProfile": "Nouveau Profil d'Opérateur",
+    "editOperatorProfile": "Modifier Profil d'Opérateur", 
+    "operatorName": "Nom de l'opérateur",
+    "operatorNameHint": "ex., Département de Police d'Austin",
+    "operatorNameRequired": "Le nom de l'opérateur est requis",
+    "operatorProfileSaved": "Profil d'opérateur \"{}\" sauvegardé"
+  },
+  "operatorProfiles": {
+    "title": "Profils d'Opérateur",
+    "noProfilesMessage": "Aucun profil d'opérateur défini. Créez-en un pour appliquer des balises d'opérateur aux soumissions de nœuds.",
+    "tagsCount": "{} balises",
+    "deleteOperatorProfile": "Supprimer Profil d'Opérateur",
+    "deleteOperatorProfileConfirm": "Êtes-vous sûr de vouloir supprimer \"{}\"?",
+    "operatorProfileDeleted": "Profil d'opérateur supprimé"
   }
 }

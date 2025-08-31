@@ -4,6 +4,7 @@ import 'package:uuid/uuid.dart';
 
 import '../models/node_profile.dart';
 import '../app_state.dart';
+import '../services/localization_service.dart';
 
 class ProfileEditor extends StatefulWidget {
   const ProfileEditor({super.key, required this.profile});
@@ -54,68 +55,77 @@ class _ProfileEditorState extends State<ProfileEditor> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(!widget.profile.editable 
-            ? 'View Profile' 
-            : (widget.profile.name.isEmpty ? 'New Profile' : 'Edit Profile')),
-      ),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          TextField(
-            controller: _nameCtrl,
-            readOnly: !widget.profile.editable,
-            decoration: const InputDecoration(
-              labelText: 'Profile name',
-              hintText: 'e.g., Custom ALPR Camera',
-            ),
+    return AnimatedBuilder(
+      animation: LocalizationService.instance,
+      builder: (context, child) {
+        final locService = LocalizationService.instance;
+        
+        return Scaffold(
+          appBar: AppBar(
+            title: Text(!widget.profile.editable 
+                ? locService.t('profileEditor.viewProfile')
+                : (widget.profile.name.isEmpty ? locService.t('profileEditor.newProfile') : locService.t('profileEditor.editProfile'))),
           ),
-          const SizedBox(height: 16),
-          if (widget.profile.editable) ...[
-            CheckboxListTile(
-              title: const Text('Requires Direction'),
-              subtitle: const Text('Whether cameras of this type need a direction tag'),
-              value: _requiresDirection,
-              onChanged: (value) => setState(() => _requiresDirection = value ?? true),
-              controlAffinity: ListTileControlAffinity.leading,
-            ),
-            CheckboxListTile(
-              title: const Text('Submittable'),
-              subtitle: const Text('Whether this profile can be used for camera submissions'),
-              value: _submittable,
-              onChanged: (value) => setState(() => _submittable = value ?? true),
-              controlAffinity: ListTileControlAffinity.leading,
-            ),
-          ],
-          const SizedBox(height: 8),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text('OSM Tags',
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                if (widget.profile.editable)
-                  TextButton.icon(
-                    onPressed: () => setState(() => _tags.add(const MapEntry('', ''))),
-                    icon: const Icon(Icons.add),
-                    label: const Text('Add tag'),
-                  ),
+          body: ListView(
+            padding: const EdgeInsets.all(16),
+            children: [
+              TextField(
+                controller: _nameCtrl,
+                readOnly: !widget.profile.editable,
+                decoration: InputDecoration(
+                  labelText: locService.t('profileEditor.profileName'),
+                  hintText: locService.t('profileEditor.profileNameHint'),
+                ),
+              ),
+              const SizedBox(height: 16),
+              if (widget.profile.editable) ...[
+                CheckboxListTile(
+                  title: Text(locService.t('profileEditor.requiresDirection')),
+                  subtitle: Text(locService.t('profileEditor.requiresDirectionSubtitle')),
+                  value: _requiresDirection,
+                  onChanged: (value) => setState(() => _requiresDirection = value ?? true),
+                  controlAffinity: ListTileControlAffinity.leading,
+                ),
+                CheckboxListTile(
+                  title: Text(locService.t('profileEditor.submittable')),
+                  subtitle: Text(locService.t('profileEditor.submittableSubtitle')),
+                  value: _submittable,
+                  onChanged: (value) => setState(() => _submittable = value ?? true),
+                  controlAffinity: ListTileControlAffinity.leading,
+                ),
               ],
-            ),
-          const SizedBox(height: 8),
-          ..._buildTagRows(),
-          const SizedBox(height: 24),
-          if (widget.profile.editable)
-            ElevatedButton(
-              onPressed: _save,
-              child: const Text('Save Profile'),
-            ),
-        ],
-      ),
+              const SizedBox(height: 8),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(locService.t('profileEditor.osmTags'),
+                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                    if (widget.profile.editable)
+                      TextButton.icon(
+                        onPressed: () => setState(() => _tags.add(const MapEntry('', ''))),
+                        icon: const Icon(Icons.add),
+                        label: Text(locService.t('profileEditor.addTag')),
+                      ),
+                  ],
+                ),
+              const SizedBox(height: 8),
+              ..._buildTagRows(),
+              const SizedBox(height: 24),
+              if (widget.profile.editable)
+                ElevatedButton(
+                  onPressed: _save,
+                  child: Text(locService.t('profileEditor.saveProfile')),
+                ),
+            ],
+          ),
+        );
+      },
     );
   }
 
   List<Widget> _buildTagRows() {
+    final locService = LocalizationService.instance;
+    
     return List.generate(_tags.length, (i) {
       final keyController = TextEditingController(text: _tags[i].key);
       final valueController = TextEditingController(text: _tags[i].value);
@@ -127,9 +137,9 @@ class _ProfileEditorState extends State<ProfileEditor> {
             Expanded(
               flex: 2,
               child: TextField(
-                decoration: const InputDecoration(
-                  hintText: 'key',
-                  border: OutlineInputBorder(),
+                decoration: InputDecoration(
+                  hintText: locService.t('profileEditor.keyHint'),
+                  border: const OutlineInputBorder(),
                   isDense: true,
                 ),
                 controller: keyController,
@@ -143,9 +153,9 @@ class _ProfileEditorState extends State<ProfileEditor> {
             Expanded(
               flex: 3,
               child: TextField(
-                decoration: const InputDecoration(
-                  hintText: 'value',
-                  border: OutlineInputBorder(),
+                decoration: InputDecoration(
+                  hintText: locService.t('profileEditor.valueHint'),
+                  border: const OutlineInputBorder(),
                   isDense: true,
                 ),
                 controller: valueController,
@@ -167,10 +177,12 @@ class _ProfileEditorState extends State<ProfileEditor> {
   }
 
   void _save() {
+    final locService = LocalizationService.instance;
     final name = _nameCtrl.text.trim();
+    
     if (name.isEmpty) {
       ScaffoldMessenger.of(context)
-          .showSnackBar(const SnackBar(content: Text('Profile name is required')));
+          .showSnackBar(SnackBar(content: Text(locService.t('profileEditor.profileNameRequired'))));
       return;
     }
     
@@ -182,7 +194,7 @@ class _ProfileEditorState extends State<ProfileEditor> {
     
     if (tagMap.isEmpty) {
       ScaffoldMessenger.of(context)
-          .showSnackBar(const SnackBar(content: Text('At least one tag is required')));
+          .showSnackBar(SnackBar(content: Text(locService.t('profileEditor.atLeastOneTagRequired'))));
       return;
     }
 
@@ -200,7 +212,7 @@ class _ProfileEditorState extends State<ProfileEditor> {
     Navigator.pop(context);
     
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Profile "${newProfile.name}" saved')),
+      SnackBar(content: Text(locService.t('profileEditor.profileSaved', params: [newProfile.name]))),
     );
   }
 }

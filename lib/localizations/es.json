@@ -176,5 +176,40 @@
   "mapTiles": {
     "title": "Tiles de Mapa",
     "manageProviders": "Gestionar Proveedores"
+  },
+  "profileEditor": {
+    "viewProfile": "Ver Perfil",
+    "newProfile": "Nuevo Perfil",
+    "editProfile": "Editar Perfil",
+    "profileName": "Nombre del perfil",
+    "profileNameHint": "ej., Cámara ALPR Personalizada",
+    "profileNameRequired": "El nombre del perfil es requerido",
+    "requiresDirection": "Requiere Dirección",
+    "requiresDirectionSubtitle": "Si las cámaras de este tipo necesitan una etiqueta de dirección",
+    "submittable": "Envíable",
+    "submittableSubtitle": "Si este perfil puede usarse para envíos de cámaras",
+    "osmTags": "Etiquetas OSM",
+    "addTag": "Agregar Etiqueta",
+    "saveProfile": "Guardar Perfil",
+    "keyHint": "clave",
+    "valueHint": "valor",
+    "atLeastOneTagRequired": "Se requiere al menos una etiqueta",
+    "profileSaved": "Perfil \"{}\" guardado"
+  },
+  "operatorProfileEditor": {
+    "newOperatorProfile": "Nuevo Perfil de Operador",
+    "editOperatorProfile": "Editar Perfil de Operador", 
+    "operatorName": "Nombre del operador",
+    "operatorNameHint": "ej., Departamento de Policía de Austin",
+    "operatorNameRequired": "El nombre del operador es requerido",
+    "operatorProfileSaved": "Perfil de operador \"{}\" guardado"
+  },
+  "operatorProfiles": {
+    "title": "Perfiles de Operador",
+    "noProfilesMessage": "No hay perfiles de operador definidos. Cree uno para aplicar etiquetas de operador a los envíos de nodos.",
+    "tagsCount": "{} etiquetas",
+    "deleteOperatorProfile": "Eliminar Perfil de Operador",
+    "deleteOperatorProfileConfirm": "¿Está seguro de que desea eliminar \"{}\"?",
+    "operatorProfileDeleted": "Perfil de operador eliminado"
   }
 }

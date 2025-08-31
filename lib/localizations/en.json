@@ -176,5 +176,40 @@
   "mapTiles": {
     "title": "Map Tiles",
     "manageProviders": "Manage Providers"
+  },
+  "profileEditor": {
+    "viewProfile": "View Profile",
+    "newProfile": "New Profile",
+    "editProfile": "Edit Profile",
+    "profileName": "Profile name",
+    "profileNameHint": "e.g., Custom ALPR Camera",
+    "profileNameRequired": "Profile name is required",
+    "requiresDirection": "Requires Direction",
+    "requiresDirectionSubtitle": "Whether cameras of this type need a direction tag",
+    "submittable": "Submittable",
+    "submittableSubtitle": "Whether this profile can be used for camera submissions",
+    "osmTags": "OSM Tags",
+    "addTag": "Add tag",
+    "saveProfile": "Save Profile",
+    "keyHint": "key",
+    "valueHint": "value",
+    "atLeastOneTagRequired": "At least one tag is required",
+    "profileSaved": "Profile \"{}\" saved"
+  },
+  "operatorProfileEditor": {
+    "newOperatorProfile": "New Operator Profile",
+    "editOperatorProfile": "Edit Operator Profile", 
+    "operatorName": "Operator name",
+    "operatorNameHint": "e.g., Austin Police Department",
+    "operatorNameRequired": "Operator name is required",
+    "operatorProfileSaved": "Operator profile \"{}\" saved"
+  },
+  "operatorProfiles": {
+    "title": "Operator Profiles",
+    "noProfilesMessage": "No operator profiles defined. Create one to apply operator tags to node submissions.",
+    "tagsCount": "{} tags",
+    "deleteOperatorProfile": "Delete Operator Profile",
+    "deleteOperatorProfileConfirm": "Are you sure you want to delete \"{}\"?",
+    "operatorProfileDeleted": "Operator profile deleted"
   }
 }
