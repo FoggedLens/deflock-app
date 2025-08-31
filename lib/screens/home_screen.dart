@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_map_animations/flutter_map_animations.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
 
 import '../app_state.dart';
@@ -151,7 +152,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       child: Scaffold(
         key: _scaffoldKey,
         appBar: AppBar(
-          title: const Text('DeFlock'),
+          title: SvgPicture.asset(
+            'assets/deflock-logo.svg',
+            height: 28,
+            fit: BoxFit.contain,
+          ),
           actions: [
             IconButton(
               tooltip: _getFollowMeTooltip(appState.followMeMode),
@@ -196,9 +201,15 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 ),
                 child: Container(
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: Theme.of(context).colorScheme.surface,
                     borderRadius: BorderRadius.circular(16),
-                    boxShadow: [BoxShadow(color: Colors.black26, blurRadius: 10, offset: Offset(0, -2))],
+                    boxShadow: [
+                      BoxShadow(
+                        color: Theme.of(context).shadowColor.withOpacity(0.3),
+                        blurRadius: 10,
+                        offset: Offset(0, -2),
+                      )
+                    ],
                   ),
                   margin: EdgeInsets.only(bottom: kBottomButtonBarMargin),
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),

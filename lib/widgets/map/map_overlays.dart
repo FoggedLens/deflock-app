@@ -89,11 +89,17 @@ class MapOverlays extends StatelessWidget {
             bottom: kAttributionBottomOffset,
             left: 10,
             child: Container(
-              color: Colors.white70,
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.surface.withOpacity(0.9),
+                borderRadius: BorderRadius.circular(4),
+              ),
               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
               child: Text(
                 attribution!,
-                style: const TextStyle(fontSize: 11),
+                style: TextStyle(
+                  fontSize: 11,
+                  color: Theme.of(context).colorScheme.onSurface,
+                ),
               ),
             ),
           ),
