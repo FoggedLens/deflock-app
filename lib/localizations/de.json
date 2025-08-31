@@ -1,0 +1,33 @@
+{
+  "language": {
+    "name": "Deutsch"
+  },
+  "app": {
+    "title": "DeFlock"
+  },
+  "actions": {
+    "tagNode": "Knoten Markieren",
+    "download": "Herunterladen",
+    "settings": "Einstellungen",
+    "edit": "Bearbeiten",
+    "cancel": "Abbrechen",
+    "ok": "OK",
+    "close": "Schließen"
+  },
+  "followMe": {
+    "off": "Verfolgung aktivieren (Norden oben)",
+    "northUp": "Verfolgung aktivieren (Rotation)",
+    "rotating": "Verfolgung deaktivieren"
+  },
+  "settings": {
+    "title": "Einstellungen",
+    "language": "Sprache",
+    "systemDefault": "Systemstandard",
+    "aboutInfo": "Über / Informationen",
+    "aboutThisApp": "Über Diese App"
+  },
+  "node": {
+    "title": "Knoten #{}",
+    "tagSheetTitle": "Gerät-Tags"
+  }
+}

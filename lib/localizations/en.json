@@ -1,0 +1,33 @@
+{
+  "language": {
+    "name": "English"
+  },
+  "app": {
+    "title": "DeFlock"
+  },
+  "actions": {
+    "tagNode": "Tag Node",
+    "download": "Download",
+    "settings": "Settings",
+    "edit": "Edit",
+    "cancel": "Cancel",
+    "ok": "OK",
+    "close": "Close"
+  },
+  "followMe": {
+    "off": "Enable follow-me (north up)",
+    "northUp": "Enable follow-me (rotating)",
+    "rotating": "Disable follow-me"
+  },
+  "settings": {
+    "title": "Settings",
+    "language": "Language",
+    "systemDefault": "System Default",
+    "aboutInfo": "About / Info",
+    "aboutThisApp": "About This App"
+  },
+  "node": {
+    "title": "Node #{}",
+    "tagSheetTitle": "Surveillance Device Tags"
+  }
+}

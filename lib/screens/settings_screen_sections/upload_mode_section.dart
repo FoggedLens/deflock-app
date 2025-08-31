@@ -42,7 +42,7 @@ class UploadModeSection extends StatelessWidget {
             builder: (context) {
               switch (appState.uploadMode) {
                 case UploadMode.production:
-                  return const Text('Upload to the live OSM database (visible to all users)', style: TextStyle(fontSize: 12, color: Colors.black87));
+                  return Text('Upload to the live OSM database (visible to all users)', style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7)));
                 case UploadMode.sandbox:
                   return Column(
                     crossAxisAlignment: CrossAxisAlignment.start,

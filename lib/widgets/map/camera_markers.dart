@@ -5,7 +5,7 @@ import 'package:latlong2/latlong.dart';
 
 import '../../dev_config.dart';
 import '../../models/osm_camera_node.dart';
-import '../camera_tag_sheet.dart';
+import '../node_tag_sheet.dart';
 import '../camera_icon.dart';
 
 /// Smart marker widget for camera with single/double tap distinction
@@ -27,7 +27,7 @@ class _CameraMapMarkerState extends State<CameraMapMarker> {
     _tapTimer = Timer(tapTimeout, () {
       showModalBottomSheet(
         context: context,
-        builder: (_) => CameraTagSheet(node: widget.node),
+        builder: (_) => NodeTagSheet(node: widget.node),
         showDragHandle: true,
       );
     });

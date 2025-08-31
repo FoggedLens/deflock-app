@@ -9,37 +9,44 @@ import 'settings_screen_sections/offline_mode_section.dart';
 import 'settings_screen_sections/about_section.dart';
 import 'settings_screen_sections/max_nodes_section.dart';
 import 'settings_screen_sections/tile_provider_section.dart';
+import 'settings_screen_sections/language_section.dart';
+import '../services/localization_service.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Settings')),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: const [
-          UploadModeSection(),
-          Divider(),
-          AuthSection(),
-          Divider(),
-          QueueSection(),
-          Divider(),
-          ProfileListSection(),
-          Divider(),
-          OperatorProfileListSection(),
-          Divider(),
-          MaxNodesSection(),
-          Divider(),
-          TileProviderSection(),
-          Divider(),
-          OfflineModeSection(),
-          Divider(),
-          OfflineAreasSection(),
-          Divider(),
-          AboutSection(),
-        ],
+    return AnimatedBuilder(
+      animation: LocalizationService.instance,
+      builder: (context, child) => Scaffold(
+        appBar: AppBar(title: Text(LocalizationService.instance.t('settings.title'))),
+        body: ListView(
+          padding: const EdgeInsets.all(16),
+          children: const [
+            UploadModeSection(),
+            Divider(),
+            AuthSection(),
+            Divider(),
+            QueueSection(),
+            Divider(),
+            ProfileListSection(),
+            Divider(),
+            OperatorProfileListSection(),
+            Divider(),
+            MaxNodesSection(),
+            Divider(),
+            TileProviderSection(),
+            Divider(),
+            OfflineModeSection(),
+            Divider(),
+            OfflineAreasSection(),
+            Divider(),
+            LanguageSection(),
+            Divider(),
+            AboutSection(),
+          ],
+        ),
       ),
     );
   }

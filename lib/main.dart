@@ -4,11 +4,15 @@ import 'package:provider/provider.dart';
 import 'app_state.dart';
 import 'screens/home_screen.dart';
 import 'screens/settings_screen.dart';
+import 'services/localization_service.dart';
 
 
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  
+  // Initialize localization service
+  await LocalizationService.instance.init();
 
   runApp(
     ChangeNotifierProvider(

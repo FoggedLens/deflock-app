@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 import '../app_state.dart';
 import '../dev_config.dart';
 import '../widgets/map_view.dart';
+import '../services/localization_service.dart';
 
 import '../widgets/add_node_sheet.dart';
 import '../widgets/edit_node_sheet.dart';
@@ -44,13 +45,14 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   }
 
   String _getFollowMeTooltip(FollowMeMode mode) {
+    final locService = LocalizationService.instance;
     switch (mode) {
       case FollowMeMode.off:
-        return 'Enable follow-me (north up)';
+        return locService.t('followMe.off');
       case FollowMeMode.northUp:
-        return 'Enable follow-me (rotating)';
+        return locService.t('followMe.northUp');
       case FollowMeMode.rotating:
-        return 'Disable follow-me';
+        return locService.t('followMe.rotating');
     }
   }
 
@@ -172,9 +174,13 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 }
               },
             ),
-            IconButton(
-              icon: const Icon(Icons.settings),
-              onPressed: () => Navigator.pushNamed(context, '/settings'),
+            AnimatedBuilder(
+              animation: LocalizationService.instance,
+              builder: (context, child) => IconButton(
+                tooltip: LocalizationService.instance.settings,
+                icon: const Icon(Icons.settings),
+                onPressed: () => Navigator.pushNamed(context, '/settings'),
+              ),
             ),
           ],
         ),
@@ -216,28 +222,34 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   child: Row(
                     children: [
                       Expanded(
-                        child: ElevatedButton.icon(
-                          icon: Icon(Icons.add_location_alt),
-                          label: Text('Tag Node'),
-                          onPressed: _openAddNodeSheet,
-                          style: ElevatedButton.styleFrom(
-                            minimumSize: Size(0, 48),
-                            textStyle: TextStyle(fontSize: 16),
+                        child: AnimatedBuilder(
+                          animation: LocalizationService.instance,
+                          builder: (context, child) => ElevatedButton.icon(
+                            icon: Icon(Icons.add_location_alt),
+                            label: Text(LocalizationService.instance.tagNode),
+                            onPressed: _openAddNodeSheet,
+                            style: ElevatedButton.styleFrom(
+                              minimumSize: Size(0, 48),
+                              textStyle: TextStyle(fontSize: 16),
+                            ),
                           ),
                         ),
                       ),
                       SizedBox(width: 12),
                       Expanded(
-                        child: ElevatedButton.icon(
-                          icon: Icon(Icons.download_for_offline),
-                          label: Text('Download'),
-                          onPressed: () => showDialog(
-                            context: context,
-                            builder: (ctx) => DownloadAreaDialog(controller: _mapController.mapController),
-                          ),
-                          style: ElevatedButton.styleFrom(
-                            minimumSize: Size(0, 48),
-                            textStyle: TextStyle(fontSize: 16),
+                        child: AnimatedBuilder(
+                          animation: LocalizationService.instance,
+                          builder: (context, child) => ElevatedButton.icon(
+                            icon: Icon(Icons.download_for_offline),
+                            label: Text(LocalizationService.instance.download),
+                            onPressed: () => showDialog(
+                              context: context,
+                              builder: (ctx) => DownloadAreaDialog(controller: _mapController.mapController),
+                            ),
+                            style: ElevatedButton.styleFrom(
+                              minimumSize: Size(0, 48),
+                              textStyle: TextStyle(fontSize: 16),
+                            ),
                           ),
                         ),
                       ),

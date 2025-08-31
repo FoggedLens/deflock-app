@@ -1,0 +1,33 @@
+{
+  "language": {
+    "name": "Español"
+  },
+  "app": {
+    "title": "DeFlock"
+  },
+  "actions": {
+    "tagNode": "Etiquetar Nodo",
+    "download": "Descargar",
+    "settings": "Configuración",
+    "edit": "Editar",
+    "cancel": "Cancelar",
+    "ok": "Aceptar",
+    "close": "Cerrar"
+  },
+  "followMe": {
+    "off": "Activar seguimiento (norte arriba)",
+    "northUp": "Activar seguimiento (rotación)",
+    "rotating": "Desactivar seguimiento"
+  },
+  "settings": {
+    "title": "Configuración",
+    "language": "Idioma",
+    "systemDefault": "Sistema por Defecto",
+    "aboutInfo": "Acerca de / Información",
+    "aboutThisApp": "Acerca de Esta App"
+  },
+  "node": {
+    "title": "Nodo #{}",
+    "tagSheetTitle": "Etiquetas del Dispositivo"
+  }
+}
