@@ -4,6 +4,7 @@ import 'package:uuid/uuid.dart';
 
 import '../models/operator_profile.dart';
 import '../app_state.dart';
+import '../services/localization_service.dart';
 
 class OperatorProfileEditor extends StatefulWidget {
   const OperatorProfileEditor({super.key, required this.profile});
@@ -45,46 +46,55 @@ class _OperatorProfileEditorState extends State<OperatorProfileEditor> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.profile.name.isEmpty ? 'New Operator Profile' : 'Edit Operator Profile'),
-      ),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          TextField(
-            controller: _nameCtrl,
-            decoration: const InputDecoration(
-              labelText: 'Operator name',
-              hintText: 'e.g., Austin Police Department',
-            ),
+    return AnimatedBuilder(
+      animation: LocalizationService.instance,
+      builder: (context, child) {
+        final locService = LocalizationService.instance;
+        
+        return Scaffold(
+          appBar: AppBar(
+            title: Text(widget.profile.name.isEmpty ? locService.t('operatorProfileEditor.newOperatorProfile') : locService.t('operatorProfileEditor.editOperatorProfile')),
           ),
-          const SizedBox(height: 24),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          body: ListView(
+            padding: const EdgeInsets.all(16),
             children: [
-              const Text('OSM Tags',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-              TextButton.icon(
-                onPressed: () => setState(() => _tags.add(const MapEntry('', ''))),
-                icon: const Icon(Icons.add),
-                label: const Text('Add tag'),
+              TextField(
+                controller: _nameCtrl,
+                decoration: InputDecoration(
+                  labelText: locService.t('operatorProfileEditor.operatorName'),
+                  hintText: locService.t('operatorProfileEditor.operatorNameHint'),
+                ),
+              ),
+              const SizedBox(height: 24),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(locService.t('profileEditor.osmTags'),
+                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                  TextButton.icon(
+                    onPressed: () => setState(() => _tags.add(const MapEntry('', ''))),
+                    icon: const Icon(Icons.add),
+                    label: Text(locService.t('profileEditor.addTag')),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              ..._buildTagRows(),
+              const SizedBox(height: 24),
+              ElevatedButton(
+                onPressed: _save,
+                child: Text(locService.t('profileEditor.saveProfile')),
               ),
             ],
           ),
-          const SizedBox(height: 8),
-          ..._buildTagRows(),
-          const SizedBox(height: 24),
-          ElevatedButton(
-            onPressed: _save,
-            child: const Text('Save Profile'),
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 
   List<Widget> _buildTagRows() {
+    final locService = LocalizationService.instance;
+    
     return List.generate(_tags.length, (i) {
       final keyController = TextEditingController(text: _tags[i].key);
       final valueController = TextEditingController(text: _tags[i].value);
@@ -96,9 +106,9 @@ class _OperatorProfileEditorState extends State<OperatorProfileEditor> {
             Expanded(
               flex: 2,
               child: TextField(
-                decoration: const InputDecoration(
-                  hintText: 'key',
-                  border: OutlineInputBorder(),
+                decoration: InputDecoration(
+                  hintText: locService.t('profileEditor.keyHint'),
+                  border: const OutlineInputBorder(),
                   isDense: true,
                 ),
                 controller: keyController,
@@ -109,9 +119,9 @@ class _OperatorProfileEditorState extends State<OperatorProfileEditor> {
             Expanded(
               flex: 3,
               child: TextField(
-                decoration: const InputDecoration(
-                  hintText: 'value',
-                  border: OutlineInputBorder(),
+                decoration: InputDecoration(
+                  hintText: locService.t('profileEditor.valueHint'),
+                  border: const OutlineInputBorder(),
                   isDense: true,
                 ),
                 controller: valueController,
@@ -129,10 +139,12 @@ class _OperatorProfileEditorState extends State<OperatorProfileEditor> {
   }
 
   void _save() {
+    final locService = LocalizationService.instance;
     final name = _nameCtrl.text.trim();
+    
     if (name.isEmpty) {
       ScaffoldMessenger.of(context)
-          .showSnackBar(const SnackBar(content: Text('Operator name is required')));
+          .showSnackBar(SnackBar(content: Text(locService.t('operatorProfileEditor.operatorNameRequired'))));
       return;
     }
     
@@ -152,7 +164,7 @@ class _OperatorProfileEditorState extends State<OperatorProfileEditor> {
     Navigator.pop(context);
     
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Operator profile "${newProfile.name}" saved')),
+      SnackBar(content: Text(locService.t('operatorProfileEditor.operatorProfileSaved', params: [newProfile.name]))),
     );
   }
 }

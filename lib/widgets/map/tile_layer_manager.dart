@@ -77,7 +77,7 @@ class TileLayerManager {
     
     return TileLayer(
       urlTemplate: urlTemplate,
-      userAgentPackageName: 'com.stopflock.flock_map_app',
+      userAgentPackageName: 'me.deflock.deflockapp',
       tileProvider: NetworkTileProvider(
         httpClient: _tileHttpClient,
         // Enable flutter_map caching - cache busting handled by URL changes and FlutterMap key

@@ -3,6 +3,7 @@ import 'package:uuid/uuid.dart';
 import 'package:provider/provider.dart';
 import '../../app_state.dart';
 import '../../models/node_profile.dart';
+import '../../services/localization_service.dart';
 import '../profile_editor.dart';
 
 class ProfileListSection extends StatelessWidget {
@@ -10,129 +11,136 @@ class ProfileListSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final appState = context.watch<AppState>();
+    return AnimatedBuilder(
+      animation: LocalizationService.instance,
+      builder: (context, child) {
+        final locService = LocalizationService.instance;
+        final appState = context.watch<AppState>();
 
-    return Column(
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        return Column(
           children: [
-            const Text('Node Profiles', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-            TextButton.icon(
-              onPressed: () => Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => ProfileEditor(
-                    profile: NodeProfile(
-                      id: const Uuid().v4(),
-                      name: '',
-                      tags: const {},
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(locService.t('profiles.nodeProfiles'), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                TextButton.icon(
+                  onPressed: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => ProfileEditor(
+                        profile: NodeProfile(
+                          id: const Uuid().v4(),
+                          name: '',
+                          tags: const {},
+                        ),
+                      ),
                     ),
                   ),
+                  icon: const Icon(Icons.add),
+                  label: Text(locService.t('profiles.newProfile')),
                 ),
+              ],
+            ),
+            ...appState.profiles.map(
+              (p) => ListTile(
+                leading: Checkbox(
+                  value: appState.isEnabled(p),
+                  onChanged: (v) => appState.toggleProfile(p, v ?? false),
+                ),
+                title: Text(p.name),
+                subtitle: Text(p.builtin ? locService.t('profiles.builtIn') : locService.t('profiles.custom')),
+                trailing: !p.editable 
+                  ? PopupMenuButton(
+                      itemBuilder: (context) => [
+                        PopupMenuItem(
+                          value: 'view',
+                          child: Row(
+                            children: [
+                              const Icon(Icons.visibility),
+                              const SizedBox(width: 8),
+                              Text(locService.t('profiles.view')),
+                            ],
+                          ),
+                        ),
+                      ],
+                      onSelected: (value) {
+                        if (value == 'view') {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => ProfileEditor(profile: p),
+                            ),
+                          );
+                        }
+                      },
+                    )
+                  : PopupMenuButton(
+                      itemBuilder: (context) => [
+                        PopupMenuItem(
+                          value: 'edit',
+                          child: Row(
+                            children: [
+                              const Icon(Icons.edit),
+                              const SizedBox(width: 8),
+                            Text(locService.t('actions.edit')),
+                            ],
+                          ),
+                        ),
+                        PopupMenuItem(
+                          value: 'delete',
+                          child: Row(
+                            children: [
+                              const Icon(Icons.delete, color: Colors.red),
+                              const SizedBox(width: 8),
+                              Text(locService.t('profiles.deleteProfile'), style: const TextStyle(color: Colors.red)),
+                            ],
+                          ),
+                        ),
+                      ],
+                      onSelected: (value) {
+                        if (value == 'edit') {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => ProfileEditor(profile: p),
+                            ),
+                          );
+                        } else if (value == 'delete') {
+                          _showDeleteProfileDialog(context, p);
+                        }
+                      },
+                    ),
               ),
-              icon: const Icon(Icons.add),
-              label: const Text('New Profile'),
             ),
           ],
-        ),
-        ...appState.profiles.map(
-          (p) => ListTile(
-            leading: Checkbox(
-              value: appState.isEnabled(p),
-              onChanged: (v) => appState.toggleProfile(p, v ?? false),
-            ),
-            title: Text(p.name),
-            subtitle: Text(p.builtin ? 'Built-in' : 'Custom'),
-            trailing: !p.editable 
-              ? PopupMenuButton(
-                  itemBuilder: (context) => [
-                    PopupMenuItem(
-                      value: 'view',
-                      child: const Row(
-                        children: [
-                          Icon(Icons.visibility),
-                          SizedBox(width: 8),
-                          Text('View'),
-                        ],
-                      ),
-                    ),
-                  ],
-                  onSelected: (value) {
-                    if (value == 'view') {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => ProfileEditor(profile: p),
-                        ),
-                      );
-                    }
-                  },
-                )
-              : PopupMenuButton(
-                  itemBuilder: (context) => [
-                    PopupMenuItem(
-                      value: 'edit',
-                      child: const Row(
-                        children: [
-                          Icon(Icons.edit),
-                          SizedBox(width: 8),
-                          Text('Edit'),
-                        ],
-                      ),
-                    ),
-                    PopupMenuItem(
-                      value: 'delete',
-                      child: const Row(
-                        children: [
-                          Icon(Icons.delete, color: Colors.red),
-                          SizedBox(width: 8),
-                          Text('Delete', style: TextStyle(color: Colors.red)),
-                        ],
-                      ),
-                    ),
-                  ],
-                  onSelected: (value) {
-                    if (value == 'edit') {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => ProfileEditor(profile: p),
-                        ),
-                      );
-                    } else if (value == 'delete') {
-                      _showDeleteProfileDialog(context, p);
-                    }
-                  },
-                ),
-          ),
-        ),
-      ],
+        );
+      },
     );
   }
 
 void _showDeleteProfileDialog(BuildContext context, NodeProfile profile) {
+  final locService = LocalizationService.instance;
   final appState = context.read<AppState>();
   showDialog(
     context: context,
     builder: (context) => AlertDialog(
-      title: const Text('Delete Profile'),
-      content: Text('Are you sure you want to delete "${profile.name}"?'),
+      title: Text(locService.t('profiles.deleteProfile')),
+      content: Text(locService.t('profiles.deleteProfileConfirm', params: [profile.name])),
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child: const Text('Cancel'),
+          child: Text(locService.t('actions.cancel')),
         ),
         TextButton(
           onPressed: () {
             appState.deleteProfile(profile);
             Navigator.pop(context);
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Profile deleted')),
+              SnackBar(content: Text(locService.t('profiles.profileDeleted'))),
             );
           },
           style: TextButton.styleFrom(foregroundColor: Colors.red),
-          child: const Text('Delete'),
+          child: Text(locService.t('profiles.deleteProfile')),
         ),
       ],
     ),

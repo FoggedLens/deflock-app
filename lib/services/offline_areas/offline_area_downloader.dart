@@ -10,7 +10,7 @@ import '../../models/osm_camera_node.dart';
 import '../map_data_provider.dart';
 import 'offline_area_models.dart';
 import 'offline_tile_utils.dart';
-import 'package:flock_map_app/dev_config.dart';
+import 'package:deflockapp/dev_config.dart';
 
 /// Handles the actual downloading process for offline areas
 class OfflineAreaDownloader {

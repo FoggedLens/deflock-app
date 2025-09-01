@@ -1,7 +1,73 @@
-Flock Map App
+🇺🇸 ENGLISH
 
-Built with Flutter.
+DeFlock - Surveillance Transparency
 
-Offline areas, privacy-respecting, designed for OpenStreetMap camera tagging.
+DeFlock is a privacy-focused mobile app for mapping public surveillance infrastructure using OpenStreetMap. Document cameras, ALPRs, gunshot detectors, and other surveillance devices in your community to make this infrastructure visible and searchable.
 
-This text is loaded from assets/info.txt.
+• Offline-capable mapping with downloadable areas
+• Upload directly to OpenStreetMap with OAuth2
+• Built-in profiles for major manufacturers 
+• Privacy-respecting - no user data collected
+• Multiple map tile providers (OSM, satellite imagery)
+
+Part of the broader DeFlock initiative to promote surveillance transparency.
+
+Visit: deflock.me
+Built with Flutter • Open Source
+
+---
+
+🇪🇸 ESPAÑOL
+
+DeFlock - Transparencia en Vigilancia
+
+DeFlock es una aplicación móvil enfocada en la privacidad para mapear infraestructura de vigilancia pública usando OpenStreetMap. Documenta cámaras, ALPRs, detectores de disparos y otros dispositivos de vigilancia en tu comunidad para hacer visible y consultable esta infraestructura.
+
+• Mapeo con capacidad offline con áreas descargables
+• Subida directa a OpenStreetMap con OAuth2
+• Perfiles integrados para fabricantes principales
+• Respeta la privacidad - no se recopilan datos del usuario
+• Múltiples proveedores de mapas (OSM, imágenes satelitales)
+
+Parte de la iniciativa más amplia DeFlock para promover la transparencia en vigilancia.
+
+Visita: deflock.me
+Construido con Flutter • Código Abierto
+
+---
+
+🇫🇷 FRANÇAIS
+
+DeFlock - Transparence de la Surveillance
+
+DeFlock est une application mobile axée sur la confidentialité pour cartographier l'infrastructure de surveillance publique en utilisant OpenStreetMap. Documentez les caméras, ALPRs, détecteurs de coups de feu et autres dispositifs de surveillance dans votre communauté pour rendre cette infrastructure visible et consultable.
+
+• Cartographie hors ligne avec zones téléchargeables
+• Upload direct vers OpenStreetMap avec OAuth2
+• Profils intégrés pour les principaux fabricants
+• Respectueux de la confidentialité - aucune donnée utilisateur collectée
+• Multiples fournisseurs de cartes (OSM, imagerie satellite)
+
+Partie de l'initiative plus large DeFlock pour promouvoir la transparence de la surveillance.
+
+Visitez : deflock.me
+Construit avec Flutter • Source Ouverte
+
+---
+
+🇩🇪 DEUTSCH
+
+DeFlock - Überwachungs-Transparenz
+
+DeFlock ist eine datenschutzorientierte mobile App zur Kartierung öffentlicher Überwachungsinfrastruktür mit OpenStreetMap. Dokumentieren Sie Kameras, ALPRs, Schussdetektoren und andere Überwachungsgeräte in Ihrer Gemeinde, um diese Infrastruktur sichtbar und durchsuchbar zu machen.
+
+• Offline-fähige Kartierung mit herunterladbaren Bereichen
+• Direkter Upload zu OpenStreetMap mit OAuth2
+• Integrierte Profile für große Hersteller
+• Datenschutzfreundlich - keine Nutzerdaten gesammelt
+• Multiple Kartenanbieter (OSM, Satellitenbilder)
+
+Teil der breiteren DeFlock-Initiative zur Förderung von Überwachungstransparenz.
+
+Besuchen Sie: deflock.me
+Gebaut mit Flutter • Open Source

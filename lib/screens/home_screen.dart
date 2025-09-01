@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_map_animations/flutter_map_animations.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
 
 import '../app_state.dart';
 import '../dev_config.dart';
 import '../widgets/map_view.dart';
+import '../services/localization_service.dart';
 
 import '../widgets/add_node_sheet.dart';
 import '../widgets/edit_node_sheet.dart';
@@ -43,13 +45,14 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   }
 
   String _getFollowMeTooltip(FollowMeMode mode) {
+    final locService = LocalizationService.instance;
     switch (mode) {
       case FollowMeMode.off:
-        return 'Enable follow-me (north up)';
+        return locService.t('followMe.off');
       case FollowMeMode.northUp:
-        return 'Enable follow-me (rotating)';
+        return locService.t('followMe.northUp');
       case FollowMeMode.rotating:
-        return 'Disable follow-me';
+        return locService.t('followMe.rotating');
     }
   }
 
@@ -151,7 +154,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       child: Scaffold(
         key: _scaffoldKey,
         appBar: AppBar(
-          title: const Text('Flock Map'),
+          title: SvgPicture.asset(
+            'assets/deflock-logo.svg',
+            height: 28,
+            fit: BoxFit.contain,
+          ),
           actions: [
             IconButton(
               tooltip: _getFollowMeTooltip(appState.followMeMode),
@@ -167,9 +174,13 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 }
               },
             ),
-            IconButton(
-              icon: const Icon(Icons.settings),
-              onPressed: () => Navigator.pushNamed(context, '/settings'),
+            AnimatedBuilder(
+              animation: LocalizationService.instance,
+              builder: (context, child) => IconButton(
+                tooltip: LocalizationService.instance.settings,
+                icon: const Icon(Icons.settings),
+                onPressed: () => Navigator.pushNamed(context, '/settings'),
+              ),
             ),
           ],
         ),
@@ -196,37 +207,49 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 ),
                 child: Container(
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: Theme.of(context).colorScheme.surface,
                     borderRadius: BorderRadius.circular(16),
-                    boxShadow: [BoxShadow(color: Colors.black26, blurRadius: 10, offset: Offset(0, -2))],
+                    boxShadow: [
+                      BoxShadow(
+                        color: Theme.of(context).shadowColor.withOpacity(0.3),
+                        blurRadius: 10,
+                        offset: Offset(0, -2),
+                      )
+                    ],
                   ),
                   margin: EdgeInsets.only(bottom: kBottomButtonBarMargin),
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                   child: Row(
                     children: [
                       Expanded(
-                        child: ElevatedButton.icon(
-                          icon: Icon(Icons.add_location_alt),
-                          label: Text('Tag Node'),
-                          onPressed: _openAddNodeSheet,
-                          style: ElevatedButton.styleFrom(
-                            minimumSize: Size(0, 48),
-                            textStyle: TextStyle(fontSize: 16),
+                        child: AnimatedBuilder(
+                          animation: LocalizationService.instance,
+                          builder: (context, child) => ElevatedButton.icon(
+                            icon: Icon(Icons.add_location_alt),
+                            label: Text(LocalizationService.instance.tagNode),
+                            onPressed: _openAddNodeSheet,
+                            style: ElevatedButton.styleFrom(
+                              minimumSize: Size(0, 48),
+                              textStyle: TextStyle(fontSize: 16),
+                            ),
                           ),
                         ),
                       ),
                       SizedBox(width: 12),
                       Expanded(
-                        child: ElevatedButton.icon(
-                          icon: Icon(Icons.download_for_offline),
-                          label: Text('Download'),
-                          onPressed: () => showDialog(
-                            context: context,
-                            builder: (ctx) => DownloadAreaDialog(controller: _mapController.mapController),
-                          ),
-                          style: ElevatedButton.styleFrom(
-                            minimumSize: Size(0, 48),
-                            textStyle: TextStyle(fontSize: 16),
+                        child: AnimatedBuilder(
+                          animation: LocalizationService.instance,
+                          builder: (context, child) => ElevatedButton.icon(
+                            icon: Icon(Icons.download_for_offline),
+                            label: Text(LocalizationService.instance.download),
+                            onPressed: () => showDialog(
+                              context: context,
+                              builder: (ctx) => DownloadAreaDialog(controller: _mapController.mapController),
+                            ),
+                            style: ElevatedButton.styleFrom(
+                              minimumSize: Size(0, 48),
+                              textStyle: TextStyle(fontSize: 16),
+                            ),
                           ),
                         ),
                       ),

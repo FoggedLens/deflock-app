@@ -25,8 +25,8 @@ const double kScaleBarBottomOffset = 170.0;
 const double kAddPinYOffset = 0.0;
 
 // Client name and version for OSM uploads ("created_by" tag)
-const String kClientName = 'FlockMap';
-const String kClientVersion = '0.9.7';
+const String kClientName = 'DeFlock';
+const String kClientVersion = '0.9.8';
 
 // Marker/node interaction
 const int kCameraMinZoomLevel = 10; // Minimum zoom to show nodes or warning

@@ -13,7 +13,7 @@ import '../app_state.dart' show UploadMode;
 
 class AuthService {
   // Both client IDs from keys.dart
-  static const _redirect = 'flockmap://auth';
+  static const _redirect = 'deflockapp://auth';
 
   late OAuth2Helper _helper;
   String? _displayName;
@@ -46,7 +46,7 @@ class AuthService {
       authorizeUrl: '$authBase/oauth2/authorize',
       tokenUrl: '$authBase/oauth2/token',
       redirectUri: _redirect,
-      customUriScheme: 'flockmap',
+      customUriScheme: 'deflockapp',
     );
     _helper = OAuth2Helper(
       client,

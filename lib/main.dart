@@ -4,11 +4,15 @@ import 'package:provider/provider.dart';
 import 'app_state.dart';
 import 'screens/home_screen.dart';
 import 'screens/settings_screen.dart';
+import 'services/localization_service.dart';
 
 
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  
+  // Initialize localization service
+  await LocalizationService.instance.init();
 
   runApp(
     ChangeNotifierProvider(
@@ -30,22 +34,25 @@ Future<void> main() async {
               ),
             );
           }
-          return const FlockMapApp();
+          return const DeFlockApp();
         },
       ),
     ),
   );
 }
 
-class FlockMapApp extends StatelessWidget {
-  const FlockMapApp({super.key});
+class DeFlockApp extends StatelessWidget {
+  const DeFlockApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flock Map',
+      title: 'DeFlock',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.green),
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: const Color(0xFF0080BC), // DeFlock blue
+          brightness: Brightness.dark,
+        ),
         useMaterial3: true,
       ),
       routes: {

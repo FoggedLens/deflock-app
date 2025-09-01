@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../app_state.dart';
+import '../../services/localization_service.dart';
 
 class MaxNodesSection extends StatefulWidget {
   const MaxNodesSection({super.key});
@@ -27,54 +28,61 @@ class _MaxNodesSectionState extends State<MaxNodesSection> {
 
   @override
   Widget build(BuildContext context) {
-    final appState = context.watch<AppState>();
-    final current = appState.maxCameras;
-    final showWarning = current > 1000;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        ListTile(
-          leading: const Icon(Icons.filter_alt),
-          title: const Text('Max nodes fetched/drawn'),
-          subtitle: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text('Set an upper limit for the number of nodes on the map (default: 250).'),
-              if (showWarning)
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 4.0),
-                  child: Row(
-                    children: const [
-                      Icon(Icons.warning, color: Colors.orange, size: 18),
-                      SizedBox(width: 6),
-                      Expanded(child: Text(
-                        'You probably don\'t want to do that unless you are absolutely sure you have a good reason for it.',
-                        style: TextStyle(color: Colors.orange),
-                      )),
-                    ],
-                  ),
-                ),
-            ],
-          ),
-          trailing: SizedBox(
-            width: 80,
-            child: TextFormField(
-              controller: _controller,
-              keyboardType: TextInputType.number,
-              decoration: const InputDecoration(
-                isDense: true,
-                contentPadding: EdgeInsets.symmetric(vertical: 6, horizontal: 8),
-                border: OutlineInputBorder(),
+    return AnimatedBuilder(
+      animation: LocalizationService.instance,
+      builder: (context, child) {
+        final locService = LocalizationService.instance;
+        final appState = context.watch<AppState>();
+        final current = appState.maxCameras;
+        final showWarning = current > 1000;
+        
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.filter_alt),
+              title: Text(locService.t('settings.maxNodes')),
+              subtitle: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(locService.t('settings.maxNodesSubtitle')),
+                  if (showWarning)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 4.0),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.warning, color: Colors.orange, size: 18),
+                          const SizedBox(width: 6),
+                          Expanded(child: Text(
+                            locService.t('settings.maxNodesWarning'),
+                            style: const TextStyle(color: Colors.orange),
+                          )),
+                        ],
+                      ),
+                    ),
+                ],
               ),
-              onFieldSubmitted: (value) {
-                final n = int.tryParse(value) ?? 10;
-                appState.maxCameras = n;
-                _controller.text = appState.maxCameras.toString();
-              },
+              trailing: SizedBox(
+                width: 80,
+                child: TextFormField(
+                  controller: _controller,
+                  keyboardType: TextInputType.number,
+                  decoration: const InputDecoration(
+                    isDense: true,
+                    contentPadding: EdgeInsets.symmetric(vertical: 6, horizontal: 8),
+                    border: OutlineInputBorder(),
+                  ),
+                  onFieldSubmitted: (value) {
+                    final n = int.tryParse(value) ?? 10;
+                    appState.maxCameras = n;
+                    _controller.text = appState.maxCameras.toString();
+                  },
+                ),
+              ),
             ),
-          ),
-        ),
-      ],
+          ],
+        );
+      },
     );
   }
 }

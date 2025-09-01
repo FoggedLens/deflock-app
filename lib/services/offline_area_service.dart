@@ -11,7 +11,7 @@ import 'offline_areas/world_area_manager.dart';
 import '../models/osm_camera_node.dart';
 import '../app_state.dart';
 import 'map_data_provider.dart';
-import 'package:flock_map_app/dev_config.dart';
+import 'package:deflockapp/dev_config.dart';
 
 /// Service for managing download, storage, and retrieval of offline map areas and cameras.
 class OfflineAreaService {
