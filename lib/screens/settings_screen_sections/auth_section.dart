@@ -30,18 +30,20 @@ class AuthSection extends StatelessWidget {
               onTap: () async {
                 if (appState.isLoggedIn) {
                   await appState.logout();
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(locService.t('auth.loggedOut')),
+                        backgroundColor: Colors.grey,
+                      ),
+                    );
+                  }
                 } else {
+                  // Start login flow - the user will be redirected to browser
                   await appState.forceLogin();
-                }
-                if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(appState.isLoggedIn
-                          ? locService.t('auth.loggedInAs', params: [appState.username])
-                          : locService.t('auth.loggedOut')),
-                      backgroundColor: appState.isLoggedIn ? Colors.green : Colors.grey,
-                    ),
-                  );
+                  
+                  // Don't show immediate feedback - the UI will update automatically
+                  // when the OAuth callback completes and notifyListeners() is called
                 }
               },
             ),
