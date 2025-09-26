@@ -64,6 +64,9 @@ class _DownloadAreaDialogState extends State<DownloadAreaDialog> {
     final nTiles = computeTileList(bounds, minZoom, maxZoom).length;
     final totalMb = (nTiles * kTileEstimateKb) / 1024.0;
     
+    // Debug logging to check calculation
+    debugPrint('[DownloadDialog] Tiles: $nTiles, EstimateKb: $kTileEstimateKb, Total MB: $totalMb');
+    
     setState(() {
       _minZoom = minZoom;
       _maxPossibleZoom = maxPossibleZoom;

@@ -6,7 +6,7 @@
     "title": "DeFlock"
   },
   "actions": {
-    "tagNode": "Knoten Markieren",
+    "tagNode": "Neuer Knoten",
     "download": "Herunterladen",
     "settings": "Einstellungen",
     "edit": "Bearbeiten",

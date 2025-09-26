@@ -57,10 +57,10 @@ class MapOverlays extends StatelessWidget {
             ),
           ),
 
-        // Zoom indicator, positioned above scale bar
+        // Zoom indicator, positioned relative to button bar
         Positioned(
           left: 10,
-          bottom: kZoomIndicatorBottomOffset,
+          bottom: bottomPositionFromButtonBar(kZoomIndicatorSpacingAboveButtonBar, MediaQuery.of(context).padding.bottom),
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
             decoration: BoxDecoration(
@@ -83,10 +83,10 @@ class MapOverlays extends StatelessWidget {
           ),
         ),
 
-        // Attribution overlay
+        // Attribution overlay, positioned relative to button bar
         if (attribution != null)
           Positioned(
-            bottom: kAttributionBottomOffset,
+            bottom: bottomPositionFromButtonBar(kAttributionSpacingAboveButtonBar, MediaQuery.of(context).padding.bottom),
             left: 10,
             child: Container(
               decoration: BoxDecoration(
@@ -104,9 +104,9 @@ class MapOverlays extends StatelessWidget {
             ),
           ),
 
-        // Zoom and layer controls (bottom-right)
+        // Zoom and layer controls (bottom-right), positioned relative to button bar
         Positioned(
-          bottom: 80,
+          bottom: bottomPositionFromButtonBar(kZoomControlsSpacingAboveButtonBar, MediaQuery.of(context).padding.bottom),
           right: 16,
           child: Column(
             children: [

@@ -23,7 +23,7 @@ Future<void> main() async {
             // You can customize this splash/loading screen as needed
             return MaterialApp(
               home: Scaffold(
-                backgroundColor: Color(0xFF202020),
+                backgroundColor: Color(0xFF152131),
                 body: Center(
                   child: Image.asset(
                     'assets/app_icon.png',

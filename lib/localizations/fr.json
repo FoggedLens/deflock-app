@@ -6,7 +6,7 @@
     "title": "DeFlock"
   },
   "actions": {
-    "tagNode": "Marquer Nœud",
+    "tagNode": "Nouveau Nœud",
     "download": "Télécharger",
     "settings": "Paramètres",
     "edit": "Modifier",

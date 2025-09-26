@@ -201,7 +201,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               alignment: Alignment.bottomCenter,
               child: Padding(
                 padding: EdgeInsets.only(
-                  bottom: MediaQuery.of(context).padding.bottom + kBottomButtonBarMargin,
+                  bottom: MediaQuery.of(context).padding.bottom + kBottomButtonBarOffset,
                   left: 8,
                   right: 8,
                 ),
@@ -217,7 +217,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                       )
                     ],
                   ),
-                  margin: EdgeInsets.only(bottom: kBottomButtonBarMargin),
+                  margin: EdgeInsets.only(bottom: kBottomButtonBarOffset),
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                   child: Row(
                     children: [

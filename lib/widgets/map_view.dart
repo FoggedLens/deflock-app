@@ -332,10 +332,13 @@ class MapViewState extends State<MapView> {
               selectedTileType: appState.selectedTileType,
             ),
             cameraLayers,
-            // Built-in scale bar from flutter_map 
+            // Built-in scale bar from flutter_map, positioned relative to button bar
             Scalebar(
               alignment: Alignment.bottomLeft,
-              padding: EdgeInsets.only(left: 8, bottom: kScaleBarBottomOffset), // from dev_config
+              padding: EdgeInsets.only(
+                left: 8, 
+                bottom: bottomPositionFromButtonBar(kScaleBarSpacingAboveButtonBar, MediaQuery.of(context).padding.bottom)
+              ),
               textStyle: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
               lineColor: Colors.black,
               strokeWidth: 3,

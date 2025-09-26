@@ -6,7 +6,7 @@
     "title": "DeFlock"
   },
   "actions": {
-    "tagNode": "Etiquetar Nodo",
+    "tagNode": "Nuevo Nodo",
     "download": "Descargar",
     "settings": "Configuración",
     "edit": "Editar",

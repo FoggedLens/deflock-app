@@ -13,13 +13,20 @@ const double kDirectionConeHalfAngle = 30.0; // degrees
 const double kDirectionConeBaseLength = 0.001; // multiplier
 const Color kDirectionConeColor = Color(0xFF000000); // FOV cone color
 
-// Margin (bottom) for positioning the floating bottom button bar
-const double kBottomButtonBarMargin = 4.0;
+// Bottom button bar positioning
+const double kBottomButtonBarOffset = 4.0; // Distance from screen bottom (above safe area)
+const double kButtonBarHeight = 60.0; // Button height (48) + padding (12)
 
-// Map overlay (attribution, scale bar, zoom) vertical offset from bottom edge
-const double kAttributionBottomOffset = 110.0;
-const double kZoomIndicatorBottomOffset = 142.0;
-const double kScaleBarBottomOffset = 170.0;
+// Map overlay spacing relative to button bar top
+const double kAttributionSpacingAboveButtonBar = 10.0; // Attribution above button bar top
+const double kZoomIndicatorSpacingAboveButtonBar = 40.0; // Zoom indicator above button bar top  
+const double kScaleBarSpacingAboveButtonBar = 70.0; // Scale bar above button bar top
+const double kZoomControlsSpacingAboveButtonBar = 20.0; // Zoom controls above button bar top
+
+// Helper to calculate bottom position relative to button bar
+double bottomPositionFromButtonBar(double spacingAboveButtonBar, double safeAreaBottom) {
+  return safeAreaBottom + kBottomButtonBarOffset + kButtonBarHeight + spacingAboveButtonBar;
+}
 
 // Add Camera icon vertical offset (no offset needed since circle is centered)
 const double kAddPinYOffset = 0.0;
