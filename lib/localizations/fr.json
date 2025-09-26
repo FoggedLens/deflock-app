@@ -211,5 +211,27 @@
     "deleteOperatorProfile": "Supprimer Profil d'Opérateur",
     "deleteOperatorProfileConfirm": "Êtes-vous sûr de vouloir supprimer \"{}\"?",
     "operatorProfileDeleted": "Profil d'opérateur supprimé"
+  },
+  "offlineAreas": {
+    "noAreasTitle": "Aucune zone hors ligne",
+    "noAreasSubtitle": "Téléchargez une zone de carte pour utilisation hors ligne.",
+    "provider": "Fournisseur",
+    "zoomLevels": "Z{}-{}",
+    "latitude": "Lat",
+    "longitude": "Lon",
+    "tiles": "Tuiles",
+    "size": "Taille",
+    "cameras": "Caméras",
+    "areaIdFallback": "Zone {}...",
+    "renameArea": "Renommer la zone",
+    "refreshWorldTiles": "Actualiser/re-télécharger les tuiles mondiales",
+    "deleteOfflineArea": "Supprimer la zone hors ligne",
+    "cancelDownload": "Annuler le téléchargement",
+    "renameAreaDialogTitle": "Renommer la Zone Hors Ligne",
+    "areaNameLabel": "Nom de la Zone",
+    "renameButton": "Renommer",
+    "megabytes": "Mo",
+    "kilobytes": "Ko",
+    "progress": "{}%"
   }
 }

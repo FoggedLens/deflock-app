@@ -211,5 +211,27 @@
     "deleteOperatorProfile": "Betreiber-Profil Löschen",
     "deleteOperatorProfileConfirm": "Sind Sie sicher, dass Sie \"{}\" löschen möchten?",
     "operatorProfileDeleted": "Betreiber-Profil gelöscht"
+  },
+  "offlineAreas": {
+    "noAreasTitle": "Keine Offline-Bereiche",
+    "noAreasSubtitle": "Laden Sie einen Kartenbereich für die Offline-Nutzung herunter.",
+    "provider": "Anbieter",
+    "zoomLevels": "Z{}-{}",
+    "latitude": "Breite",
+    "longitude": "Länge",
+    "tiles": "Kacheln",
+    "size": "Größe",
+    "cameras": "Kameras",
+    "areaIdFallback": "Bereich {}...",
+    "renameArea": "Bereich umbenennen",
+    "refreshWorldTiles": "Welt-Kacheln aktualisieren/neu herunterladen",
+    "deleteOfflineArea": "Offline-Bereich löschen",
+    "cancelDownload": "Download abbrechen",
+    "renameAreaDialogTitle": "Offline-Bereich Umbenennen",
+    "areaNameLabel": "Bereichsname",
+    "renameButton": "Umbenennen",
+    "megabytes": "MB",
+    "kilobytes": "KB",
+    "progress": "{}%"
   }
 }

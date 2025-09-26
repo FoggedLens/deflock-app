@@ -211,5 +211,27 @@
     "deleteOperatorProfile": "Delete Operator Profile",
     "deleteOperatorProfileConfirm": "Are you sure you want to delete \"{}\"?",
     "operatorProfileDeleted": "Operator profile deleted"
+  },
+  "offlineAreas": {
+    "noAreasTitle": "No offline areas",
+    "noAreasSubtitle": "Download a map area for offline use.",
+    "provider": "Provider",
+    "zoomLevels": "Z{}-{}",
+    "latitude": "Lat",
+    "longitude": "Lon",
+    "tiles": "Tiles",
+    "size": "Size",
+    "cameras": "Cameras",
+    "areaIdFallback": "Area {}...",
+    "renameArea": "Rename area",
+    "refreshWorldTiles": "Refresh/re-download world tiles",
+    "deleteOfflineArea": "Delete offline area",
+    "cancelDownload": "Cancel download",
+    "renameAreaDialogTitle": "Rename Offline Area",
+    "areaNameLabel": "Area Name",
+    "renameButton": "Rename",
+    "megabytes": "MB",
+    "kilobytes": "KB",
+    "progress": "{}%"
   }
 }

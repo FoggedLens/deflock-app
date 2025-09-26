@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../services/offline_area_service.dart';
 import '../../services/offline_areas/offline_area_models.dart';
+import '../../services/localization_service.dart';
 
 class OfflineAreasSection extends StatefulWidget {
   const OfflineAreasSection({super.key});
@@ -25,35 +26,42 @@ class _OfflineAreasSectionState extends State<OfflineAreasSection> {
 
   @override
   Widget build(BuildContext context) {
-    final areas = service.offlineAreas;
-    if (areas.isEmpty) {
-      return const ListTile(
-        leading: Icon(Icons.download_for_offline),
-        title: Text('No offline areas'),
-        subtitle: Text('Download a map area for offline use.'),
-      );
-    }
-    return Column(
-      children: areas.map((area) {
-        String diskStr = area.sizeBytes > 0
-            ? area.sizeBytes > 1024 * 1024
-                ? "${(area.sizeBytes / (1024 * 1024)).toStringAsFixed(2)} MB"
-                : "${(area.sizeBytes / 1024).toStringAsFixed(1)} KB"
-            : '--';
-        String subtitle =
-            'Provider: ${area.tileProviderDisplay}\n' +
-            'Z${area.minZoom}-${area.maxZoom}\n' +
-                'Lat: ${area.bounds.southWest.latitude.toStringAsFixed(3)}, ${area.bounds.southWest.longitude.toStringAsFixed(3)}\n' +
-                'Lat: ${area.bounds.northEast.latitude.toStringAsFixed(3)}, ${area.bounds.northEast.longitude.toStringAsFixed(3)}';
-        if (area.status == OfflineAreaStatus.downloading) {
-          subtitle += '\nTiles: ${area.tilesDownloaded} / ${area.tilesTotal}';
-        } else {
-          subtitle += '\nTiles: ${area.tilesTotal}';
+    return AnimatedBuilder(
+      animation: LocalizationService.instance,
+      builder: (context, child) {
+        final locService = LocalizationService.instance;
+        final areas = service.offlineAreas;
+        
+        if (areas.isEmpty) {
+          return ListTile(
+            leading: const Icon(Icons.download_for_offline),
+            title: Text(locService.t('offlineAreas.noAreasTitle')),
+            subtitle: Text(locService.t('offlineAreas.noAreasSubtitle')),
+          );
         }
-        subtitle += '\nSize: $diskStr';
-        if (!area.isPermanent) {
-          subtitle += '\nCameras: ${area.cameras.length}';
-        }
+        
+        return Column(
+          children: areas.map((area) {
+            String diskStr = area.sizeBytes > 0
+                ? area.sizeBytes > 1024 * 1024
+                    ? "${(area.sizeBytes / (1024 * 1024)).toStringAsFixed(2)} ${locService.t('offlineAreas.megabytes')}"
+                    : "${(area.sizeBytes / 1024).toStringAsFixed(1)} ${locService.t('offlineAreas.kilobytes')}"
+                : '--';
+                
+            String subtitle = '${locService.t('offlineAreas.provider')}: ${area.tileProviderDisplay}\n' +
+                locService.t('offlineAreas.zoomLevels', params: [area.minZoom.toString(), area.maxZoom.toString()]) + '\n' +
+                '${locService.t('offlineAreas.latitude')}: ${area.bounds.southWest.latitude.toStringAsFixed(3)}, ${area.bounds.southWest.longitude.toStringAsFixed(3)}\n' +
+                '${locService.t('offlineAreas.latitude')}: ${area.bounds.northEast.latitude.toStringAsFixed(3)}, ${area.bounds.northEast.longitude.toStringAsFixed(3)}';
+                
+            if (area.status == OfflineAreaStatus.downloading) {
+              subtitle += '\n${locService.t('offlineAreas.tiles')}: ${area.tilesDownloaded} / ${area.tilesTotal}';
+            } else {
+              subtitle += '\n${locService.t('offlineAreas.tiles')}: ${area.tilesTotal}';
+            }
+            subtitle += '\n${locService.t('offlineAreas.size')}: $diskStr';
+            if (!area.isPermanent) {
+              subtitle += '\n${locService.t('offlineAreas.cameras')}: ${area.cameras.length}';
+            }
         return Card(
           child: ListTile(
             leading: Icon(area.status == OfflineAreaStatus.complete
@@ -66,35 +74,35 @@ class _OfflineAreasSectionState extends State<OfflineAreasSection> {
                 Expanded(
                   child: Text(area.name.isNotEmpty
                       ? area.name
-                      : 'Area ${area.id.substring(0, 6)}...'),
+                      : locService.t('offlineAreas.areaIdFallback', params: [area.id.substring(0, 6)])),
                 ),
                 if (!area.isPermanent)
                   IconButton(
                     icon: const Icon(Icons.edit, size: 20),
-                    tooltip: 'Rename area',
+                    tooltip: locService.t('offlineAreas.renameArea'),
                     onPressed: () async {
                       String? newName = await showDialog<String>(
                         context: context,
                         builder: (ctx) {
                           final ctrl = TextEditingController(text: area.name);
                           return AlertDialog(
-                            title: const Text('Rename Offline Area'),
+                            title: Text(locService.t('offlineAreas.renameAreaDialogTitle')),
                             content: TextField(
                               controller: ctrl,
                               maxLength: 40,
-                              decoration: const InputDecoration(labelText: 'Area Name'),
+                              decoration: InputDecoration(labelText: locService.t('offlineAreas.areaNameLabel')),
                               autofocus: true,
                             ),
                             actions: [
                               TextButton(
                                 onPressed: () => Navigator.pop(ctx),
-                                child: const Text('Cancel'),
+                                child: Text(locService.t('actions.cancel')),
                               ),
                               ElevatedButton(
                                 onPressed: () {
                                   Navigator.pop(ctx, ctrl.text.trim());
                                 },
-                                child: const Text('Rename'),
+                                child: Text(locService.t('offlineAreas.renameButton')),
                               ),
                             ],
                           );
@@ -111,7 +119,7 @@ class _OfflineAreasSectionState extends State<OfflineAreasSection> {
                 if (area.isPermanent && area.status != OfflineAreaStatus.downloading)
                   IconButton(
                     icon: const Icon(Icons.refresh, color: Colors.blue),
-                    tooltip: 'Refresh/re-download world tiles',
+                    tooltip: locService.t('offlineAreas.refreshWorldTiles'),
                     onPressed: () async {
                       await service.downloadArea(
                         id: area.id,
@@ -133,7 +141,7 @@ class _OfflineAreasSectionState extends State<OfflineAreasSection> {
                 else if (!area.isPermanent && area.status != OfflineAreaStatus.downloading)
                   IconButton(
                     icon: const Icon(Icons.delete, color: Colors.red),
-                    tooltip: 'Delete offline area',
+                    tooltip: locService.t('offlineAreas.deleteOfflineArea'),
                     onPressed: () async {
                       service.deleteArea(area.id);
                       setState(() {});
@@ -154,7 +162,7 @@ class _OfflineAreasSectionState extends State<OfflineAreasSection> {
                           children: [
                             LinearProgressIndicator(value: area.progress),
                             Text(
-                              '${(area.progress * 100).toStringAsFixed(0)}%',
+                              locService.t('offlineAreas.progress', params: [(area.progress * 100).toStringAsFixed(0)]),
                               style: const TextStyle(fontSize: 12),
                             )
                           ],
@@ -162,7 +170,7 @@ class _OfflineAreasSectionState extends State<OfflineAreasSection> {
                       ),
                       IconButton(
                         icon: const Icon(Icons.cancel, color: Colors.orange),
-                        tooltip: 'Cancel download',
+                        tooltip: locService.t('offlineAreas.cancelDownload'),
                         onPressed: () {
                           service.cancelDownload(area.id);
                           setState(() {});
@@ -178,8 +186,10 @@ class _OfflineAreasSectionState extends State<OfflineAreasSection> {
                   }
                 : null,
           ),
-        );
-      }).toList(),
+          );
+        }).toList(),
+      );
+      },
     );
   }
 }

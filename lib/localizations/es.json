@@ -211,5 +211,27 @@
     "deleteOperatorProfile": "Eliminar Perfil de Operador",
     "deleteOperatorProfileConfirm": "¿Está seguro de que desea eliminar \"{}\"?",
     "operatorProfileDeleted": "Perfil de operador eliminado"
+  },
+  "offlineAreas": {
+    "noAreasTitle": "Sin áreas sin conexión",
+    "noAreasSubtitle": "Descarga un área del mapa para uso sin conexión.",
+    "provider": "Proveedor",
+    "zoomLevels": "Z{}-{}",
+    "latitude": "Lat",
+    "longitude": "Lon",
+    "tiles": "Teselas",
+    "size": "Tamaño",
+    "cameras": "Cámaras",
+    "areaIdFallback": "Área {}...",
+    "renameArea": "Renombrar área",
+    "refreshWorldTiles": "Actualizar/re-descargar teselas mundiales",
+    "deleteOfflineArea": "Eliminar área sin conexión",
+    "cancelDownload": "Cancelar descarga",
+    "renameAreaDialogTitle": "Renombrar Área Sin Conexión",
+    "areaNameLabel": "Nombre del Área",
+    "renameButton": "Renombrar",
+    "megabytes": "MB",
+    "kilobytes": "KB",
+    "progress": "{}%"
   }
 }
