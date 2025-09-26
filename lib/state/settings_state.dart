@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:collection/collection.dart';
 
 import '../models/tile_provider.dart';
+import '../dev_config.dart';
 
 // Enum for upload mode (Production, OSM Sandbox, Simulate)
 enum UploadMode { production, sandbox, simulate }
@@ -26,7 +27,7 @@ class SettingsState extends ChangeNotifier {
 
   bool _offlineMode = false;
   int _maxCameras = 250;
-  UploadMode _uploadMode = UploadMode.simulate;
+  UploadMode _uploadMode = kEnableDevelopmentModes ? UploadMode.simulate : UploadMode.production;
   FollowMeMode _followMeMode = FollowMeMode.northUp;
   List<TileProvider> _tileProviders = [];
   String _selectedTileTypeId = '';
@@ -95,6 +96,13 @@ class SettingsState extends ChangeNotifier {
       final legacy = prefs.getBool(_legacyTestModePrefsKey) ?? false;
       _uploadMode = legacy ? UploadMode.simulate : UploadMode.production;
       await prefs.remove(_legacyTestModePrefsKey);
+      await prefs.setInt(_uploadModePrefsKey, _uploadMode.index);
+    }
+    
+    // In production builds, force production mode if development modes are disabled
+    if (!kEnableDevelopmentModes && _uploadMode != UploadMode.production) {
+      debugPrint('SettingsState: Development modes disabled, forcing production mode');
+      _uploadMode = UploadMode.production;
       await prefs.setInt(_uploadModePrefsKey, _uploadMode.index);
     }
     
@@ -170,6 +178,12 @@ class SettingsState extends ChangeNotifier {
   }
 
   Future<void> setUploadMode(UploadMode mode) async {
+    // In production builds, only allow production mode
+    if (!kEnableDevelopmentModes && mode != UploadMode.production) {
+      debugPrint('SettingsState: Development modes disabled, forcing production mode');
+      mode = UploadMode.production;
+    }
+    
     _uploadMode = mode;
     final prefs = await SharedPreferences.getInstance();
     await prefs.setInt(_uploadModePrefsKey, mode.index);

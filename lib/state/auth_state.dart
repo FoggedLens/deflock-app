@@ -18,7 +18,7 @@ class AuthState extends ChangeNotifier {
     
     try {
       if (await _auth.isLoggedIn()) {
-        _username = await _auth.login();
+        _username = await _auth.restoreLogin();
       }
     } catch (e) {
       print("AuthState: Error during auth initialization: $e");
@@ -44,7 +44,7 @@ class AuthState extends ChangeNotifier {
   Future<void> refreshAuthState() async {
     try {
       if (await _auth.isLoggedIn()) {
-        _username = await _auth.login();
+        _username = await _auth.restoreLogin();
       } else {
         _username = null;
       }
@@ -83,7 +83,7 @@ class AuthState extends ChangeNotifier {
       if (await _auth.isLoggedIn()) {
         final isValid = await validateToken();
         if (isValid) {
-          _username = await _auth.login();
+          _username = await _auth.restoreLogin();
         } else {
           await logout(); // This clears _username also.
         }

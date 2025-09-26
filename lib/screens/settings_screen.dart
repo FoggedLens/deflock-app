@@ -11,6 +11,7 @@ import 'settings_screen_sections/max_nodes_section.dart';
 import 'settings_screen_sections/tile_provider_section.dart';
 import 'settings_screen_sections/language_section.dart';
 import '../services/localization_service.dart';
+import '../dev_config.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -23,28 +24,31 @@ class SettingsScreen extends StatelessWidget {
         appBar: AppBar(title: Text(LocalizationService.instance.t('settings.title'))),
         body: ListView(
           padding: const EdgeInsets.all(16),
-          children: const [
-            UploadModeSection(),
-            Divider(),
-            AuthSection(),
-            Divider(),
-            QueueSection(),
-            Divider(),
-            ProfileListSection(),
-            Divider(),
-            OperatorProfileListSection(),
-            Divider(),
-            MaxNodesSection(),
-            Divider(),
-            TileProviderSection(),
-            Divider(),
-            OfflineModeSection(),
-            Divider(),
-            OfflineAreasSection(),
-            Divider(),
-            LanguageSection(),
-            Divider(),
-            AboutSection(),
+          children: [
+            // Only show upload mode section in development builds
+            if (kEnableDevelopmentModes) ...[
+              const UploadModeSection(),
+              const Divider(),
+            ],
+            const AuthSection(),
+            const Divider(),
+            const QueueSection(),
+            const Divider(),
+            const ProfileListSection(),
+            const Divider(),
+            const OperatorProfileListSection(),
+            const Divider(),
+            const MaxNodesSection(),
+            const Divider(),
+            const TileProviderSection(),
+            const Divider(),
+            const OfflineModeSection(),
+            const Divider(),
+            const OfflineAreasSection(),
+            const Divider(),
+            const LanguageSection(),
+            const Divider(),
+            const AboutSection(),
           ],
         ),
       ),

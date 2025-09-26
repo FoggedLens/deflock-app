@@ -106,6 +106,36 @@ class AuthService {
     }
   }
 
+  // Restore login state from stored token (for app startup)
+  Future<String?> restoreLogin() async {
+    if (_mode == UploadMode.simulate) {
+      final prefs = await SharedPreferences.getInstance();
+      final isLoggedIn = prefs.getBool('sim_user_logged_in') ?? false;
+      if (isLoggedIn) {
+        _displayName = 'Demo User';
+        return _displayName;
+      }
+      return null;
+    }
+    
+    // Get stored token directly from SharedPreferences
+    final accessToken = await getAccessToken();
+    if (accessToken == null) {
+      return null;
+    }
+    
+    try {
+      _displayName = await _fetchUsername(accessToken);
+      return _displayName;
+    } catch (e) {
+      print('AuthService: Error restoring login with stored token: $e');
+      log('Error restoring login with stored token: $e');
+      // Token might be expired or invalid, clear it
+      await logout();
+      return null;
+    }
+  }
+
   Future<void> logout() async {
     if (_mode == UploadMode.simulate) {
       final prefs = await SharedPreferences.getInstance();

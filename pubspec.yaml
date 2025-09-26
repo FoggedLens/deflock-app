@@ -43,7 +43,7 @@ flutter:
     - lib/localizations/
 
 flutter_native_splash:
-  color: "#202020"
+  color: "#152131"
   image: assets/app_icon.png
   android: true
   ios: true
