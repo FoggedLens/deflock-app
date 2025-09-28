@@ -60,7 +60,7 @@ class _OfflineAreasSectionState extends State<OfflineAreasSection> {
             }
             subtitle += '\n${locService.t('offlineAreas.size')}: $diskStr';
             if (!area.isPermanent) {
-              subtitle += '\n${locService.t('offlineAreas.cameras')}: ${area.cameras.length}';
+              subtitle += '\n${locService.t('offlineAreas.cameras')}: ${area.nodes.length}';
             }
         return Card(
           child: ListTile(

@@ -45,16 +45,16 @@ class OfflineAreaDownloader {
       getAreaSizeBytes: getAreaSizeBytes,
     );
 
-    // Download cameras for non-permanent areas
+    // Download nodes for non-permanent areas
     if (!area.isPermanent) {
-      await _downloadCameras(
+      await _downloadNodes(
         area: area,
         bounds: bounds,
         minZoom: minZoom,
         directory: directory,
       );
     } else {
-      area.cameras = [];
+      area.nodes = [];
     }
 
     return success;
@@ -138,26 +138,29 @@ class OfflineAreaDownloader {
     return missingTiles;
   }
 
-  /// Download cameras for the area with expanded bounds
-  static Future<void> _downloadCameras({
+  /// Download nodes for the area with modest expansion (one zoom level lower)
+  static Future<void> _downloadNodes({
     required OfflineArea area,
     required LatLngBounds bounds,
     required int minZoom,
     required String directory,
   }) async {
-    // Calculate expanded camera bounds that cover the entire tile area at minimum zoom
-    final cameraBounds = _calculateCameraBounds(bounds, minZoom);
-    final cameras = await MapDataProvider().getAllNodesForDownload(
-      bounds: cameraBounds,
+    // Modest expansion: use tiles at minZoom + 1 instead of minZoom
+    // This gives a reasonable buffer without capturing entire states
+    final nodeZoom = (minZoom + 1).clamp(8, 16); // Reasonable bounds for node fetching
+    final expandedNodeBounds = _calculateNodeBounds(bounds, nodeZoom);
+    
+    final nodes = await MapDataProvider().getAllNodesForDownload(
+      bounds: expandedNodeBounds,
       profiles: AppState.instance.profiles, // Use ALL profiles, not just enabled ones
     );
-    area.cameras = cameras;
-    await OfflineAreaDownloader.saveCameras(cameras, directory);
-    debugPrint('Area ${area.id}: Downloaded ${cameras.length} cameras from expanded bounds (all profiles)');
+    area.nodes = nodes;
+    await OfflineAreaDownloader.saveNodes(nodes, directory);
+    debugPrint('Area ${area.id}: Downloaded ${nodes.length} nodes from modestly expanded bounds (zoom $nodeZoom vs tile minZoom $minZoom)');
   }
 
   /// Calculate expanded bounds that cover the entire tile area at minimum zoom
-  static LatLngBounds _calculateCameraBounds(LatLngBounds visibleBounds, int minZoom) {
+  static LatLngBounds _calculateNodeBounds(LatLngBounds visibleBounds, int minZoom) {
     final tiles = computeTileList(visibleBounds, minZoom, minZoom);
     if (tiles.isEmpty) return visibleBounds;
     
@@ -188,9 +191,9 @@ class OfflineAreaDownloader {
     await file.writeAsBytes(bytes);
   }
 
-  /// Save cameras to disk as JSON
-  static Future<void> saveCameras(List<OsmCameraNode> cams, String dir) async {
-    final file = File('$dir/cameras.json');
-    await file.writeAsString(jsonEncode(cams.map((c) => c.toJson()).toList()));
+  /// Save nodes to disk as JSON
+  static Future<void> saveNodes(List<OsmCameraNode> nodes, String dir) async {
+    final file = File('$dir/nodes.json');
+    await file.writeAsString(jsonEncode(nodes.map((n) => n.toJson()).toList()));
   }
 }

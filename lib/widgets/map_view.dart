@@ -300,8 +300,8 @@ class MapViewState extends State<MapView> {
                 appState.updateEditSession(target: pos.center);
               }
               
-              // Show waiting indicator when map moves (user is expecting new content)
-              NetworkStatus.instance.setWaiting();
+              // Start dual-source waiting when map moves (user is expecting new tiles AND nodes)
+              NetworkStatus.instance.setDualSourceWaiting();
               
               // Only clear tile queue on significant ZOOM changes (not panning)
               final currentZoom = pos.zoom;
@@ -323,6 +323,9 @@ class MapViewState extends State<MapView> {
               // Request more cameras on any map movement/zoom at valid zoom level (slower debounce)
               if (pos.zoom >= 10) {
                 _cameraDebounce(_refreshCamerasFromProvider);
+              } else {
+                // Skip nodes at low zoom - report immediate completion (brutalist approach)
+                NetworkStatus.instance.reportNodeComplete();
               }
             },
           ),

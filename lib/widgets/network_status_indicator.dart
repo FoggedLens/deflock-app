@@ -35,7 +35,7 @@ class NetworkStatusIndicator extends StatelessWidget {
               break;
 
             case NetworkStatusType.success:
-              message = 'Tiles loaded';
+              message = 'Done';
               icon = Icons.check_circle;
               color = Colors.green;
               break;
@@ -43,7 +43,7 @@ class NetworkStatusIndicator extends StatelessWidget {
             case NetworkStatusType.issues:
               switch (networkStatus.currentIssueType) {
                 case NetworkIssueType.osmTiles:
-                  message = 'OSM tiles slow';
+                  message = 'Tile provider slow';
                   icon = Icons.map_outlined;
                   color = Colors.orange;
                   break;

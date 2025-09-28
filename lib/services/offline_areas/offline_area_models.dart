@@ -17,7 +17,7 @@ class OfflineArea {
   double progress; // 0.0 - 1.0
   int tilesDownloaded;
   int tilesTotal;
-  List<OsmCameraNode> cameras;
+  List<OsmCameraNode> nodes;
   int sizeBytes; // Disk size in bytes
   final bool isPermanent; // Not user-deletable if true
   
@@ -38,7 +38,7 @@ class OfflineArea {
     this.progress = 0,
     this.tilesDownloaded = 0,
     this.tilesTotal = 0,
-    this.cameras = const [],
+    this.nodes = const [],
     this.sizeBytes = 0,
     this.isPermanent = false,
     this.tileProviderId,
@@ -61,7 +61,7 @@ class OfflineArea {
     'progress': progress,
     'tilesDownloaded': tilesDownloaded,
     'tilesTotal': tilesTotal,
-    'cameras': cameras.map((c) => c.toJson()).toList(),
+    'nodes': nodes.map((n) => n.toJson()).toList(),
     'sizeBytes': sizeBytes,
     'isPermanent': isPermanent,
     'tileProviderId': tileProviderId,
@@ -87,7 +87,7 @@ class OfflineArea {
       progress: (json['progress'] ?? 0).toDouble(),
       tilesDownloaded: json['tilesDownloaded'] ?? 0,
       tilesTotal: json['tilesTotal'] ?? 0,
-      cameras: (json['cameras'] as List? ?? [])
+      nodes: (json['nodes'] as List? ?? json['cameras'] as List? ?? [])
           .map((e) => OsmCameraNode.fromJson(e)).toList(),
       sizeBytes: json['sizeBytes'] ?? 0,
       isPermanent: json['isPermanent'] ?? false,

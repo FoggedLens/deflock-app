@@ -9,6 +9,7 @@ import 'map_data_submodules/nodes_from_overpass.dart';
 import 'map_data_submodules/tiles_from_remote.dart';
 import 'map_data_submodules/nodes_from_local.dart';
 import 'map_data_submodules/tiles_from_local.dart';
+import 'network_status.dart';
 
 enum MapSource { local, remote, auto } // For future use
 
@@ -39,6 +40,7 @@ class MapDataProvider {
     UploadMode uploadMode = UploadMode.production,
     MapSource source = MapSource.auto,
   }) async {
+    try {
     final offline = AppState.instance.offlineMode;
 
     // Explicit remote request: error if offline, else always remote
@@ -62,7 +64,7 @@ class MapDataProvider {
       );
     }
 
-    // AUTO: default = remote first, fallback to local only if offline
+    // AUTO: In offline mode, only fetch local. In online mode, fetch both remote and local, then merge.
     if (offline) {
       return fetchLocalNodes(
         bounds: bounds,
@@ -70,22 +72,52 @@ class MapDataProvider {
         maxNodes: AppState.instance.maxCameras,
       );
     } else {
-      // Try remote, fallback to local ONLY if remote throws (optional, could be removed for stricter behavior)
-      try {
-        return await fetchOverpassNodes(
-          bounds: bounds,
-          profiles: profiles,
-          uploadMode: uploadMode,
-          maxResults: AppState.instance.maxCameras,
-        );
-      } catch (e) {
-        debugPrint('[MapDataProvider] Remote node fetch failed, error: $e. Falling back to local.');
-      return fetchLocalNodes(
+      // Online mode: fetch both remote and local, then merge with deduplication
+      final List<Future<List<OsmCameraNode>>> futures = [];
+      
+      // Always try to get local nodes (fast, cached)
+      futures.add(fetchLocalNodes(
         bounds: bounds,
         profiles: profiles,
         maxNodes: AppState.instance.maxCameras,
-      );
+      ));
+      
+      // Always try to get remote nodes (slower, fresh data)
+      futures.add(fetchOverpassNodes(
+        bounds: bounds,
+        profiles: profiles,
+        uploadMode: uploadMode,
+        maxResults: AppState.instance.maxCameras,
+      ).catchError((e) {
+        debugPrint('[MapDataProvider] Remote node fetch failed, error: $e. Continuing with local only.');
+        return <OsmCameraNode>[]; // Return empty list on remote failure
+      }));
+      
+      // Wait for both, then merge with deduplication by node ID
+      final results = await Future.wait(futures);
+      final localNodes = results[0];
+      final remoteNodes = results[1];
+      
+      // Merge with deduplication - prefer remote data over local for same node ID
+      final Map<int, OsmCameraNode> mergedNodes = {};
+      
+      // Add local nodes first
+      for (final node in localNodes) {
+        mergedNodes[node.id] = node;
       }
+      
+      // Add remote nodes, overwriting any local duplicates
+      for (final node in remoteNodes) {
+        mergedNodes[node.id] = node;
+      }
+      
+      // Apply maxCameras limit to the merged result
+      final finalNodes = mergedNodes.values.take(AppState.instance.maxCameras).toList();
+      return finalNodes;
+    }
+    } finally {
+      // Always report node completion, regardless of success or failure
+      NetworkStatus.instance.reportNodeComplete();
     }
   }
 
@@ -95,7 +127,7 @@ class MapDataProvider {
     required LatLngBounds bounds,
     required List<NodeProfile> profiles,
     UploadMode uploadMode = UploadMode.production,
-    int pageSize = 500,
+    int maxResults = 0, // 0 = no limit for offline downloads
     int maxTries = 3,
   }) async {
     final offline = AppState.instance.offlineMode;
@@ -106,7 +138,7 @@ class MapDataProvider {
       bounds: bounds,
       profiles: profiles,
       uploadMode: uploadMode,
-      maxResults: pageSize,
+      maxResults: maxResults, // Pass 0 for unlimited
     );
   }
 

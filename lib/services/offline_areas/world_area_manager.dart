@@ -71,7 +71,7 @@ class WorldAreaManager {
         progress: world.progress,
         tilesDownloaded: world.tilesDownloaded,
         tilesTotal: world.tilesTotal,
-        cameras: world.cameras,
+        nodes: world.nodes,
         sizeBytes: world.sizeBytes,
         isPermanent: world.isPermanent,
         // Add missing provider metadata

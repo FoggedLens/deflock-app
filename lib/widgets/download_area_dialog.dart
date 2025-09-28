@@ -55,7 +55,7 @@ class _DownloadAreaDialogState extends State<DownloadAreaDialog> {
       );
     }
     
-    final minZoom = kWorldMaxZoom + 1;
+    final minZoom = 1; // Always start from zoom 1 to show area overview when zoomed out
     final maxZoom = _zoom.toInt();
     
     // Calculate maximum possible zoom based on tile count limit

@@ -82,11 +82,14 @@ String _buildOverpassQuery(LatLngBounds bounds, List<NodeProfile> profiles, int 
     return 'node$tagFilters(${bounds.southWest.latitude},${bounds.southWest.longitude},${bounds.northEast.latitude},${bounds.northEast.longitude});';
   }).join('\n      ');
 
+  // Use unlimited output if maxResults is 0
+  final outputClause = maxResults > 0 ? 'out body $maxResults;' : 'out body;';
+  
   return '''
 [out:json][timeout:25];
 (
   $nodeClauses
 );
-out body $maxResults;
+$outputClause
 ''';
 }

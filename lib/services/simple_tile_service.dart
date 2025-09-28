@@ -10,6 +10,9 @@ import 'network_status.dart';
 class SimpleTileHttpClient extends http.BaseClient {
   final http.Client _inner = http.Client();
   final MapDataProvider _mapDataProvider = MapDataProvider();
+  
+  // Tile completion tracking (brutalist approach)
+  int _pendingTileRequests = 0;
 
   @override
   Future<http.StreamedResponse> send(http.BaseRequest request) async {
@@ -48,13 +51,13 @@ class SimpleTileHttpClient extends http.BaseClient {
   }
 
   Future<http.StreamedResponse> _handleTileRequest(int z, int x, int y) async {
+    // Increment pending counter (brutalist completion detection)
+    _pendingTileRequests++;
+    
     try {
       // Always go through MapDataProvider - it handles offline/online routing
       // MapDataProvider will get current provider from AppState
       final tileBytes = await _mapDataProvider.getTile(z: z, x: x, y: y, source: MapSource.auto);
-      
-      // Show success status briefly
-      NetworkStatus.instance.setSuccess();
       
       // Serve tile with proper cache headers
       return http.StreamedResponse(
@@ -71,15 +74,18 @@ class SimpleTileHttpClient extends http.BaseClient {
     } catch (e) {
       debugPrint('[SimpleTileService] Could not get tile $z/$x/$y: $e');
       
-      // 404 means no tiles available - show "no data" status briefly
-      NetworkStatus.instance.setNoData();
-      
       // Return 404 and let flutter_map handle it gracefully
       return http.StreamedResponse(
         Stream.value(<int>[]),
         404,
         reasonPhrase: 'Tile unavailable: $e',
       );
+    } finally {
+      // Decrement pending counter and report completion when all done
+      _pendingTileRequests--;
+      if (_pendingTileRequests == 0) {
+        NetworkStatus.instance.reportTileComplete();
+      }
     }
   }
 
