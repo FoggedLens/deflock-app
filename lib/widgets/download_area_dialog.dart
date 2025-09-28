@@ -63,15 +63,13 @@ class _DownloadAreaDialogState extends State<DownloadAreaDialog> {
     
     final nTiles = computeTileList(bounds, minZoom, maxZoom).length;
     final totalMb = (nTiles * kTileEstimateKb) / 1024.0;
-    
-    // Debug logging to check calculation
-    debugPrint('[DownloadDialog] Tiles: $nTiles, EstimateKb: $kTileEstimateKb, Total MB: $totalMb');
+    final roundedMb = (totalMb * 10).round() / 10; // Round to nearest tenth
     
     setState(() {
       _minZoom = minZoom;
       _maxPossibleZoom = maxPossibleZoom;
       _tileCount = nTiles;
-      _mbEstimate = totalMb;
+      _mbEstimate = roundedMb;
     });
   }
   
@@ -257,8 +255,8 @@ class _DownloadAreaDialogState extends State<DownloadAreaDialog> {
                   OfflineAreaService().downloadArea(
                     id: id,
                     bounds: bounds,
-                    minZoom: _minZoom ?? 12,
-                    maxZoom: maxZoom,
+                    minZoom: _minZoom ?? 1,
+                    maxZoom: _zoom.toInt(),
                     directory: dir,
                     onProgress: (progress) {},
                     onComplete: (status) {},

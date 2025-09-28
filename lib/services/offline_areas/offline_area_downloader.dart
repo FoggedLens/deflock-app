@@ -156,7 +156,7 @@ class OfflineAreaDownloader {
     );
     area.nodes = nodes;
     await OfflineAreaDownloader.saveNodes(nodes, directory);
-    debugPrint('Area ${area.id}: Downloaded ${nodes.length} nodes from modestly expanded bounds (zoom $nodeZoom vs tile minZoom $minZoom)');
+    debugPrint('Area ${area.id}: Downloaded ${nodes.length} nodes from modestly expanded bounds (all profiles)');
   }
 
   /// Calculate expanded bounds that cover the entire tile area at minimum zoom

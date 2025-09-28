@@ -99,10 +99,10 @@ class LocalizationService extends ChangeNotifier {
     
     String result = current is String ? current : key;
     
-    // Replace parameters if provided
+    // Replace parameters if provided - replace first occurrence only for each parameter
     if (params != null) {
       for (int i = 0; i < params.length; i++) {
-        result = result.replaceAll('{}', params[i]);
+        result = result.replaceFirst('{}', params[i]);
       }
     }
     
