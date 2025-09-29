@@ -7,7 +7,7 @@ import 'package:path_provider/path_provider.dart';
 import 'offline_areas/offline_area_models.dart';
 import 'offline_areas/offline_tile_utils.dart';
 import 'offline_areas/offline_area_downloader.dart';
-import 'offline_areas/world_area_manager.dart';
+
 import '../models/osm_camera_node.dart';
 import '../app_state.dart';
 import 'map_data_provider.dart';
@@ -59,8 +59,7 @@ class OfflineAreaService {
     if (_initialized) return;
     
     await _loadAreasFromDisk();
-    await WorldAreaManager.ensureWorldArea(_areas, getOfflineAreaDir, downloadArea);
-    await saveAreasToDisk(); // Save any world area updates
+    await _cleanupLegacyWorldAreas();
     _initialized = true;
   }
 
@@ -262,9 +261,6 @@ class OfflineAreaService {
     }
     _areas.remove(area);
     await saveAreasToDisk();
-    if (area.isPermanent) {
-      await WorldAreaManager.ensureWorldArea(_areas, getOfflineAreaDir, downloadArea);
-    }
   }
 
   void deleteArea(String id) async {
@@ -277,5 +273,25 @@ class OfflineAreaService {
     await saveAreasToDisk();
   }
   
+  /// Remove any legacy world areas from previous versions
+  Future<void> _cleanupLegacyWorldAreas() async {
+    final worldAreas = _areas.where((area) => area.isPermanent || area.id == 'world').toList();
+    
+    if (worldAreas.isNotEmpty) {
+      debugPrint('OfflineAreaService: Cleaning up ${worldAreas.length} legacy world area(s)');
+      
+      for (final area in worldAreas) {
+        final dir = Directory(area.directory);
+        if (await dir.exists()) {
+          await dir.delete(recursive: true);
+          debugPrint('OfflineAreaService: Deleted world area directory: ${area.directory}');
+        }
+        _areas.remove(area);
+      }
+      
+      await saveAreasToDisk();
+      debugPrint('OfflineAreaService: Legacy world area cleanup complete');
+    }
+  }
 
 }

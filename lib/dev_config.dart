@@ -2,8 +2,6 @@
 import 'package:flutter/material.dart';
 
 /// Developer/build-time configuration for global/non-user-tunable constants.
-const int kWorldMinZoom = 1;
-const int kWorldMaxZoom = 5;
 
 // Example: Default tile storage estimate (KB per tile), for size estimates
 const double kTileEstimateKb = 25.0;
@@ -66,6 +64,7 @@ const int kMaxUserDownloadZoomSpan = 7;
 
 // Download area limits and constants
 const int kMaxReasonableTileCount = 20000;
+const int kAbsoluteMaxTileCount = 50000;
 const int kAbsoluteMaxZoom = 19;
 
 // Camera icon configuration

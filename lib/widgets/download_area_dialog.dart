@@ -73,12 +73,12 @@ class _DownloadAreaDialogState extends State<DownloadAreaDialog> {
     });
   }
   
-  /// Calculate the maximum zoom level that keeps tile count under the limit
+  /// Calculate the maximum zoom level that keeps tile count under the absolute limit
   int _calculateMaxZoomForTileLimit(LatLngBounds bounds, int minZoom) {
     for (int zoom = minZoom; zoom <= kAbsoluteMaxZoom; zoom++) {
       final tileCount = computeTileList(bounds, minZoom, zoom).length;
-      if (tileCount > kMaxReasonableTileCount) {
-        // Return the previous zoom level that was still under the limit
+      if (tileCount > kAbsoluteMaxTileCount) {
+        // Return the previous zoom level that was still under the absolute limit
         return math.max(minZoom, zoom - 1);
       }
     }
@@ -155,14 +155,6 @@ class _DownloadAreaDialogState extends State<DownloadAreaDialog> {
                     ),
                   ],
                 ),
-                if (_minZoom != null)
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(locService.t('download.minZoom')),
-                      Text('Z$_minZoom'),
-                    ],
-                  ),
                 if (_maxPossibleZoom != null && _tileCount != null)
                   Padding(
                     padding: const EdgeInsets.only(top: 8.0),
@@ -178,7 +170,9 @@ class _DownloadAreaDialogState extends State<DownloadAreaDialog> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            locService.t('download.maxRecommendedZoom', params: [_maxPossibleZoom.toString()]),
+                            _tileCount! > kMaxReasonableTileCount 
+                                ? 'Above recommended limit (Z${_maxPossibleZoom})'
+                                : locService.t('download.maxRecommendedZoom', params: [_maxPossibleZoom.toString()]),
                             style: TextStyle(
                               fontSize: 12,
                               color: _tileCount! > kMaxReasonableTileCount 
@@ -190,7 +184,7 @@ class _DownloadAreaDialogState extends State<DownloadAreaDialog> {
                           const SizedBox(height: 2),
                           Text(
                             _tileCount! > kMaxReasonableTileCount
-                                ? locService.t('download.exceedsTileLimit', params: [kMaxReasonableTileCount.toString()])
+                                ? 'Current selection exceeds ${kMaxReasonableTileCount} recommended tile limit but is within ${kAbsoluteMaxTileCount} absolute limit'
                                 : locService.t('download.withinTileLimit', params: [kMaxReasonableTileCount.toString()]),
                             style: TextStyle(
                               fontSize: 11,

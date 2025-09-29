@@ -49,7 +49,7 @@ class _OfflineAreasSectionState extends State<OfflineAreasSection> {
                 : '--';
                 
             String subtitle = '${locService.t('offlineAreas.provider')}: ${area.tileProviderDisplay}\n' +
-                locService.t('offlineAreas.zoomLevels', params: [area.minZoom.toString(), area.maxZoom.toString()]) + '\n' +
+                'Max zoom: Z${area.maxZoom}' + '\n' +
                 '${locService.t('offlineAreas.latitude')}: ${area.bounds.southWest.latitude.toStringAsFixed(3)}, ${area.bounds.southWest.longitude.toStringAsFixed(3)}\n' +
                 '${locService.t('offlineAreas.latitude')}: ${area.bounds.northEast.latitude.toStringAsFixed(3)}, ${area.bounds.northEast.longitude.toStringAsFixed(3)}';
                 
@@ -59,9 +59,7 @@ class _OfflineAreasSectionState extends State<OfflineAreasSection> {
               subtitle += '\n${locService.t('offlineAreas.tiles')}: ${area.tilesTotal}';
             }
             subtitle += '\n${locService.t('offlineAreas.size')}: $diskStr';
-            if (!area.isPermanent) {
-              subtitle += '\n${locService.t('offlineAreas.cameras')}: ${area.nodes.length}';
-            }
+            subtitle += '\n${locService.t('offlineAreas.cameras')}: ${area.nodes.length}';
         return Card(
           child: ListTile(
             leading: Icon(area.status == OfflineAreaStatus.complete
@@ -76,10 +74,9 @@ class _OfflineAreasSectionState extends State<OfflineAreasSection> {
                       ? area.name
                       : locService.t('offlineAreas.areaIdFallback', params: [area.id.substring(0, 6)])),
                 ),
-                if (!area.isPermanent)
-                  IconButton(
-                    icon: const Icon(Icons.edit, size: 20),
-                    tooltip: locService.t('offlineAreas.renameArea'),
+                IconButton(
+                  icon: const Icon(Icons.edit, size: 20),
+                  tooltip: locService.t('offlineAreas.renameArea'),
                     onPressed: () async {
                       String? newName = await showDialog<String>(
                         context: context,
@@ -116,29 +113,7 @@ class _OfflineAreasSectionState extends State<OfflineAreasSection> {
                       }
                     },
                   ),
-                if (area.isPermanent && area.status != OfflineAreaStatus.downloading)
-                  IconButton(
-                    icon: const Icon(Icons.refresh, color: Colors.blue),
-                    tooltip: locService.t('offlineAreas.refreshWorldTiles'),
-                    onPressed: () async {
-                      await service.downloadArea(
-                        id: area.id,
-                        bounds: area.bounds,
-                        minZoom: area.minZoom,
-                        maxZoom: area.maxZoom,
-                        directory: area.directory,
-                        name: area.name,
-                        onProgress: (progress) {},
-                        onComplete: (status) {},
-                        tileProviderId: area.tileProviderId,
-                        tileProviderName: area.tileProviderName,
-                        tileTypeId: area.tileTypeId,
-                        tileTypeName: area.tileTypeName,
-                      );
-                      setState(() {});
-                    },
-                  )
-                else if (!area.isPermanent && area.status != OfflineAreaStatus.downloading)
+                if (area.status != OfflineAreaStatus.downloading)
                   IconButton(
                     icon: const Icon(Icons.delete, color: Colors.red),
                     tooltip: locService.t('offlineAreas.deleteOfflineArea'),

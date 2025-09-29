@@ -10,7 +10,6 @@ import '../../models/osm_camera_node.dart';
 import '../map_data_provider.dart';
 import 'offline_area_models.dart';
 import 'offline_tile_utils.dart';
-import 'package:deflockapp/dev_config.dart';
 
 /// Handles the actual downloading process for offline areas
 class OfflineAreaDownloader {
@@ -27,12 +26,7 @@ class OfflineAreaDownloader {
     required Future<void> Function() saveAreasToDisk,
     required Future<void> Function(OfflineArea) getAreaSizeBytes,
   }) async {
-    Set<List<int>> allTiles;
-    if (area.isPermanent) {
-      allTiles = computeTileList(globalWorldBounds(), kWorldMinZoom, kWorldMaxZoom);
-    } else {
-      allTiles = computeTileList(bounds, minZoom, maxZoom);
-    }
+    Set<List<int>> allTiles = computeTileList(bounds, minZoom, maxZoom);
     area.tilesTotal = allTiles.length;
 
     // Download tiles with retry logic
@@ -45,17 +39,13 @@ class OfflineAreaDownloader {
       getAreaSizeBytes: getAreaSizeBytes,
     );
 
-    // Download nodes for non-permanent areas
-    if (!area.isPermanent) {
-      await _downloadNodes(
-        area: area,
-        bounds: bounds,
-        minZoom: minZoom,
-        directory: directory,
-      );
-    } else {
-      area.nodes = [];
-    }
+    // Download nodes for all areas
+    await _downloadNodes(
+      area: area,
+      bounds: bounds,
+      minZoom: minZoom,
+      directory: directory,
+    );
 
     return success;
   }
