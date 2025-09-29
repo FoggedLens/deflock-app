@@ -4,13 +4,13 @@ import 'package:latlong2/latlong.dart';
 import 'package:flutter_map/flutter_map.dart' show LatLngBounds;
 
 import '../services/map_data_provider.dart';
-import '../services/camera_cache.dart';
+import '../services/node_cache.dart';
 import '../services/network_status.dart';
 import '../models/node_profile.dart';
 import '../models/osm_camera_node.dart';
 import '../app_state.dart';
 
-/// Provides cameras for a map view, using an in-memory cache and optionally
+/// Provides surveillance nodes for a map view, using an in-memory cache and optionally
 /// merging in new results from Overpass via MapDataProvider when not offline.
 class CameraProviderWithCache extends ChangeNotifier {
   static final CameraProviderWithCache instance = CameraProviderWithCache._internal();
@@ -21,16 +21,16 @@ class CameraProviderWithCache extends ChangeNotifier {
 
   /// Call this to get (quickly) all cached overlays for the given view.
   /// Filters by currently enabled profiles.
-  List<OsmCameraNode> getCachedCamerasForBounds(LatLngBounds bounds) {
-    final allCameras = CameraCache.instance.queryByBounds(bounds);
+  List<OsmCameraNode> getCachedNodesForBounds(LatLngBounds bounds) {
+    final allNodes = NodeCache.instance.queryByBounds(bounds);
     final enabledProfiles = AppState.instance.enabledProfiles;
     
-    // If no profiles are enabled, show no cameras
+    // If no profiles are enabled, show no nodes
     if (enabledProfiles.isEmpty) return [];
     
-    // Filter cameras to only show those matching enabled profiles
-    return allCameras.where((camera) {
-      return _matchesAnyProfile(camera, enabledProfiles);
+    // Filter nodes to only show those matching enabled profiles
+    return allNodes.where((node) {
+      return _matchesAnyProfile(node, enabledProfiles);
     }).toList();
   }
 
@@ -55,13 +55,13 @@ class CameraProviderWithCache extends ChangeNotifier {
           source: MapSource.auto,
         );
         if (fresh.isNotEmpty) {
-          CameraCache.instance.addOrUpdate(fresh);
-          // Clear waiting status when camera data arrives
+          NodeCache.instance.addOrUpdate(fresh);
+        // Clear waiting status when node data arrives
           NetworkStatus.instance.clearWaiting();
           notifyListeners();
         }
       } catch (e) {
-        debugPrint('[CameraProviderWithCache] Camera fetch failed: $e');
+        debugPrint('[CameraProviderWithCache] Node fetch failed: $e');
         // Cache already holds whatever is available for the view
       }
     });
@@ -69,7 +69,7 @@ class CameraProviderWithCache extends ChangeNotifier {
 
   /// Optionally: clear the cache (could be used for testing/dev)
   void clearCache() {
-    CameraCache.instance.clear();
+    NodeCache.instance.clear();
     notifyListeners();
   }
 
@@ -78,18 +78,18 @@ class CameraProviderWithCache extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Check if a camera matches any of the provided profiles
-  bool _matchesAnyProfile(OsmCameraNode camera, List<NodeProfile> profiles) {
+  /// Check if a node matches any of the provided profiles
+  bool _matchesAnyProfile(OsmCameraNode node, List<NodeProfile> profiles) {
     for (final profile in profiles) {
-      if (_cameraMatchesProfile(camera, profile)) return true;
+      if (_nodeMatchesProfile(node, profile)) return true;
     }
     return false;
   }
 
-  /// Check if a camera matches a specific profile (all profile tags must match)
-  bool _cameraMatchesProfile(OsmCameraNode camera, NodeProfile profile) {
+  /// Check if a node matches a specific profile (all profile tags must match)
+  bool _nodeMatchesProfile(OsmCameraNode node, NodeProfile profile) {
     for (final entry in profile.tags.entries) {
-      if (camera.tags[entry.key] != entry.value) return false;
+      if (node.tags[entry.key] != entry.value) return false;
     }
     return true;
   }

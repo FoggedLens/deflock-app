@@ -228,7 +228,7 @@ class MapViewState extends State<MapView> {
           mapBounds = null;
         }
         final cameras = (mapBounds != null)
-            ? cameraProvider.getCachedCamerasForBounds(mapBounds)
+            ? cameraProvider.getCachedNodesForBounds(mapBounds)
             : <OsmCameraNode>[];
         
         final markers = CameraMarkersBuilder.buildCameraMarkers(

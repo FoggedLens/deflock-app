@@ -5,7 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/pending_upload.dart';
 import '../models/osm_camera_node.dart';
-import '../services/camera_cache.dart';
+import '../services/node_cache.dart';
 import '../services/uploader.dart';
 import '../widgets/camera_provider_with_cache.dart';
 import 'settings_state.dart';
@@ -37,7 +37,7 @@ class UploadQueueState extends ChangeNotifier {
     _queue.add(upload);
     _saveQueue();
     
-    // Add to camera cache immediately so it shows on the map
+    // Add to node cache immediately so it shows on the map
     // Create a temporary node with a negative ID (to distinguish from real OSM nodes)
     // Using timestamp as negative ID to ensure uniqueness
     final tempId = -DateTime.now().millisecondsSinceEpoch;
@@ -50,8 +50,8 @@ class UploadQueueState extends ChangeNotifier {
       tags: tags,
     );
     
-    CameraCache.instance.addOrUpdate([tempNode]);
-    // Notify camera provider to update the map
+    NodeCache.instance.addOrUpdate([tempNode]);
+    // Notify node provider to update the map
     CameraProviderWithCache.instance.notifyListeners();
     
     notifyListeners();
@@ -73,7 +73,7 @@ class UploadQueueState extends ChangeNotifier {
     
     // Create two cache entries:
     
-    // 1. Mark the original camera with _pending_edit (grey ring) at original location
+    // 1. Mark the original node with _pending_edit (grey ring) at original location
     final originalTags = Map<String, String>.from(session.originalNode.tags);
     originalTags['_pending_edit'] = 'true'; // Mark original as having pending edit
     
@@ -83,7 +83,7 @@ class UploadQueueState extends ChangeNotifier {
       tags: originalTags,
     );
     
-    // 2. Create new temp node for the edited camera (purple ring) at new location
+    // 2. Create new temp node for the edited node (purple ring) at new location
     final tempId = -DateTime.now().millisecondsSinceEpoch;
     final editedTags = upload.getCombinedTags();
     editedTags['_pending_upload'] = 'true'; // Mark as pending upload
@@ -95,8 +95,8 @@ class UploadQueueState extends ChangeNotifier {
       tags: editedTags,
     );
     
-    CameraCache.instance.addOrUpdate([originalNode, editedNode]);
-    // Notify camera provider to update the map
+    NodeCache.instance.addOrUpdate([originalNode, editedNode]);
+    // Notify node provider to update the map
     CameraProviderWithCache.instance.notifyListeners();
     
     notifyListeners();
@@ -153,18 +153,15 @@ class UploadQueueState extends ChangeNotifier {
         debugPrint('[UploadQueue] Simulating upload (no real API call)');
         await Future.delayed(const Duration(seconds: 1)); // Simulate network delay
         ok = true;
+        // Simulate a node ID for simulate mode
+        _markAsCompleting(item, simulatedNodeId: DateTime.now().millisecondsSinceEpoch);
       } else {
         // Real upload -- use the upload mode that was saved when this item was queued
         debugPrint('[UploadQueue] Real upload to: ${item.uploadMode}');
-        final up = Uploader(access, () {
-          _markAsCompleting(item);
+        final up = Uploader(access, (nodeId) {
+          _markAsCompleting(item, submittedNodeId: nodeId);
         }, uploadMode: item.uploadMode);
         ok = await up.upload(item);
-      }
-
-      if (ok && item.uploadMode == UploadMode.simulate) {
-        // Mark as completing for simulate mode too
-        _markAsCompleting(item);
       }
       if (!ok) {
         item.attempts++;
@@ -186,8 +183,22 @@ class UploadQueueState extends ChangeNotifier {
   }
 
   // Mark an item as completing (shows checkmark) and schedule removal after 1 second
-  void _markAsCompleting(PendingUpload item) {
+  void _markAsCompleting(PendingUpload item, {int? submittedNodeId, int? simulatedNodeId}) {
     item.completing = true;
+    
+    // Store the submitted node ID for cleanup purposes
+    if (submittedNodeId != null) {
+      item.submittedNodeId = submittedNodeId;
+      debugPrint('[UploadQueue] Upload successful, OSM assigned node ID: $submittedNodeId');
+      
+      // Update cache with real node ID instead of temp ID
+      _updateCacheWithRealNodeId(item, submittedNodeId);
+    } else if (simulatedNodeId != null && item.uploadMode == UploadMode.simulate) {
+      // For simulate mode, use a fake but positive ID 
+      item.submittedNodeId = simulatedNodeId;
+      debugPrint('[UploadQueue] Simulated upload, fake node ID: $simulatedNodeId');
+    }
+    
     _saveQueue();
     notifyListeners();
     
@@ -197,6 +208,34 @@ class UploadQueueState extends ChangeNotifier {
       _saveQueue();
       notifyListeners();
     });
+  }
+  
+  // Update the cache to use the real OSM node ID instead of temporary ID
+  void _updateCacheWithRealNodeId(PendingUpload item, int realNodeId) {
+    // Create the node with real ID and clean tags (remove temp markers)
+    final tags = item.getCombinedTags();
+    
+    final realNode = OsmCameraNode(
+      id: realNodeId,
+      coord: item.coord,
+      tags: tags, // Clean tags without _pending_upload markers
+    );
+    
+    // Add/update the cache with the real node
+    NodeCache.instance.addOrUpdate([realNode]);
+    
+    // Clean up any temp nodes at the same coordinate
+    NodeCache.instance.removeTempNodesByCoordinate(item.coord);
+    
+    // For edits, also clean up the original node's _pending_edit marker
+    if (item.isEdit && item.originalNodeId != null) {
+      // Remove the _pending_edit marker from the original node in cache
+      // The next Overpass fetch will provide the authoritative data anyway
+      NodeCache.instance.removePendingEditMarker(item.originalNodeId!);
+    }
+    
+    // Notify node provider to update the map
+    CameraProviderWithCache.instance.notifyListeners();
   }
 
   // ---------- Queue persistence ----------

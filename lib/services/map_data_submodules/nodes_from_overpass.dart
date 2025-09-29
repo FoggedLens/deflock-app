@@ -6,6 +6,7 @@ import 'package:flutter_map/flutter_map.dart';
 
 import '../../models/node_profile.dart';
 import '../../models/osm_camera_node.dart';
+import '../../models/pending_upload.dart';
 import '../../app_state.dart';
 import '../network_status.dart';
 
@@ -47,13 +48,18 @@ Future<List<OsmCameraNode>> fetchOverpassNodes({
     
     NetworkStatus.instance.reportOverpassSuccess();
     
-    return elements.whereType<Map<String, dynamic>>().map((element) {
+    final nodes = elements.whereType<Map<String, dynamic>>().map((element) {
       return OsmCameraNode(
         id: element['id'],
         coord: LatLng(element['lat'], element['lon']),
         tags: Map<String, String>.from(element['tags'] ?? {}),
       );
     }).toList();
+    
+    // Clean up any pending uploads that now appear in Overpass results
+    _cleanupCompletedUploads(nodes);
+    
+    return nodes;
     
   } catch (e) {
     debugPrint('[fetchOverpassNodes] Exception: $e');
@@ -92,4 +98,40 @@ String _buildOverpassQuery(LatLngBounds bounds, List<NodeProfile> profiles, int 
 );
 $outputClause
 ''';
+}
+
+/// Clean up pending uploads that now appear in Overpass results
+void _cleanupCompletedUploads(List<OsmCameraNode> overpassNodes) {
+  try {
+    final appState = AppState.instance;
+    final pendingUploads = appState.pendingUploads;
+    
+    if (pendingUploads.isEmpty) return;
+    
+    final overpassNodeIds = overpassNodes.map((n) => n.id).toSet();
+    
+    // Find pending uploads whose submitted node IDs now appear in Overpass results
+    final uploadsToRemove = <PendingUpload>[];
+    
+    for (final upload in pendingUploads) {
+      if (upload.submittedNodeId != null && 
+          overpassNodeIds.contains(upload.submittedNodeId!)) {
+        uploadsToRemove.add(upload);
+        debugPrint('[OverpassCleanup] Found submitted node ${upload.submittedNodeId} in Overpass results, removing from pending queue');
+      }
+    }
+    
+    // Remove the completed uploads from the queue
+    for (final upload in uploadsToRemove) {
+      appState.removeFromQueue(upload);
+    }
+    
+    if (uploadsToRemove.isNotEmpty) {
+      debugPrint('[OverpassCleanup] Cleaned up ${uploadsToRemove.length} completed uploads');
+    }
+    
+  } catch (e) {
+    debugPrint('[OverpassCleanup] Error during cleanup: $e');
+    // Don't let cleanup errors break the main functionality
+  }
 }

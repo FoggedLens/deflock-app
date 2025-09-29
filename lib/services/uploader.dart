@@ -9,7 +9,7 @@ class Uploader {
   Uploader(this.accessToken, this.onSuccess, {this.uploadMode = UploadMode.production});
 
   final String accessToken;
-  final void Function() onSuccess;
+  final void Function(int nodeId) onSuccess;
   final UploadMode uploadMode;
 
   Future<bool> upload(PendingUpload p) async {
@@ -99,7 +99,8 @@ class Uploader {
       print('Uploader: Close response: ${closeResp.statusCode}');
 
       print('Uploader: Upload successful!');
-      onSuccess();
+      final nodeIdInt = int.parse(nodeId);
+      onSuccess(nodeIdInt);
       return true;
     } catch (e) {
       print('Uploader: Upload failed with error: $e');

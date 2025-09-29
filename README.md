@@ -88,11 +88,8 @@ flutter run
 ## Roadmap
 
 ### v1 todo/bug List
-- Fix "tiles loaded" indicator accuracy across different providers
-- Generic tile provider error messages (not always "OSM tiles slow")
 - Optional custom icons for camera profiles
 - Camera deletions
-- Clean up cache when submitted changesets appear in Overpass results
 - Upgrade device marker design (considering nullplate's svg)
 
 ### Future Features & Wishlist
