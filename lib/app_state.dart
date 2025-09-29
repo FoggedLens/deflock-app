@@ -216,6 +216,11 @@ class AppState extends ChangeNotifier {
     }
   }
 
+  void deleteNode(OsmCameraNode node) {
+    _uploadQueueState.addFromNodeDeletion(node, uploadMode: uploadMode);
+    _startUploader();
+  }
+
   // ---------- Settings Methods ----------
   Future<void> setOfflineMode(bool enabled) async {
     await _settingsState.setOfflineMode(enabled);

@@ -2,11 +2,12 @@ import 'package:flutter/material.dart';
 import '../dev_config.dart';
 
 enum CameraIconType {
-  real,        // Blue ring - real cameras from OSM
-  mock,        // White ring - add camera mock point
-  pending,     // Purple ring - submitted/pending cameras
-  editing,     // Orange ring - camera being edited
-  pendingEdit, // Grey ring - original camera with pending edit
+  real,           // Blue ring - real cameras from OSM
+  mock,           // White ring - add camera mock point
+  pending,        // Purple ring - submitted/pending cameras
+  editing,        // Orange ring - camera being edited
+  pendingEdit,    // Grey ring - original camera with pending edit
+  pendingDeletion, // Red ring - camera pending deletion
 }
 
 /// Simple camera icon with grey dot and colored ring
@@ -27,6 +28,8 @@ class CameraIcon extends StatelessWidget {
         return kCameraRingColorEditing;
       case CameraIconType.pendingEdit:
         return kCameraRingColorPendingEdit;
+      case CameraIconType.pendingDeletion:
+        return kCameraRingColorPendingDeletion;
     }
   }
 

@@ -10,6 +10,7 @@
     "download": "Download",
     "settings": "Settings",
     "edit": "Edit",
+    "delete": "Delete",
     "cancel": "Cancel",
     "ok": "OK",
     "close": "Close",
@@ -41,7 +42,10 @@
     "title": "Node #{}",
     "tagSheetTitle": "Surveillance Device Tags",
     "queuedForUpload": "Node queued for upload",
-    "editQueuedForUpload": "Node edit queued for upload"
+    "editQueuedForUpload": "Node edit queued for upload",
+    "deleteQueuedForUpload": "Node deletion queued for upload",
+    "confirmDeleteTitle": "Delete Node",
+    "confirmDeleteMessage": "Are you sure you want to delete node #{}? This action cannot be undone."
   },
   "addNode": {
     "profile": "Profile",

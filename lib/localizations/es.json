@@ -10,6 +10,7 @@
     "download": "Descargar",
     "settings": "Configuración",
     "edit": "Editar",
+    "delete": "Eliminar",
     "cancel": "Cancelar",
     "ok": "Aceptar",
     "close": "Cerrar",
@@ -41,7 +42,10 @@
     "title": "Nodo #{}",
     "tagSheetTitle": "Etiquetas del Dispositivo",
     "queuedForUpload": "Nodo en cola para subir",
-    "editQueuedForUpload": "Edición de nodo en cola para subir"
+    "editQueuedForUpload": "Edición de nodo en cola para subir",
+    "deleteQueuedForUpload": "Eliminación de nodo en cola para subir",
+    "confirmDeleteTitle": "Eliminar Nodo",
+    "confirmDeleteMessage": "¿Estás seguro de que quieres eliminar el nodo #{}? Esta acción no se puede deshacer."
   },
   "addNode": {
     "profile": "Perfil",

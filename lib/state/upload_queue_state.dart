@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/pending_upload.dart';
 import '../models/osm_camera_node.dart';
+import '../models/node_profile.dart';
 import '../services/node_cache.dart';
 import '../services/uploader.dart';
 import '../widgets/camera_provider_with_cache.dart';
@@ -32,6 +33,7 @@ class UploadQueueState extends ChangeNotifier {
       profile: session.profile,
       operatorProfile: session.operatorProfile,
       uploadMode: uploadMode,
+      operation: UploadOperation.create,
     );
     
     _queue.add(upload);
@@ -65,6 +67,7 @@ class UploadQueueState extends ChangeNotifier {
       profile: session.profile,
       operatorProfile: session.operatorProfile,
       uploadMode: uploadMode,
+      operation: UploadOperation.modify,
       originalNodeId: session.originalNode.id, // Track which node we're editing
     );
     
@@ -96,6 +99,37 @@ class UploadQueueState extends ChangeNotifier {
     );
     
     NodeCache.instance.addOrUpdate([originalNode, editedNode]);
+    // Notify node provider to update the map
+    CameraProviderWithCache.instance.notifyListeners();
+    
+    notifyListeners();
+  }
+
+  // Add a node deletion to the upload queue
+  void addFromNodeDeletion(OsmCameraNode node, {required UploadMode uploadMode}) {
+    final upload = PendingUpload(
+      coord: node.coord,
+      direction: node.directionDeg ?? 0, // Use existing direction or default to 0
+      profile: NodeProfile.genericAlpr(), // Dummy profile - not used for deletions
+      uploadMode: uploadMode,
+      operation: UploadOperation.delete,
+      originalNodeId: node.id,
+    );
+    
+    _queue.add(upload);
+    _saveQueue();
+    
+    // Mark the original node as pending deletion in the cache
+    final deletionTags = Map<String, String>.from(node.tags);
+    deletionTags['_pending_deletion'] = 'true';
+    
+    final nodeWithDeletionTag = OsmCameraNode(
+      id: node.id,
+      coord: node.coord,
+      tags: deletionTags,
+    );
+    
+    NodeCache.instance.addOrUpdate([nodeWithDeletionTag]);
     // Notify node provider to update the map
     CameraProviderWithCache.instance.notifyListeners();
     
@@ -189,14 +223,24 @@ class UploadQueueState extends ChangeNotifier {
     // Store the submitted node ID for cleanup purposes
     if (submittedNodeId != null) {
       item.submittedNodeId = submittedNodeId;
-      debugPrint('[UploadQueue] Upload successful, OSM assigned node ID: $submittedNodeId');
       
-      // Update cache with real node ID instead of temp ID
-      _updateCacheWithRealNodeId(item, submittedNodeId);
+      if (item.isDeletion) {
+        debugPrint('[UploadQueue] Deletion successful, removing node ID: $submittedNodeId from cache');
+        _handleSuccessfulDeletion(item);
+      } else {
+        debugPrint('[UploadQueue] Upload successful, OSM assigned node ID: $submittedNodeId');
+        // Update cache with real node ID instead of temp ID
+        _updateCacheWithRealNodeId(item, submittedNodeId);
+      }
     } else if (simulatedNodeId != null && item.uploadMode == UploadMode.simulate) {
       // For simulate mode, use a fake but positive ID 
       item.submittedNodeId = simulatedNodeId;
-      debugPrint('[UploadQueue] Simulated upload, fake node ID: $simulatedNodeId');
+      if (item.isDeletion) {
+        debugPrint('[UploadQueue] Simulated deletion, removing fake node ID: $simulatedNodeId from cache');
+        _handleSuccessfulDeletion(item);
+      } else {
+        debugPrint('[UploadQueue] Simulated upload, fake node ID: $simulatedNodeId');
+      }
     }
     
     _saveQueue();
@@ -236,6 +280,17 @@ class UploadQueueState extends ChangeNotifier {
     
     // Notify node provider to update the map
     CameraProviderWithCache.instance.notifyListeners();
+  }
+
+  // Handle successful deletion by removing the node from cache
+  void _handleSuccessfulDeletion(PendingUpload item) {
+    if (item.originalNodeId != null) {
+      // Remove the node from cache entirely
+      NodeCache.instance.removeNodeById(item.originalNodeId!);
+      
+      // Notify node provider to update the map
+      CameraProviderWithCache.instance.notifyListeners();
+    }
   }
 
   // ---------- Queue persistence ----------

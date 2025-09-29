@@ -10,6 +10,7 @@
     "download": "Herunterladen",
     "settings": "Einstellungen",
     "edit": "Bearbeiten",
+    "delete": "Löschen",
     "cancel": "Abbrechen",
     "ok": "OK",
     "close": "Schließen",
@@ -41,7 +42,10 @@
     "title": "Knoten #{}",
     "tagSheetTitle": "Gerät-Tags",
     "queuedForUpload": "Knoten zum Upload eingereiht",
-    "editQueuedForUpload": "Knotenbearbeitung zum Upload eingereiht"
+    "editQueuedForUpload": "Knotenbearbeitung zum Upload eingereiht",
+    "deleteQueuedForUpload": "Knoten-Löschung zum Upload eingereiht",
+    "confirmDeleteTitle": "Knoten löschen",
+    "confirmDeleteMessage": "Sind Sie sicher, dass Sie Knoten #{} löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden."
   },
   "addNode": {
     "profile": "Profil",

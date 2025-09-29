@@ -10,6 +10,7 @@
     "download": "Télécharger",
     "settings": "Paramètres",
     "edit": "Modifier",
+    "delete": "Supprimer",
     "cancel": "Annuler",
     "ok": "OK",
     "close": "Fermer",
@@ -41,7 +42,10 @@
     "title": "Nœud #{}",
     "tagSheetTitle": "Balises du Dispositif",
     "queuedForUpload": "Nœud mis en file pour envoi",
-    "editQueuedForUpload": "Modification de nœud mise en file pour envoi"
+    "editQueuedForUpload": "Modification de nœud mise en file pour envoi",
+    "deleteQueuedForUpload": "Suppression de nœud mise en file pour envoi",
+    "confirmDeleteTitle": "Supprimer le Nœud",
+    "confirmDeleteMessage": "Êtes-vous sûr de vouloir supprimer le nœud #{} ? Cette action ne peut pas être annulée."
   },
   "addNode": {
     "profile": "Profil",

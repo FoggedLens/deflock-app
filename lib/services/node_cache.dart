@@ -60,6 +60,13 @@ class NodeCache {
       );
     }
   }
+
+  /// Remove a node by ID from the cache (used for successful deletions)
+  void removeNodeById(int nodeId) {
+    if (_nodes.remove(nodeId) != null) {
+      print('[NodeCache] Removed node $nodeId from cache (successful deletion)');
+    }
+  }
   
   /// Remove temporary nodes (negative IDs) with _pending_upload marker at the given coordinate
   /// This is used when a real node ID is assigned to clean up temp placeholders

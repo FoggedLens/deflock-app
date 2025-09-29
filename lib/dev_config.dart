@@ -76,3 +76,4 @@ const Color kCameraRingColorMock = Color(0xC4FFFFFF); // Add node mock point - w
 const Color kCameraRingColorPending = Color(0xC49C27B0); // Submitted/pending nodes - purple
 const Color kCameraRingColorEditing = Color(0xC4FF9800); // Node being edited - orange
 const Color kCameraRingColorPendingEdit = Color(0xC4757575); // Original node with pending edit - grey
+const Color kCameraRingColorPendingDeletion = Color(0xA4F44336); // Node pending deletion - red, slightly transparent

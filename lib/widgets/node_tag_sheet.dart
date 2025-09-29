@@ -17,15 +17,48 @@ class NodeTagSheet extends StatelessWidget {
         final appState = context.watch<AppState>();
         final locService = LocalizationService.instance;
         
-        // Check if this device is editable (not a pending upload or pending edit)
+        // Check if this device is editable (not a pending upload, pending edit, or pending deletion)
         final isEditable = (!node.tags.containsKey('_pending_upload') || 
                            node.tags['_pending_upload'] != 'true') &&
                           (!node.tags.containsKey('_pending_edit') || 
-                           node.tags['_pending_edit'] != 'true');
+                           node.tags['_pending_edit'] != 'true') &&
+                          (!node.tags.containsKey('_pending_deletion') || 
+                           node.tags['_pending_deletion'] != 'true');
         
         void _openEditSheet() {
           Navigator.pop(context); // Close this sheet first
           appState.startEditSession(node); // HomeScreen will auto-show the edit sheet
+        }
+
+        void _deleteNode() async {
+          final shouldDelete = await showDialog<bool>(
+            context: context,
+            builder: (BuildContext context) {
+              return AlertDialog(
+                title: Text(locService.t('node.confirmDeleteTitle')),
+                content: Text(locService.t('node.confirmDeleteMessage', params: [node.id.toString()])),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(false),
+                    child: Text(locService.cancel),
+                  ),
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(true),
+                    style: TextButton.styleFrom(foregroundColor: Colors.red),
+                    child: Text(locService.t('actions.delete')),
+                  ),
+                ],
+              );
+            },
+          );
+
+          if (shouldDelete == true && context.mounted) {
+            Navigator.pop(context); // Close this sheet first
+            appState.deleteNode(node);
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(locService.t('node.deleteQueuedForUpload'))),
+            );
+          }
         }
 
         return SafeArea(
@@ -79,6 +112,16 @@ class NodeTagSheet extends StatelessWidget {
                           label: Text(locService.edit),
                           style: ElevatedButton.styleFrom(
                             minimumSize: const Size(0, 36),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        ElevatedButton.icon(
+                          onPressed: _deleteNode,
+                          icon: const Icon(Icons.delete, size: 18),
+                          label: Text(locService.t('actions.delete')),
+                          style: ElevatedButton.styleFrom(
+                            minimumSize: const Size(0, 36),
+                            foregroundColor: Colors.red,
                           ),
                         ),
                         const SizedBox(width: 12),

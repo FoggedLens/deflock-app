@@ -3,13 +3,16 @@ import 'node_profile.dart';
 import 'operator_profile.dart';
 import '../state/settings_state.dart';
 
+enum UploadOperation { create, modify, delete }
+
 class PendingUpload {
   final LatLng coord;
   final double direction;
   final NodeProfile profile;
   final OperatorProfile? operatorProfile;
   final UploadMode uploadMode; // Capture upload destination when queued
-  final int? originalNodeId; // If this is an edit, the ID of the original OSM node
+  final UploadOperation operation; // Type of operation: create, modify, or delete
+  final int? originalNodeId; // If this is modify/delete, the ID of the original OSM node
   int? submittedNodeId; // The actual node ID returned by OSM after successful submission
   int attempts;
   bool error;
@@ -21,15 +24,23 @@ class PendingUpload {
     required this.profile,
     this.operatorProfile,
     required this.uploadMode,
+    required this.operation,
     this.originalNodeId,
     this.submittedNodeId,
     this.attempts = 0,
     this.error = false,
     this.completing = false,
-  });
+  }) : assert(
+         (operation == UploadOperation.create && originalNodeId == null) ||
+         (operation != UploadOperation.create && originalNodeId != null),
+         'originalNodeId must be null for create operations and non-null for modify/delete operations'
+       );
 
   // True if this is an edit of an existing node, false if it's a new node
-  bool get isEdit => originalNodeId != null;
+  bool get isEdit => operation == UploadOperation.modify;
+  
+  // True if this is a deletion of an existing node
+  bool get isDeletion => operation == UploadOperation.delete;
 
   // Get display name for the upload destination
   String get uploadModeDisplayName {
@@ -67,6 +78,7 @@ class PendingUpload {
         'profile': profile.toJson(),
         'operatorProfile': operatorProfile?.toJson(),
         'uploadMode': uploadMode.index,
+        'operation': operation.index,
         'originalNodeId': originalNodeId,
         'submittedNodeId': submittedNodeId,
         'attempts': attempts,
@@ -86,6 +98,9 @@ class PendingUpload {
         uploadMode: j['uploadMode'] != null 
             ? UploadMode.values[j['uploadMode']] 
             : UploadMode.production, // Default for legacy entries
+        operation: j['operation'] != null
+            ? UploadOperation.values[j['operation']]
+            : (j['originalNodeId'] != null ? UploadOperation.modify : UploadOperation.create), // Legacy compatibility
         originalNodeId: j['originalNodeId'],
         submittedNodeId: j['submittedNodeId'],
         attempts: j['attempts'] ?? 0,

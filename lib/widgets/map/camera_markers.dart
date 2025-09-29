@@ -51,9 +51,13 @@ class _CameraMapMarkerState extends State<CameraMapMarker> {
                            widget.node.tags['_pending_upload'] == 'true';
     final isPendingEdit = widget.node.tags.containsKey('_pending_edit') && 
                          widget.node.tags['_pending_edit'] == 'true';
+    final isPendingDeletion = widget.node.tags.containsKey('_pending_deletion') && 
+                             widget.node.tags['_pending_deletion'] == 'true';
     
     CameraIconType iconType;
-    if (isPendingUpload) {
+    if (isPendingDeletion) {
+      iconType = CameraIconType.pendingDeletion;
+    } else if (isPendingUpload) {
       iconType = CameraIconType.pending;
     } else if (isPendingEdit) {
       iconType = CameraIconType.pendingEdit;
