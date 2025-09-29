@@ -25,11 +25,11 @@ A comprehensive Flutter app for mapping public surveillance infrastructure with 
 - **Multi-source tiles**: Switch between OpenStreetMap, Google Satellite, Esri imagery, Mapbox, and any custom providers
 - **Offline-first design**: Download a region for complete offline operation
 - **Smooth UX**: Intuitive controls, follow-me mode with GPS rotation, and gesture-friendly interactions
-- **Device visualization**: Color-coded markers showing real devices (blue), pending uploads (purple), new devices (white), edited devices (grey), and devices being edited (orange)
+- **Device visualization**: Color-coded markers showing real devices (blue), pending uploads (purple), pending edits (grey), devices being edited (orange), and pending deletions (red)
 
 ### Device Management
 - **Comprehensive profiles**: Built-in profiles for major manufacturers (Flock Safety, Motorola/Vigilant, Genetec, Leonardo/ELSAG, Neology) plus custom profile creation
-- **Editing capabilities**: Update location, direction, and tags of existing devices
+- **Full CRUD operations**: Create, edit, and delete surveillance devices
 - **Direction visualization**: Interactive field-of-view cones showing camera viewing angles
 - **Bulk operations**: Tag multiple devices efficiently with profile-based workflow
 
@@ -52,7 +52,8 @@ A comprehensive Flutter app for mapping public surveillance infrastructure with 
 1. **Install** the app on iOS or Android
 2. **Enable location** permissions  
 3. **Log into OpenStreetMap**: Choose upload mode and get OAuth2 credentials
-4. **Add your first device**: Tap the "tag node" button, position the pin, set direction, select a profile, and tap submit
+4. **Add your first device**: Tap the "New Node" button, position the pin, set direction, select a profile, and tap submit
+5. **Edit or delete devices**: Tap any device marker to view details, then use Edit or Delete buttons
 
 **New to OpenStreetMap?** Visit [deflock.me](https://deflock.me) for complete setup instructions and community guidelines.
 
@@ -60,37 +61,26 @@ A comprehensive Flutter app for mapping public surveillance infrastructure with 
 
 ## For Developers
 
-### Architecture Highlights
-- **Unified data provider**: All map tiles and surveillance device data route through `MapDataProvider` with pluggable remote/local sources
-- **Modular settings**: Each settings section is a separate widget for maintainability
-- **State management**: Provider pattern with clean separation of concerns
-- **Offline-first**: Network calls are optional; app functions fully offline with downloaded data and queues uploads until online
+**See [DEVELOPER.md](DEVELOPER.md)** for comprehensive technical documentation including:
+- Architecture overview and design decisions
+- Development setup and build instructions  
+- Code organization and contribution guidelines
+- Debugging tips and troubleshooting
 
-### Build Setup
-**Prerequisites**: Flutter SDK, Xcode (iOS), Android Studio  
-**OAuth Setup**: Register apps at [openstreetmap.org/oauth2](https://www.openstreetmap.org/oauth2/applications) and [OSM Sandbox](https://master.apis.dev.openstreetmap.org/oauth2/applications) to get a client ID
-
+**Quick setup:**
 ```shell
-# Basic setup
 flutter pub get
 cp lib/keys.dart.example lib/keys.dart
-# Add your OAuth2 client IDs to keys.dart
-
-# iOS additional setup
-cd ios && pod install
-
-# Run
-flutter run
+# Add OAuth2 client IDs, then: flutter run
 ```
 
 ---
 
 ## Roadmap
 
-### v1 todo/bug List
+### Current Development
 - Update offline area nodes while browsing?
-- Camera deletions
-- Optional custom icons for camera profiles
+- Optional custom icons for camera profiles  
 - Upgrade device marker design (considering nullplate's svg)
 
 ### Future Features & Wishlist
