@@ -88,18 +88,19 @@ flutter run
 ## Roadmap
 
 ### v1 todo/bug List
-- Optional custom icons for camera profiles
+- Update offline area nodes while browsing?
 - Camera deletions
+- Optional custom icons for camera profiles
 - Upgrade device marker design (considering nullplate's svg)
 
 ### Future Features & Wishlist
+- Jump to location by coordinates, address, or POI name
+- Route planning that avoids surveillance devices (alprwatch.com/directions)
+- Suspected locations toggle (alprwatch.com/flock/utilities)
 - Location-based notifications when approaching surveillance devices
 - Red/yellow ring for devices missing specific tag details
-- iOS/Android native themes and dark mode support
-- "Cache accumulating" offline areas?
+- "Cache accumulating" offline area?
 - "Offline areas" as tile provider?
-- Jump to location by coordinates, address, or POI name
-- Route planning that avoids surveillance devices
 - Custom device providers and OSM/Overpass alternatives
 
 ---
