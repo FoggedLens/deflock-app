@@ -36,7 +36,7 @@ if [ "$BUILD_IOS" = true ]; then
   ./app2ipa.sh build/ios/iphoneos/Runner.app || exit 1
 
   echo "Moving iOS files..."
-  mv Runner.ipa "../flockmap_v${appver}.ipa" || exit 1
+  mv Runner.ipa "../deflock_v${appver}.ipa" || exit 1
   echo
 fi
 
@@ -45,7 +45,7 @@ if [ "$BUILD_ANDROID" = true ]; then
   flutter build apk || exit 1
 
   echo "Moving Android files..."
-  cp build/app/outputs/flutter-apk/app-release.apk "../flockmap_v${appver}.apk" || exit 1
+  cp build/app/outputs/flutter-apk/app-release.apk "../deflock_v${appver}.apk" || exit 1
   echo
 fi
 

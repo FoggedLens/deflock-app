@@ -36,7 +36,7 @@ class EditNodeSheet extends StatelessWidget {
 
         final submittableProfiles = appState.enabledProfiles.where((p) => p.isSubmittable).toList();
         final isSandboxMode = appState.uploadMode == UploadMode.sandbox;
-        final allowSubmit = appState.isLoggedIn && submittableProfiles.isNotEmpty && session.profile.isSubmittable && !isSandboxMode;
+        final allowSubmit = appState.isLoggedIn && submittableProfiles.isNotEmpty && session.profile.isSubmittable;
         
         void _openRefineTags() async {
           final result = await Navigator.push<OperatorProfile?>(
@@ -125,22 +125,6 @@ class EditNodeSheet extends StatelessWidget {
                         child: Text(
                           locService.t('editNode.mustBeLoggedIn'),
                           style: const TextStyle(color: Colors.red, fontSize: 13),
-                        ),
-                      ),
-                    ],
-                  ),
-                )
-              else if (isSandboxMode)
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.info_outline, color: Colors.blue, size: 20),
-                      const SizedBox(width: 6),
-                      Expanded(
-                        child: Text(
-                          locService.t('editNode.sandboxModeWarning'),
-                          style: const TextStyle(color: Colors.blue, fontSize: 13),
                         ),
                       ),
                     ],

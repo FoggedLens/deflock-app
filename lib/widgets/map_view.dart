@@ -129,6 +129,42 @@ class MapViewState extends State<MapView> {
   static Future<void> clearStoredMapPosition() => 
       MapPositionManager.clearStoredMapPosition();
 
+  /// Get minimum zoom level for camera fetching based on upload mode
+  int _getMinZoomForCameras(BuildContext context) {
+    final appState = context.read<AppState>();
+    final uploadMode = appState.uploadMode;
+    
+    // OSM API (sandbox mode) needs higher zoom level due to bbox size limits
+    if (uploadMode == UploadMode.sandbox) {
+      return kOsmApiMinZoomLevel;
+    } else {
+      return kCameraMinZoomLevel;
+    }
+  }
+
+  /// Show zoom warning if user is below minimum zoom level
+  void _showZoomWarningIfNeeded(BuildContext context, double currentZoom, int minZoom) {
+    // Only show warning once per zoom level to avoid spam
+    if (currentZoom.floor() == (minZoom - 1)) {
+      final appState = context.read<AppState>();
+      final uploadMode = appState.uploadMode;
+      
+      final message = uploadMode == UploadMode.sandbox 
+          ? 'Zoom to level $minZoom or higher to see nodes in sandbox mode (OSM API bbox limit)'
+          : 'Zoom to level $minZoom or higher to see surveillance nodes';
+      
+      // Show a brief snackbar
+      ScaffoldMessenger.of(context).clearSnackBars();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(message),
+          duration: const Duration(seconds: 4),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    }
+  }
+
 
 
   void _refreshCamerasFromProvider() {
@@ -321,11 +357,15 @@ class MapViewState extends State<MapView> {
               });
               
               // Request more cameras on any map movement/zoom at valid zoom level (slower debounce)
-              if (pos.zoom >= 10) {
+              final minZoom = _getMinZoomForCameras(context);
+              if (pos.zoom >= minZoom) {
                 _cameraDebounce(_refreshCamerasFromProvider);
               } else {
                 // Skip nodes at low zoom - report immediate completion (brutalist approach)
                 NetworkStatus.instance.reportNodeComplete();
+                
+                // Show zoom warning if needed
+                _showZoomWarningIfNeeded(context, pos.zoom, minZoom);
               }
             },
           ),
