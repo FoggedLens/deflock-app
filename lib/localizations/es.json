@@ -90,7 +90,6 @@
     "simulate": "Simular",
     "productionDescription": "Subir a la base de datos OSM en vivo (visible para todos los usuarios)",
     "sandboxDescription": "Las subidas van al Sandbox de OSM (seguro para pruebas, se reinicia regularmente).",
-    "sandboxNote": "NOTA: Debido a las limitaciones de OpenStreetMap, las cámaras enviadas al sandbox NO aparecerán en el mapa de esta aplicación.",
     "simulateDescription": "Simular subidas (no contacta servidores OSM)"
   },
   "auth": {
@@ -220,6 +219,7 @@
     "noAreasTitle": "Sin áreas sin conexión",
     "noAreasSubtitle": "Descarga un área del mapa para uso sin conexión.",
     "provider": "Proveedor",
+    "maxZoom": "Zoom máx",
     "zoomLevels": "Z{}-{}",
     "latitude": "Lat",
     "longitude": "Lon",
@@ -237,5 +237,22 @@
     "megabytes": "MB",
     "kilobytes": "KB",
     "progress": "{}%"
+  },
+  "refineTagsSheet": {
+    "title": "Refinar Etiquetas",
+    "operatorProfile": "Perfil de Operador",
+    "done": "Listo",
+    "none": "Ninguno",
+    "noAdditionalOperatorTags": "Sin etiquetas adicionales de operador",
+    "additionalTags": "etiquetas adicionales",
+    "additionalTagsTitle": "Etiquetas Adicionales",
+    "noTagsDefinedForProfile": "No hay etiquetas definidas para este perfil de operador.",
+    "noOperatorProfiles": "No hay perfiles de operador definidos",
+    "noOperatorProfilesMessage": "Cree perfiles de operador en Configuración para aplicar etiquetas adicionales a sus envíos de nodos."
+  },
+  "layerSelector": {
+    "cannotChangeTileTypes": "No se pueden cambiar los tipos de teselas mientras se descargan áreas sin conexión",
+    "selectMapLayer": "Seleccionar Capa del Mapa",
+    "noTileProvidersAvailable": "No hay proveedores de teselas disponibles"
   }
 }

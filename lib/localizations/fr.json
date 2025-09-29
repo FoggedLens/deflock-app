@@ -90,7 +90,6 @@
     "simulate": "Simuler",
     "productionDescription": "Télécharger vers la base de données OSM en direct (visible pour tous les utilisateurs)",
     "sandboxDescription": "Les téléchargements vont vers le Sandbox OSM (sûr pour les tests, réinitialisé régulièrement).",
-    "sandboxNote": "NOTE: En raison des limitations d'OpenStreetMap, les caméras soumises au sandbox n'apparaîtront PAS sur la carte dans cette application.",
     "simulateDescription": "Simuler les téléchargements (ne contacte pas les serveurs OSM)"
   },
   "auth": {
@@ -220,6 +219,7 @@
     "noAreasTitle": "Aucune zone hors ligne",
     "noAreasSubtitle": "Téléchargez une zone de carte pour utilisation hors ligne.",
     "provider": "Fournisseur",
+    "maxZoom": "Zoom max",
     "zoomLevels": "Z{}-{}",
     "latitude": "Lat",
     "longitude": "Lon",
@@ -237,5 +237,22 @@
     "megabytes": "Mo",
     "kilobytes": "Ko",
     "progress": "{}%"
+  },
+  "refineTagsSheet": {
+    "title": "Affiner les Étiquettes",
+    "operatorProfile": "Profil d'Opérateur",
+    "done": "Terminé",
+    "none": "Aucun",
+    "noAdditionalOperatorTags": "Aucune étiquette d'opérateur supplémentaire",
+    "additionalTags": "étiquettes supplémentaires",
+    "additionalTagsTitle": "Étiquettes Supplémentaires",
+    "noTagsDefinedForProfile": "Aucune étiquette définie pour ce profil d'opérateur.",
+    "noOperatorProfiles": "Aucun profil d'opérateur défini",
+    "noOperatorProfilesMessage": "Créez des profils d'opérateur dans les Paramètres pour appliquer des étiquettes supplémentaires à vos soumissions de nœuds."
+  },
+  "layerSelector": {
+    "cannotChangeTileTypes": "Impossible de changer les types de tuiles pendant le téléchargement des zones hors ligne",
+    "selectMapLayer": "Sélectionner la Couche de Carte",
+    "noTileProvidersAvailable": "Aucun fournisseur de tuiles disponible"
   }
 }

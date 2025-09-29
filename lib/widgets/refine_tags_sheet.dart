@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../app_state.dart';
 import '../models/operator_profile.dart';
+import '../services/localization_service.dart';
 
 class RefineTagsSheet extends StatefulWidget {
   const RefineTagsSheet({
@@ -29,10 +30,11 @@ class _RefineTagsSheetState extends State<RefineTagsSheet> {
   Widget build(BuildContext context) {
     final appState = context.watch<AppState>();
     final operatorProfiles = appState.operatorProfiles;
+    final locService = LocalizationService.instance;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Refine Tags'),
+        title: Text(locService.t('refineTagsSheet.title')),
         leading: IconButton(
           icon: const Icon(Icons.close),
           onPressed: () => Navigator.pop(context, widget.selectedOperatorProfile),
@@ -40,34 +42,34 @@ class _RefineTagsSheetState extends State<RefineTagsSheet> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, _selectedOperatorProfile),
-            child: const Text('Done'),
+            child: Text(locService.t('refineTagsSheet.done')),
           ),
         ],
       ),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          const Text(
-            'Operator Profile',
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          Text(
+            locService.t('refineTagsSheet.operatorProfile'),
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 8),
           if (operatorProfiles.isEmpty)
-            const Card(
+            Card(
               child: Padding(
-                padding: EdgeInsets.all(16.0),
+                padding: const EdgeInsets.all(16.0),
                 child: Column(
                   children: [
-                    Icon(Icons.info_outline, color: Colors.grey, size: 48),
-                    SizedBox(height: 8),
+                    const Icon(Icons.info_outline, color: Colors.grey, size: 48),
+                    const SizedBox(height: 8),
                     Text(
-                      'No operator profiles defined',
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                      locService.t('refineTagsSheet.noOperatorProfiles'),
+                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                     ),
-                    SizedBox(height: 4),
+                    const SizedBox(height: 4),
                     Text(
-                      'Create operator profiles in Settings to apply additional tags to your node submissions.',
-                      style: TextStyle(color: Colors.grey),
+                      locService.t('refineTagsSheet.noOperatorProfilesMessage'),
+                      style: const TextStyle(color: Colors.grey),
                       textAlign: TextAlign.center,
                     ),
                   ],
@@ -79,15 +81,15 @@ class _RefineTagsSheetState extends State<RefineTagsSheet> {
               child: Column(
                 children: [
                   RadioListTile<OperatorProfile?>(
-                    title: const Text('None'),
-                    subtitle: const Text('No additional operator tags'),
+                    title: Text(locService.t('refineTagsSheet.none')),
+                    subtitle: Text(locService.t('refineTagsSheet.noAdditionalOperatorTags')),
                     value: null,
                     groupValue: _selectedOperatorProfile,
                     onChanged: (value) => setState(() => _selectedOperatorProfile = value),
                   ),
                   ...operatorProfiles.map((profile) => RadioListTile<OperatorProfile?>(
                     title: Text(profile.name),
-                    subtitle: Text('${profile.tags.length} additional tags'),
+                    subtitle: Text('${profile.tags.length} ${locService.t('refineTagsSheet.additionalTags')}'),
                     value: profile,
                     groupValue: _selectedOperatorProfile,
                     onChanged: (value) => setState(() => _selectedOperatorProfile = value),
@@ -97,9 +99,9 @@ class _RefineTagsSheetState extends State<RefineTagsSheet> {
             ),
             const SizedBox(height: 16),
             if (_selectedOperatorProfile != null) ...[
-              const Text(
-                'Additional Tags',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              Text(
+                locService.t('refineTagsSheet.additionalTagsTitle'),
+                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
               Card(
@@ -114,9 +116,9 @@ class _RefineTagsSheetState extends State<RefineTagsSheet> {
                       ),
                       const SizedBox(height: 8),
                       if (_selectedOperatorProfile!.tags.isEmpty)
-                        const Text(
-                          'No tags defined for this operator profile.',
-                          style: TextStyle(color: Colors.grey),
+                        Text(
+                          locService.t('refineTagsSheet.noTagsDefinedForProfile'),
+                          style: const TextStyle(color: Colors.grey),
                         )
                       else
                         ...(_selectedOperatorProfile!.tags.entries.map((entry) => 
