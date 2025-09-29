@@ -6,6 +6,7 @@ import '../models/node_profile.dart';
 import '../models/osm_camera_node.dart';
 import '../app_state.dart';
 import 'map_data_submodules/nodes_from_overpass.dart';
+import 'map_data_submodules/nodes_from_osm_api.dart';
 import 'map_data_submodules/tiles_from_remote.dart';
 import 'map_data_submodules/nodes_from_local.dart';
 import 'map_data_submodules/tiles_from_local.dart';
@@ -48,7 +49,7 @@ class MapDataProvider {
       if (offline) {
         throw OfflineModeException("Cannot fetch remote nodes in offline mode.");
       }
-      return fetchOverpassNodes(
+      return _fetchRemoteNodes(
         bounds: bounds,
         profiles: profiles,
         uploadMode: uploadMode,
@@ -64,15 +65,31 @@ class MapDataProvider {
       );
     }
 
-    // AUTO: In offline mode, only fetch local. In online mode, fetch both remote and local, then merge.
+    // AUTO: In offline mode, behavior depends on upload mode
     if (offline) {
-      return fetchLocalNodes(
+      if (uploadMode == UploadMode.sandbox) {
+        // Offline + Sandbox = no nodes (local cache is production data)
+        debugPrint('[MapDataProvider] Offline + Sandbox mode: returning no nodes (local cache is production data)');
+        return <OsmCameraNode>[];
+      } else {
+        // Offline + Production = use local cache
+        return fetchLocalNodes(
+          bounds: bounds,
+          profiles: profiles,
+          maxNodes: AppState.instance.maxCameras,
+        );
+      }
+    } else if (uploadMode == UploadMode.sandbox) {
+      // Sandbox mode: Only fetch from sandbox API, ignore local production nodes
+      debugPrint('[MapDataProvider] Sandbox mode: fetching only from sandbox API, ignoring local cache');
+      return _fetchRemoteNodes(
         bounds: bounds,
         profiles: profiles,
-        maxNodes: AppState.instance.maxCameras,
+        uploadMode: uploadMode,
+        maxResults: AppState.instance.maxCameras,
       );
     } else {
-      // Online mode: fetch both remote and local, then merge with deduplication
+      // Production mode: fetch both remote and local, then merge with deduplication
       final List<Future<List<OsmCameraNode>>> futures = [];
       
       // Always try to get local nodes (fast, cached)
@@ -83,7 +100,7 @@ class MapDataProvider {
       ));
       
       // Always try to get remote nodes (slower, fresh data)
-      futures.add(fetchOverpassNodes(
+      futures.add(_fetchRemoteNodes(
         bounds: bounds,
         profiles: profiles,
         uploadMode: uploadMode,
@@ -134,7 +151,7 @@ class MapDataProvider {
     if (offline) {
       throw OfflineModeException("Cannot fetch remote nodes for offline area download in offline mode.");
     }
-    return fetchOverpassNodes(
+    return _fetchRemoteNodes(
       bounds: bounds,
       profiles: profiles,
       uploadMode: uploadMode,
@@ -194,5 +211,59 @@ class MapDataProvider {
   /// Clear any queued tile requests (call when map view changes significantly)
   void clearTileQueue() {
     clearRemoteTileQueue();
+  }
+
+  /// Fetch remote nodes with Overpass first, OSM API fallback
+  Future<List<OsmCameraNode>> _fetchRemoteNodes({
+    required LatLngBounds bounds,
+    required List<NodeProfile> profiles,
+    UploadMode uploadMode = UploadMode.production,
+    required int maxResults,
+  }) async {
+    // For sandbox mode, skip Overpass and go directly to OSM API
+    // (Overpass doesn't have sandbox data)
+    if (uploadMode == UploadMode.sandbox) {
+      debugPrint('[MapDataProvider] Sandbox mode detected, using OSM API directly');
+      return fetchOsmApiNodes(
+        bounds: bounds,
+        profiles: profiles,
+        uploadMode: uploadMode,
+        maxResults: maxResults,
+      );
+    }
+
+    // For production mode, try Overpass first, then fallback to OSM API
+    try {
+      final nodes = await fetchOverpassNodes(
+        bounds: bounds,
+        profiles: profiles,
+        uploadMode: uploadMode,
+        maxResults: maxResults,
+      );
+      
+      // If Overpass returns nodes, we're good
+      if (nodes.isNotEmpty) {
+        return nodes;
+      }
+      
+      // If Overpass returns empty (could be no data or could be an issue), 
+      // try OSM API as well to be thorough
+      debugPrint('[MapDataProvider] Overpass returned no nodes, trying OSM API fallback');
+      return fetchOsmApiNodes(
+        bounds: bounds,
+        profiles: profiles,
+        uploadMode: uploadMode,
+        maxResults: maxResults,
+      );
+      
+    } catch (e) {
+      debugPrint('[MapDataProvider] Overpass failed ($e), trying OSM API fallback');
+      return fetchOsmApiNodes(
+        bounds: bounds,
+        profiles: profiles,
+        uploadMode: uploadMode,
+        maxResults: maxResults,
+      );
+    }
   }
 }
