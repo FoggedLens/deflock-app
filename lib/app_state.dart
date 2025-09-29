@@ -8,6 +8,8 @@ import 'models/osm_camera_node.dart';
 import 'models/pending_upload.dart';
 import 'models/tile_provider.dart';
 import 'services/offline_area_service.dart';
+import 'services/node_cache.dart';
+import 'widgets/camera_provider_with_cache.dart';
 import 'state/auth_state.dart';
 import 'state/operator_profile_state.dart';
 import 'state/profile_state.dart';
@@ -238,6 +240,11 @@ class AppState extends ChangeNotifier {
   }
 
   Future<void> setUploadMode(UploadMode mode) async {
+    // Clear node cache when switching upload modes to prevent mixing production/sandbox data
+    NodeCache.instance.clear();
+    CameraProviderWithCache.instance.notifyListeners();
+    debugPrint('[AppState] Cleared node cache due to upload mode change');
+    
     await _settingsState.setUploadMode(mode);
     await _authState.onUploadModeChanged(mode);
     _startUploader(); // Restart uploader with new mode
