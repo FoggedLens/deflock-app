@@ -37,7 +37,8 @@ const String kClientVersion = '0.9.11';
 const bool kEnableDevelopmentModes = true; // Set to false to hide sandbox/simulate modes and force production mode
 
 // Marker/node interaction
-const int kCameraMinZoomLevel = 10; // Minimum zoom to show nodes or warning
+const int kCameraMinZoomLevel = 10; // Minimum zoom to show nodes (Overpass)
+const int kOsmApiMinZoomLevel = 13; // Minimum zoom for OSM API bbox queries (sandbox mode)
 const Duration kMarkerTapTimeout = Duration(milliseconds: 250);
 const Duration kDebounceCameraRefresh = Duration(milliseconds: 500);
 
