@@ -39,13 +39,17 @@ class _MaxNodesSectionState extends State<MaxNodesSection> {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            Text(
+              locService.t('settings.maxNodes'),
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+            const SizedBox(height: 8),
             ListTile(
               leading: const Icon(Icons.filter_alt),
-              title: Text(locService.t('settings.maxNodes')),
+              title: Text(locService.t('settings.maxNodesSubtitle')),
               subtitle: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(locService.t('settings.maxNodesSubtitle')),
                   if (showWarning)
                     Padding(
                       padding: const EdgeInsets.symmetric(vertical: 4.0),

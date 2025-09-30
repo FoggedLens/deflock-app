@@ -223,6 +223,7 @@
     "operatorProfileDeleted": "Perfil de operador eliminado"
   },
   "offlineAreas": {
+    "title": "Áreas Sin Conexión",
     "noAreasTitle": "Sin áreas sin conexión",
     "noAreasSubtitle": "Descarga un área del mapa para uso sin conexión.",
     "provider": "Proveedor",

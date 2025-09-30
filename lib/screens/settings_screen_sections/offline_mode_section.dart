@@ -61,14 +61,23 @@ class OfflineModeSection extends StatelessWidget {
         final locService = LocalizationService.instance;
         final appState = context.watch<AppState>();
         
-        return ListTile(
-          leading: const Icon(Icons.wifi_off),
-          title: Text(locService.t('settings.offlineMode')),
-          subtitle: Text(locService.t('settings.offlineModeSubtitle')),
-          trailing: Switch(
-            value: appState.offlineMode,
-            onChanged: (value) => _handleOfflineModeChange(context, appState, value),
-          ),
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              locService.t('settings.offlineMode'),
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+            const SizedBox(height: 8),
+            ListTile(
+              leading: const Icon(Icons.wifi_off),
+              title: Text(locService.t('settings.offlineModeSubtitle')),
+              trailing: Switch(
+                value: appState.offlineMode,
+                onChanged: (value) => _handleOfflineModeChange(context, appState, value),
+              ),
+            ),
+          ],
         );
       },
     );

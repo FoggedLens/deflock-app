@@ -95,9 +95,8 @@ class _ProximityAlertsSectionState extends State<ProximityAlertsSection> {
             
             // Enable/disable toggle
             SwitchListTile(
-              title: const Text('Enable proximity alerts'),
+              title: const Text('Get notified when approaching surveillance devices'),
               subtitle: Text(
-                'Get notified when approaching surveillance devices\n'
                 'Uses extra battery for continuous location monitoring\n'
                 '${_notificationsEnabled ? "✓ Notifications enabled" : "⚠ Notifications disabled"}',
                 style: const TextStyle(fontSize: 12),

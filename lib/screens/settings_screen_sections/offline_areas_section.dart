@@ -65,16 +65,22 @@ class _OfflineAreasSectionState extends State<OfflineAreasSection> {
         final locService = LocalizationService.instance;
         final areas = service.offlineAreas;
         
-        if (areas.isEmpty) {
-          return ListTile(
-            leading: const Icon(Icons.download_for_offline),
-            title: Text(locService.t('offlineAreas.noAreasTitle')),
-            subtitle: Text(locService.t('offlineAreas.noAreasSubtitle')),
-          );
-        }
-        
         return Column(
-          children: areas.map((area) {
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              locService.t('offlineAreas.title'),
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+            const SizedBox(height: 8),
+            if (areas.isEmpty)
+              ListTile(
+                leading: const Icon(Icons.download_for_offline),
+                title: Text(locService.t('offlineAreas.noAreasTitle')),
+                subtitle: Text(locService.t('offlineAreas.noAreasSubtitle')),
+              )
+            else
+              ...areas.map((area) {
             String diskStr = area.sizeBytes > 0
                 ? area.sizeBytes > 1024 * 1024
                     ? "${(area.sizeBytes / (1024 * 1024)).toStringAsFixed(2)} ${locService.t('offlineAreas.megabytes')}"
@@ -202,7 +208,8 @@ class _OfflineAreasSectionState extends State<OfflineAreasSection> {
           ),
           );
         }).toList(),
-      );
+          ],
+        );
       },
     );
   }

@@ -223,6 +223,7 @@
     "operatorProfileDeleted": "Profil d'opérateur supprimé"
   },
   "offlineAreas": {
+    "title": "Zones Hors Ligne",
     "noAreasTitle": "Aucune zone hors ligne",
     "noAreasSubtitle": "Téléchargez une zone de carte pour utilisation hors ligne.",
     "provider": "Fournisseur",

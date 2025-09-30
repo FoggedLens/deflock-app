@@ -223,6 +223,7 @@
     "operatorProfileDeleted": "Operator profile deleted"
   },
   "offlineAreas": {
+    "title": "Offline Areas",
     "noAreasTitle": "No offline areas",
     "noAreasSubtitle": "Download a map area for offline use.",
     "provider": "Provider",
