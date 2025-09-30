@@ -77,16 +77,13 @@ cp lib/keys.dart.example lib/keys.dart
 ---
 
 ## Roadmap
+
+### Current Development
 - Fix map jump when editing
 - Clean up dev_config
 - Improve offline area node refresh live display
 - Add default operator profiles (Lowe’s etc)
 
-### Current Development
-- Tablet fixes! Map jumps when editing?
-Clean up dev_config
-Improve offline area node refresh live display
-Default operator profiles (Lowe’s etc)
 ### Future Features & Wishlist
 - Update offline area nodes while browsing?
 - Suspected locations toggle (alprwatch.com/flock/utilities)
