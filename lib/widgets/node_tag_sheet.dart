@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../models/osm_camera_node.dart';
+import '../models/osm_node.dart';
 import '../app_state.dart';
 import '../services/localization_service.dart';
 
 class NodeTagSheet extends StatelessWidget {
-  final OsmCameraNode node;
+  final OsmNode node;
 
   const NodeTagSheet({super.key, required this.node});
 

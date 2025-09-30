@@ -7,7 +7,7 @@ import '../services/map_data_provider.dart';
 import '../services/node_cache.dart';
 import '../services/network_status.dart';
 import '../models/node_profile.dart';
-import '../models/osm_camera_node.dart';
+import '../models/osm_node.dart';
 import '../app_state.dart';
 
 /// Provides surveillance nodes for a map view, using an in-memory cache and optionally
@@ -21,7 +21,7 @@ class CameraProviderWithCache extends ChangeNotifier {
 
   /// Call this to get (quickly) all cached overlays for the given view.
   /// Filters by currently enabled profiles.
-  List<OsmCameraNode> getCachedNodesForBounds(LatLngBounds bounds) {
+  List<OsmNode> getCachedNodesForBounds(LatLngBounds bounds) {
     final allNodes = NodeCache.instance.queryByBounds(bounds);
     final enabledProfiles = AppState.instance.enabledProfiles;
     
@@ -79,7 +79,7 @@ class CameraProviderWithCache extends ChangeNotifier {
   }
 
   /// Check if a node matches any of the provided profiles
-  bool _matchesAnyProfile(OsmCameraNode node, List<NodeProfile> profiles) {
+  bool _matchesAnyProfile(OsmNode node, List<NodeProfile> profiles) {
     for (final profile in profiles) {
       if (_nodeMatchesProfile(node, profile)) return true;
     }
@@ -87,7 +87,7 @@ class CameraProviderWithCache extends ChangeNotifier {
   }
 
   /// Check if a node matches a specific profile (all profile tags must match)
-  bool _nodeMatchesProfile(OsmCameraNode node, NodeProfile profile) {
+  bool _nodeMatchesProfile(OsmNode node, NodeProfile profile) {
     for (final entry in profile.tags.entries) {
       if (node.tags[entry.key] != entry.value) return false;
     }

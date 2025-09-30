@@ -49,7 +49,7 @@ class _OfflineAreasSectionState extends State<OfflineAreasSection> {
                 : '--';
                 
             String subtitle = '${locService.t('offlineAreas.provider')}: ${area.tileProviderDisplay}\n' +
-                'Max zoom: Z${area.maxZoom}' + '\n' +
+                '${locService.t('offlineAreas.maxZoom')}: Z${area.maxZoom}' + '\n' +
                 '${locService.t('offlineAreas.latitude')}: ${area.bounds.southWest.latitude.toStringAsFixed(3)}, ${area.bounds.southWest.longitude.toStringAsFixed(3)}\n' +
                 '${locService.t('offlineAreas.latitude')}: ${area.bounds.northEast.latitude.toStringAsFixed(3)}, ${area.bounds.northEast.longitude.toStringAsFixed(3)}';
                 

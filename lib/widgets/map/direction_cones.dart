@@ -5,12 +5,12 @@ import 'package:latlong2/latlong.dart';
 
 import '../../app_state.dart';
 import '../../dev_config.dart';
-import '../../models/osm_camera_node.dart';
+import '../../models/osm_node.dart';
 
 /// Helper class to build direction cone polygons for cameras
 class DirectionConesBuilder {
   static List<Polygon> buildDirectionCones({
-    required List<OsmCameraNode> cameras,
+    required List<OsmNode> cameras,
     required double zoom,
     AddNodeSession? session,
     EditNodeSession? editSession,
@@ -52,7 +52,7 @@ class DirectionConesBuilder {
     return overlays;
   }
 
-  static bool _isValidCameraWithDirection(OsmCameraNode node) {
+  static bool _isValidCameraWithDirection(OsmNode node) {
     return node.hasDirection && 
            node.directionDeg != null &&
            (node.coord.latitude != 0 || node.coord.longitude != 0) &&
@@ -60,7 +60,7 @@ class DirectionConesBuilder {
            node.coord.longitude.abs() <= 180;
   }
 
-  static bool _isPendingUpload(OsmCameraNode node) {
+  static bool _isPendingUpload(OsmNode node) {
     return node.tags.containsKey('_pending_upload') && 
            node.tags['_pending_upload'] == 'true';
   }

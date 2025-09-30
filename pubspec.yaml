@@ -19,6 +19,7 @@ dependencies:
   http: ^1.2.1
   flutter_svg: ^2.0.10
   xml: ^6.4.2
+  flutter_local_notifications: ^17.2.2
 
   # Auth, storage, prefs
   oauth2_client: ^4.2.0

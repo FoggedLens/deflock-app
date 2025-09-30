@@ -90,7 +90,6 @@
     "simulate": "Simulate",
     "productionDescription": "Upload to the live OSM database (visible to all users)",
     "sandboxDescription": "Uploads go to the OSM Sandbox (safe for testing, resets regularly).",
-    "sandboxNote": "NOTE: Due to OpenStreetMap limitations, cameras submitted to the sandbox will NOT appear on the map in this app.",
     "simulateDescription": "Simulate uploads (does not contact OSM servers)"
   },
   "auth": {
@@ -220,6 +219,7 @@
     "noAreasTitle": "No offline areas",
     "noAreasSubtitle": "Download a map area for offline use.",
     "provider": "Provider",
+    "maxZoom": "Max zoom",
     "zoomLevels": "Z{}-{}",
     "latitude": "Lat",
     "longitude": "Lon",
@@ -237,5 +237,22 @@
     "megabytes": "MB",
     "kilobytes": "KB",
     "progress": "{}%"
+  },
+  "refineTagsSheet": {
+    "title": "Refine Tags",
+    "operatorProfile": "Operator Profile",
+    "done": "Done",
+    "none": "None",
+    "noAdditionalOperatorTags": "No additional operator tags",
+    "additionalTags": "additional tags",
+    "additionalTagsTitle": "Additional Tags",
+    "noTagsDefinedForProfile": "No tags defined for this operator profile.",
+    "noOperatorProfiles": "No operator profiles defined",
+    "noOperatorProfilesMessage": "Create operator profiles in Settings to apply additional tags to your node submissions."
+  },
+  "layerSelector": {
+    "cannotChangeTileTypes": "Cannot change tile types while downloading offline areas",
+    "selectMapLayer": "Select Map Layer",
+    "noTileProvidersAvailable": "No tile providers available"
   }
 }

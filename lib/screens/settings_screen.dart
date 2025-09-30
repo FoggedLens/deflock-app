@@ -8,6 +8,7 @@ import 'settings_screen_sections/offline_areas_section.dart';
 import 'settings_screen_sections/offline_mode_section.dart';
 import 'settings_screen_sections/about_section.dart';
 import 'settings_screen_sections/max_nodes_section.dart';
+import 'settings_screen_sections/proximity_alerts_section.dart';
 import 'settings_screen_sections/tile_provider_section.dart';
 import 'settings_screen_sections/language_section.dart';
 import '../services/localization_service.dart';
@@ -39,6 +40,8 @@ class SettingsScreen extends StatelessWidget {
             const OperatorProfileListSection(),
             const Divider(),
             const MaxNodesSection(),
+            const Divider(),
+            const ProximityAlertsSection(),
             const Divider(),
             const TileProviderSection(),
             const Divider(),

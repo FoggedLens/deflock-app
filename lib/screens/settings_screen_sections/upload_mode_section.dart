@@ -53,19 +53,9 @@ class UploadModeSection extends StatelessWidget {
                         style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7))
                       );
                     case UploadMode.sandbox:
-                      return Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            locService.t('uploadMode.sandboxDescription'),
-                            style: const TextStyle(fontSize: 12, color: Colors.orange),
-                          ),
-                          const SizedBox(height: 2),
-                          Text(
-                            locService.t('uploadMode.sandboxNote'),
-                            style: const TextStyle(fontSize: 11, color: Colors.redAccent),
-                          ),
-                        ],
+                      return Text(
+                        locService.t('uploadMode.sandboxDescription'),
+                        style: const TextStyle(fontSize: 12, color: Colors.orange),
                       );
                     case UploadMode.simulate:
                     default:

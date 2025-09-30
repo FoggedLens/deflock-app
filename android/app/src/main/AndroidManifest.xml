@@ -6,6 +6,9 @@
     <!-- Location permissions for blue‑dot positioning -->
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+    
+    <!-- Notification permission for proximity alerts -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
 
     <application
         android:name="${applicationName}"

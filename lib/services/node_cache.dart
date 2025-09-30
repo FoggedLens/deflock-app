@@ -1,5 +1,5 @@
 import 'package:latlong2/latlong.dart';
-import '../models/osm_camera_node.dart';
+import '../models/osm_node.dart';
 import 'package:flutter_map/flutter_map.dart' show LatLngBounds;
 
 class NodeCache {
@@ -8,10 +8,10 @@ class NodeCache {
   factory NodeCache() => instance;
   NodeCache._internal();
 
-  final Map<int, OsmCameraNode> _nodes = {};
+  final Map<int, OsmNode> _nodes = {};
 
   /// Add or update a batch of nodes in the cache.
-  void addOrUpdate(List<OsmCameraNode> nodes) {
+  void addOrUpdate(List<OsmNode> nodes) {
     for (var node in nodes) {
       final existing = _nodes[node.id];
       if (existing != null) {
@@ -22,7 +22,7 @@ class NodeCache {
             mergedTags[entry.key] = entry.value;
           }
         }
-        _nodes[node.id] = OsmCameraNode(
+        _nodes[node.id] = OsmNode(
           id: node.id,
           coord: node.coord,
           tags: mergedTags,
@@ -34,14 +34,14 @@ class NodeCache {
   }
 
   /// Query for all cached nodes currently within the given LatLngBounds.
-  List<OsmCameraNode> queryByBounds(LatLngBounds bounds) {
+  List<OsmNode> queryByBounds(LatLngBounds bounds) {
     return _nodes.values
         .where((node) => _inBounds(node.coord, bounds))
         .toList();
   }
 
   /// Retrieve all cached nodes.
-  List<OsmCameraNode> getAll() => _nodes.values.toList();
+  List<OsmNode> getAll() => _nodes.values.toList();
 
   /// Optionally clear the cache (rarely needed)
   void clear() => _nodes.clear();
@@ -53,7 +53,7 @@ class NodeCache {
       final cleanTags = Map<String, String>.from(node.tags);
       cleanTags.remove('_pending_edit');
       
-      _nodes[nodeId] = OsmCameraNode(
+      _nodes[nodeId] = OsmNode(
         id: node.id,
         coord: node.coord,
         tags: cleanTags,

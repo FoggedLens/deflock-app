@@ -24,9 +24,44 @@ class LocalizationService extends ChangeNotifier {
   }
 
   Future<void> _discoverAvailableLanguages() async {
-    // For now, we'll hardcode the languages we support
-    // In the future, this could scan the assets directory
-    _availableLanguages = ['en', 'es', 'fr', 'de'];
+    _availableLanguages = [];
+    
+    try {
+      // Get the asset manifest to find all localization files
+      final manifestContent = await rootBundle.loadString('AssetManifest.json');
+      final Map<String, dynamic> manifestMap = json.decode(manifestContent);
+      
+      // Find all .json files in lib/localizations/
+      final localizationFiles = manifestMap.keys
+          .where((String key) => key.startsWith('lib/localizations/') && key.endsWith('.json'))
+          .toList();
+      
+      for (final filePath in localizationFiles) {
+        // Extract language code from filename (e.g., 'lib/localizations/pt.json' -> 'pt')
+        final fileName = filePath.split('/').last;
+        final languageCode = fileName.substring(0, fileName.length - 5); // Remove '.json'
+        
+        try {
+          // Try to load and parse the file to ensure it's valid
+          final jsonString = await rootBundle.loadString(filePath);
+          final parsedJson = json.decode(jsonString);
+          
+          // Basic validation - ensure it has the expected structure
+          if (parsedJson is Map && parsedJson.containsKey('language')) {
+            _availableLanguages.add(languageCode);
+            debugPrint('Found localization: $languageCode');
+          }
+        } catch (e) {
+          debugPrint('Failed to load localization file $filePath: $e');
+        }
+      }
+    } catch (e) {
+      debugPrint('Failed to read AssetManifest.json: $e');
+      // If manifest reading fails, we'll have an empty list
+      // The system will handle this gracefully by falling back to 'en' in _loadSavedLanguage
+    }
+    
+    debugPrint('Available languages: $_availableLanguages');
   }
 
   Future<void> _loadSavedLanguage() async {

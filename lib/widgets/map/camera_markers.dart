@@ -4,13 +4,13 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 
 import '../../dev_config.dart';
-import '../../models/osm_camera_node.dart';
+import '../../models/osm_node.dart';
 import '../node_tag_sheet.dart';
 import '../camera_icon.dart';
 
 /// Smart marker widget for camera with single/double tap distinction
 class CameraMapMarker extends StatefulWidget {
-  final OsmCameraNode node;
+  final OsmNode node;
   final MapController mapController;
   const CameraMapMarker({required this.node, required this.mapController, Key? key}) : super(key: key);
 
@@ -76,7 +76,7 @@ class _CameraMapMarkerState extends State<CameraMapMarker> {
 /// Helper class to build marker layers for cameras and user location
 class CameraMarkersBuilder {
   static List<Marker> buildCameraMarkers({
-    required List<OsmCameraNode> cameras,
+    required List<OsmNode> cameras,
     required MapController mapController,
     LatLng? userLocation,
   }) {
@@ -104,7 +104,7 @@ class CameraMarkersBuilder {
     return markers;
   }
 
-  static bool _isValidCameraCoordinate(OsmCameraNode node) {
+  static bool _isValidCameraCoordinate(OsmNode node) {
     return (node.coord.latitude != 0 || node.coord.longitude != 0) &&
            node.coord.latitude.abs() <= 90 && 
            node.coord.longitude.abs() <= 180;

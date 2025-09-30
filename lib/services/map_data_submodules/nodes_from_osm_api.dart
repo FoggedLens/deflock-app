@@ -6,13 +6,13 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:xml/xml.dart';
 
 import '../../models/node_profile.dart';
-import '../../models/osm_camera_node.dart';
+import '../../models/osm_node.dart';
 import '../../app_state.dart';
 import '../network_status.dart';
 
 /// Fetches surveillance nodes from the direct OSM API using bbox query.
 /// This is a fallback for when Overpass is not available (e.g., sandbox mode).
-Future<List<OsmCameraNode>> fetchOsmApiNodes({
+Future<List<OsmNode>> fetchOsmApiNodes({
   required LatLngBounds bounds,
   required List<NodeProfile> profiles,
   UploadMode uploadMode = UploadMode.production,
@@ -47,7 +47,7 @@ Future<List<OsmCameraNode>> fetchOsmApiNodes({
     
     // Parse XML response
     final document = XmlDocument.parse(response.body);
-    final nodes = <OsmCameraNode>[];
+    final nodes = <OsmNode>[];
     
     // Find all node elements
     for (final nodeElement in document.findAllElements('node')) {
@@ -73,7 +73,7 @@ Future<List<OsmCameraNode>> fetchOsmApiNodes({
       
       // Check if this node matches any of our profiles
       if (_nodeMatchesProfiles(tags, profiles)) {
-        nodes.add(OsmCameraNode(
+        nodes.add(OsmNode(
           id: id,
           coord: LatLng(lat, lon),
           tags: tags,

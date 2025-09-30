@@ -90,7 +90,6 @@
     "simulate": "Simulieren",
     "productionDescription": "Hochladen in die Live-OSM-Datenbank (für alle Benutzer sichtbar)",
     "sandboxDescription": "Uploads gehen an die OSM Sandbox (sicher zum Testen, wird regelmäßig zurückgesetzt).",
-    "sandboxNote": "HINWEIS: Aufgrund von OpenStreetMap-Limitierungen werden Kameras, die an die Sandbox übermittelt werden, NICHT in der Karte dieser App angezeigt.",
     "simulateDescription": "Uploads simulieren (kontaktiert OSM-Server nicht)"
   },
   "auth": {
@@ -220,6 +219,7 @@
     "noAreasTitle": "Keine Offline-Bereiche",
     "noAreasSubtitle": "Laden Sie einen Kartenbereich für die Offline-Nutzung herunter.",
     "provider": "Anbieter",
+    "maxZoom": "Max Zoom",
     "zoomLevels": "Z{}-{}",
     "latitude": "Breite",
     "longitude": "Länge",
@@ -237,5 +237,22 @@
     "megabytes": "MB",
     "kilobytes": "KB",
     "progress": "{}%"
+  },
+  "refineTagsSheet": {
+    "title": "Tags Verfeinern",
+    "operatorProfile": "Betreiber-Profil",
+    "done": "Fertig",
+    "none": "Keine",
+    "noAdditionalOperatorTags": "Keine zusätzlichen Betreiber-Tags",
+    "additionalTags": "zusätzliche Tags",
+    "additionalTagsTitle": "Zusätzliche Tags",
+    "noTagsDefinedForProfile": "Keine Tags für dieses Betreiber-Profil definiert.",
+    "noOperatorProfiles": "Keine Betreiber-Profile definiert",
+    "noOperatorProfilesMessage": "Erstellen Sie Betreiber-Profile in den Einstellungen, um zusätzliche Tags auf Ihre Knoten-Übertragungen anzuwenden."
+  },
+  "layerSelector": {
+    "cannotChangeTileTypes": "Kachel-Typen können während des Herunterladens von Offline-Bereichen nicht geändert werden",
+    "selectMapLayer": "Kartenschicht Auswählen",
+    "noTileProvidersAvailable": "Keine Kachel-Anbieter verfügbar"
   }
 }

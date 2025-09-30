@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/pending_upload.dart';
-import '../models/osm_camera_node.dart';
+import '../models/osm_node.dart';
 import '../models/node_profile.dart';
 import '../services/node_cache.dart';
 import '../services/uploader.dart';
@@ -46,7 +46,7 @@ class UploadQueueState extends ChangeNotifier {
     final tags = upload.getCombinedTags();
     tags['_pending_upload'] = 'true'; // Mark as pending for potential UI distinction
     
-    final tempNode = OsmCameraNode(
+    final tempNode = OsmNode(
       id: tempId,
       coord: upload.coord,
       tags: tags,
@@ -80,7 +80,7 @@ class UploadQueueState extends ChangeNotifier {
     final originalTags = Map<String, String>.from(session.originalNode.tags);
     originalTags['_pending_edit'] = 'true'; // Mark original as having pending edit
     
-    final originalNode = OsmCameraNode(
+    final originalNode = OsmNode(
       id: session.originalNode.id,
       coord: session.originalNode.coord, // Keep at original location
       tags: originalTags,
@@ -92,7 +92,7 @@ class UploadQueueState extends ChangeNotifier {
     editedTags['_pending_upload'] = 'true'; // Mark as pending upload
     editedTags['_original_node_id'] = session.originalNode.id.toString(); // Track original for line drawing
     
-    final editedNode = OsmCameraNode(
+    final editedNode = OsmNode(
       id: tempId,
       coord: upload.coord, // At new location
       tags: editedTags,
@@ -106,7 +106,7 @@ class UploadQueueState extends ChangeNotifier {
   }
 
   // Add a node deletion to the upload queue
-  void addFromNodeDeletion(OsmCameraNode node, {required UploadMode uploadMode}) {
+  void addFromNodeDeletion(OsmNode node, {required UploadMode uploadMode}) {
     final upload = PendingUpload(
       coord: node.coord,
       direction: node.directionDeg ?? 0, // Use existing direction or default to 0
@@ -123,7 +123,7 @@ class UploadQueueState extends ChangeNotifier {
     final deletionTags = Map<String, String>.from(node.tags);
     deletionTags['_pending_deletion'] = 'true';
     
-    final nodeWithDeletionTag = OsmCameraNode(
+    final nodeWithDeletionTag = OsmNode(
       id: node.id,
       coord: node.coord,
       tags: deletionTags,
@@ -259,7 +259,7 @@ class UploadQueueState extends ChangeNotifier {
     // Create the node with real ID and clean tags (remove temp markers)
     final tags = item.getCombinedTags();
     
-    final realNode = OsmCameraNode(
+    final realNode = OsmNode(
       id: realNodeId,
       coord: item.coord,
       tags: tags, // Clean tags without _pending_upload markers

@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../app_state.dart';
 import '../../models/tile_provider.dart';
 import '../../services/offline_area_service.dart';
+import '../../services/localization_service.dart';
 
 class LayerSelectorButton extends StatelessWidget {
   const LayerSelectorButton({super.key});
@@ -22,9 +23,9 @@ class LayerSelectorButton extends StatelessWidget {
     final offlineService = OfflineAreaService();
     if (offlineService.hasActiveDownloads) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Cannot change tile types while downloading offline areas'),
-          duration: Duration(seconds: 3),
+        SnackBar(
+          content: Text(LocalizationService.instance.t('layerSelector.cannotChangeTileTypes')),
+          duration: const Duration(seconds: 3),
         ),
       );
       return;
@@ -58,6 +59,7 @@ class _LayerSelectorDialogState extends State<_LayerSelectorDialog> {
   Widget build(BuildContext context) {
     final appState = context.watch<AppState>();
     final providers = appState.tileProviders;
+    final locService = LocalizationService.instance;
 
     // Group tile types by provider for display
     final providerGroups = <TileProvider, List<TileType>>{};
@@ -86,9 +88,9 @@ class _LayerSelectorDialogState extends State<_LayerSelectorDialog> {
                 children: [
                   const Icon(Icons.layers),
                   const SizedBox(width: 8),
-                  const Text(
-                    'Select Map Layer',
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                  Text(
+                    locService.t('layerSelector.selectMapLayer'),
+                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
                   ),
                   const Spacer(),
                   IconButton(
@@ -104,10 +106,10 @@ class _LayerSelectorDialogState extends State<_LayerSelectorDialog> {
                 padding: EdgeInsets.zero,
                 children: [
                   if (providerGroups.isEmpty)
-                    const Padding(
-                      padding: EdgeInsets.all(24),
+                    Padding(
+                      padding: const EdgeInsets.all(24),
                       child: Center(
-                        child: Text('No tile providers available'),
+                        child: Text(locService.t('layerSelector.noTileProvidersAvailable')),
                       ),
                     )
                   else
