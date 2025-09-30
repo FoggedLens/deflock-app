@@ -30,7 +30,7 @@ class OfflineAreaDownloader {
     area.tilesTotal = allTiles.length;
 
     // Download tiles with retry logic
-    final success = await _downloadTilesWithRetry(
+    final success = await downloadTilesWithRetry(
       area: area,
       allTiles: allTiles,
       directory: directory,
@@ -51,7 +51,7 @@ class OfflineAreaDownloader {
   }
 
   /// Download tiles with retry logic
-  static Future<bool> _downloadTilesWithRetry({
+  static Future<bool> downloadTilesWithRetry({
     required OfflineArea area,
     required Set<List<int>> allTiles,
     required String directory,
@@ -138,7 +138,7 @@ class OfflineAreaDownloader {
     // Modest expansion: use tiles at minZoom + 1 instead of minZoom
     // This gives a reasonable buffer without capturing entire states
     final nodeZoom = (minZoom + 1).clamp(8, 16); // Reasonable bounds for node fetching
-    final expandedNodeBounds = _calculateNodeBounds(bounds, nodeZoom);
+    final expandedNodeBounds = calculateNodeBounds(bounds, nodeZoom);
     
     final nodes = await MapDataProvider().getAllNodesForDownload(
       bounds: expandedNodeBounds,
@@ -150,7 +150,7 @@ class OfflineAreaDownloader {
   }
 
   /// Calculate expanded bounds that cover the entire tile area at minimum zoom
-  static LatLngBounds _calculateNodeBounds(LatLngBounds visibleBounds, int minZoom) {
+  static LatLngBounds calculateNodeBounds(LatLngBounds visibleBounds, int minZoom) {
     final tiles = computeTileList(visibleBounds, minZoom, minZoom);
     if (tiles.isEmpty) return visibleBounds;
     

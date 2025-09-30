@@ -79,7 +79,7 @@
     "withinTileLimit": "Dentro del límite de {} mosaicos",
     "exceedsTileLimit": "La selección actual excede el límite de {} mosaicos",
     "offlineModeWarning": "Descargas deshabilitadas en modo sin conexión. Deshabilite el modo sin conexión para descargar nuevas áreas.",
-    "downloadStarted": "¡Descarga iniciada! Obteniendo mosaicos y cámaras...",
+    "downloadStarted": "¡Descarga iniciada! Obteniendo mosaicos y nodos...",
     "downloadFailed": "Error al iniciar la descarga: {}"
   },
   "uploadMode": {
@@ -225,7 +225,7 @@
     "longitude": "Lon",
     "tiles": "Teselas",
     "size": "Tamaño",
-    "cameras": "Cámaras",
+    "nodes": "Nodos",
     "areaIdFallback": "Área {}...",
     "renameArea": "Renombrar área",
     "refreshWorldTiles": "Actualizar/re-descargar teselas mundiales",
@@ -236,7 +236,17 @@
     "renameButton": "Renombrar",
     "megabytes": "MB",
     "kilobytes": "KB",
-    "progress": "{}%"
+    "progress": "{}%",
+    "refreshArea": "Actualizar área",
+    "refreshAreaDialogTitle": "Actualizar Área sin Conexión",
+    "refreshAreaDialogSubtitle": "Elija qué actualizar para esta área:",
+    "refreshTiles": "Actualizar Mosaicos del Mapa",
+    "refreshTilesSubtitle": "Volver a descargar todos los mosaicos para imágenes actualizadas",
+    "refreshNodes": "Actualizar Nodos",
+    "refreshNodesSubtitle": "Volver a obtener datos de nodos para esta área",
+    "startRefresh": "Iniciar Actualización",
+    "refreshStarted": "¡Actualización iniciada!",
+    "refreshFailed": "Actualización falló: {}"
   },
   "refineTagsSheet": {
     "title": "Refinar Etiquetas",

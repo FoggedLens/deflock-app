@@ -79,7 +79,7 @@
     "withinTileLimit": "在 {} 瓦片限制内",
     "exceedsTileLimit": "当前选择超出 {} 瓦片限制",
     "offlineModeWarning": "离线模式下禁用下载。禁用离线模式以下载新区域。",
-    "downloadStarted": "下载已开始！正在获取瓦片和摄像头...",
+    "downloadStarted": "下载已开始！正在获取瓦片和节点...",
     "downloadFailed": "启动下载失败：{}"
   },
   "uploadMode": {
@@ -225,7 +225,7 @@
     "longitude": "经度",
     "tiles": "瓦片",
     "size": "大小",
-    "cameras": "摄像头",
+    "nodes": "节点",
     "areaIdFallback": "区域 {}...",
     "renameArea": "重命名区域",
     "refreshWorldTiles": "刷新/重新下载世界瓦片",
@@ -236,7 +236,17 @@
     "renameButton": "重命名",
     "megabytes": "MB",
     "kilobytes": "KB",
-    "progress": "{}%"
+    "progress": "{}%",
+    "refreshArea": "刷新区域",
+    "refreshAreaDialogTitle": "刷新离线区域",
+    "refreshAreaDialogSubtitle": "选择要为此区域刷新的内容：",
+    "refreshTiles": "刷新地图瓦片",
+    "refreshTilesSubtitle": "重新下载所有瓦片以获取更新的图像",
+    "refreshNodes": "刷新节点",
+    "refreshNodesSubtitle": "重新获取此区域的节点数据",
+    "startRefresh": "开始刷新",
+    "refreshStarted": "刷新已开始！",
+    "refreshFailed": "刷新失败：{}"
   },
   "refineTagsSheet": {
     "title": "细化标签",

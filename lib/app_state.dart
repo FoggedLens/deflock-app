@@ -9,6 +9,7 @@ import 'models/pending_upload.dart';
 import 'models/tile_provider.dart';
 import 'services/offline_area_service.dart';
 import 'services/node_cache.dart';
+import 'services/tile_preview_service.dart';
 import 'widgets/camera_provider_with_cache.dart';
 import 'state/auth_state.dart';
 import 'state/operator_profile_state.dart';
@@ -101,6 +102,10 @@ class AppState extends ChangeNotifier {
   Future<void> _init() async {
     // Initialize all state modules
     await _settingsState.init();
+    
+    // Attempt to fetch missing tile type preview tiles (fails silently)
+    _fetchMissingTilePreviews();
+    
     await _operatorProfileState.init();
     await _profileState.init();
     await _uploadQueueState.init();
@@ -297,6 +302,15 @@ class AppState extends ChangeNotifier {
   }
 
   // ---------- Private Methods ----------
+  /// Attempts to fetch missing tile preview images in the background (fire and forget)
+  void _fetchMissingTilePreviews() {
+    // Run asynchronously without awaiting to avoid blocking app startup
+    TilePreviewService.fetchMissingPreviews(_settingsState).catchError((error) {
+      // Silently ignore errors - this is best effort
+      debugPrint('AppState: Tile preview fetching failed silently: $error');
+    });
+  }
+
   void _startUploader() {
     _uploadQueueState.startUploader(
       offlineMode: offlineMode,

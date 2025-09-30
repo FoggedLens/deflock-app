@@ -79,7 +79,7 @@
     "withinTileLimit": "Entro il limite di {} tile",
     "exceedsTileLimit": "La selezione corrente supera il limite di {} tile",
     "offlineModeWarning": "Download disabilitati in modalità offline. Disabilita la modalità offline per scaricare nuove aree.",
-    "downloadStarted": "Download avviato! Recupero tile e telecamere...",
+    "downloadStarted": "Download avviato! Recupero tile e nodi...",
     "downloadFailed": "Impossibile avviare il download: {}"
   },
   "uploadMode": {
@@ -225,7 +225,7 @@
     "longitude": "Lon",
     "tiles": "Tile",
     "size": "Dimensione",
-    "cameras": "Telecamere",
+    "nodes": "Nodi",
     "areaIdFallback": "Area {}...",
     "renameArea": "Rinomina area",
     "refreshWorldTiles": "Aggiorna/ri-scarica tile mondiali",
@@ -236,7 +236,17 @@
     "renameButton": "Rinomina",
     "megabytes": "MB",
     "kilobytes": "KB",
-    "progress": "{}%"
+    "progress": "{}%",
+    "refreshArea": "Aggiorna area",
+    "refreshAreaDialogTitle": "Aggiorna Area Offline",
+    "refreshAreaDialogSubtitle": "Scegli cosa aggiornare per quest'area:",
+    "refreshTiles": "Aggiorna Tile Mappa",
+    "refreshTilesSubtitle": "Riscarica tutte le tile per immagini aggiornate",
+    "refreshNodes": "Aggiorna Nodi",
+    "refreshNodesSubtitle": "Ricarica i dati dei nodi per quest'area",
+    "startRefresh": "Avvia Aggiornamento",
+    "refreshStarted": "Aggiornamento avviato!",
+    "refreshFailed": "Aggiornamento fallito: {}"
   },
   "refineTagsSheet": {
     "title": "Affina Tag",

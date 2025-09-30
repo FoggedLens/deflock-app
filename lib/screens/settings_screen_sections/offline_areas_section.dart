@@ -24,6 +24,39 @@ class _OfflineAreasSectionState extends State<OfflineAreasSection> {
     });
   }
 
+  void _showRefreshDialog(OfflineArea area) {
+    showDialog(
+      context: context,
+      builder: (context) => _RefreshAreaDialog(
+        area: area,
+        onRefresh: (refreshTiles, refreshNodes) {
+          try {
+            // ignore: unawaited_futures
+            service.refreshArea(
+              id: area.id,
+              refreshTiles: refreshTiles,
+              refreshNodes: refreshNodes,
+              onProgress: (progress) => setState(() {}),
+              onComplete: (status) => setState(() {}),
+            );
+            
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(LocalizationService.instance.t('offlineAreas.refreshStarted')),
+              ),
+            );
+          } catch (e) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(LocalizationService.instance.t('offlineAreas.refreshFailed', params: [e.toString()])),
+              ),
+            );
+          }
+        },
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return AnimatedBuilder(
@@ -59,7 +92,7 @@ class _OfflineAreasSectionState extends State<OfflineAreasSection> {
               subtitle += '\n${locService.t('offlineAreas.tiles')}: ${area.tilesTotal}';
             }
             subtitle += '\n${locService.t('offlineAreas.size')}: $diskStr';
-            subtitle += '\n${locService.t('offlineAreas.cameras')}: ${area.nodes.length}';
+            subtitle += '\n${locService.t('offlineAreas.nodes')}: ${area.nodes.length}';
         return Card(
           child: ListTile(
             leading: Icon(area.status == OfflineAreaStatus.complete
@@ -113,7 +146,12 @@ class _OfflineAreasSectionState extends State<OfflineAreasSection> {
                       }
                     },
                   ),
-                if (area.status != OfflineAreaStatus.downloading)
+                if (area.status != OfflineAreaStatus.downloading) ...[
+                  IconButton(
+                    icon: const Icon(Icons.refresh, color: Colors.blue),
+                    tooltip: locService.t('offlineAreas.refreshArea'),
+                    onPressed: () => _showRefreshDialog(area),
+                  ),
                   IconButton(
                     icon: const Icon(Icons.delete, color: Colors.red),
                     tooltip: locService.t('offlineAreas.deleteOfflineArea'),
@@ -122,6 +160,7 @@ class _OfflineAreasSectionState extends State<OfflineAreasSection> {
                       setState(() {});
                     },
                   ),
+                ],
               ],
             ),
             subtitle: Text(subtitle),
@@ -165,6 +204,70 @@ class _OfflineAreasSectionState extends State<OfflineAreasSection> {
         }).toList(),
       );
       },
+    );
+  }
+}
+
+class _RefreshAreaDialog extends StatefulWidget {
+  final OfflineArea area;
+  final Function(bool refreshTiles, bool refreshNodes) onRefresh;
+
+  const _RefreshAreaDialog({
+    required this.area,
+    required this.onRefresh,
+  });
+
+  @override
+  State<_RefreshAreaDialog> createState() => _RefreshAreaDialogState();
+}
+
+class _RefreshAreaDialogState extends State<_RefreshAreaDialog> {
+  bool _refreshTiles = true;
+  bool _refreshNodes = true;
+
+  @override
+  Widget build(BuildContext context) {
+    final locService = LocalizationService.instance;
+    
+    return AlertDialog(
+      title: Text(locService.t('offlineAreas.refreshAreaDialogTitle')),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(locService.t('offlineAreas.refreshAreaDialogSubtitle')),
+          const SizedBox(height: 16),
+          CheckboxListTile(
+            title: Text(locService.t('offlineAreas.refreshTiles')),
+            subtitle: Text(locService.t('offlineAreas.refreshTilesSubtitle')),
+            value: _refreshTiles,
+            onChanged: (value) => setState(() => _refreshTiles = value ?? true),
+            dense: true,
+          ),
+          CheckboxListTile(
+            title: Text(locService.t('offlineAreas.refreshNodes')),
+            subtitle: Text(locService.t('offlineAreas.refreshNodesSubtitle')),
+            value: _refreshNodes,
+            onChanged: (value) => setState(() => _refreshNodes = value ?? true),
+            dense: true,
+          ),
+        ],
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: Text(locService.t('actions.cancel')),
+        ),
+        ElevatedButton(
+          onPressed: (_refreshTiles || _refreshNodes)
+              ? () {
+                  Navigator.of(context).pop();
+                  widget.onRefresh(_refreshTiles, _refreshNodes);
+                }
+              : null,
+          child: Text(locService.t('offlineAreas.startRefresh')),
+        ),
+      ],
     );
   }
 }

@@ -79,7 +79,7 @@
     "withinTileLimit": "Dentro do limite de {} tiles",
     "exceedsTileLimit": "A seleção atual excede o limite de {} tiles",
     "offlineModeWarning": "Downloads desabilitados no modo offline. Desative o modo offline para baixar novas áreas.",
-    "downloadStarted": "Download iniciado! Buscando tiles e câmeras...",
+    "downloadStarted": "Download iniciado! Buscando tiles e nós...",
     "downloadFailed": "Falha ao iniciar o download: {}"
   },
   "uploadMode": {
@@ -225,7 +225,7 @@
     "longitude": "Lon",
     "tiles": "Tiles",
     "size": "Tamanho",
-    "cameras": "Câmeras",
+    "nodes": "Nós",
     "areaIdFallback": "Área {}...",
     "renameArea": "Renomear área",
     "refreshWorldTiles": "Atualizar/rebaixar tiles mundiais",
@@ -236,7 +236,17 @@
     "renameButton": "Renomear",
     "megabytes": "MB",
     "kilobytes": "KB",
-    "progress": "{}%"
+    "progress": "{}%",
+    "refreshArea": "Atualizar área",
+    "refreshAreaDialogTitle": "Atualizar Área Offline",
+    "refreshAreaDialogSubtitle": "Escolha o que atualizar para esta área:",
+    "refreshTiles": "Atualizar Tiles do Mapa",
+    "refreshTilesSubtitle": "Baixar novamente todos os tiles para imagens atualizadas",
+    "refreshNodes": "Atualizar Nós",
+    "refreshNodesSubtitle": "Buscar novamente os dados dos nós para esta área",
+    "startRefresh": "Iniciar Atualização",
+    "refreshStarted": "Atualização iniciada!",
+    "refreshFailed": "Atualização falhou: {}"
   },
   "refineTagsSheet": {
     "title": "Refinar Tags",

@@ -79,7 +79,7 @@
     "withinTileLimit": "Dans la limite de {} tuiles",
     "exceedsTileLimit": "La sélection actuelle dépasse la limite de {} tuiles",
     "offlineModeWarning": "Téléchargements désactivés en mode hors ligne. Désactivez le mode hors ligne pour télécharger de nouvelles zones.",
-    "downloadStarted": "Téléchargement démarré! Récupération des tuiles et caméras...",
+    "downloadStarted": "Téléchargement démarré! Récupération des tuiles et nœuds...",
     "downloadFailed": "Échec du démarrage du téléchargement: {}"
   },
   "uploadMode": {
@@ -225,7 +225,7 @@
     "longitude": "Lon",
     "tiles": "Tuiles",
     "size": "Taille",
-    "cameras": "Caméras",
+    "nodes": "Nœuds",
     "areaIdFallback": "Zone {}...",
     "renameArea": "Renommer la zone",
     "refreshWorldTiles": "Actualiser/re-télécharger les tuiles mondiales",
@@ -236,7 +236,17 @@
     "renameButton": "Renommer",
     "megabytes": "Mo",
     "kilobytes": "Ko",
-    "progress": "{}%"
+    "progress": "{}%",
+    "refreshArea": "Actualiser la zone",
+    "refreshAreaDialogTitle": "Actualiser la Zone Hors Ligne",
+    "refreshAreaDialogSubtitle": "Choisissez quoi actualiser pour cette zone :",
+    "refreshTiles": "Actualiser les Tuiles de Carte",
+    "refreshTilesSubtitle": "Télécharger à nouveau toutes les tuiles pour des images mises à jour",
+    "refreshNodes": "Actualiser les Nœuds",
+    "refreshNodesSubtitle": "Récupérer à nouveau les données de nœuds pour cette zone",
+    "startRefresh": "Démarrer l'Actualisation",
+    "refreshStarted": "Actualisation démarrée !",
+    "refreshFailed": "Actualisation échouée : {}"
   },
   "refineTagsSheet": {
     "title": "Affiner les Étiquettes",

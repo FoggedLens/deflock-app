@@ -272,6 +272,115 @@ class OfflineAreaService {
     _areas.remove(area);
     await saveAreasToDisk();
   }
+
+  /// Refresh/update an existing offline area - tiles, nodes, or both
+  Future<void> refreshArea({
+    required String id,
+    required bool refreshTiles,
+    required bool refreshNodes,
+    void Function(double progress)? onProgress,
+    void Function(OfflineAreaStatus status)? onComplete,
+  }) async {
+    final area = _areas.firstWhere((a) => a.id == id, orElse: () => throw 'Area not found');
+    
+    if (area.status == OfflineAreaStatus.downloading) {
+      throw 'Area is already downloading';
+    }
+    
+    // Set area to downloading state
+    area.status = OfflineAreaStatus.downloading;
+    area.progress = 0.0;
+    area.tilesDownloaded = 0;
+    await saveAreasToDisk();
+
+    try {
+      bool success = true;
+      
+      if (refreshTiles && refreshNodes) {
+        // Refresh both - use the full download process
+        success = await OfflineAreaDownloader.downloadArea(
+          area: area,
+          bounds: area.bounds,
+          minZoom: area.minZoom,
+          maxZoom: area.maxZoom,
+          directory: area.directory,
+          onProgress: onProgress,
+          saveAreasToDisk: saveAreasToDisk,
+          getAreaSizeBytes: getAreaSizeBytes,
+        );
+      } else if (refreshTiles) {
+        // Refresh tiles only
+        success = await _refreshTilesOnly(area, onProgress);
+      } else if (refreshNodes) {
+        // Refresh nodes only
+        success = await _refreshNodesOnly(area, onProgress);
+      } else {
+        // Neither option selected - shouldn't happen but handle gracefully
+        success = true;
+        area.progress = 1.0;
+      }
+
+      await getAreaSizeBytes(area);
+
+      if (success) {
+        area.status = OfflineAreaStatus.complete;
+        area.progress = 1.0;
+        debugPrint('Area $id: refresh completed successfully.');
+      } else {
+        area.status = OfflineAreaStatus.error;
+        debugPrint('Area $id: refresh failed after maximum retry attempts.');
+      }
+      await saveAreasToDisk();
+      onComplete?.call(area.status);
+    } catch (e) {
+      area.status = OfflineAreaStatus.error;
+      await saveAreasToDisk();
+      onComplete?.call(area.status);
+      debugPrint('Area $id: refresh failed with exception: $e');
+    }
+  }
+
+  /// Refresh only the tiles for an area
+  Future<bool> _refreshTilesOnly(OfflineArea area, void Function(double progress)? onProgress) async {
+    final allTiles = computeTileList(area.bounds, area.minZoom, area.maxZoom);
+    area.tilesTotal = allTiles.length;
+
+    return await OfflineAreaDownloader.downloadTilesWithRetry(
+      area: area,
+      allTiles: allTiles,
+      directory: area.directory,
+      onProgress: onProgress,
+      saveAreasToDisk: saveAreasToDisk,
+      getAreaSizeBytes: getAreaSizeBytes,
+    );
+  }
+
+  /// Refresh only the nodes for an area
+  Future<bool> _refreshNodesOnly(OfflineArea area, void Function(double progress)? onProgress) async {
+    try {
+      // Use the same logic as in the downloader for consistency
+      final nodeZoom = (area.minZoom + 1).clamp(8, 16);
+      final expandedNodeBounds = OfflineAreaDownloader.calculateNodeBounds(area.bounds, nodeZoom);
+      
+      final nodes = await MapDataProvider().getAllNodesForDownload(
+        bounds: expandedNodeBounds,
+        profiles: AppState.instance.profiles,
+      );
+      
+      area.nodes = nodes;
+      await OfflineAreaDownloader.saveNodes(nodes, area.directory);
+      
+      // Set progress to complete for nodes-only refresh
+      onProgress?.call(1.0);
+      area.progress = 1.0;
+      
+      debugPrint('Area ${area.id}: Refreshed ${nodes.length} nodes');
+      return true;
+    } catch (e) {
+      debugPrint('Area ${area.id}: Failed to refresh nodes: $e');
+      return false;
+    }
+  }
   
   /// Remove any legacy world areas from previous versions
   Future<void> _cleanupLegacyWorldAreas() async {

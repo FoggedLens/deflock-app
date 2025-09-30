@@ -79,7 +79,7 @@
     "withinTileLimit": "Innerhalb {} Kachel-Limit",
     "exceedsTileLimit": "Aktuelle Auswahl überschreitet {} Kachel-Limit",
     "offlineModeWarning": "Downloads im Offline-Modus deaktiviert. Deaktivieren Sie den Offline-Modus, um neue Bereiche herunterzuladen.",
-    "downloadStarted": "Download gestartet! Lade Kacheln und Kameras...",
+    "downloadStarted": "Download gestartet! Lade Kacheln und Knoten...",
     "downloadFailed": "Download konnte nicht gestartet werden: {}"
   },
   "uploadMode": {
@@ -225,7 +225,7 @@
     "longitude": "Länge",
     "tiles": "Kacheln",
     "size": "Größe",
-    "cameras": "Kameras",
+    "nodes": "Knoten",
     "areaIdFallback": "Bereich {}...",
     "renameArea": "Bereich umbenennen",
     "refreshWorldTiles": "Welt-Kacheln aktualisieren/neu herunterladen",
@@ -236,7 +236,17 @@
     "renameButton": "Umbenennen",
     "megabytes": "MB",
     "kilobytes": "KB",
-    "progress": "{}%"
+    "progress": "{}%",
+    "refreshArea": "Bereich aktualisieren",
+    "refreshAreaDialogTitle": "Offline-Bereich aktualisieren",
+    "refreshAreaDialogSubtitle": "Wählen Sie aus, was für diesen Bereich aktualisiert werden soll:",
+    "refreshTiles": "Karten-Kacheln aktualisieren",
+    "refreshTilesSubtitle": "Alle Kacheln für aktualisierte Bilder erneut herunterladen",
+    "refreshNodes": "Knoten aktualisieren",
+    "refreshNodesSubtitle": "Knotendaten für diesen Bereich erneut abrufen",
+    "startRefresh": "Aktualisierung starten",
+    "refreshStarted": "Aktualisierung gestartet!",
+    "refreshFailed": "Aktualisierung fehlgeschlagen: {}"
   },
   "refineTagsSheet": {
     "title": "Tags Verfeinern",
