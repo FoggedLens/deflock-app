@@ -205,21 +205,23 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   left: 8,
                   right: 8,
                 ),
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.surface,
-                    borderRadius: BorderRadius.circular(16),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Theme.of(context).shadowColor.withOpacity(0.3),
-                        blurRadius: 10,
-                        offset: Offset(0, -2),
-                      )
-                    ],
-                  ),
-                  margin: EdgeInsets.only(bottom: kBottomButtonBarOffset),
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                  child: Row(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 600), // Match typical sheet width
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.surface,
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Theme.of(context).shadowColor.withOpacity(0.3),
+                          blurRadius: 10,
+                          offset: Offset(0, -2),
+                        )
+                      ],
+                    ),
+                    margin: EdgeInsets.only(bottom: kBottomButtonBarOffset),
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    child: Row(
                     children: [
                       Expanded(
                         child: AnimatedBuilder(
@@ -255,6 +257,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                       ),
                     ],
                   ),
+                ),
                 ),
               ),
             ),
