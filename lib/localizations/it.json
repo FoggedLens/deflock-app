@@ -45,6 +45,19 @@
     "advancedSettingsSubtitle": "Impostazioni di prestazioni, avvisi e fornitori di tessere",
     "proximityAlerts": "Avvisi di Prossimità"
   },
+  "proximityAlerts": {
+    "getNotified": "Ricevi notifiche quando ti avvicini a dispositivi di sorveglianza",
+    "batteryUsage": "Utilizza batteria extra per il monitoraggio continuo della posizione",
+    "notificationsEnabled": "✓ Notifiche abilitate",
+    "notificationsDisabled": "⚠ Notifiche disabilitate",
+    "permissionRequired": "Autorizzazione notifica richiesta",
+    "permissionExplanation": "Le notifiche push sono disabilitate. Vedrai solo avvisi nell'app e non sarai notificato quando l'app è in background.",
+    "enableNotifications": "Abilita Notifiche",
+    "checkingPermissions": "Controllo autorizzazioni...",
+    "alertDistance": "Distanza di avviso: ",
+    "meters": "metri",
+    "rangeInfo": "Intervallo: {}-{} metri (predefinito: {})"
+  },
   "node": {
     "title": "Nodo #{}",
     "tagSheetTitle": "Tag Dispositivo di Sorveglianza",

@@ -45,6 +45,19 @@
     "advancedSettingsSubtitle": "Configuración de rendimiento, alertas y proveedores de teselas",
     "proximityAlerts": "Alertas de Proximidad"
   },
+  "proximityAlerts": {
+    "getNotified": "Recibe notificaciones al acercarte a dispositivos de vigilancia",
+    "batteryUsage": "Usa batería extra para monitoreo continuo de ubicación",
+    "notificationsEnabled": "✓ Notificaciones habilitadas",
+    "notificationsDisabled": "⚠ Notificaciones deshabilitadas",
+    "permissionRequired": "Permiso de notificación requerido",
+    "permissionExplanation": "Las notificaciones push están deshabilitadas. Solo verás alertas dentro de la app y no serás notificado cuando la app esté en segundo plano.",
+    "enableNotifications": "Habilitar Notificaciones",
+    "checkingPermissions": "Verificando permisos...",
+    "alertDistance": "Distancia de alerta: ",
+    "meters": "metros",
+    "rangeInfo": "Rango: {}-{} metros (predeterminado: {})"
+  },
   "node": {
     "title": "Nodo #{}",
     "tagSheetTitle": "Etiquetas del Dispositivo",

@@ -45,6 +45,19 @@
     "advancedSettingsSubtitle": "Leistungs-, Warnungs- und Kachelanbieter-Einstellungen",
     "proximityAlerts": "Näherungswarnungen"
   },
+  "proximityAlerts": {
+    "getNotified": "Benachrichtigung erhalten beim Annähern an Überwachungsgeräte",
+    "batteryUsage": "Verbraucht zusätzlich Batterie für kontinuierliche Standortüberwachung",
+    "notificationsEnabled": "✓ Benachrichtigungen aktiviert",
+    "notificationsDisabled": "⚠ Benachrichtigungen deaktiviert",
+    "permissionRequired": "Benachrichtigungsberechtigung erforderlich",
+    "permissionExplanation": "Push-Benachrichtigungen sind deaktiviert. Sie sehen nur In-App-Warnungen und werden nicht benachrichtigt, wenn die App im Hintergrund läuft.",
+    "enableNotifications": "Benachrichtigungen Aktivieren",
+    "checkingPermissions": "Berechtigungen prüfen...",
+    "alertDistance": "Warnentfernung: ",
+    "meters": "Meter",
+    "rangeInfo": "Bereich: {}-{} Meter (Standard: {})"
+  },
   "node": {
     "title": "Knoten #{}",
     "tagSheetTitle": "Gerät-Tags",

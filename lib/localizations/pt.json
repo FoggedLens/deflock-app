@@ -45,6 +45,19 @@
     "advancedSettingsSubtitle": "Configurações de desempenho, alertas e provedores de mapas",
     "proximityAlerts": "Alertas de Proximidade"
   },
+  "proximityAlerts": {
+    "getNotified": "Receba notificações ao se aproximar de dispositivos de vigilância",
+    "batteryUsage": "Usa bateria extra para monitoramento contínuo de localização",
+    "notificationsEnabled": "✓ Notificações habilitadas",
+    "notificationsDisabled": "⚠ Notificações desabilitadas",
+    "permissionRequired": "Permissão de notificação necessária",
+    "permissionExplanation": "Notificações push estão desabilitadas. Você só verá alertas dentro do app e não será notificado quando o app estiver em segundo plano.",
+    "enableNotifications": "Habilitar Notificações",
+    "checkingPermissions": "Verificando permissões...",
+    "alertDistance": "Distância de alerta: ",
+    "meters": "metros",
+    "rangeInfo": "Faixa: {}-{} metros (padrão: {})"
+  },
   "node": {
     "title": "Nó #{}",
     "tagSheetTitle": "Tags do Dispositivo de Vigilância",

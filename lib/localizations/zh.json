@@ -45,6 +45,19 @@
     "advancedSettingsSubtitle": "性能、警报和地图提供商设置",
     "proximityAlerts": "邻近警报"
   },
+  "proximityAlerts": {
+    "getNotified": "接近监控设备时接收通知",
+    "batteryUsage": "使用额外电量进行连续位置监控",
+    "notificationsEnabled": "✓ 通知已启用",
+    "notificationsDisabled": "⚠ 通知已禁用",
+    "permissionRequired": "需要通知权限",
+    "permissionExplanation": "推送通知已禁用。您只会看到应用内警报，当应用在后台时不会收到通知。",
+    "enableNotifications": "启用通知",
+    "checkingPermissions": "检查权限中...",
+    "alertDistance": "警报距离：",
+    "meters": "米",
+    "rangeInfo": "范围：{}-{} 米（默认：{}）"
+  },
   "node": {
     "title": "节点 #{}",
     "tagSheetTitle": "监控设备标签",

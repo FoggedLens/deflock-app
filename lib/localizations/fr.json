@@ -45,6 +45,19 @@
     "advancedSettingsSubtitle": "Paramètres de performance, alertes et fournisseurs de tuiles",
     "proximityAlerts": "Alertes de Proximité"
   },
+  "proximityAlerts": {
+    "getNotified": "Recevoir des notifications en s'approchant de dispositifs de surveillance",
+    "batteryUsage": "Utilise de la batterie supplémentaire pour la surveillance continue de la localisation",
+    "notificationsEnabled": "✓ Notifications activées",
+    "notificationsDisabled": "⚠ Notifications désactivées",
+    "permissionRequired": "Autorisation de notification requise",
+    "permissionExplanation": "Les notifications push sont désactivées. Vous ne verrez que des alertes dans l'application et ne serez pas notifié lorsque l'application est en arrière-plan.",
+    "enableNotifications": "Activer les Notifications",
+    "checkingPermissions": "Vérification des autorisations...",
+    "alertDistance": "Distance d'alerte : ",
+    "meters": "mètres",
+    "rangeInfo": "Plage : {}-{} mètres (par défaut : {})"
+  },
   "node": {
     "title": "Nœud #{}",
     "tagSheetTitle": "Balises du Dispositif",

@@ -95,10 +95,10 @@ class _ProximityAlertsSectionState extends State<ProximityAlertsSection> {
             
             // Enable/disable toggle
             SwitchListTile(
-              title: const Text('Get notified when approaching surveillance devices'),
+              title: Text(locService.t('proximityAlerts.getNotified')),
               subtitle: Text(
-                'Uses extra battery for continuous location monitoring\n'
-                '${_notificationsEnabled ? "✓ Notifications enabled" : "⚠ Notifications disabled"}',
+                '${locService.t('proximityAlerts.batteryUsage')}\n'
+                '${_notificationsEnabled ? locService.t('proximityAlerts.notificationsEnabled') : locService.t('proximityAlerts.notificationsDisabled')}',
                 style: const TextStyle(fontSize: 12),
               ),
               value: appState.proximityAlertsEnabled,
@@ -129,22 +129,22 @@ class _ProximityAlertsSectionState extends State<ProximityAlertsSection> {
                       children: [
                         Icon(Icons.notifications_off, color: Colors.orange, size: 20),
                         const SizedBox(width: 8),
-                        const Text(
-                          'Notification permission required',
-                          style: TextStyle(fontWeight: FontWeight.w600),
+                        Text(
+                          locService.t('proximityAlerts.permissionRequired'),
+                          style: const TextStyle(fontWeight: FontWeight.w600),
                         ),
                       ],
                     ),
                     const SizedBox(height: 8),
-                    const Text(
-                      'Push notifications are disabled. You\'ll only see in-app alerts and won\'t be notified when the app is in background.',
-                      style: TextStyle(fontSize: 12),
+                    Text(
+                      locService.t('proximityAlerts.permissionExplanation'),
+                      style: const TextStyle(fontSize: 12),
                     ),
                     const SizedBox(height: 8),
                     ElevatedButton.icon(
                       onPressed: _requestNotificationPermissions,
                       icon: const Icon(Icons.settings, size: 16),
-                      label: const Text('Enable Notifications'),
+                      label: Text(locService.t('proximityAlerts.enableNotifications')),
                       style: ElevatedButton.styleFrom(
                         minimumSize: const Size(0, 32),
                         textStyle: const TextStyle(fontSize: 12),
@@ -166,7 +166,7 @@ class _ProximityAlertsSectionState extends State<ProximityAlertsSection> {
                     child: CircularProgressIndicator(strokeWidth: 2),
                   ),
                   SizedBox(width: 8),
-                  Text('Checking permissions...', style: TextStyle(fontSize: 12)),
+                  Text(locService.t('proximityAlerts.checkingPermissions'), style: const TextStyle(fontSize: 12)),
                 ],
               ),
             ],
@@ -176,7 +176,7 @@ class _ProximityAlertsSectionState extends State<ProximityAlertsSection> {
               const SizedBox(height: 12),
               Row(
                 children: [
-                  const Text('Alert distance: '),
+                  Text(locService.t('proximityAlerts.alertDistance')),
                   SizedBox(
                     width: 80,
                     child: TextField(
@@ -198,12 +198,16 @@ class _ProximityAlertsSectionState extends State<ProximityAlertsSection> {
                     ),
                   ),
                   const SizedBox(width: 8),
-                  const Text('meters'),
+                  Text(locService.t('proximityAlerts.meters')),
                 ],
               ),
               const SizedBox(height: 8),
               Text(
-                'Range: $kProximityAlertMinDistance-$kProximityAlertMaxDistance meters (default: $kProximityAlertDefaultDistance)',
+                locService.t('proximityAlerts.rangeInfo', params: [
+                  kProximityAlertMinDistance.toString(),
+                  kProximityAlertMaxDistance.toString(),
+                  kProximityAlertDefaultDistance.toString(),
+                ]),
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
                   color: Theme.of(context).textTheme.bodySmall?.color?.withOpacity(0.6),
                 ),

@@ -45,6 +45,19 @@
     "advancedSettingsSubtitle": "Performance, alerts, and tile provider settings",
     "proximityAlerts": "Proximity Alerts"
   },
+  "proximityAlerts": {
+    "getNotified": "Get notified when approaching surveillance devices",
+    "batteryUsage": "Uses extra battery for continuous location monitoring",
+    "notificationsEnabled": "✓ Notifications enabled",
+    "notificationsDisabled": "⚠ Notifications disabled",
+    "permissionRequired": "Notification permission required",
+    "permissionExplanation": "Push notifications are disabled. You'll only see in-app alerts and won't be notified when the app is in background.",
+    "enableNotifications": "Enable Notifications",
+    "checkingPermissions": "Checking permissions...",
+    "alertDistance": "Alert distance: ",
+    "meters": "meters",
+    "rangeInfo": "Range: {}-{} meters (default: {})"
+  },
   "node": {
     "title": "Node #{}",
     "tagSheetTitle": "Surveillance Device Tags",
