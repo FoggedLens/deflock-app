@@ -1,15 +1,9 @@
 import 'package:flutter/material.dart';
 import 'settings_screen_sections/auth_section.dart';
 import 'settings_screen_sections/upload_mode_section.dart';
-import 'settings_screen_sections/profile_list_section.dart';
-import 'settings_screen_sections/operator_profile_list_section.dart';
 import 'settings_screen_sections/queue_section.dart';
-import 'settings_screen_sections/offline_areas_section.dart';
-import 'settings_screen_sections/offline_mode_section.dart';
 import 'settings_screen_sections/about_section.dart';
-import 'settings_screen_sections/max_nodes_section.dart';
 import 'settings_screen_sections/proximity_alerts_section.dart';
-import 'settings_screen_sections/tile_provider_section.dart';
 import 'settings_screen_sections/language_section.dart';
 import '../services/localization_service.dart';
 import '../dev_config.dart';
@@ -19,10 +13,12 @@ class SettingsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final locService = LocalizationService.instance;
+    
     return AnimatedBuilder(
       animation: LocalizationService.instance,
       builder: (context, child) => Scaffold(
-        appBar: AppBar(title: Text(LocalizationService.instance.t('settings.title'))),
+        appBar: AppBar(title: Text(locService.t('settings.title'))),
         body: ListView(
           padding: const EdgeInsets.all(16),
           children: [
@@ -35,26 +31,59 @@ class SettingsScreen extends StatelessWidget {
             const Divider(),
             const QueueSection(),
             const Divider(),
-            const ProfileListSection(),
-            const Divider(),
-            const OperatorProfileListSection(),
-            const Divider(),
-            const MaxNodesSection(),
-            const Divider(),
             const ProximityAlertsSection(),
             const Divider(),
-            const TileProviderSection(),
+            
+            // Navigation to sub-pages
+            _buildNavigationTile(
+              context,
+              icon: Icons.account_tree,
+              title: locService.t('settings.profiles'),
+              subtitle: locService.t('settings.profilesSubtitle'),
+              onTap: () => Navigator.pushNamed(context, '/settings/profiles'),
+            ),
             const Divider(),
-            const OfflineModeSection(),
+            
+            _buildNavigationTile(
+              context,
+              icon: Icons.cloud_off,
+              title: locService.t('settings.offlineSettings'),
+              subtitle: locService.t('settings.offlineSettingsSubtitle'),
+              onTap: () => Navigator.pushNamed(context, '/settings/offline'),
+            ),
             const Divider(),
-            const OfflineAreasSection(),
+            
+            _buildNavigationTile(
+              context,
+              icon: Icons.tune,
+              title: locService.t('settings.advancedSettings'),
+              subtitle: locService.t('settings.advancedSettingsSubtitle'),
+              onTap: () => Navigator.pushNamed(context, '/settings/advanced'),
+            ),
             const Divider(),
+            
             const LanguageSection(),
             const Divider(),
             const AboutSection(),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildNavigationTile(
+    BuildContext context, {
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required VoidCallback onTap,
+  }) {
+    return ListTile(
+      leading: Icon(icon),
+      title: Text(title),
+      subtitle: Text(subtitle),
+      trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+      onTap: onTap,
     );
   }
 }

@@ -36,7 +36,13 @@
     "offlineModeSubtitle": "Disable all network requests except for local/offline areas.",
     "offlineModeWarningTitle": "Active Downloads",
     "offlineModeWarningMessage": "Enabling offline mode will cancel any active area downloads. Do you want to continue?",
-    "enableOfflineMode": "Enable Offline Mode"
+    "enableOfflineMode": "Enable Offline Mode",
+    "profiles": "Profiles",
+    "profilesSubtitle": "Manage node and operator profiles",
+    "offlineSettings": "Offline Settings",
+    "offlineSettingsSubtitle": "Manage offline mode and downloaded areas",
+    "advancedSettings": "Advanced Settings",
+    "advancedSettingsSubtitle": "Performance and tile provider settings"
   },
   "node": {
     "title": "Node #{}",

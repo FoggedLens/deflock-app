@@ -1,0 +1,30 @@
+import 'package:flutter/material.dart';
+import 'settings_screen_sections/max_nodes_section.dart';
+import 'settings_screen_sections/tile_provider_section.dart';
+import '../services/localization_service.dart';
+
+class AdvancedSettingsScreen extends StatelessWidget {
+  const AdvancedSettingsScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final locService = LocalizationService.instance;
+    
+    return AnimatedBuilder(
+      animation: LocalizationService.instance,
+      builder: (context, child) => Scaffold(
+        appBar: AppBar(
+          title: Text(locService.t('settings.advancedSettings')),
+        ),
+        body: ListView(
+          padding: const EdgeInsets.all(16),
+          children: const [
+            MaxNodesSection(),
+            Divider(),
+            TileProviderSection(),
+          ],
+        ),
+      ),
+    );
+  }
+}

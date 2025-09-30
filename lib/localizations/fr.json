@@ -36,7 +36,13 @@
     "offlineModeSubtitle": "Désactiver toutes les requêtes réseau sauf pour les zones locales/hors ligne.",
     "offlineModeWarningTitle": "Téléchargements Actifs",
     "offlineModeWarningMessage": "L'activation du mode hors ligne annulera tous les téléchargements de zone actifs. Voulez-vous continuer?",
-    "enableOfflineMode": "Activer le Mode Hors Ligne"
+    "enableOfflineMode": "Activer le Mode Hors Ligne",
+    "profiles": "Profils",
+    "profilesSubtitle": "Gérer les profils de nœuds et d'opérateurs",
+    "offlineSettings": "Paramètres Hors Ligne",
+    "offlineSettingsSubtitle": "Gérer le mode hors ligne et les zones téléchargées",
+    "advancedSettings": "Paramètres Avancés",
+    "advancedSettingsSubtitle": "Paramètres de performance et de fournisseurs de tuiles"
   },
   "node": {
     "title": "Nœud #{}",

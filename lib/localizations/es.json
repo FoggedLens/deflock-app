@@ -36,7 +36,13 @@
     "offlineModeSubtitle": "Deshabilitar todas las solicitudes de red excepto para áreas locales/sin conexión.",
     "offlineModeWarningTitle": "Descargas Activas",
     "offlineModeWarningMessage": "Habilitar el modo sin conexión cancelará cualquier descarga de área activa. ¿Desea continuar?",
-    "enableOfflineMode": "Habilitar Modo Sin Conexión"
+    "enableOfflineMode": "Habilitar Modo Sin Conexión",
+    "profiles": "Perfiles",
+    "profilesSubtitle": "Gestionar perfiles de nodos y operadores",
+    "offlineSettings": "Configuración Sin Conexión",
+    "offlineSettingsSubtitle": "Gestionar modo sin conexión y áreas descargadas",
+    "advancedSettings": "Configuración Avanzada",
+    "advancedSettingsSubtitle": "Configuración de rendimiento y proveedores de teselas"
   },
   "node": {
     "title": "Nodo #{}",
