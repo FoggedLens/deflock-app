@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../../services/localization_service.dart';
+import '../../../services/localization_service.dart';
 
 class LanguageSection extends StatefulWidget {
   const LanguageSection({super.key});

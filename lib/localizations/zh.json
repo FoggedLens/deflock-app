@@ -29,14 +29,21 @@
     "systemDefault": "系统默认",
     "aboutInfo": "关于 / 信息",
     "aboutThisApp": "关于此应用",
-    "maxNodes": "最大节点获取/绘制数",
+    "maxNodes": "最大节点绘制数",
     "maxNodesSubtitle": "设置地图上节点数量的上限（默认：250）。",
     "maxNodesWarning": "除非您确定有充分的理由，否则您可能不想这样做。",
     "offlineMode": "离线模式",
     "offlineModeSubtitle": "禁用除本地/离线区域外的所有网络请求。",
     "offlineModeWarningTitle": "活动下载",
     "offlineModeWarningMessage": "启用离线模式将取消任何活动的区域下载。您要继续吗？",
-    "enableOfflineMode": "启用离线模式"
+    "enableOfflineMode": "启用离线模式",
+    "profiles": "配置文件",
+    "profilesSubtitle": "管理节点和操作员配置文件",
+    "offlineSettings": "离线设置",
+    "offlineSettingsSubtitle": "管理离线模式和已下载区域",
+    "advancedSettings": "高级设置",
+    "advancedSettingsSubtitle": "性能、警报和地图提供商设置",
+    "proximityAlerts": "邻近警报"
   },
   "node": {
     "title": "节点 #{}",
@@ -216,6 +223,7 @@
     "operatorProfileDeleted": "运营商配置文件已删除"
   },
   "offlineAreas": {
+    "title": "离线区域",
     "noAreasTitle": "无离线区域",
     "noAreasSubtitle": "下载地图区域以供离线使用。",
     "provider": "提供商",

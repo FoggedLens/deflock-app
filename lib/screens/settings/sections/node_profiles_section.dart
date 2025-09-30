@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
 import 'package:provider/provider.dart';
-import '../../app_state.dart';
-import '../../models/node_profile.dart';
-import '../../services/localization_service.dart';
-import '../profile_editor.dart';
+import '../../../app_state.dart';
+import '../../../models/node_profile.dart';
+import '../../../services/localization_service.dart';
+import '../../profile_editor.dart';
 
-class ProfileListSection extends StatelessWidget {
-  const ProfileListSection({super.key});
+class NodeProfilesSection extends StatelessWidget {
+  const NodeProfilesSection({super.key});
 
   @override
   Widget build(BuildContext context) {

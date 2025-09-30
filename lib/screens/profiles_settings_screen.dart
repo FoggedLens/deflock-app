@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'settings_screen_sections/profile_list_section.dart';
-import 'settings_screen_sections/operator_profile_list_section.dart';
+import 'settings/sections/node_profiles_section.dart';
+import 'settings/sections/operator_profiles_section.dart';
 import '../services/localization_service.dart';
 
 class ProfilesSettingsScreen extends StatelessWidget {
@@ -19,9 +19,9 @@ class ProfilesSettingsScreen extends StatelessWidget {
         body: ListView(
           padding: const EdgeInsets.all(16),
           children: const [
-            ProfileListSection(),
+            NodeProfilesSection(),
             Divider(),
-            OperatorProfileListSection(),
+            OperatorProfilesSection(),
           ],
         ),
       ),

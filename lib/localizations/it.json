@@ -29,14 +29,21 @@
     "systemDefault": "Predefinito del Sistema",
     "aboutInfo": "Informazioni",
     "aboutThisApp": "Informazioni su questa App",
-    "maxNodes": "Max nodi recuperati/disegnati",
+    "maxNodes": "Max nodi disegnati",
     "maxNodesSubtitle": "Imposta un limite superiore per il numero di nodi sulla mappa (predefinito: 250).",
     "maxNodesWarning": "Probabilmente non vuoi farlo a meno che non sei assolutamente sicuro di avere una buona ragione per farlo.",
     "offlineMode": "Modalità Offline",
     "offlineModeSubtitle": "Disabilita tutte le richieste di rete tranne per aree locali/offline.",
     "offlineModeWarningTitle": "Download Attivi",
     "offlineModeWarningMessage": "L'attivazione della modalità offline cancellerà qualsiasi download di area attivo. Vuoi continuare?",
-    "enableOfflineMode": "Attiva Modalità Offline"
+    "enableOfflineMode": "Attiva Modalità Offline",
+    "profiles": "Profili",
+    "profilesSubtitle": "Gestisci profili di nodi e operatori",
+    "offlineSettings": "Impostazioni Offline",
+    "offlineSettingsSubtitle": "Gestisci modalità offline e aree scaricate",
+    "advancedSettings": "Impostazioni Avanzate",
+    "advancedSettingsSubtitle": "Impostazioni di prestazioni, avvisi e fornitori di tessere",
+    "proximityAlerts": "Avvisi di Prossimità"
   },
   "node": {
     "title": "Nodo #{}",
@@ -216,6 +223,7 @@
     "operatorProfileDeleted": "Profilo operatore eliminato"
   },
   "offlineAreas": {
+    "title": "Aree Offline",
     "noAreasTitle": "Nessuna area offline",
     "noAreasSubtitle": "Scarica un'area mappa per l'uso offline.",
     "provider": "Fornitore",

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'settings_screen_sections/auth_section.dart';
-import 'settings_screen_sections/upload_mode_section.dart';
-import 'settings_screen_sections/queue_section.dart';
-import 'settings_screen_sections/about_section.dart';
-import 'settings_screen_sections/language_section.dart';
+import 'settings/sections/auth_section.dart';
+import 'settings/sections/upload_mode_section.dart';
+import 'settings/sections/queue_section.dart';
+import 'settings/sections/about_section.dart';
+import 'settings/sections/language_section.dart';
 import '../services/localization_service.dart';
 import '../dev_config.dart';
 

@@ -29,14 +29,21 @@
     "systemDefault": "Padrão do Sistema",
     "aboutInfo": "Sobre / Informações",
     "aboutThisApp": "Sobre este App",
-    "maxNodes": "Máx. de nós obtidos/desenhados",
+    "maxNodes": "Máx. de nós desenhados",
     "maxNodesSubtitle": "Definir um limite superior para o número de nós no mapa (padrão: 250).",
     "maxNodesWarning": "Você provavelmente não quer fazer isso a menos que tenha certeza absoluta de que tem uma boa razão para isso.",
     "offlineMode": "Modo Offline",
     "offlineModeSubtitle": "Desabilitar todas as requisições de rede exceto para áreas locais/offline.",
     "offlineModeWarningTitle": "Downloads Ativos",
     "offlineModeWarningMessage": "Ativar o modo offline cancelará qualquer download de área ativo. Deseja continuar?",
-    "enableOfflineMode": "Ativar Modo Offline"
+    "enableOfflineMode": "Ativar Modo Offline",
+    "profiles": "Perfis",
+    "profilesSubtitle": "Gerenciar perfis de nós e operadores",
+    "offlineSettings": "Configurações Offline",
+    "offlineSettingsSubtitle": "Gerenciar modo offline e áreas baixadas",
+    "advancedSettings": "Configurações Avançadas",
+    "advancedSettingsSubtitle": "Configurações de desempenho, alertas e provedores de mapas",
+    "proximityAlerts": "Alertas de Proximidade"
   },
   "node": {
     "title": "Nó #{}",
@@ -216,6 +223,7 @@
     "operatorProfileDeleted": "Perfil de operador excluído"
   },
   "offlineAreas": {
+    "title": "Áreas Offline",
     "noAreasTitle": "Nenhuma área offline",
     "noAreasSubtitle": "Baixe uma área do mapa para uso offline.",
     "provider": "Provedor",

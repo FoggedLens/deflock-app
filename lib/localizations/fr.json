@@ -29,7 +29,7 @@
     "systemDefault": "Par Défaut du Système",
     "aboutInfo": "À Propos / Informations",
     "aboutThisApp": "À Propos de Cette App",
-    "maxNodes": "Max. nœuds récupérés/dessinés",
+    "maxNodes": "Max. nœuds dessinés",
     "maxNodesSubtitle": "Définir une limite supérieure pour le nombre de nœuds sur la carte (par défaut: 250).",
     "maxNodesWarning": "Vous ne voulez probablement pas faire cela à moins d'être absolument sûr d'avoir une bonne raison de le faire.",
     "offlineMode": "Mode Hors Ligne",

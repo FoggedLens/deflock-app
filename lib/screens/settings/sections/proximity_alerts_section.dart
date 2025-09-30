@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
-import '../../app_state.dart';
-import '../../services/localization_service.dart';
-import '../../services/proximity_alert_service.dart';
-import '../../dev_config.dart';
+import '../../../app_state.dart';
+import '../../../services/localization_service.dart';
+import '../../../services/proximity_alert_service.dart';
+import '../../../dev_config.dart';
 
 /// Settings section for proximity alerts configuration
 /// Follows brutalist principles: simple, explicit UI that matches existing patterns

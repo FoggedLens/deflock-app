@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
 import 'package:provider/provider.dart';
-import '../../app_state.dart';
-import '../../models/operator_profile.dart';
-import '../../services/localization_service.dart';
-import '../operator_profile_editor.dart';
+import '../../../app_state.dart';
+import '../../../models/operator_profile.dart';
+import '../../../services/localization_service.dart';
+import '../../operator_profile_editor.dart';
 
-class OperatorProfileListSection extends StatelessWidget {
-  const OperatorProfileListSection({super.key});
+class OperatorProfilesSection extends StatelessWidget {
+  const OperatorProfilesSection({super.key});
 
   @override
   Widget build(BuildContext context) {

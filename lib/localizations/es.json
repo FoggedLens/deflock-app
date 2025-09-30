@@ -29,7 +29,7 @@
     "systemDefault": "Sistema por Defecto",
     "aboutInfo": "Acerca de / Información",
     "aboutThisApp": "Acerca de Esta App",
-    "maxNodes": "Máx. nodos obtenidos/dibujados",
+    "maxNodes": "Máx. nodos dibujados",
     "maxNodesSubtitle": "Establecer un límite superior para el número de nodos en el mapa (predeterminado: 250).",
     "maxNodesWarning": "Probablemente no quieras hacer eso a menos que estés absolutamente seguro de que tienes una buena razón para ello.",
     "offlineMode": "Modo Sin Conexión",

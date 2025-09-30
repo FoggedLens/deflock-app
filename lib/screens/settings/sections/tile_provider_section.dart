@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../../app_state.dart';
-import '../../models/tile_provider.dart';
-import '../../services/localization_service.dart';
-import '../tile_provider_editor_screen.dart';
+import '../../../app_state.dart';
+import '../../../models/tile_provider.dart';
+import '../../../services/localization_service.dart';
+import '../../tile_provider_editor_screen.dart';
 
 class TileProviderSection extends StatelessWidget {
   const TileProviderSection({super.key});

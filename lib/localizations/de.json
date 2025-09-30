@@ -29,14 +29,21 @@
     "systemDefault": "Systemstandard",
     "aboutInfo": "Über / Informationen",
     "aboutThisApp": "Über Diese App",
-    "maxNodes": "Max. geladene/angezeigte Knoten",
+    "maxNodes": "Max. angezeigte Knoten",
     "maxNodesSubtitle": "Obergrenze für die Anzahl der Knoten auf der Karte festlegen (Standard: 250).",
     "maxNodesWarning": "Sie möchten das wahrscheinlich nicht tun, es sei denn, Sie sind absolut sicher, dass Sie einen guten Grund dafür haben.",
     "offlineMode": "Offline-Modus",
     "offlineModeSubtitle": "Alle Netzwerkanfragen außer für lokale/Offline-Bereiche deaktivieren.",
     "offlineModeWarningTitle": "Aktive Downloads",
     "offlineModeWarningMessage": "Die Aktivierung des Offline-Modus bricht alle aktiven Bereichsdownloads ab. Möchten Sie fortfahren?",
-    "enableOfflineMode": "Offline-Modus Aktivieren"
+    "enableOfflineMode": "Offline-Modus Aktivieren",
+    "profiles": "Profile",
+    "profilesSubtitle": "Knoten- und Betreiberprofile verwalten",
+    "offlineSettings": "Offline-Einstellungen",
+    "offlineSettingsSubtitle": "Offline-Modus und heruntergeladene Bereiche verwalten",
+    "advancedSettings": "Erweiterte Einstellungen",
+    "advancedSettingsSubtitle": "Leistungs-, Warnungs- und Kachelanbieter-Einstellungen",
+    "proximityAlerts": "Näherungswarnungen"
   },
   "node": {
     "title": "Knoten #{}",
@@ -216,6 +223,7 @@
     "operatorProfileDeleted": "Betreiber-Profil gelöscht"
   },
   "offlineAreas": {
+    "title": "Offline-Bereiche",
     "noAreasTitle": "Keine Offline-Bereiche",
     "noAreasSubtitle": "Laden Sie einen Kartenbereich für die Offline-Nutzung herunter.",
     "provider": "Anbieter",

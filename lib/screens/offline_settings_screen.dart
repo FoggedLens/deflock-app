@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'settings_screen_sections/offline_mode_section.dart';
-import 'settings_screen_sections/offline_areas_section.dart';
+import 'settings/sections/offline_mode_section.dart';
+import 'settings/sections/offline_areas_section.dart';
 import '../services/localization_service.dart';
 
 class OfflineSettingsScreen extends StatelessWidget {

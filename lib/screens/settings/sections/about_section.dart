@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../services/localization_service.dart';
+import '../../../services/localization_service.dart';
 
 class AboutSection extends StatelessWidget {
   const AboutSection({super.key});
