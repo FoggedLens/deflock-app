@@ -64,8 +64,18 @@ class _LanguageSectionState extends State<LanguageSection> {
               groupValue: _selectedLanguage,
               onChanged: _setLanguage,
             ),
-            // Dynamic language options
-            ...locService.availableLanguages.map((langCode) => 
+            // English always appears second (if available)
+            if (locService.availableLanguages.contains('en'))
+              RadioListTile<String>(
+                title: Text(_languageNames['en'] ?? 'English'),
+                value: 'en',
+                groupValue: _selectedLanguage,
+                onChanged: _setLanguage,
+              ),
+            // Other language options (excluding English since it's already shown)
+            ...locService.availableLanguages
+                .where((langCode) => langCode != 'en')
+                .map((langCode) => 
               RadioListTile<String>(
                 title: Text(_languageNames[langCode] ?? langCode.toUpperCase()),
                 value: langCode,
