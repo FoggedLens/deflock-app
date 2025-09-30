@@ -77,21 +77,29 @@ cp lib/keys.dart.example lib/keys.dart
 ---
 
 ## Roadmap
+- Fix map jump when editing
+- Clean up dev_config
+- Improve offline area node refresh live display
+- Add default operator profiles (Lowe’s etc)
 
 ### Current Development
-- Update offline area nodes while browsing?
-- Optional custom icons for camera profiles  
-- Upgrade device marker design (considering nullplate's svg)
-
+- Tablet fixes! Map jumps when editing?
+Clean up dev_config
+Improve offline area node refresh live display
+Default operator profiles (Lowe’s etc)
 ### Future Features & Wishlist
+- Update offline area nodes while browsing?
+- Suspected locations toggle (alprwatch.com/flock/utilities)
 - Jump to location by coordinates, address, or POI name
 - Route planning that avoids surveillance devices (alprwatch.com/directions)
-- Suspected locations toggle (alprwatch.com/flock/utilities)
-- Location-based notifications when approaching surveillance devices
-- Red/yellow ring for devices missing specific tag details
+
+### Maybes
+- Yellow ring for devices missing specific tag details?
 - "Cache accumulating" offline area?
 - "Offline areas" as tile provider?
-- Custom device providers and OSM/Overpass alternatives
+- Optional custom icons for camera profiles?
+- Upgrade device marker design? (considering nullplate's svg)
+- Custom device providers and OSM/Overpass alternatives?
 
 ---
 
