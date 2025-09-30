@@ -7,6 +7,7 @@ import 'package:collection/collection.dart';
 import '../app_state.dart';
 import '../models/tile_provider.dart';
 import '../services/localization_service.dart';
+import '../dev_config.dart';
 
 class TileProviderEditorScreen extends StatefulWidget {
   final TileProvider? provider; // null for adding new provider
@@ -378,11 +379,11 @@ class _TileTypeDialogState extends State<_TileTypeDialog> {
     });
 
     try {
-      // Use a sample tile (zoom 10, somewhere in the world)
+      // Use a sample tile from configured preview location
       final url = _urlController.text
-          .replaceAll('{z}', '10')
-          .replaceAll('{x}', '512')
-          .replaceAll('{y}', '384');
+          .replaceAll('{z}', kPreviewTileZoom.toString())
+          .replaceAll('{x}', kPreviewTileX.toString())
+          .replaceAll('{y}', kPreviewTileY.toString());
       
       final response = await http.get(Uri.parse(url));
       

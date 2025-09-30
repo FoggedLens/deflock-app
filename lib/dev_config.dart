@@ -6,6 +6,11 @@ import 'package:flutter/material.dart';
 // Fallback tile storage estimate (KB per tile), used when no preview tile data is available
 const double kFallbackTileEstimateKb = 25.0;
 
+// Preview tile coordinates for tile provider previews and size estimates
+const int kPreviewTileZoom = 18;
+const int kPreviewTileY = 101300;
+const int kPreviewTileX = 41904;
+
 // Direction cone for map view
 const double kDirectionConeHalfAngle = 30.0; // degrees
 const double kDirectionConeBaseLength = 0.001; // multiplier

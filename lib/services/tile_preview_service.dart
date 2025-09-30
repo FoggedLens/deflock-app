@@ -4,12 +4,10 @@ import 'package:http/http.dart' as http;
 
 import '../models/tile_provider.dart';
 import '../state/settings_state.dart';
+import '../dev_config.dart';
 
 /// Service for fetching missing tile preview images
 class TilePreviewService {
-  static const int _previewZoom = 10;
-  static const int _previewX = 512;
-  static const int _previewY = 384;
   static const Duration _timeout = Duration(seconds: 10);
 
   /// Attempt to fetch missing preview tiles for tile types that don't already have preview data
@@ -63,7 +61,7 @@ class TilePreviewService {
 
   static Future<Uint8List?> _fetchPreviewForTileType(TileType tileType, String? apiKey) async {
     try {
-      final url = tileType.getTileUrl(_previewZoom, _previewX, _previewY, apiKey: apiKey);
+      final url = tileType.getTileUrl(kPreviewTileZoom, kPreviewTileX, kPreviewTileY, apiKey: apiKey);
       
       final response = await http.get(Uri.parse(url)).timeout(_timeout);
       
