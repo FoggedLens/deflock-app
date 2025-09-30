@@ -22,7 +22,10 @@ class ProfileListSection extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(locService.t('profiles.nodeProfiles'), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                Text(
+                  locService.t('profiles.nodeProfiles'),
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
                 TextButton.icon(
                   onPressed: () => Navigator.push(
                     context,

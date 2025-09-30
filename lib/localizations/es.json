@@ -42,7 +42,8 @@
     "offlineSettings": "Configuración Sin Conexión",
     "offlineSettingsSubtitle": "Gestionar modo sin conexión y áreas descargadas",
     "advancedSettings": "Configuración Avanzada",
-    "advancedSettingsSubtitle": "Configuración de rendimiento y proveedores de teselas"
+    "advancedSettingsSubtitle": "Configuración de rendimiento, alertas y proveedores de teselas",
+    "proximityAlerts": "Alertas de Proximidad"
   },
   "node": {
     "title": "Nodo #{}",

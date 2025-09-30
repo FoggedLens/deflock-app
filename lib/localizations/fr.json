@@ -42,7 +42,8 @@
     "offlineSettings": "Paramètres Hors Ligne",
     "offlineSettingsSubtitle": "Gérer le mode hors ligne et les zones téléchargées",
     "advancedSettings": "Paramètres Avancés",
-    "advancedSettingsSubtitle": "Paramètres de performance et de fournisseurs de tuiles"
+    "advancedSettingsSubtitle": "Paramètres de performance, alertes et fournisseurs de tuiles",
+    "proximityAlerts": "Alertes de Proximité"
   },
   "node": {
     "title": "Nœud #{}",

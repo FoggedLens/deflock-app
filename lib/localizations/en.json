@@ -42,7 +42,8 @@
     "offlineSettings": "Offline Settings",
     "offlineSettingsSubtitle": "Manage offline mode and downloaded areas",
     "advancedSettings": "Advanced Settings",
-    "advancedSettingsSubtitle": "Performance and tile provider settings"
+    "advancedSettingsSubtitle": "Performance, alerts, and tile provider settings",
+    "proximityAlerts": "Proximity Alerts"
   },
   "node": {
     "title": "Node #{}",

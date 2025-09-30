@@ -82,14 +82,14 @@ class _ProximityAlertsSectionState extends State<ProximityAlertsSection> {
   Widget build(BuildContext context) {
     return Consumer<AppState>(
       builder: (context, appState, child) {
+        final locService = LocalizationService.instance;
+        
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Proximity Alerts',
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+              locService.t('settings.proximityAlerts'),
+              style: Theme.of(context).textTheme.titleMedium,
             ),
             const SizedBox(height: 8),
             
