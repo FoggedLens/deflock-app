@@ -290,7 +290,12 @@ class OfflineAreaService {
     // Set area to downloading state
     area.status = OfflineAreaStatus.downloading;
     area.progress = 0.0;
-    area.tilesDownloaded = 0;
+    
+    // Only reset tile count if we're actually refreshing tiles
+    if (refreshTiles) {
+      area.tilesDownloaded = 0;
+    }
+    
     await saveAreasToDisk();
 
     try {
