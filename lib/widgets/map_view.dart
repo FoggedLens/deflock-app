@@ -7,7 +7,7 @@ import 'package:provider/provider.dart';
 import '../app_state.dart';
 import '../services/offline_area_service.dart';
 import '../services/network_status.dart';
-import '../models/osm_camera_node.dart';
+import '../models/osm_node.dart';
 import '../models/node_profile.dart';
 import '../models/tile_provider.dart';
 import 'debouncer.dart';
@@ -21,8 +21,10 @@ import 'map/tile_layer_manager.dart';
 import 'map/camera_refresh_controller.dart';
 import 'map/gps_controller.dart';
 import 'network_status_indicator.dart';
+import 'proximity_alert_banner.dart';
 import '../dev_config.dart';
 import '../app_state.dart' show FollowMeMode;
+import '../services/proximity_alert_service.dart';
 
 class MapView extends StatefulWidget {
   final AnimatedMapController controller;
@@ -55,6 +57,9 @@ class MapViewState extends State<MapView> {
   
   // Track zoom to clear queue on zoom changes
   double? _lastZoom;
+  
+  // State for proximity alert banner
+  bool _showProximityBanner = false;
 
   @override
   void initState() {
@@ -67,6 +72,17 @@ class MapViewState extends State<MapView> {
     _cameraController = CameraRefreshController();
     _cameraController.initialize(onCamerasUpdated: _onCamerasUpdated);
     _gpsController = GpsController();
+    
+    // Initialize proximity alert service
+    ProximityAlertService().initialize(
+      onVisualAlert: () {
+        if (mounted) {
+          setState(() {
+            _showProximityBanner = true;
+          });
+        }
+      },
+    );
     
     // Load last map position before initializing GPS
     _positionManager.loadLastMapPosition().then((_) {
@@ -92,6 +108,59 @@ class MapViewState extends State<MapView> {
           }
         }
         return FollowMeMode.off;
+      },
+      getProximityAlertsEnabled: () {
+        if (mounted) {
+          try {
+            return context.read<AppState>().proximityAlertsEnabled;
+          } catch (e) {
+            debugPrint('[MapView] Could not read proximity alerts enabled: $e');
+            return false;
+          }
+        }
+        return false;
+      },
+      getProximityAlertDistance: () {
+        if (mounted) {
+          try {
+            return context.read<AppState>().proximityAlertDistance;
+          } catch (e) {
+            debugPrint('[MapView] Could not read proximity alert distance: $e');
+            return 200;
+          }
+        }
+        return 200;
+      },
+      getNearbyNodes: () {
+        if (mounted) {
+          try {
+            final cameraProvider = context.read<CameraProviderWithCache>();
+            LatLngBounds? mapBounds;
+            try {
+              mapBounds = _controller.mapController.camera.visibleBounds;
+            } catch (_) {
+              return [];
+            }
+            return mapBounds != null 
+                ? cameraProvider.getCachedNodesForBounds(mapBounds)
+                : [];
+          } catch (e) {
+            debugPrint('[MapView] Could not get nearby nodes: $e');
+            return [];
+          }
+        }
+        return [];
+      },
+      getEnabledProfiles: () {
+        if (mounted) {
+          try {
+            return context.read<AppState>().enabledProfiles;
+          } catch (e) {
+            debugPrint('[MapView] Could not read enabled profiles: $e');
+            return [];
+          }
+        }
+        return [];
       },
     );
 
@@ -265,7 +334,7 @@ class MapViewState extends State<MapView> {
         }
         final cameras = (mapBounds != null)
             ? cameraProvider.getCachedNodesForBounds(mapBounds)
-            : <OsmCameraNode>[];
+            : <OsmNode>[];
         
         final markers = CameraMarkersBuilder.buildCameraMarkers(
           cameras: cameras,
@@ -402,12 +471,22 @@ class MapViewState extends State<MapView> {
 
         // Network status indicator (top-left)
         const NetworkStatusIndicator(),
+        
+        // Proximity alert banner (top)
+        ProximityAlertBanner(
+          isVisible: _showProximityBanner,
+          onDismiss: () {
+            setState(() {
+              _showProximityBanner = false;
+            });
+          },
+        ),
       ],
     );
   }
 
   /// Build polylines connecting original cameras to their edited positions
-  List<Polyline> _buildEditLines(List<OsmCameraNode> cameras) {
+  List<Polyline> _buildEditLines(List<OsmNode> cameras) {
     final lines = <Polyline>[];
     
     // Create a lookup map of original node IDs to their coordinates

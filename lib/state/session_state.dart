@@ -3,7 +3,7 @@ import 'package:latlong2/latlong.dart';
 
 import '../models/node_profile.dart';
 import '../models/operator_profile.dart';
-import '../models/osm_camera_node.dart';
+import '../models/osm_node.dart';
 
 // ------------------ AddNodeSession ------------------
 class AddNodeSession {
@@ -23,7 +23,7 @@ class EditNodeSession {
     required this.target,
   });
   
-  final OsmCameraNode originalNode; // The original node being edited
+  final OsmNode originalNode; // The original node being edited
   NodeProfile profile;
   OperatorProfile? operatorProfile;
   double directionDegrees;
@@ -48,7 +48,7 @@ class SessionState extends ChangeNotifier {
     notifyListeners();
   }
 
-  void startEditSession(OsmCameraNode node, List<NodeProfile> enabledProfiles) {
+  void startEditSession(OsmNode node, List<NodeProfile> enabledProfiles) {
     final submittableProfiles = enabledProfiles.where((p) => p.isSubmittable).toList();
     
     // Try to find a matching profile based on the node's tags

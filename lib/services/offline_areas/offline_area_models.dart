@@ -1,6 +1,6 @@
 import 'package:latlong2/latlong.dart';
 import 'package:flutter_map/flutter_map.dart' show LatLngBounds;
-import '../../models/osm_camera_node.dart';
+import '../../models/osm_node.dart';
 
 /// Status of an offline area
 enum OfflineAreaStatus { downloading, complete, error, cancelled }
@@ -17,7 +17,7 @@ class OfflineArea {
   double progress; // 0.0 - 1.0
   int tilesDownloaded;
   int tilesTotal;
-  List<OsmCameraNode> nodes;
+  List<OsmNode> nodes;
   int sizeBytes; // Disk size in bytes
   final bool isPermanent; // Not user-deletable if true
   
@@ -88,7 +88,7 @@ class OfflineArea {
       tilesDownloaded: json['tilesDownloaded'] ?? 0,
       tilesTotal: json['tilesTotal'] ?? 0,
       nodes: (json['nodes'] as List? ?? json['cameras'] as List? ?? [])
-          .map((e) => OsmCameraNode.fromJson(e)).toList(),
+          .map((e) => OsmNode.fromJson(e)).toList(),
       sizeBytes: json['sizeBytes'] ?? 0,
       isPermanent: json['isPermanent'] ?? false,
       tileProviderId: json['tileProviderId'],

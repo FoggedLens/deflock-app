@@ -1,11 +1,11 @@
 import 'package:latlong2/latlong.dart';
 
-class OsmCameraNode {
+class OsmNode {
   final int id;
   final LatLng coord;
   final Map<String, String> tags;
 
-  OsmCameraNode({
+  OsmNode({
     required this.id,
     required this.coord,
     required this.tags,
@@ -18,14 +18,14 @@ class OsmCameraNode {
     'tags': tags,
   };
 
-  factory OsmCameraNode.fromJson(Map<String, dynamic> json) {
+  factory OsmNode.fromJson(Map<String, dynamic> json) {
     final tags = <String, String>{};
     if (json['tags'] != null) {
       (json['tags'] as Map<String, dynamic>).forEach((k, v) {
         tags[k.toString()] = v.toString();
       });
     }
-    return OsmCameraNode(
+    return OsmNode(
       id: json['id'] is int ? json['id'] as int : int.tryParse(json['id'].toString()) ?? 0,
       coord: LatLng((json['lat'] as num).toDouble(), (json['lon'] as num).toDouble()),
       tags: tags,
@@ -52,4 +52,3 @@ class OsmCameraNode {
     return normalized;
   }
 }
-

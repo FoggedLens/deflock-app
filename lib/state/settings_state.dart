@@ -24,11 +24,15 @@ class SettingsState extends ChangeNotifier {
   static const String _selectedTileTypePrefsKey = 'selected_tile_type';
   static const String _legacyTestModePrefsKey = 'test_mode';
   static const String _followMeModePrefsKey = 'follow_me_mode';
+  static const String _proximityAlertsEnabledPrefsKey = 'proximity_alerts_enabled';
+  static const String _proximityAlertDistancePrefsKey = 'proximity_alert_distance';
 
   bool _offlineMode = false;
   int _maxCameras = 250;
   UploadMode _uploadMode = kEnableDevelopmentModes ? UploadMode.simulate : UploadMode.production;
   FollowMeMode _followMeMode = FollowMeMode.northUp;
+  bool _proximityAlertsEnabled = false;
+  int _proximityAlertDistance = kProximityAlertDefaultDistance;
   List<TileProvider> _tileProviders = [];
   String _selectedTileTypeId = '';
 
@@ -37,6 +41,8 @@ class SettingsState extends ChangeNotifier {
   int get maxCameras => _maxCameras;
   UploadMode get uploadMode => _uploadMode;
   FollowMeMode get followMeMode => _followMeMode;
+  bool get proximityAlertsEnabled => _proximityAlertsEnabled;
+  int get proximityAlertDistance => _proximityAlertDistance;
   List<TileProvider> get tileProviders => List.unmodifiable(_tileProviders);
   String get selectedTileTypeId => _selectedTileTypeId;
   
@@ -84,6 +90,10 @@ class SettingsState extends ChangeNotifier {
     if (prefs.containsKey(_maxCamerasPrefsKey)) {
       _maxCameras = prefs.getInt(_maxCamerasPrefsKey) ?? 250;
     }
+    
+    // Load proximity alerts settings
+    _proximityAlertsEnabled = prefs.getBool(_proximityAlertsEnabledPrefsKey) ?? false;
+    _proximityAlertDistance = prefs.getInt(_proximityAlertDistancePrefsKey) ?? kProximityAlertDefaultDistance;
     
     // Load upload mode (including migration from old test_mode bool)
     if (prefs.containsKey(_uploadModePrefsKey)) {
@@ -249,6 +259,28 @@ class SettingsState extends ChangeNotifier {
       _followMeMode = mode;
       final prefs = await SharedPreferences.getInstance();
       await prefs.setInt(_followMeModePrefsKey, mode.index);
+      notifyListeners();
+    }
+  }
+
+  /// Set proximity alerts enabled/disabled
+  Future<void> setProximityAlertsEnabled(bool enabled) async {
+    if (_proximityAlertsEnabled != enabled) {
+      _proximityAlertsEnabled = enabled;
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool(_proximityAlertsEnabledPrefsKey, enabled);
+      notifyListeners();
+    }
+  }
+
+  /// Set proximity alert distance in meters
+  Future<void> setProximityAlertDistance(int distance) async {
+    if (distance < kProximityAlertMinDistance) distance = kProximityAlertMinDistance;
+    if (distance > kProximityAlertMaxDistance) distance = kProximityAlertMaxDistance;
+    if (_proximityAlertDistance != distance) {
+      _proximityAlertDistance = distance;
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setInt(_proximityAlertDistancePrefsKey, distance);
       notifyListeners();
     }
   }

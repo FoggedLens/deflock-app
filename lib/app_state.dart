@@ -4,7 +4,7 @@ import 'package:latlong2/latlong.dart';
 
 import 'models/node_profile.dart';
 import 'models/operator_profile.dart';
-import 'models/osm_camera_node.dart';
+import 'models/osm_node.dart';
 import 'models/pending_upload.dart';
 import 'models/tile_provider.dart';
 import 'services/offline_area_service.dart';
@@ -79,6 +79,8 @@ class AppState extends ChangeNotifier {
   int get maxCameras => _settingsState.maxCameras;
   UploadMode get uploadMode => _settingsState.uploadMode;
   FollowMeMode get followMeMode => _settingsState.followMeMode;
+  bool get proximityAlertsEnabled => _settingsState.proximityAlertsEnabled;
+  int get proximityAlertDistance => _settingsState.proximityAlertDistance;
   
   // Tile provider state
   List<TileProvider> get tileProviders => _settingsState.tileProviders;
@@ -162,7 +164,7 @@ class AppState extends ChangeNotifier {
     _sessionState.startAddSession(enabledProfiles);
   }
 
-  void startEditSession(OsmCameraNode node) {
+  void startEditSession(OsmNode node) {
     _sessionState.startEditSession(node, enabledProfiles);
   }
 
@@ -218,7 +220,7 @@ class AppState extends ChangeNotifier {
     }
   }
 
-  void deleteNode(OsmCameraNode node) {
+  void deleteNode(OsmNode node) {
     _uploadQueueState.addFromNodeDeletion(node, uploadMode: uploadMode);
     _startUploader();
   }
@@ -268,6 +270,16 @@ class AppState extends ChangeNotifier {
   /// Set follow-me mode
   Future<void> setFollowMeMode(FollowMeMode mode) async {
     await _settingsState.setFollowMeMode(mode);
+  }
+
+  /// Set proximity alerts enabled/disabled
+  Future<void> setProximityAlertsEnabled(bool enabled) async {
+    await _settingsState.setProximityAlertsEnabled(enabled);
+  }
+
+  /// Set proximity alert distance
+  Future<void> setProximityAlertDistance(int distance) async {
+    await _settingsState.setProximityAlertDistance(distance);
   }
 
   // ---------- Queue Methods ----------

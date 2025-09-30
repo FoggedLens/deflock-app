@@ -8,7 +8,7 @@ import 'offline_areas/offline_area_models.dart';
 import 'offline_areas/offline_tile_utils.dart';
 import 'offline_areas/offline_area_downloader.dart';
 
-import '../models/osm_camera_node.dart';
+import '../models/osm_node.dart';
 import '../app_state.dart';
 import 'map_data_provider.dart';
 import 'package:deflockapp/dev_config.dart';

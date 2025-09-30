@@ -6,7 +6,7 @@ import 'package:latlong2/latlong.dart';
 import 'package:flutter_map/flutter_map.dart' show LatLngBounds;
 
 import '../../app_state.dart';
-import '../../models/osm_camera_node.dart';
+import '../../models/osm_node.dart';
 import '../map_data_provider.dart';
 import 'offline_area_models.dart';
 import 'offline_tile_utils.dart';
@@ -182,7 +182,7 @@ class OfflineAreaDownloader {
   }
 
   /// Save nodes to disk as JSON
-  static Future<void> saveNodes(List<OsmCameraNode> nodes, String dir) async {
+  static Future<void> saveNodes(List<OsmNode> nodes, String dir) async {
     final file = File('$dir/nodes.json');
     await file.writeAsString(jsonEncode(nodes.map((n) => n.toJson()).toList()));
   }

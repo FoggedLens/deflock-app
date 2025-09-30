@@ -46,6 +46,12 @@ const Duration kDebounceCameraRefresh = Duration(milliseconds: 500);
 const Duration kFollowMeAnimationDuration = Duration(milliseconds: 600);
 const double kMinSpeedForRotationMps = 1.0; // Minimum speed (m/s) to apply rotation
 
+// Proximity alerts configuration
+const int kProximityAlertDefaultDistance = 200; // meters
+const int kProximityAlertMinDistance = 50; // meters
+const int kProximityAlertMaxDistance = 1000; // meters
+const Duration kProximityAlertCooldown = Duration(minutes: 10); // Cooldown between alerts for same node
+
 // Last map location and settings storage
 const String kLastMapLatKey = 'last_map_latitude';
 const String kLastMapLngKey = 'last_map_longitude';

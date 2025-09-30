@@ -5,13 +5,13 @@ import 'package:latlong2/latlong.dart';
 import 'package:flutter_map/flutter_map.dart';
 
 import '../../models/node_profile.dart';
-import '../../models/osm_camera_node.dart';
+import '../../models/osm_node.dart';
 import '../../models/pending_upload.dart';
 import '../../app_state.dart';
 import '../network_status.dart';
 
 /// Fetches surveillance nodes from the Overpass OSM API for the given bounds and profiles.
-Future<List<OsmCameraNode>> fetchOverpassNodes({
+Future<List<OsmNode>> fetchOverpassNodes({
   required LatLngBounds bounds,
   required List<NodeProfile> profiles,
   UploadMode uploadMode = UploadMode.production,
@@ -49,7 +49,7 @@ Future<List<OsmCameraNode>> fetchOverpassNodes({
     NetworkStatus.instance.reportOverpassSuccess();
     
     final nodes = elements.whereType<Map<String, dynamic>>().map((element) {
-      return OsmCameraNode(
+      return OsmNode(
         id: element['id'],
         coord: LatLng(element['lat'], element['lon']),
         tags: Map<String, String>.from(element['tags'] ?? {}),
@@ -101,7 +101,7 @@ $outputClause
 }
 
 /// Clean up pending uploads that now appear in Overpass results
-void _cleanupCompletedUploads(List<OsmCameraNode> overpassNodes) {
+void _cleanupCompletedUploads(List<OsmNode> overpassNodes) {
   try {
     final appState = AppState.instance;
     final pendingUploads = appState.pendingUploads;

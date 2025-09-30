@@ -6,6 +6,9 @@ import 'package:latlong2/latlong.dart';
 
 import '../../dev_config.dart';
 import '../../app_state.dart' show FollowMeMode;
+import '../../services/proximity_alert_service.dart';
+import '../../models/osm_node.dart';
+import '../../models/node_profile.dart';
 
 /// Manages GPS location tracking, follow-me modes, and location-based map animations.
 /// Handles GPS permissions, position streams, and follow-me behavior.
@@ -81,12 +84,27 @@ class GpsController {
     required FollowMeMode followMeMode,
     required AnimatedMapController controller,
     required VoidCallback onLocationUpdated,
+    // Optional parameters for proximity alerts
+    bool proximityAlertsEnabled = false,
+    int proximityAlertDistance = 200,
+    List<OsmNode> nearbyNodes = const [],
+    List<NodeProfile> enabledProfiles = const [],
   }) {
     final latLng = LatLng(position.latitude, position.longitude);
     _currentLatLng = latLng;
     
     // Notify that location was updated (for setState, etc.)
     onLocationUpdated();
+    
+    // Check proximity alerts if enabled
+    if (proximityAlertsEnabled && nearbyNodes.isNotEmpty) {
+      ProximityAlertService().checkProximity(
+        userLocation: latLng,
+        nodes: nearbyNodes,
+        enabledProfiles: enabledProfiles,
+        alertDistance: proximityAlertDistance,
+      );
+    }
     
     // Handle follow-me animations if enabled - use current mode from app state
     if (followMeMode != FollowMeMode.off) {
@@ -131,6 +149,10 @@ class GpsController {
     required AnimatedMapController controller,
     required VoidCallback onLocationUpdated,
     required FollowMeMode Function() getCurrentFollowMeMode,
+    required bool Function() getProximityAlertsEnabled,
+    required int Function() getProximityAlertDistance,
+    required List<OsmNode> Function() getNearbyNodes,
+    required List<NodeProfile> Function() getEnabledProfiles,
   }) async {
     final perm = await Geolocator.requestPermission();
     if (perm == LocationPermission.denied ||
@@ -142,11 +164,20 @@ class GpsController {
     _positionSub = Geolocator.getPositionStream().listen((Position position) {
       // Get the current follow-me mode from the app state each time
       final currentFollowMeMode = getCurrentFollowMeMode();
+      final proximityAlertsEnabled = getProximityAlertsEnabled();
+      final proximityAlertDistance = getProximityAlertDistance();
+      final nearbyNodes = getNearbyNodes();
+      final enabledProfiles = getEnabledProfiles();
+      
       processPositionUpdate(
         position: position,
         followMeMode: currentFollowMeMode,
         controller: controller,
         onLocationUpdated: onLocationUpdated,
+        proximityAlertsEnabled: proximityAlertsEnabled,
+        proximityAlertDistance: proximityAlertDistance,
+        nearbyNodes: nearbyNodes,
+        enabledProfiles: enabledProfiles,
       );
     });
   }

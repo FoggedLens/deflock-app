@@ -3,7 +3,7 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter/foundation.dart';
 
 import '../models/node_profile.dart';
-import '../models/osm_camera_node.dart';
+import '../models/osm_node.dart';
 import '../app_state.dart';
 import 'map_data_submodules/nodes_from_overpass.dart';
 import 'map_data_submodules/nodes_from_osm_api.dart';
@@ -35,7 +35,7 @@ class MapDataProvider {
 
   /// Fetch surveillance nodes from OSM/Overpass or local storage.
   /// Remote is default. If source is MapSource.auto, remote is tried first unless offline.
-  Future<List<OsmCameraNode>> getNodes({
+  Future<List<OsmNode>> getNodes({
     required LatLngBounds bounds,
     required List<NodeProfile> profiles,
     UploadMode uploadMode = UploadMode.production,
@@ -70,7 +70,7 @@ class MapDataProvider {
       if (uploadMode == UploadMode.sandbox) {
         // Offline + Sandbox = no nodes (local cache is production data)
         debugPrint('[MapDataProvider] Offline + Sandbox mode: returning no nodes (local cache is production data)');
-        return <OsmCameraNode>[];
+        return <OsmNode>[];
       } else {
         // Offline + Production = use local cache
         return fetchLocalNodes(
@@ -90,7 +90,7 @@ class MapDataProvider {
       );
     } else {
       // Production mode: fetch both remote and local, then merge with deduplication
-      final List<Future<List<OsmCameraNode>>> futures = [];
+      final List<Future<List<OsmNode>>> futures = [];
       
       // Always try to get local nodes (fast, cached)
       futures.add(fetchLocalNodes(
@@ -107,7 +107,7 @@ class MapDataProvider {
         maxResults: AppState.instance.maxCameras,
       ).catchError((e) {
         debugPrint('[MapDataProvider] Remote node fetch failed, error: $e. Continuing with local only.');
-        return <OsmCameraNode>[]; // Return empty list on remote failure
+        return <OsmNode>[]; // Return empty list on remote failure
       }));
       
       // Wait for both, then merge with deduplication by node ID
@@ -116,7 +116,7 @@ class MapDataProvider {
       final remoteNodes = results[1];
       
       // Merge with deduplication - prefer remote data over local for same node ID
-      final Map<int, OsmCameraNode> mergedNodes = {};
+      final Map<int, OsmNode> mergedNodes = {};
       
       // Add local nodes first
       for (final node in localNodes) {
@@ -140,7 +140,7 @@ class MapDataProvider {
 
   /// Bulk/paged node fetch for offline downloads (handling paging, dedup, and Overpass retries)
   /// Only use for offline area download, not for map browsing! Ignores maxCameras config.
-  Future<List<OsmCameraNode>> getAllNodesForDownload({
+  Future<List<OsmNode>> getAllNodesForDownload({
     required LatLngBounds bounds,
     required List<NodeProfile> profiles,
     UploadMode uploadMode = UploadMode.production,
@@ -214,7 +214,7 @@ class MapDataProvider {
   }
 
   /// Fetch remote nodes with Overpass first, OSM API fallback
-  Future<List<OsmCameraNode>> _fetchRemoteNodes({
+  Future<List<OsmNode>> _fetchRemoteNodes({
     required LatLngBounds bounds,
     required List<NodeProfile> profiles,
     UploadMode uploadMode = UploadMode.production,

@@ -3,19 +3,19 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:flutter_map/flutter_map.dart' show LatLngBounds;
-import '../../models/osm_camera_node.dart';
+import '../../models/osm_node.dart';
 import '../../models/node_profile.dart';
 import '../offline_area_service.dart';
 import '../offline_areas/offline_area_models.dart';
 
 /// Fetch surveillance nodes from all offline areas intersecting the bounds/profile list.
-Future<List<OsmCameraNode>> fetchLocalNodes({
+Future<List<OsmNode>> fetchLocalNodes({
   required LatLngBounds bounds,
   required List<NodeProfile> profiles,
   int? maxNodes,
 }) async {
   final areas = OfflineAreaService().offlineAreas;
-  final Map<int, OsmCameraNode> deduped = {};
+  final Map<int, OsmNode> deduped = {};
 
   for (final area in areas) {
     if (area.status != OfflineAreaStatus.complete) continue;
@@ -38,7 +38,7 @@ Future<List<OsmCameraNode>> fetchLocalNodes({
 }
 
 // Try in-memory first, else load from disk
-Future<List<OsmCameraNode>> _loadAreaNodes(OfflineArea area) async {
+Future<List<OsmNode>> _loadAreaNodes(OfflineArea area) async {
   if (area.nodes.isNotEmpty) {
     return area.nodes;
   }
@@ -58,7 +58,7 @@ Future<List<OsmCameraNode>> _loadAreaNodes(OfflineArea area) async {
     try {
       final str = await fileToLoad.readAsString();
       final jsonList = jsonDecode(str) as List;
-      return jsonList.map((e) => OsmCameraNode.fromJson(e)).toList();
+      return jsonList.map((e) => OsmNode.fromJson(e)).toList();
     } catch (e) {
       debugPrint('[_loadAreaNodes] Error loading nodes from ${fileToLoad.path}: $e');
     }
@@ -74,14 +74,14 @@ bool _pointInBounds(LatLng pt, LatLngBounds bounds) {
          pt.longitude <= bounds.northEast.longitude;
 }
 
-bool _matchesAnyProfile(OsmCameraNode node, List<NodeProfile> profiles) {
+bool _matchesAnyProfile(OsmNode node, List<NodeProfile> profiles) {
   for (final prof in profiles) {
     if (_nodeMatchesProfile(node, prof)) return true;
   }
   return false;
 }
 
-bool _nodeMatchesProfile(OsmCameraNode node, NodeProfile profile) {
+bool _nodeMatchesProfile(OsmNode node, NodeProfile profile) {
   for (final e in profile.tags.entries) {
     if (node.tags[e.key] != e.value) return false; // All profile tags must match
   }
