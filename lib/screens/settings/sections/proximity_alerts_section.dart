@@ -99,7 +99,7 @@ class _ProximityAlertsSectionState extends State<ProximityAlertsSection> {
               subtitle: Text(
                 '${locService.t('proximityAlerts.batteryUsage')}\n'
                 '${_notificationsEnabled ? locService.t('proximityAlerts.notificationsEnabled') : locService.t('proximityAlerts.notificationsDisabled')}',
-                style: const TextStyle(fontSize: 12),
+                style: TextStyle(fontSize: 12),
               ),
               value: appState.proximityAlertsEnabled,
               onChanged: (enabled) {
@@ -131,14 +131,14 @@ class _ProximityAlertsSectionState extends State<ProximityAlertsSection> {
                         const SizedBox(width: 8),
                         Text(
                           locService.t('proximityAlerts.permissionRequired'),
-                          style: const TextStyle(fontWeight: FontWeight.w600),
+                          style: TextStyle(fontWeight: FontWeight.w600),
                         ),
                       ],
                     ),
                     const SizedBox(height: 8),
                     Text(
                       locService.t('proximityAlerts.permissionExplanation'),
-                      style: const TextStyle(fontSize: 12),
+                      style: TextStyle(fontSize: 12),
                     ),
                     const SizedBox(height: 8),
                     ElevatedButton.icon(
@@ -158,15 +158,15 @@ class _ProximityAlertsSectionState extends State<ProximityAlertsSection> {
             // Loading indicator
             if (_checkingPermissions) ...[
               const SizedBox(height: 8),
-              const Row(
+              Row(
                 children: [
-                  SizedBox(
+                  const SizedBox(
                     width: 16,
                     height: 16,
                     child: CircularProgressIndicator(strokeWidth: 2),
                   ),
-                  SizedBox(width: 8),
-                  Text(locService.t('proximityAlerts.checkingPermissions'), style: const TextStyle(fontSize: 12)),
+                  const SizedBox(width: 8),
+                  Text(locService.t('proximityAlerts.checkingPermissions'), style: TextStyle(fontSize: 12)),
                 ],
               ),
             ],

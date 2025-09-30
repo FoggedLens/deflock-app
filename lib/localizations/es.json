@@ -29,6 +29,8 @@
     "systemDefault": "Sistema por Defecto",
     "aboutInfo": "Acerca de / Información",
     "aboutThisApp": "Acerca de Esta App",
+    "aboutSubtitle": "Información de la aplicación y créditos",
+    "languageSubtitle": "Elige tu idioma preferido",
     "maxNodes": "Máx. nodos dibujados",
     "maxNodesSubtitle": "Establecer un límite superior para el número de nodos en el mapa (predeterminado: 250).",
     "maxNodesWarning": "Probablemente no quieras hacer eso a menos que estés absolutamente seguro de que tienes una buena razón para ello.",

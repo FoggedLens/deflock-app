@@ -29,6 +29,8 @@
     "systemDefault": "Predefinito del Sistema",
     "aboutInfo": "Informazioni",
     "aboutThisApp": "Informazioni su questa App",
+    "aboutSubtitle": "Informazioni sull'applicazione e crediti",
+    "languageSubtitle": "Scegli la tua lingua preferita",
     "maxNodes": "Max nodi disegnati",
     "maxNodesSubtitle": "Imposta un limite superiore per il numero di nodi sulla mappa (predefinito: 250).",
     "maxNodesWarning": "Probabilmente non vuoi farlo a meno che non sei assolutamente sicuro di avere una buona ragione per farlo.",

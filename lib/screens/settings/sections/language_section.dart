@@ -57,11 +57,6 @@ class _LanguageSectionState extends State<LanguageSection> {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              locService.t('settings.language'),
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
-            const SizedBox(height: 8),
             // System Default option
             RadioListTile<String?>(
               title: Text(locService.t('settings.systemDefault')),

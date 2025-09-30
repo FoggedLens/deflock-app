@@ -29,6 +29,8 @@
     "systemDefault": "System Default",
     "aboutInfo": "About / Info",
     "aboutThisApp": "About This App",
+    "aboutSubtitle": "App information and credits",
+    "languageSubtitle": "Choose your preferred language",
     "maxNodes": "Max nodes drawn",
     "maxNodesSubtitle": "Set an upper limit for the number of nodes on the map (default: 250).",
     "maxNodesWarning": "You probably don't want to do that unless you are absolutely sure you have a good reason for it.",

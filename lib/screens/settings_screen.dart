@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'settings/sections/auth_section.dart';
 import 'settings/sections/upload_mode_section.dart';
 import 'settings/sections/queue_section.dart';
-import 'settings/sections/about_section.dart';
-import 'settings/sections/language_section.dart';
 import '../services/localization_service.dart';
 import '../dev_config.dart';
 
@@ -59,9 +57,22 @@ class SettingsScreen extends StatelessWidget {
             ),
             const Divider(),
             
-            const LanguageSection(),
+            _buildNavigationTile(
+              context,
+              icon: Icons.language,
+              title: locService.t('settings.language'),
+              subtitle: locService.t('settings.languageSubtitle'),
+              onTap: () => Navigator.pushNamed(context, '/settings/language'),
+            ),
             const Divider(),
-            const AboutSection(),
+            
+            _buildNavigationTile(
+              context,
+              icon: Icons.info_outline,
+              title: locService.t('settings.aboutInfo'),
+              subtitle: locService.t('settings.aboutSubtitle'),
+              onTap: () => Navigator.pushNamed(context, '/settings/about'),
+            ),
           ],
         ),
       ),
