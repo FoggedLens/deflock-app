@@ -33,7 +33,7 @@ class ProximityAlertService {
   // Callback for showing in-app visual alerts
   VoidCallback? _onVisualAlert;
   
-  /// Initialize the notification plugin
+  /// Initialize the notification plugin and request permissions
   Future<void> initialize({VoidCallback? onVisualAlert}) async {
     _onVisualAlert = onVisualAlert;
     
@@ -54,10 +54,41 @@ class ProximityAlertService {
     try {
       final initialized = await _notifications!.initialize(initSettings);
       _isInitialized = initialized ?? false;
+      
+      // Request notification permissions (especially important for Android 13+)
+      if (_isInitialized) {
+        await _requestNotificationPermissions();
+      }
+      
       debugPrint('[ProximityAlertService] Initialized: $_isInitialized');
     } catch (e) {
       debugPrint('[ProximityAlertService] Failed to initialize: $e');
       _isInitialized = false;
+    }
+  }
+  
+  /// Request notification permissions on both platforms
+  Future<void> _requestNotificationPermissions() async {
+    if (_notifications == null) return;
+    
+    try {
+      // Request permissions - this will show the permission dialog on Android 13+
+      final result = await _notifications!
+          .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
+          ?.requestNotificationsPermission();
+      
+      debugPrint('[ProximityAlertService] Android notification permission result: $result');
+      
+      // Also request for iOS (though this was already done in initialization)
+      await _notifications!
+          .resolvePlatformSpecificImplementation<IOSFlutterLocalNotificationsPlugin>()
+          ?.requestPermissions(
+            alert: true,
+            badge: true,
+            sound: true,
+          );
+    } catch (e) {
+      debugPrint('[ProximityAlertService] Failed to request permissions: $e');
     }
   }
   
@@ -195,5 +226,32 @@ class ProximityAlertService {
   /// Clear recent alerts (for testing)
   void clearRecentAlerts() {
     _recentAlerts.clear();
+  }
+  
+  /// Check if notification permissions are granted
+  Future<bool> areNotificationsEnabled() async {
+    if (!_isInitialized || _notifications == null) return false;
+    
+    try {
+      // Check Android permissions
+      final androidImpl = _notifications!
+          .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>();
+      if (androidImpl != null) {
+        final result = await androidImpl.areNotificationsEnabled();
+        return result ?? false;
+      }
+      
+      // For iOS, assume enabled if we got this far (permissions were requested during init)
+      return true;
+    } catch (e) {
+      debugPrint('[ProximityAlertService] Failed to check notification permissions: $e');
+      return false;
+    }
+  }
+  
+  /// Request permissions again (can be called from settings)
+  Future<bool> requestNotificationPermissions() async {
+    await _requestNotificationPermissions();
+    return await areNotificationsEnabled();
   }
 }
