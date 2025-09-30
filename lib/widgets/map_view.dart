@@ -185,6 +185,54 @@ class MapViewState extends State<MapView> {
     super.dispose();
   }
 
+  /// Calculate latitude offset to shift camera down (making content appear to move up)
+  /// when bottom sheet is open. Returns offset in degrees.
+  double _calculateCameraLatitudeOffset(double sheetHeight, double zoom) {
+    if (sheetHeight <= 0) return 0.0;
+    
+    // Convert sheet height to latitude degrees based on zoom level
+    // Rough approximation: 1 degree latitude ≈ 111,320 meters
+    final metersPerDegree = 111320.0;
+    final pixelsPerMeter = (256 * (1 << zoom.toInt())) / (2 * 3.14159 * 6378137); // Web Mercator
+    final metersOffset = sheetHeight * 0.4 / pixelsPerMeter; // 40% of sheet height
+    
+    return metersOffset / metersPerDegree; // Convert to degrees latitude
+  }
+
+  // Track last applied offset to detect changes
+  double _lastAppliedOffset = 0.0;
+
+  /// Apply camera offset smoothly when bottom padding changes
+  void _applyCameraOffsetIfNeeded(double newOffset) {
+    if ((newOffset - _lastAppliedOffset).abs() < 0.00001) return; // No significant change
+    
+    try {
+      final currentCenter = _controller.mapController.camera.center;
+      final currentZoom = _controller.mapController.camera.zoom;
+      
+      // Calculate the difference in offset
+      final offsetDelta = newOffset - _lastAppliedOffset;
+      
+      // Apply the offset delta (move camera down to make content appear to move up)
+      final newCenter = LatLng(
+        currentCenter.latitude - offsetDelta, // Subtract to move camera down
+        currentCenter.longitude,
+      );
+      
+      // Animate the camera movement smoothly
+      _controller.animateTo(
+        dest: newCenter,
+        zoom: currentZoom,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeOut,
+      );
+      
+      _lastAppliedOffset = newOffset;
+    } catch (_) {
+      // Controller not ready yet
+    }
+  }
+
   void _onCamerasUpdated() {
     if (mounted) setState(() {});
   }
@@ -261,6 +309,15 @@ class MapViewState extends State<MapView> {
         controller: _controller,
       );
     }
+    
+    // Handle bottom padding changes (sheet opening/closing)
+    if (widget.bottomPadding != oldWidget.bottomPadding) {
+      final currentZoom = _safeZoom();
+      final newOffset = _calculateCameraLatitudeOffset(widget.bottomPadding, currentZoom);
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _applyCameraOffsetIfNeeded(newOffset);
+      });
+    }
   }
 
   double _safeZoom() {
@@ -301,12 +358,19 @@ class MapViewState extends State<MapView> {
       });
     }
 
+    final zoom = _safeZoom();
+    
+    // Calculate camera offset based on bottom padding (sheet height)
+    final latitudeOffset = _calculateCameraLatitudeOffset(widget.bottomPadding, zoom);
+
     // Seed add‑mode target once, after first controller center is available.
     if (session != null && session.target == null) {
       try {
         final center = _controller.mapController.camera.center;
+        // Apply offset compensation when storing the target (so pin appears in visible area)
+        final adjustedCenter = LatLng(center.latitude + latitudeOffset, center.longitude);
         WidgetsBinding.instance.addPostFrameCallback(
-          (_) => appState.updateSession(target: center),
+          (_) => appState.updateSession(target: adjustedCenter),
         );
       } catch (_) {/* controller not ready yet */}
     }
@@ -316,13 +380,14 @@ class MapViewState extends State<MapView> {
       WidgetsBinding.instance.addPostFrameCallback(
         (_) {
           try {
-            _controller.mapController.move(editSession.target, _controller.mapController.camera.zoom);
+            // Apply offset when moving to edit target (shift camera down so target is in visible area)
+            final adjustedTarget = LatLng(editSession.target.latitude - latitudeOffset, editSession.target.longitude);
+            _controller.mapController.move(adjustedTarget, _controller.mapController.camera.zoom);
           } catch (_) {/* controller not ready yet */}
         },
       );
     }
-
-    final zoom = _safeZoom();
+    
     // Fetch cached cameras for current map bounds (using Consumer so overlays redraw instantly)
     Widget cameraLayers = Consumer<CameraProviderWithCache>(
       builder: (context, cameraProvider, child) {
@@ -357,9 +422,14 @@ class MapViewState extends State<MapView> {
         if (session != null || editSession != null) {
           try {
             final center = _controller.mapController.camera.center;
+            // Show the pin in the visually centered position (accounting for sheet offset)
+            final adjustedCenter = LatLng(
+              center.latitude + latitudeOffset, 
+              center.longitude,
+            );
             centerMarkers.add(
               Marker(
-                point: center,
+                point: adjustedCenter,
                 width: kCameraIconDiameter,
                 height: kCameraIconDiameter,
                 child: CameraIcon(
@@ -384,11 +454,7 @@ class MapViewState extends State<MapView> {
 
     return Stack(
       children: [
-        AnimatedPadding(
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeOut,
-          padding: EdgeInsets.only(bottom: widget.bottomPadding),
-          child: FlutterMap(
+        FlutterMap(
             key: ValueKey('map_${appState.offlineMode}_${appState.selectedTileType?.id ?? 'none'}_${_tileManager.mapRebuildKey}'),
             mapController: _controller.mapController,
             options: MapOptions(
@@ -398,11 +464,19 @@ class MapViewState extends State<MapView> {
             onPositionChanged: (pos, gesture) {
               setState(() {}); // Instant UI update for zoom, etc.
               if (gesture) widget.onUserGesture();
+              
+              // Calculate current offset compensation for session targets
+              final currentLatOffset = _calculateCameraLatitudeOffset(widget.bottomPadding, pos.zoom);
+              
               if (session != null) {
-                appState.updateSession(target: pos.center);
+                // Store the target with offset compensation (so pin appears in visible area above sheet)
+                final adjustedTarget = LatLng(pos.center.latitude + currentLatOffset, pos.center.longitude);
+                appState.updateSession(target: adjustedTarget);
               }
               if (editSession != null) {
-                appState.updateEditSession(target: pos.center);
+                // Store the target with offset compensation
+                final adjustedTarget = LatLng(pos.center.latitude + currentLatOffset, pos.center.longitude);
+                appState.updateEditSession(target: adjustedTarget);
               }
               
               // Start dual-source waiting when map moves (user is expecting new tiles AND nodes)
@@ -457,7 +531,6 @@ class MapViewState extends State<MapView> {
               // backgroundColor removed in flutter_map >=8 (wrap in Container if needed)
             ),
           ],
-          ),
         ),
 
         // All map overlays (mode indicator, zoom, attribution, add pin)
