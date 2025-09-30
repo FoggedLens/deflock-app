@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 
 /// Developer/build-time configuration for global/non-user-tunable constants.
 
-// Example: Default tile storage estimate (KB per tile), for size estimates
-const double kTileEstimateKb = 25.0;
+// Fallback tile storage estimate (KB per tile), used when no preview tile data is available
+const double kFallbackTileEstimateKb = 25.0;
 
 // Direction cone for map view
 const double kDirectionConeHalfAngle = 30.0; // degrees

@@ -62,7 +62,8 @@ class _DownloadAreaDialogState extends State<DownloadAreaDialog> {
     final maxPossibleZoom = _calculateMaxZoomForTileLimit(bounds, minZoom);
     
     final nTiles = computeTileList(bounds, minZoom, maxZoom).length;
-    final totalMb = (nTiles * kTileEstimateKb) / 1024.0;
+    final tileEstimateKb = _getTileEstimateKb();
+    final totalMb = (nTiles * tileEstimateKb) / 1024.0;
     final roundedMb = (totalMb * 10).round() / 10; // Round to nearest tenth
     
     setState(() {
@@ -84,8 +85,22 @@ class _DownloadAreaDialogState extends State<DownloadAreaDialog> {
     }
     return kAbsoluteMaxZoom;
   }
-  
 
+  /// Get tile size estimate in KB, using preview tile data if available, otherwise fallback to constant
+  double _getTileEstimateKb() {
+    final appState = context.read<AppState>();
+    final selectedTileType = appState.selectedTileType;
+    
+    if (selectedTileType?.previewTile != null) {
+      // Use actual preview tile size
+      final previewSizeBytes = selectedTileType!.previewTile!.length;
+      final previewSizeKb = previewSizeBytes / 1024.0;
+      return previewSizeKb;
+    } else {
+      // Fall back to configured estimate
+      return kFallbackTileEstimateKb;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
