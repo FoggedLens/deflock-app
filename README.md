@@ -79,7 +79,7 @@ cp lib/keys.dart.example lib/keys.dart
 ## Roadmap
 
 ### Current Development
-- Fix map jump when editing
+- Clean cache when nodes have disappeared / been deletd by others
 - Clean up dev_config
 - Improve offline area node refresh live display
 - Add default operator profiles (Lowe’s etc)
