@@ -12,7 +12,14 @@ import '../camera_icon.dart';
 class CameraMapMarker extends StatefulWidget {
   final OsmNode node;
   final MapController mapController;
-  const CameraMapMarker({required this.node, required this.mapController, Key? key}) : super(key: key);
+  final void Function(OsmNode)? onNodeTap;
+  
+  const CameraMapMarker({
+    required this.node, 
+    required this.mapController, 
+    this.onNodeTap,
+    Key? key,
+  }) : super(key: key);
 
   @override
   State<CameraMapMarker> createState() => _CameraMapMarkerState();
@@ -25,11 +32,20 @@ class _CameraMapMarkerState extends State<CameraMapMarker> {
 
   void _onTap() {
     _tapTimer = Timer(tapTimeout, () {
-      showModalBottomSheet(
-        context: context,
-        builder: (_) => NodeTagSheet(node: widget.node),
-        showDragHandle: true,
-      );
+      // Center on the node when opening the tag sheet
+      // This prevents jumping when transitioning to edit mode
+      widget.mapController.move(widget.node.coord, widget.mapController.camera.zoom);
+      
+      // Use callback if provided, otherwise fallback to direct modal
+      if (widget.onNodeTap != null) {
+        widget.onNodeTap!(widget.node);
+      } else {
+        showModalBottomSheet(
+          context: context,
+          builder: (_) => NodeTagSheet(node: widget.node),
+          showDragHandle: true,
+        );
+      }
     });
   }
 
@@ -79,6 +95,7 @@ class CameraMarkersBuilder {
     required List<OsmNode> cameras,
     required MapController mapController,
     LatLng? userLocation,
+    void Function(OsmNode)? onNodeTap,
   }) {
     final markers = <Marker>[
       // Camera markers
@@ -88,7 +105,11 @@ class CameraMarkersBuilder {
           point: n.coord,
           width: kCameraIconDiameter,
           height: kCameraIconDiameter,
-          child: CameraMapMarker(node: n, mapController: mapController),
+          child: CameraMapMarker(
+            node: n, 
+            mapController: mapController,
+            onNodeTap: onNodeTap,
+          ),
         )),
       
       // User location marker

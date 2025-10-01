@@ -35,11 +35,13 @@ class MapView extends StatefulWidget {
     required this.followMeMode,
     required this.onUserGesture,
     this.sheetHeight = 0.0,
+    this.onNodeTap,
   });
 
   final FollowMeMode followMeMode;
   final VoidCallback onUserGesture;
   final double sheetHeight;
+  final void Function(OsmNode)? onNodeTap;
 
   @override
   State<MapView> createState() => MapViewState();
@@ -308,16 +310,8 @@ class MapViewState extends State<MapView> {
       } catch (_) {/* controller not ready yet */}
     }
     
-    // For edit sessions, center the map on the camera being edited initially
-    if (editSession != null && _controller.mapController.camera.center != editSession.target) {
-      WidgetsBinding.instance.addPostFrameCallback(
-        (_) {
-          try {
-            _controller.mapController.move(editSession.target, _controller.mapController.camera.zoom);
-          } catch (_) {/* controller not ready yet */}
-        },
-      );
-    }
+    // Edit sessions don't need to center - we're already centered from the node tap
+    // SheetAwareMap handles the visual positioning
     
     // Fetch cached cameras for current map bounds (using Consumer so overlays redraw instantly)
     Widget cameraLayers = Consumer<CameraProviderWithCache>(
@@ -336,6 +330,7 @@ class MapViewState extends State<MapView> {
           cameras: cameras,
           mapController: _controller.mapController,
           userLocation: _gpsController.currentLocation,
+          onNodeTap: widget.onNodeTap,
         );
 
         // Get current zoom level for direction cones

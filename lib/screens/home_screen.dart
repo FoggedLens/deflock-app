@@ -11,9 +11,11 @@ import '../services/localization_service.dart';
 
 import '../widgets/add_node_sheet.dart';
 import '../widgets/edit_node_sheet.dart';
+import '../widgets/node_tag_sheet.dart';
 import '../widgets/camera_provider_with_cache.dart';
 import '../widgets/download_area_dialog.dart';
 import '../widgets/measured_sheet.dart';
+import '../models/osm_node.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -28,9 +30,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   late final AnimatedMapController _mapController;
   bool _editSheetShown = false;
   
-  // Track sheet heights for map padding
+  // Track sheet heights for map positioning
   double _addSheetHeight = 0.0;
   double _editSheetHeight = 0.0;
+  double _tagSheetHeight = 0.0;
 
   @override
   void initState() {
@@ -110,6 +113,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     // Disable follow-me when editing a camera so the map doesn't jump around
     appState.setFollowMeMode(FollowMeMode.off);
     
+    // Close any existing tag sheet first
+    if (_tagSheetHeight > 0) {
+      Navigator.of(context).pop();
+    }
+    
     final session = appState.editSession!;     // should be non-null when this is called
 
     final controller = _scaffoldKey.currentState!.showBottomSheet(
@@ -131,6 +139,26 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     });
   }
 
+  void openNodeTagSheet(OsmNode node) {
+    final controller = _scaffoldKey.currentState!.showBottomSheet(
+      (ctx) => MeasuredSheet(
+        onHeightChanged: (height) {
+          setState(() {
+            _tagSheetHeight = height;
+          });
+        },
+        child: NodeTagSheet(node: node),
+      ),
+    );
+    
+    // Reset height when sheet is dismissed
+    controller.closed.then((_) {
+      setState(() {
+        _tagSheetHeight = 0.0;
+      });
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final appState = context.watch<AppState>();
@@ -144,7 +172,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     }
 
     // Pass the active sheet height directly to the map
-    final activeSheetHeight = _addSheetHeight > 0 ? _addSheetHeight : _editSheetHeight;
+    final activeSheetHeight = _addSheetHeight > 0 
+        ? _addSheetHeight 
+        : (_editSheetHeight > 0 ? _editSheetHeight : _tagSheetHeight);
 
     return MultiProvider(
       providers: [
@@ -190,6 +220,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               controller: _mapController,
               followMeMode: appState.followMeMode,
               sheetHeight: activeSheetHeight,
+              onNodeTap: openNodeTagSheet,
               onUserGesture: () {
                 if (appState.followMeMode != FollowMeMode.off) {
                   appState.setFollowMeMode(FollowMeMode.off);
