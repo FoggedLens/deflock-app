@@ -143,9 +143,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       _editSheetShown = false;
     }
 
-    // Calculate bottom padding for map (90% of active sheet height)
+    // Pass the active sheet height directly to the map
     final activeSheetHeight = _addSheetHeight > 0 ? _addSheetHeight : _editSheetHeight;
-    final mapBottomPadding = activeSheetHeight * 0.9;
 
     return MultiProvider(
       providers: [
@@ -190,7 +189,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               key: _mapViewKey,
               controller: _mapController,
               followMeMode: appState.followMeMode,
-              bottomPadding: mapBottomPadding,
+              sheetHeight: activeSheetHeight,
               onUserGesture: () {
                 if (appState.followMeMode != FollowMeMode.off) {
                   appState.setFollowMeMode(FollowMeMode.off);
