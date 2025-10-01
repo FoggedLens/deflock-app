@@ -35,12 +35,14 @@ class MapView extends StatefulWidget {
     required this.followMeMode,
     required this.onUserGesture,
     this.sheetHeight = 0.0,
+    this.selectedNodeId,
     this.onNodeTap,
   });
 
   final FollowMeMode followMeMode;
   final VoidCallback onUserGesture;
   final double sheetHeight;
+  final int? selectedNodeId;
   final void Function(OsmNode)? onNodeTap;
 
   @override
@@ -330,6 +332,7 @@ class MapViewState extends State<MapView> {
           cameras: cameras,
           mapController: _controller.mapController,
           userLocation: _gpsController.currentLocation,
+          selectedNodeId: widget.selectedNodeId,
           onNodeTap: widget.onNodeTap,
         );
 

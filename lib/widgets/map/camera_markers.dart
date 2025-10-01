@@ -95,22 +95,32 @@ class CameraMarkersBuilder {
     required List<OsmNode> cameras,
     required MapController mapController,
     LatLng? userLocation,
+    int? selectedNodeId,
     void Function(OsmNode)? onNodeTap,
   }) {
     final markers = <Marker>[
       // Camera markers
       ...cameras
         .where(_isValidCameraCoordinate)
-        .map((n) => Marker(
-          point: n.coord,
-          width: kCameraIconDiameter,
-          height: kCameraIconDiameter,
-          child: CameraMapMarker(
-            node: n, 
-            mapController: mapController,
-            onNodeTap: onNodeTap,
-          ),
-        )),
+        .map((n) {
+          // Check if this node should be highlighted (selected) or dimmed
+          final isSelected = selectedNodeId == n.id;
+          final shouldDim = selectedNodeId != null && !isSelected;
+          
+          return Marker(
+            point: n.coord,
+            width: kCameraIconDiameter,
+            height: kCameraIconDiameter,
+            child: Opacity(
+              opacity: shouldDim ? 0.5 : 1.0,
+              child: CameraMapMarker(
+                node: n, 
+                mapController: mapController,
+                onNodeTap: onNodeTap,
+              ),
+            ),
+          );
+        }),
       
       // User location marker
       if (userLocation != null)

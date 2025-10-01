@@ -37,6 +37,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   
   // Flag to prevent map bounce when transitioning from tag sheet to edit sheet
   bool _transitioningToEdit = false;
+  
+  // Track selected node for highlighting
+  int? _selectedNodeId;
 
   @override
   void initState() {
@@ -139,6 +142,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               if (height > 0 && _transitioningToEdit) {
                 _transitioningToEdit = false;
                 _tagSheetHeight = 0.0; // Now safe to reset
+                _selectedNodeId = null; // Clear selection when moving to edit
               }
             });
           },
@@ -157,6 +161,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   }
 
   void openNodeTagSheet(OsmNode node) {
+    setState(() {
+      _selectedNodeId = node.id; // Track selected node for highlighting
+    });
+    
     final controller = _scaffoldKey.currentState!.showBottomSheet(
       (ctx) => MeasuredSheet(
         onHeightChanged: (height) {
@@ -175,11 +183,12 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       ),
     );
     
-    // Reset height when sheet is dismissed (unless transitioning to edit)
+    // Reset height and selection when sheet is dismissed (unless transitioning to edit)
     controller.closed.then((_) {
       if (!_transitioningToEdit) {
         setState(() {
           _tagSheetHeight = 0.0;
+          _selectedNodeId = null; // Clear selection
         });
       }
       // If transitioning to edit, keep the height until edit sheet takes over
@@ -249,6 +258,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               controller: _mapController,
               followMeMode: appState.followMeMode,
               sheetHeight: activeSheetHeight,
+              selectedNodeId: _selectedNodeId,
               onNodeTap: openNodeTagSheet,
               onUserGesture: () {
                 if (appState.followMeMode != FollowMeMode.off) {
