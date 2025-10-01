@@ -79,7 +79,7 @@ cp lib/keys.dart.example lib/keys.dart
 ## Roadmap
 
 ### Current Development
-- Clean cache when nodes have disappeared / been deletd by others
+- Clean cache when nodes have disappeared / been deleted by others
 - Clean up dev_config
 - Improve offline area node refresh live display
 - Add default operator profiles (Lowe’s etc)
@@ -97,6 +97,14 @@ cp lib/keys.dart.example lib/keys.dart
 - Optional custom icons for camera profiles?
 - Upgrade device marker design? (considering nullplate's svg)
 - Custom device providers and OSM/Overpass alternatives?
+- More map data providers:
+https://gis.sanramon.ca.gov/arcgis_js_api/sdk/jsapi/esri.basemaps-amd.html#osm
+https://www.icgc.cat/en/Geoinformation-and-Maps/Base-Map-Service
+https://github.com/CartoDB/basemap-styles
+https://forum.inductiveautomation.com/t/perspective-map-theming-internet-tile-server-options/40164
+https://github.com/roblabs/xyz-raster-sources
+https://github.com/geopandas/xyzservices/blob/main/provider_sources/xyzservices-providers.json
+https://medium.com/@go2garret/free-basemap-tiles-for-maplibre-18374fab60cb
 
 ---
 
