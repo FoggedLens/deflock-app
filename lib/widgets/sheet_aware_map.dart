@@ -24,10 +24,11 @@ class SheetAwareMap extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final screenHeight = MediaQuery.of(context).size.height;
-    
     return LayoutBuilder(
       builder: (context, constraints) {
+        // Use the actual available height from constraints, not full screen height
+        final availableHeight = constraints.maxHeight;
+        
         return Stack(
           children: [
             AnimatedPositioned(
@@ -37,8 +38,8 @@ class SheetAwareMap extends StatelessWidget {
               top: -sheetHeight,
               left: 0,
               right: 0,
-              // Extend the height to compensate and fill screen
-              height: screenHeight + sheetHeight,
+              // Extend the height to compensate and fill available area
+              height: availableHeight + sheetHeight,
               child: child,
             ),
           ],
