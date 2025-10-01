@@ -69,7 +69,12 @@ class MapOverlays extends StatelessWidget {
             ),
             child: Builder(
               builder: (context) {
-                final zoom = mapController.camera.zoom;
+                double zoom = 15.0; // fallback
+                try {
+                  zoom = mapController.camera.zoom;
+                } catch (_) {
+                  // Map controller not ready yet
+                }
                 return Text(
                   'Zoom: ${zoom.toStringAsFixed(2)}',
                   style: const TextStyle(
@@ -118,8 +123,12 @@ class MapOverlays extends StatelessWidget {
                 mini: true,
                 heroTag: "zoom_in",
                 onPressed: () {
-                  final zoom = mapController.camera.zoom;
-                  mapController.move(mapController.camera.center, zoom + 1);
+                  try {
+                    final zoom = mapController.camera.zoom;
+                    mapController.move(mapController.camera.center, zoom + 1);
+                  } catch (_) {
+                    // Map controller not ready yet
+                  }
                 },
                 child: const Icon(Icons.add),
               ),
@@ -129,8 +138,12 @@ class MapOverlays extends StatelessWidget {
                 mini: true,
                 heroTag: "zoom_out",
                 onPressed: () {
-                  final zoom = mapController.camera.zoom;
-                  mapController.move(mapController.camera.center, zoom - 1);
+                  try {
+                    final zoom = mapController.camera.zoom;
+                    mapController.move(mapController.camera.center, zoom - 1);
+                  } catch (_) {
+                    // Map controller not ready yet
+                  }
                 },
                 child: const Icon(Icons.remove),
               ),

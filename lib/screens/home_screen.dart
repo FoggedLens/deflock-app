@@ -34,6 +34,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   double _addSheetHeight = 0.0;
   double _editSheetHeight = 0.0;
   double _tagSheetHeight = 0.0;
+  
+  // Flag to prevent map bounce when transitioning from tag sheet to edit sheet
+  bool _transitioningToEdit = false;
 
   @override
   void initState() {
@@ -113,6 +116,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     // Disable follow-me when editing a camera so the map doesn't jump around
     appState.setFollowMeMode(FollowMeMode.off);
     
+    // Set transition flag to prevent map bounce
+    _transitioningToEdit = true;
+    
     // Close any existing tag sheet first
     if (_tagSheetHeight > 0) {
       Navigator.of(context).pop();
@@ -120,21 +126,32 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     
     final session = appState.editSession!;     // should be non-null when this is called
 
-    final controller = _scaffoldKey.currentState!.showBottomSheet(
-      (ctx) => MeasuredSheet(
-        onHeightChanged: (height) {
-          setState(() {
-            _editSheetHeight = height;
-          });
-        },
-        child: EditNodeSheet(session: session),
-      ),
-    );
-    
-    // Reset height when sheet is dismissed
-    controller.closed.then((_) {
-      setState(() {
-        _editSheetHeight = 0.0;
+    // Small delay to let tag sheet close smoothly
+    Future.delayed(const Duration(milliseconds: 150), () {
+      if (!mounted) return;
+      
+      final controller = _scaffoldKey.currentState!.showBottomSheet(
+        (ctx) => MeasuredSheet(
+          onHeightChanged: (height) {
+            setState(() {
+              _editSheetHeight = height;
+              // Clear transition flag and reset tag sheet height once edit sheet starts sizing
+              if (height > 0 && _transitioningToEdit) {
+                _transitioningToEdit = false;
+                _tagSheetHeight = 0.0; // Now safe to reset
+              }
+            });
+          },
+          child: EditNodeSheet(session: session),
+        ),
+      );
+      
+      // Reset height when sheet is dismissed
+      controller.closed.then((_) {
+        setState(() {
+          _editSheetHeight = 0.0;
+          _transitioningToEdit = false;
+        });
       });
     });
   }
@@ -147,15 +164,25 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             _tagSheetHeight = height;
           });
         },
-        child: NodeTagSheet(node: node),
+        child: NodeTagSheet(
+          node: node,
+          onEditPressed: () {
+            final appState = context.read<AppState>();
+            appState.startEditSession(node);
+            // This will trigger _openEditNodeSheet via the existing auto-show logic
+          },
+        ),
       ),
     );
     
-    // Reset height when sheet is dismissed
+    // Reset height when sheet is dismissed (unless transitioning to edit)
     controller.closed.then((_) {
-      setState(() {
-        _tagSheetHeight = 0.0;
-      });
+      if (!_transitioningToEdit) {
+        setState(() {
+          _tagSheetHeight = 0.0;
+        });
+      }
+      // If transitioning to edit, keep the height until edit sheet takes over
     });
   }
 
@@ -174,7 +201,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     // Pass the active sheet height directly to the map
     final activeSheetHeight = _addSheetHeight > 0 
         ? _addSheetHeight 
-        : (_editSheetHeight > 0 ? _editSheetHeight : _tagSheetHeight);
+        : (_editSheetHeight > 0 
+            ? _editSheetHeight 
+            : _tagSheetHeight);
 
     return MultiProvider(
       providers: [

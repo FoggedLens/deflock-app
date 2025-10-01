@@ -6,8 +6,9 @@ import '../services/localization_service.dart';
 
 class NodeTagSheet extends StatelessWidget {
   final OsmNode node;
+  final VoidCallback? onEditPressed;
 
-  const NodeTagSheet({super.key, required this.node});
+  const NodeTagSheet({super.key, required this.node, this.onEditPressed});
 
   @override
   Widget build(BuildContext context) {
@@ -26,8 +27,13 @@ class NodeTagSheet extends StatelessWidget {
                            node.tags['_pending_deletion'] != 'true');
         
         void _openEditSheet() {
-          Navigator.pop(context); // Close this sheet first
-          appState.startEditSession(node); // HomeScreen will auto-show the edit sheet
+          if (onEditPressed != null) {
+            onEditPressed!(); // Use callback if provided
+          } else {
+            // Fallback behavior
+            Navigator.pop(context); // Close this sheet first
+            appState.startEditSession(node); // HomeScreen will auto-show the edit sheet
+          }
         }
 
         void _deleteNode() async {
