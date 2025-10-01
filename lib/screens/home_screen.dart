@@ -165,6 +165,24 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       _selectedNodeId = node.id; // Track selected node for highlighting
     });
     
+    // Start smooth centering animation simultaneously with sheet opening
+    // Use the same duration as SheetAwareMap (300ms) for coordinated animation
+    try {
+      _mapController.animateTo(
+        dest: node.coord,
+        zoom: _mapController.mapController.camera.zoom,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeOut,
+      );
+    } catch (_) {
+      // Map controller not ready, fallback to immediate move
+      try {
+        _mapController.mapController.move(node.coord, _mapController.mapController.camera.zoom);
+      } catch (_) {
+        // Controller really not ready, skip centering
+      }
+    }
+    
     final controller = _scaffoldKey.currentState!.showBottomSheet(
       (ctx) => MeasuredSheet(
         onHeightChanged: (height) {

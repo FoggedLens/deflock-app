@@ -36,10 +36,10 @@ const double kAddPinYOffset = 0.0;
 
 // Client name and version for OSM uploads ("created_by" tag)
 const String kClientName = 'DeFlock';
-const String kClientVersion = '0.9.15';
+const String kClientVersion = '0.9.16';
 
 // Development/testing features - set to false for production builds
-const bool kEnableDevelopmentModes = false; // Set to false to hide sandbox/simulate modes and force production mode
+const bool kEnableDevelopmentModes = true; // Set to false to hide sandbox/simulate modes and force production mode
 
 // Marker/node interaction
 const int kCameraMinZoomLevel = 10; // Minimum zoom to show nodes (Overpass)

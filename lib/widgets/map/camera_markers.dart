@@ -32,9 +32,7 @@ class _CameraMapMarkerState extends State<CameraMapMarker> {
 
   void _onTap() {
     _tapTimer = Timer(tapTimeout, () {
-      // Center on the node when opening the tag sheet
-      // This prevents jumping when transitioning to edit mode
-      widget.mapController.move(widget.node.coord, widget.mapController.camera.zoom);
+      // Don't center immediately - let the sheet opening handle the coordinated animation
       
       // Use callback if provided, otherwise fallback to direct modal
       if (widget.onNodeTap != null) {
