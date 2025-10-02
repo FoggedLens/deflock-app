@@ -470,8 +470,9 @@ class MapViewState extends State<MapView> {
           attribution: appState.selectedTileType?.attribution,
         ),
 
-        // Network status indicator (top-left)
-        const NetworkStatusIndicator(),
+        // Network status indicator (top-left) - conditionally shown
+        if (appState.networkStatusIndicatorEnabled)
+          const NetworkStatusIndicator(),
         
         // Proximity alert banner (top)
         ProximityAlertBanner(

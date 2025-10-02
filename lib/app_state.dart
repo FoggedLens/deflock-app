@@ -82,6 +82,7 @@ class AppState extends ChangeNotifier {
   FollowMeMode get followMeMode => _settingsState.followMeMode;
   bool get proximityAlertsEnabled => _settingsState.proximityAlertsEnabled;
   int get proximityAlertDistance => _settingsState.proximityAlertDistance;
+  bool get networkStatusIndicatorEnabled => _settingsState.networkStatusIndicatorEnabled;
   
   // Tile provider state
   List<TileProvider> get tileProviders => _settingsState.tileProviders;
@@ -285,6 +286,11 @@ class AppState extends ChangeNotifier {
   /// Set proximity alert distance
   Future<void> setProximityAlertDistance(int distance) async {
     await _settingsState.setProximityAlertDistance(distance);
+  }
+
+  /// Set network status indicator enabled/disabled
+  Future<void> setNetworkStatusIndicatorEnabled(bool enabled) async {
+    await _settingsState.setNetworkStatusIndicatorEnabled(enabled);
   }
 
   // ---------- Queue Methods ----------

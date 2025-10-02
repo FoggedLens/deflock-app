@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'settings/sections/max_nodes_section.dart';
 import 'settings/sections/proximity_alerts_section.dart';
 import 'settings/sections/tile_provider_section.dart';
+import 'settings/sections/network_status_section.dart';
 import '../services/localization_service.dart';
 
 class AdvancedSettingsScreen extends StatelessWidget {
@@ -23,6 +24,8 @@ class AdvancedSettingsScreen extends StatelessWidget {
             MaxNodesSection(),
             Divider(),
             ProximityAlertsSection(),
+            Divider(),
+            NetworkStatusSection(),
             Divider(),
             TileProviderSection(),
           ],

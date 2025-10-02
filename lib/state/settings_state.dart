@@ -26,6 +26,7 @@ class SettingsState extends ChangeNotifier {
   static const String _followMeModePrefsKey = 'follow_me_mode';
   static const String _proximityAlertsEnabledPrefsKey = 'proximity_alerts_enabled';
   static const String _proximityAlertDistancePrefsKey = 'proximity_alert_distance';
+  static const String _networkStatusIndicatorEnabledPrefsKey = 'network_status_indicator_enabled';
 
   bool _offlineMode = false;
   int _maxCameras = 250;
@@ -33,6 +34,7 @@ class SettingsState extends ChangeNotifier {
   FollowMeMode _followMeMode = FollowMeMode.northUp;
   bool _proximityAlertsEnabled = false;
   int _proximityAlertDistance = kProximityAlertDefaultDistance;
+  bool _networkStatusIndicatorEnabled = false;
   List<TileProvider> _tileProviders = [];
   String _selectedTileTypeId = '';
 
@@ -43,6 +45,7 @@ class SettingsState extends ChangeNotifier {
   FollowMeMode get followMeMode => _followMeMode;
   bool get proximityAlertsEnabled => _proximityAlertsEnabled;
   int get proximityAlertDistance => _proximityAlertDistance;
+  bool get networkStatusIndicatorEnabled => _networkStatusIndicatorEnabled;
   List<TileProvider> get tileProviders => List.unmodifiable(_tileProviders);
   String get selectedTileTypeId => _selectedTileTypeId;
   
@@ -94,6 +97,9 @@ class SettingsState extends ChangeNotifier {
     // Load proximity alerts settings
     _proximityAlertsEnabled = prefs.getBool(_proximityAlertsEnabledPrefsKey) ?? false;
     _proximityAlertDistance = prefs.getInt(_proximityAlertDistancePrefsKey) ?? kProximityAlertDefaultDistance;
+    
+    // Load network status indicator setting
+    _networkStatusIndicatorEnabled = prefs.getBool(_networkStatusIndicatorEnabledPrefsKey) ?? false;
     
     // Load upload mode (including migration from old test_mode bool)
     if (prefs.containsKey(_uploadModePrefsKey)) {
@@ -281,6 +287,16 @@ class SettingsState extends ChangeNotifier {
       _proximityAlertDistance = distance;
       final prefs = await SharedPreferences.getInstance();
       await prefs.setInt(_proximityAlertDistancePrefsKey, distance);
+      notifyListeners();
+    }
+  }
+
+  /// Set network status indicator enabled/disabled
+  Future<void> setNetworkStatusIndicatorEnabled(bool enabled) async {
+    if (_networkStatusIndicatorEnabled != enabled) {
+      _networkStatusIndicatorEnabled = enabled;
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool(_networkStatusIndicatorEnabledPrefsKey, enabled);
       notifyListeners();
     }
   }

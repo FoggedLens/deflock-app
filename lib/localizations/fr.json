@@ -45,7 +45,8 @@
     "offlineSettingsSubtitle": "Gérer le mode hors ligne et les zones téléchargées",
     "advancedSettings": "Paramètres Avancés",
     "advancedSettingsSubtitle": "Paramètres de performance, alertes et fournisseurs de tuiles",
-    "proximityAlerts": "Alertes de Proximité"
+    "proximityAlerts": "Alertes de Proximité",
+    "networkStatusIndicator": "Indicateur de Statut Réseau"
   },
   "proximityAlerts": {
     "getNotified": "Recevoir des notifications en s'approchant de dispositifs de surveillance",
@@ -287,5 +288,9 @@
     "cannotChangeTileTypes": "Impossible de changer les types de tuiles pendant le téléchargement des zones hors ligne",
     "selectMapLayer": "Sélectionner la Couche de Carte",
     "noTileProvidersAvailable": "Aucun fournisseur de tuiles disponible"
+  },
+  "networkStatus": {
+    "showIndicator": "Afficher l'indicateur de statut réseau",
+    "showIndicatorSubtitle": "Afficher l'état de chargement et d'erreur réseau sur la carte"
   }
 }

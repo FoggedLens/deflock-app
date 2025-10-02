@@ -45,7 +45,8 @@
     "offlineSettingsSubtitle": "Gestionar modo sin conexión y áreas descargadas",
     "advancedSettings": "Configuración Avanzada",
     "advancedSettingsSubtitle": "Configuración de rendimiento, alertas y proveedores de teselas",
-    "proximityAlerts": "Alertas de Proximidad"
+    "proximityAlerts": "Alertas de Proximidad",
+    "networkStatusIndicator": "Indicador de Estado de Red"
   },
   "proximityAlerts": {
     "getNotified": "Recibe notificaciones al acercarte a dispositivos de vigilancia",
@@ -287,5 +288,9 @@
     "cannotChangeTileTypes": "No se pueden cambiar los tipos de teselas mientras se descargan áreas sin conexión",
     "selectMapLayer": "Seleccionar Capa del Mapa",
     "noTileProvidersAvailable": "No hay proveedores de teselas disponibles"
+  },
+  "networkStatus": {
+    "showIndicator": "Mostrar indicador de estado de red",
+    "showIndicatorSubtitle": "Mostrar estado de carga y errores de red en el mapa"
   }
 }

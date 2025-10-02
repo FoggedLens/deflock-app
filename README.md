@@ -79,7 +79,6 @@ cp lib/keys.dart.example lib/keys.dart
 ## Roadmap
 
 ### Current Development
-- Network status indicator option in advanced
 - Help button with links to email, discord, and website
 - Move download button?
 - Clean cache when nodes have disappeared / been deleted by others

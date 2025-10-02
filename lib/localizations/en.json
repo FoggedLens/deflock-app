@@ -45,7 +45,8 @@
     "offlineSettingsSubtitle": "Manage offline mode and downloaded areas",
     "advancedSettings": "Advanced Settings",
     "advancedSettingsSubtitle": "Performance, alerts, and tile provider settings",
-    "proximityAlerts": "Proximity Alerts"
+    "proximityAlerts": "Proximity Alerts",
+    "networkStatusIndicator": "Network Status Indicator"
   },
   "proximityAlerts": {
     "getNotified": "Get notified when approaching surveillance devices",
@@ -287,5 +288,9 @@
     "cannotChangeTileTypes": "Cannot change tile types while downloading offline areas",
     "selectMapLayer": "Select Map Layer",
     "noTileProvidersAvailable": "No tile providers available"
+  },
+  "networkStatus": {
+    "showIndicator": "Show network status indicator",
+    "showIndicatorSubtitle": "Display network loading and error status on the map"
   }
 }

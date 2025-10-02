@@ -45,7 +45,8 @@
     "offlineSettingsSubtitle": "管理离线模式和已下载区域",
     "advancedSettings": "高级设置",
     "advancedSettingsSubtitle": "性能、警报和地图提供商设置",
-    "proximityAlerts": "邻近警报"
+    "proximityAlerts": "邻近警报",
+    "networkStatusIndicator": "网络状态指示器"
   },
   "proximityAlerts": {
     "getNotified": "接近监控设备时接收通知",
@@ -287,5 +288,9 @@
     "cannotChangeTileTypes": "在下载离线区域时无法更改瓦片类型",
     "selectMapLayer": "选择地图图层",
     "noTileProvidersAvailable": "无可用瓦片提供商"
+  },
+  "networkStatus": {
+    "showIndicator": "显示网络状态指示器",
+    "showIndicatorSubtitle": "在地图上显示网络加载和错误状态"
   }
 }

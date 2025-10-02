@@ -45,7 +45,8 @@
     "offlineSettingsSubtitle": "Offline-Modus und heruntergeladene Bereiche verwalten",
     "advancedSettings": "Erweiterte Einstellungen",
     "advancedSettingsSubtitle": "Leistungs-, Warnungs- und Kachelanbieter-Einstellungen",
-    "proximityAlerts": "Näherungswarnungen"
+    "proximityAlerts": "Näherungswarnungen",
+    "networkStatusIndicator": "Netzwerkstatus-Anzeige"
   },
   "proximityAlerts": {
     "getNotified": "Benachrichtigung erhalten beim Annähern an Überwachungsgeräte",
@@ -287,5 +288,9 @@
     "cannotChangeTileTypes": "Kachel-Typen können während des Herunterladens von Offline-Bereichen nicht geändert werden",
     "selectMapLayer": "Kartenschicht Auswählen",
     "noTileProvidersAvailable": "Keine Kachel-Anbieter verfügbar"
+  },
+  "networkStatus": {
+    "showIndicator": "Netzwerkstatus-Anzeige anzeigen",
+    "showIndicatorSubtitle": "Netzwerk-Ladestatus und Fehlerstatus auf der Karte anzeigen"
   }
 }

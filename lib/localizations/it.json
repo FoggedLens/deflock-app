@@ -45,7 +45,8 @@
     "offlineSettingsSubtitle": "Gestisci modalità offline e aree scaricate",
     "advancedSettings": "Impostazioni Avanzate",
     "advancedSettingsSubtitle": "Impostazioni di prestazioni, avvisi e fornitori di tessere",
-    "proximityAlerts": "Avvisi di Prossimità"
+    "proximityAlerts": "Avvisi di Prossimità",
+    "networkStatusIndicator": "Indicatore di Stato di Rete"
   },
   "proximityAlerts": {
     "getNotified": "Ricevi notifiche quando ti avvicini a dispositivi di sorveglianza",
@@ -287,5 +288,9 @@
     "cannotChangeTileTypes": "Impossibile cambiare tipi di tile durante il download di aree offline",
     "selectMapLayer": "Seleziona Livello Mappa",
     "noTileProvidersAvailable": "Nessun fornitore di tile disponibile"
+  },
+  "networkStatus": {
+    "showIndicator": "Mostra indicatore di stato di rete",
+    "showIndicatorSubtitle": "Visualizza lo stato di caricamento e errori di rete sulla mappa"
   }
 }
