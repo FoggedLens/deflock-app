@@ -382,16 +382,41 @@ class MapViewState extends State<MapView> {
           centerMarkers.add(
             Marker(
               point: appState.provisionalPinLocation!,
-              width: 48.0,
-              height: 48.0,
+              width: 32.0,
+              height: 32.0,
               child: const ProvisionalPin(),
             ),
           );
         }
 
+        // Build start/end pins for route visualization
+        if (appState.showingOverview || appState.isInRouteMode) {
+          if (appState.routeStart != null) {
+            centerMarkers.add(
+              Marker(
+                point: appState.routeStart!,
+                width: 32.0,
+                height: 32.0,
+                child: const LocationPin(type: PinType.start),
+              ),
+            );
+          }
+          if (appState.routeEnd != null) {
+            centerMarkers.add(
+              Marker(
+                point: appState.routeEnd!,
+                width: 32.0,
+                height: 32.0,
+                child: const LocationPin(type: PinType.end),
+              ),
+            );
+          }
+        }
+
         // Build route path visualization
         final routeLines = <Polyline>[];
-        if (appState.routePath != null && appState.routePath!.length > 1) {
+        if (appState.routePath != null && appState.routePath!.length > 1 && 
+            (appState.showingOverview || appState.isInRouteMode)) {
           routeLines.add(Polyline(
             points: appState.routePath!,
             color: Colors.blue,

@@ -73,7 +73,7 @@ class AppState extends ChangeNotifier {
   bool get isLoggedIn => _authState.isLoggedIn;
   String get username => _authState.username;
   
-  // Navigation state
+  // Navigation state - simplified
   AppNavigationMode get navigationMode => _navigationState.mode;
   LatLng? get provisionalPinLocation => _navigationState.provisionalPinLocation;
   String? get provisionalPinAddress => _navigationState.provisionalPinAddress;
@@ -81,6 +81,8 @@ class AppState extends ChangeNotifier {
   bool get isInSearchMode => _navigationState.isInSearchMode;
   bool get isInRouteMode => _navigationState.isInRouteMode;
   bool get hasActiveRoute => _navigationState.hasActiveRoute;
+  bool get showSearchButton => _navigationState.showSearchButton;
+  bool get showRouteButton => _navigationState.showRouteButton;
   List<LatLng>? get routePath => _navigationState.routePath;
   
   // Route state
@@ -90,6 +92,9 @@ class AppState extends ChangeNotifier {
   String? get routeEndAddress => _navigationState.routeEndAddress;
   double? get routeDistance => _navigationState.routeDistance;
   bool get settingRouteStart => _navigationState.settingRouteStart;
+  bool get isSettingSecondPoint => _navigationState.isSettingSecondPoint;
+  bool get isCalculating => _navigationState.isCalculating;
+  bool get showingOverview => _navigationState.showingOverview;
   
   // Navigation search state
   bool get isNavigationSearchLoading => _navigationState.isSearchLoading;
@@ -277,13 +282,13 @@ class AppState extends ChangeNotifier {
     _searchState.clearResults();
   }
 
-  // ---------- Navigation Methods ----------
+  // ---------- Navigation Methods - Simplified ----------
   void enterSearchMode(LatLng mapCenter) {
     _navigationState.enterSearchMode(mapCenter);
   }
 
-  void cancelSearchMode() {
-    _navigationState.cancelSearchMode();
+  void cancelNavigation() {
+    _navigationState.cancel();
   }
 
   void updateProvisionalPinLocation(LatLng newLocation) {
@@ -294,28 +299,28 @@ class AppState extends ChangeNotifier {
     _navigationState.selectSearchResult(result);
   }
 
-  void startRouteSetup({required bool settingStart}) {
-    _navigationState.startRouteSetup(settingStart: settingStart);
+  void startRoutePlanning({required bool thisLocationIsStart}) {
+    _navigationState.startRoutePlanning(thisLocationIsStart: thisLocationIsStart);
   }
 
-  void selectRouteLocation() {
-    _navigationState.selectRouteLocation();
+  void selectSecondRoutePoint() {
+    _navigationState.selectSecondRoutePoint();
   }
 
   void startRoute() {
     _navigationState.startRoute();
   }
 
+  void showRouteOverview() {
+    _navigationState.showRouteOverview();
+  }
+
+  void hideRouteOverview() {
+    _navigationState.hideRouteOverview();
+  }
+
   void cancelRoute() {
     _navigationState.cancelRoute();
-  }
-
-  void viewRouteOverview() {
-    _navigationState.viewRouteOverview();
-  }
-
-  void returnToActiveRoute() {
-    _navigationState.returnToActiveRoute();
   }
 
   // Navigation search methods

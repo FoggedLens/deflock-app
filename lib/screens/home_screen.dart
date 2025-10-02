@@ -189,12 +189,12 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   void _onNavigationButtonPressed() {
     final appState = context.read<AppState>();
     
-    debugPrint('[HomeScreen] Navigation button pressed - hasActiveRoute: ${appState.hasActiveRoute}, navigationMode: ${appState.navigationMode}');
+    debugPrint('[HomeScreen] Navigation button pressed - showRouteButton: ${appState.showRouteButton}, navigationMode: ${appState.navigationMode}');
     
-    if (appState.hasActiveRoute) {
-      // Route button - view route overview
-      debugPrint('[HomeScreen] Viewing route overview');
-      appState.viewRouteOverview();
+    if (appState.showRouteButton) {
+      // Route button - show route overview
+      debugPrint('[HomeScreen] Showing route overview');
+      appState.showRouteOverview();
     } else {
       // Search button - enter search mode
       debugPrint('[HomeScreen] Entering search mode');
@@ -299,11 +299,12 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       _editSheetShown = false;
     }
 
-    // Auto-open navigation sheet during search/route modes
-    if ((appState.isInSearchMode || appState.isInRouteMode) && !_navigationSheetShown) {
+    // Auto-open navigation sheet when needed - simplified logic
+    final shouldShowNavSheet = appState.isInSearchMode || appState.showingOverview;
+    if (shouldShowNavSheet && !_navigationSheetShown) {
       _navigationSheetShown = true;
       WidgetsBinding.instance.addPostFrameCallback((_) => _openNavigationSheet());
-    } else if (!appState.isInSearchMode && !appState.isInRouteMode) {
+    } else if (!shouldShowNavSheet) {
       _navigationSheetShown = false;
     }
 
@@ -323,6 +324,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       child: Scaffold(
         key: _scaffoldKey,
         appBar: AppBar(
+          automaticallyImplyLeading: false, // Disable automatic back button
           title: SvgPicture.asset(
             'assets/deflock-logo.svg',
             height: 28,
@@ -377,7 +379,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 right: 0,
                 child: LocationSearchBar(
                   onResultSelected: _onSearchResultSelected,
-                  onCancel: () => appState.cancelSearchMode(),
+                  onCancel: () => appState.cancelNavigation(),
                 ),
               ),
             // Bottom button bar (restored to original)

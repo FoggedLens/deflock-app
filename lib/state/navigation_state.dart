@@ -4,31 +4,31 @@ import 'package:latlong2/latlong.dart';
 import '../models/search_result.dart';
 import '../services/search_service.dart';
 
-/// Navigation modes for routing and search functionality
+/// Simplified navigation modes - brutalist approach
 enum AppNavigationMode {
-  normal,           // Default state - normal map view
-  search,           // Search box visible, provisional pin active
-  searchInput,      // Keyboard open, UI elements hidden
-  routeSetup,       // Placing second pin for routing
-  routeCalculating, // Computing route with loading indicator
-  routePreview,     // Route ready, showing start/cancel options
-  routeActive,      // Following an active route
-  routeOverview,    // Viewing active route overview
+  normal,      // Regular map view
+  search,      // Search/routing UI active  
+  routeActive, // Following a route
 }
 
-/// Manages all navigation, search, and routing state
+/// Simplified navigation state - fewer modes, clearer logic
 class NavigationState extends ChangeNotifier {
   final SearchService _searchService = SearchService();
   
+  // Core state - just 3 modes
   AppNavigationMode _mode = AppNavigationMode.normal;
+  
+  // Simple flags instead of complex sub-states
+  bool _isSettingSecondPoint = false;
+  bool _isCalculating = false;
+  bool _showingOverview = false;
   
   // Search state
   bool _isSearchLoading = false;
   List<SearchResult> _searchResults = [];
   String _lastQuery = '';
-  List<String> _searchHistory = [];
   
-  // Provisional pin state (for route planning)
+  // Location state
   LatLng? _provisionalPinLocation;
   String? _provisionalPinAddress;
   
@@ -39,14 +39,17 @@ class NavigationState extends ChangeNotifier {
   String? _routeEndAddress;
   List<LatLng>? _routePath;
   double? _routeDistance;
-  bool _settingRouteStart = true; // true = setting start, false = setting end
+  bool _nextPointIsStart = false; // What we're setting next
   
   // Getters
   AppNavigationMode get mode => _mode;
+  bool get isSettingSecondPoint => _isSettingSecondPoint;
+  bool get isCalculating => _isCalculating;
+  bool get showingOverview => _showingOverview;
+  
   bool get isSearchLoading => _isSearchLoading;
   List<SearchResult> get searchResults => List.unmodifiable(_searchResults);
   String get lastQuery => _lastQuery;
-  List<String> get searchHistory => List.unmodifiable(_searchHistory);
   
   LatLng? get provisionalPinLocation => _provisionalPinLocation;
   String? get provisionalPinAddress => _provisionalPinAddress;
@@ -57,26 +60,22 @@ class NavigationState extends ChangeNotifier {
   String? get routeEndAddress => _routeEndAddress;
   List<LatLng>? get routePath => _routePath != null ? List.unmodifiable(_routePath!) : null;
   double? get routeDistance => _routeDistance;
-  bool get settingRouteStart => _settingRouteStart;
+  bool get settingRouteStart => _nextPointIsStart; // For sheet display compatibility
   
-  // Convenience getters
-  bool get isInSearchMode => _mode == AppNavigationMode.search || _mode == AppNavigationMode.searchInput;
-  bool get isInRouteMode => _mode == AppNavigationMode.routeSetup || 
-                           _mode == AppNavigationMode.routeCalculating ||
-                           _mode == AppNavigationMode.routePreview ||
-                           _mode == AppNavigationMode.routeActive ||
-                           _mode == AppNavigationMode.routeOverview;
-  bool get hasActiveRoute => _routePath != null;
-  bool get showProvisionalPin => _provisionalPinLocation != null && 
-                                (_mode == AppNavigationMode.search || 
-                                 _mode == AppNavigationMode.routeSetup);
+  // Simplified convenience getters
+  bool get isInSearchMode => _mode == AppNavigationMode.search;
+  bool get isInRouteMode => _mode == AppNavigationMode.routeActive;
+  bool get hasActiveRoute => _routePath != null && _mode == AppNavigationMode.routeActive;
+  bool get showProvisionalPin => _provisionalPinLocation != null && (_mode == AppNavigationMode.search);
+  bool get showSearchButton => _mode == AppNavigationMode.normal;
+  bool get showRouteButton => _mode == AppNavigationMode.routeActive;
   
-  /// Enter search mode with provisional pin at current map center
+  /// BRUTALIST: Single entry point to search mode
   void enterSearchMode(LatLng mapCenter) {
-    debugPrint('[NavigationState] enterSearchMode called - current mode: $_mode, mapCenter: $mapCenter');
+    debugPrint('[NavigationState] enterSearchMode - current mode: $_mode');
     
     if (_mode != AppNavigationMode.normal) {
-      debugPrint('[NavigationState] Cannot enter search mode - current mode is $_mode (not normal)');
+      debugPrint('[NavigationState] Cannot enter search mode - not in normal mode');
       return;
     }
     
@@ -84,82 +83,70 @@ class NavigationState extends ChangeNotifier {
     _provisionalPinLocation = mapCenter;
     _provisionalPinAddress = null;
     _clearSearchResults();
-    debugPrint('[NavigationState] Entered search mode at $mapCenter');
+    
+    debugPrint('[NavigationState] Entered search mode');
     notifyListeners();
   }
   
-  /// Enter search input mode (keyboard open)
-  void enterSearchInputMode() {
-    if (_mode != AppNavigationMode.search) return;
-    
-    _mode = AppNavigationMode.searchInput;
-    debugPrint('[NavigationState] Entered search input mode');
-    notifyListeners();
-  }
-  
-  /// Exit search input mode back to search
-  void exitSearchInputMode() {
-    if (_mode != AppNavigationMode.searchInput) return;
-    
-    _mode = AppNavigationMode.search;
-    debugPrint('[NavigationState] Exited search input mode');
-    notifyListeners();
-  }
-  
-  /// Cancel search mode and return to normal
-  void cancelSearchMode() {
-    debugPrint('[NavigationState] cancelSearchMode called - mode: $_mode, isInSearch: $isInSearchMode, isInRoute: $isInRouteMode');
-    
-    if (!isInSearchMode && _mode != AppNavigationMode.routeSetup) return;
+  /// BRUTALIST: Single cancellation method - cleans up EVERYTHING
+  void cancel() {
+    debugPrint('[NavigationState] cancel() - cleaning up all state');
     
     _mode = AppNavigationMode.normal;
+    
+    // Clear ALL provisional data
     _provisionalPinLocation = null;
     _provisionalPinAddress = null;
+    
+    // Clear ALL route data (except active route)
+    if (_mode != AppNavigationMode.routeActive) {
+      _routeStart = null;
+      _routeEnd = null;
+      _routeStartAddress = null;
+      _routeEndAddress = null;
+      _routePath = null;
+      _routeDistance = null;
+    }
+    
+    // Reset ALL flags
+    _isSettingSecondPoint = false;
+    _isCalculating = false;
+    _showingOverview = false;
+    _nextPointIsStart = false;
+    
+    // Clear search
     _clearSearchResults();
     
-    // Clear ALL route data when canceling
-    _routeStart = null;
-    _routeEnd = null;
-    _routeStartAddress = null;
-    _routeEndAddress = null;
-    _routePath = null;
-    _routeDistance = null;
-    _settingRouteStart = true;
-    
-    debugPrint('[NavigationState] Cancelled search mode - cleaned up all data');
+    debugPrint('[NavigationState] Everything cleaned up');
     notifyListeners();
   }
   
-  /// Update provisional pin location (when map moves during search)
+  /// Update provisional pin when map moves
   void updateProvisionalPinLocation(LatLng newLocation) {
     if (!showProvisionalPin) return;
     
     _provisionalPinLocation = newLocation;
-    // Clear address since location changed
-    _provisionalPinAddress = null;
+    _provisionalPinAddress = null; // Clear address when location changes
     notifyListeners();
   }
   
-  /// Jump to search result and update provisional pin
+  /// Jump to search result
   void selectSearchResult(SearchResult result) {
-    if (!isInSearchMode) return;
+    if (_mode != AppNavigationMode.search) return;
     
     _provisionalPinLocation = result.coordinates;
     _provisionalPinAddress = result.displayName;
-    _mode = AppNavigationMode.search; // Exit search input mode
     _clearSearchResults();
+    
     debugPrint('[NavigationState] Selected search result: ${result.displayName}');
     notifyListeners();
   }
   
-  /// Start route setup (user clicked "route to" or "route from")
-  void startRouteSetup({required bool settingStart}) {
-    debugPrint('[NavigationState] startRouteSetup called - settingStart: $settingStart, mode: $_mode, location: $_provisionalPinLocation');
+  /// Start route planning - simplified logic
+  void startRoutePlanning({required bool thisLocationIsStart}) {
+    if (_mode != AppNavigationMode.search || _provisionalPinLocation == null) return;
     
-    if (_mode != AppNavigationMode.search || _provisionalPinLocation == null) {
-      debugPrint('[NavigationState] startRouteSetup - early return');
-      return;
-    }
+    debugPrint('[NavigationState] Starting route planning - thisLocationIsStart: $thisLocationIsStart');
     
     // Clear any previous route data
     _routeStart = null;
@@ -169,118 +156,104 @@ class NavigationState extends ChangeNotifier {
     _routePath = null;
     _routeDistance = null;
     
-    if (settingStart) {
-      // "Route From" - this location is the START, now we need to pick END
+    // Set the current location as start or end
+    if (thisLocationIsStart) {
       _routeStart = _provisionalPinLocation;
       _routeStartAddress = _provisionalPinAddress;
-      _settingRouteStart = false; // Next, we'll be setting the END
-      debugPrint('[NavigationState] Set route start: $_routeStart, next will set END');
+      _nextPointIsStart = false; // Next we'll set the END
+      debugPrint('[NavigationState] Set route start, next setting END');
     } else {
-      // "Route To" - this location is the END, now we need to pick START  
       _routeEnd = _provisionalPinLocation;
       _routeEndAddress = _provisionalPinAddress;
-      _settingRouteStart = true; // Next, we'll be setting the START
-      debugPrint('[NavigationState] Set route end: $_routeEnd, next will set START');
+      _nextPointIsStart = true; // Next we'll set the START
+      debugPrint('[NavigationState] Set route end, next setting START');
     }
     
-    _mode = AppNavigationMode.routeSetup;
-    // Keep provisional pin active for second location
-    debugPrint('[NavigationState] Started route setup (setting ${settingStart ? 'start' : 'end'})');
+    // Enter second point selection mode
+    _isSettingSecondPoint = true;
     notifyListeners();
   }
   
-  /// Lock in second route location
-  void selectRouteLocation() {
-    debugPrint('[NavigationState] selectRouteLocation called - mode: $_mode, provisional: $_provisionalPinLocation');
+  /// Select the second route point
+  void selectSecondRoutePoint() {
+    if (!_isSettingSecondPoint || _provisionalPinLocation == null) return;
     
-    if (_mode != AppNavigationMode.routeSetup || _provisionalPinLocation == null) {
-      debugPrint('[NavigationState] selectRouteLocation - early return (mode: $_mode, location: $_provisionalPinLocation)');
-      return;
-    }
+    debugPrint('[NavigationState] Selecting second route point - nextPointIsStart: $_nextPointIsStart');
     
-    if (_settingRouteStart) {
+    // Set the second point
+    if (_nextPointIsStart) {
       _routeStart = _provisionalPinLocation;
       _routeStartAddress = _provisionalPinAddress;
-      debugPrint('[NavigationState] Set route start: $_routeStart');
     } else {
       _routeEnd = _provisionalPinLocation;
       _routeEndAddress = _provisionalPinAddress;
-      debugPrint('[NavigationState] Set route end: $_routeEnd');
     }
     
-    debugPrint('[NavigationState] Route points - start: $_routeStart, end: $_routeEnd');
-    
-    // Start route calculation
+    _isSettingSecondPoint = false;
     _calculateRoute();
   }
   
-  /// Calculate route (mock implementation for now)
+  /// Calculate route
   void _calculateRoute() {
     if (_routeStart == null || _routeEnd == null) return;
     
-    _mode = AppNavigationMode.routeCalculating;
+    debugPrint('[NavigationState] Calculating route...');
+    _isCalculating = true;
     notifyListeners();
     
-    // Mock route calculation with delay
-    Future.delayed(const Duration(seconds: 2), () {
-      if (_mode != AppNavigationMode.routeCalculating) return;
+    // Mock route calculation
+    Future.delayed(const Duration(seconds: 1), () {
+      if (!_isCalculating) return; // Canceled
       
-      // Create simple straight line route for now
       _routePath = [_routeStart!, _routeEnd!];
       _routeDistance = const Distance().as(LengthUnit.Meter, _routeStart!, _routeEnd!);
-      
-      _mode = AppNavigationMode.routePreview;
+      _isCalculating = false;
+      _showingOverview = true;
       _provisionalPinLocation = null; // Hide provisional pin
-      debugPrint('[NavigationState] Route calculated: ${_routeDistance! / 1000.0} km');
+      
+      debugPrint('[NavigationState] Route calculated: ${(_routeDistance! / 1000).toStringAsFixed(1)} km');
       notifyListeners();
     });
   }
   
   /// Start following the route
   void startRoute() {
-    if (_mode != AppNavigationMode.routePreview || _routePath == null) return;
+    if (_routePath == null) return;
     
     _mode = AppNavigationMode.routeActive;
-    debugPrint('[NavigationState] Started route following');
-    notifyListeners();
-  }
-  
-  /// View route overview (from route button during active route)
-  void viewRouteOverview() {
-    if (_mode != AppNavigationMode.routeActive || _routePath == null) return;
+    _showingOverview = false;
     
-    _mode = AppNavigationMode.routeOverview;
-    debugPrint('[NavigationState] Viewing route overview');
+    debugPrint('[NavigationState] Started following route');
     notifyListeners();
   }
   
-  /// Return to active route from overview
-  void returnToActiveRoute() {
-    if (_mode != AppNavigationMode.routeOverview) return;
+  /// Show route overview (from route button during active navigation)
+  void showRouteOverview() {
+    if (_mode != AppNavigationMode.routeActive) return;
     
-    _mode = AppNavigationMode.routeActive;
-    debugPrint('[NavigationState] Returned to active route');
+    _showingOverview = true;
+    debugPrint('[NavigationState] Showing route overview');
     notifyListeners();
   }
   
-  /// Cancel route and return to normal mode
+  /// Hide route overview (back to active navigation)
+  void hideRouteOverview() {
+    if (_mode != AppNavigationMode.routeActive) return;
+    
+    _showingOverview = false;
+    debugPrint('[NavigationState] Hiding route overview');
+    notifyListeners();
+  }
+  
+  /// Cancel active route and return to normal
   void cancelRoute() {
-    if (!isInRouteMode) return;
+    if (_mode != AppNavigationMode.routeActive) return;
     
-    _mode = AppNavigationMode.normal;
-    _routeStart = null;
-    _routeEnd = null;
-    _routeStartAddress = null;
-    _routeEndAddress = null;
-    _routePath = null;
-    _routeDistance = null;
-    _provisionalPinLocation = null;
-    _provisionalPinAddress = null;
-    debugPrint('[NavigationState] Cancelled route');
-    notifyListeners();
+    debugPrint('[NavigationState] Canceling active route');
+    cancel(); // Use the brutalist single cleanup method
   }
   
-  /// Search functionality (delegates to existing search service)
+  /// Search functionality
   Future<void> search(String query) async {
     if (query.trim().isEmpty) {
       _clearSearchResults();
@@ -295,7 +268,7 @@ class NavigationState extends ChangeNotifier {
     try {
       final results = await _searchService.search(query.trim());
       _searchResults = results;
-      debugPrint('[NavigationState] Found ${results.length} results for "$query"');
+      debugPrint('[NavigationState] Found ${results.length} results');
     } catch (e) {
       debugPrint('[NavigationState] Search failed: $e');
       _searchResults = [];
@@ -304,7 +277,6 @@ class NavigationState extends ChangeNotifier {
     _setSearchLoading(false);
   }
   
-  /// Clear search results
   void clearSearchResults() {
     _clearSearchResults();
   }

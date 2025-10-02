@@ -1,19 +1,36 @@
 import 'package:flutter/material.dart';
 
-/// A pin icon for marking provisional locations during search/routing
-class ProvisionalPin extends StatelessWidget {
+enum PinType {
+  provisional, // Orange - current selection
+  start,       // Green - route start
+  end,         // Red - route end
+}
+
+/// A thumbtack-style pin for marking locations during search/routing
+class LocationPin extends StatelessWidget {
+  final PinType type;
   final double size;
-  final Color color;
   
-  const ProvisionalPin({
+  const LocationPin({
     super.key,
-    this.size = 48.0,
-    this.color = Colors.red,
+    required this.type,
+    this.size = 32.0, // Smaller than before
   });
-  
+
+  Color get _pinColor {
+    switch (type) {
+      case PinType.provisional:
+        return Colors.orange;
+      case PinType.start:
+        return Colors.green;
+      case PinType.end:
+        return Colors.red;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return SizedBox(
       width: size,
       height: size,
       child: Stack(
@@ -21,34 +38,34 @@ class ProvisionalPin extends StatelessWidget {
         children: [
           // Pin shadow
           Positioned(
-            bottom: 0,
+            bottom: 2,
             child: Container(
-              width: size * 0.3,
-              height: size * 0.15,
+              width: size * 0.4,
+              height: size * 0.2,
               decoration: BoxDecoration(
                 color: Colors.black.withOpacity(0.3),
-                borderRadius: BorderRadius.circular(size * 0.15),
+                borderRadius: BorderRadius.circular(size * 0.1),
               ),
             ),
           ),
-          // Main pin
+          // Main thumbtack pin
           Icon(
-            Icons.location_pin,
+            Icons.push_pin,
             size: size,
-            color: color,
+            color: _pinColor,
           ),
-          // Inner dot
+          // Inner dot for better visibility
           Positioned(
-            top: size * 0.15,
+            top: size * 0.2,
             child: Container(
-              width: size * 0.25,
-              height: size * 0.25,
+              width: size * 0.3,
+              height: size * 0.3,
               decoration: BoxDecoration(
                 color: Colors.white,
                 shape: BoxShape.circle,
                 border: Border.all(
-                  color: color.withOpacity(0.8),
-                  width: 2,
+                  color: _pinColor.withOpacity(0.8),
+                  width: 1.5,
                 ),
               ),
             ),
@@ -56,5 +73,22 @@ class ProvisionalPin extends StatelessWidget {
         ],
       ),
     );
+  }
+}
+
+// Legacy widget name for compatibility
+class ProvisionalPin extends StatelessWidget {
+  final double size;
+  final Color color;
+  
+  const ProvisionalPin({
+    super.key,
+    this.size = 32.0,
+    this.color = Colors.orange,
+  });
+  
+  @override
+  Widget build(BuildContext context) {
+    return LocationPin(type: PinType.provisional, size: size);
   }
 }
