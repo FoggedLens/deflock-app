@@ -36,7 +36,7 @@ const double kAddPinYOffset = 0.0;
 
 // Client name and version for OSM uploads ("created_by" tag)
 const String kClientName = 'DeFlock';
-const String kClientVersion = '1.0.1';
+const String kClientVersion = '1.0.2';
 
 // Development/testing features - set to false for production builds
 const bool kEnableDevelopmentModes = false; // Set to false to hide sandbox/simulate modes and force production mode
