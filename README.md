@@ -78,6 +78,9 @@ cp lib/keys.dart.example lib/keys.dart
 
 ## Roadmap
 
+### Needed Bugfixes
+- Pull version from pubspec.yaml instead of dev_config.dart; surely there's some kind of state we can pull from already
+
 ### Current Development
 - Help button with links to email, discord, and website
 - Move download button?
