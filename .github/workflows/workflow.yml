@@ -1,0 +1,121 @@
+name: Build Release
+on: workflow_dispatch
+
+jobs:
+  get-version:
+    name: Get Version
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.set-version.outputs.version }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Get version from lib/dev_config.dart
+        id: set-version
+        run: |
+          echo version=$(grep "kClientVersion" lib/dev_config.dart | cut -d '=' -f 2 | tr -d ';' | tr -d "\'" | tr -d " ") >> $GITHUB_OUTPUT
+
+#      - name: Extract version from pubspec.yaml
+#        id: extract_version
+#        run: |
+#          version=$(grep '^version: ' pubspec.yaml | cut -d ' ' -f 2 | tr -d '\r')
+#          echo "VERSION=$version" >> $GITHUB_ENV
+
+  build-android-apk:
+    name: Build Android APK
+    needs: get-version
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v5
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Build Android .apk
+        run: flutter build apk --release
+
+      - name: Upload .apk artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: deflock_v${{ needs.get-version.outputs.version }}.apk
+          path: build/app/outputs/flutter-apk/app-release.apk
+          if-no-files-found: 'error'
+
+
+  build-android-aab:
+    name: Build Android AAB
+    needs: get-version
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v5
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Build Android appBundle
+        run: flutter build appbundle
+
+      - name: Upload .aab artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: deflock_v${{ needs.get-version.outputs.version }}.aab
+          path: build/app/outputs/bundle/release/app-release.aab
+          if-no-files-found: 'error'
+
+  build-ios:
+    name: Build iOS
+    needs: get-version
+    runs-on: macos-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+
+      - name: Install dependencies
+        run: flutter pub get
+
+#      - name: Build iOS .ipa
+#        run: flutter build ipa --release
+
+      - name: Build iOS .app
+        run: flutter build ios --release --no-codesign
+
+      - name: Convert to IPA
+        run: |
+          ./app2ipa.sh build/ios/iphoneos/Runner.app
+
+      - name: Upload IPA artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: deflock_v${{ needs.get-version.outputs.version }}.ipa
+          path: Runner.ipa
+          if-no-files-found: 'error'
