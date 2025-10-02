@@ -7,6 +7,7 @@ import 'models/operator_profile.dart';
 import 'models/osm_node.dart';
 import 'models/pending_upload.dart';
 import 'models/tile_provider.dart';
+import 'models/search_result.dart';
 import 'services/offline_area_service.dart';
 import 'services/node_cache.dart';
 import 'services/tile_preview_service.dart';
@@ -14,6 +15,7 @@ import 'widgets/camera_provider_with_cache.dart';
 import 'state/auth_state.dart';
 import 'state/operator_profile_state.dart';
 import 'state/profile_state.dart';
+import 'state/search_state.dart';
 import 'state/session_state.dart';
 import 'state/settings_state.dart';
 import 'state/upload_queue_state.dart';
@@ -30,6 +32,7 @@ class AppState extends ChangeNotifier {
   late final AuthState _authState;
   late final OperatorProfileState _operatorProfileState;
   late final ProfileState _profileState;
+  late final SearchState _searchState;
   late final SessionState _sessionState;
   late final SettingsState _settingsState;
   late final UploadQueueState _uploadQueueState;
@@ -41,6 +44,7 @@ class AppState extends ChangeNotifier {
     _authState = AuthState();
     _operatorProfileState = OperatorProfileState();
     _profileState = ProfileState();
+    _searchState = SearchState();
     _sessionState = SessionState();
     _settingsState = SettingsState();
     _uploadQueueState = UploadQueueState();
@@ -49,6 +53,7 @@ class AppState extends ChangeNotifier {
     _authState.addListener(_onStateChanged);
     _operatorProfileState.addListener(_onStateChanged);
     _profileState.addListener(_onStateChanged);
+    _searchState.addListener(_onStateChanged);
     _sessionState.addListener(_onStateChanged);
     _settingsState.addListener(_onStateChanged);
     _uploadQueueState.addListener(_onStateChanged);
@@ -70,6 +75,11 @@ class AppState extends ChangeNotifier {
   
   // Operator profile state
   List<OperatorProfile> get operatorProfiles => _operatorProfileState.profiles;
+  
+  // Search state
+  bool get isSearchLoading => _searchState.isLoading;
+  List<SearchResult> get searchResults => _searchState.results;
+  String get lastSearchQuery => _searchState.lastQuery;
   
   // Session state
   AddNodeSession? get session => _sessionState.session;
@@ -231,6 +241,15 @@ class AppState extends ChangeNotifier {
     _startUploader();
   }
 
+  // ---------- Search Methods ----------
+  Future<void> search(String query) async {
+    await _searchState.search(query);
+  }
+
+  void clearSearchResults() {
+    _searchState.clearResults();
+  }
+
   // ---------- Settings Methods ----------
   Future<void> setOfflineMode(bool enabled) async {
     await _settingsState.setOfflineMode(enabled);
@@ -330,6 +349,7 @@ class AppState extends ChangeNotifier {
     _authState.removeListener(_onStateChanged);
     _operatorProfileState.removeListener(_onStateChanged);
     _profileState.removeListener(_onStateChanged);
+    _searchState.removeListener(_onStateChanged);
     _sessionState.removeListener(_onStateChanged);
     _settingsState.removeListener(_onStateChanged);
     _uploadQueueState.removeListener(_onStateChanged);

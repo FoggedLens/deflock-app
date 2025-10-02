@@ -1,0 +1,195 @@
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
+import '../app_state.dart';
+import '../models/search_result.dart';
+import '../widgets/debouncer.dart';
+
+class LocationSearchBar extends StatefulWidget {
+  final void Function(SearchResult)? onResultSelected;
+  
+  const LocationSearchBar({
+    super.key,
+    this.onResultSelected,
+  });
+
+  @override
+  State<LocationSearchBar> createState() => _LocationSearchBarState();
+}
+
+class _LocationSearchBarState extends State<LocationSearchBar> {
+  final TextEditingController _controller = TextEditingController();
+  final FocusNode _focusNode = FocusNode();
+  final Debouncer _searchDebouncer = Debouncer(const Duration(milliseconds: 500));
+  
+  bool _showResults = false;
+  
+  @override
+  void initState() {
+    super.initState();
+    _focusNode.addListener(_onFocusChanged);
+  }
+  
+  @override
+  void dispose() {
+    _controller.dispose();
+    _focusNode.dispose();
+    _searchDebouncer.dispose();
+    super.dispose();
+  }
+  
+  void _onFocusChanged() {
+    setState(() {
+      _showResults = _focusNode.hasFocus && _controller.text.isNotEmpty;
+    });
+  }
+  
+  void _onSearchChanged(String query) {
+    setState(() {
+      _showResults = query.isNotEmpty && _focusNode.hasFocus;
+    });
+    
+    if (query.isEmpty) {
+      context.read<AppState>().clearSearchResults();
+      return;
+    }
+    
+    // Debounce search to avoid too many API calls
+    _searchDebouncer(() {
+      if (mounted) {
+        context.read<AppState>().search(query);
+      }
+    });
+  }
+  
+  void _onResultTap(SearchResult result) {
+    _controller.text = result.displayName;
+    setState(() {
+      _showResults = false;
+    });
+    _focusNode.unfocus();
+    
+    widget.onResultSelected?.call(result);
+  }
+  
+  void _onClear() {
+    _controller.clear();
+    context.read<AppState>().clearSearchResults();
+    setState(() {
+      _showResults = false;
+    });
+  }
+  
+  Widget _buildResultsList(List<SearchResult> results, bool isLoading) {
+    if (!_showResults) return const SizedBox.shrink();
+    
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface,
+        borderRadius: const BorderRadius.vertical(bottom: Radius.circular(12)),
+        boxShadow: [
+          BoxShadow(
+            color: Theme.of(context).shadowColor.withOpacity(0.2),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (isLoading)
+            const Padding(
+              padding: EdgeInsets.all(16),
+              child: Row(
+                children: [
+                  SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  ),
+                  SizedBox(width: 12),
+                  Text('Searching...'),
+                ],
+              ),
+            )
+          else if (results.isEmpty && _controller.text.isNotEmpty)
+            const Padding(
+              padding: EdgeInsets.all(16),
+              child: Text('No results found'),
+            )
+          else
+            ...results.map((result) => ListTile(
+              leading: Icon(
+                result.category == 'coordinates' ? Icons.place : Icons.location_on,
+                size: 20,
+              ),
+              title: Text(
+                result.displayName,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+              subtitle: result.type != null 
+                  ? Text(result.type!, style: Theme.of(context).textTheme.bodySmall)
+                  : null,
+              dense: true,
+              onTap: () => _onResultTap(result),
+            )).toList(),
+        ],
+      ),
+    );
+  }
+  
+  @override
+  Widget build(BuildContext context) {
+    return Consumer<AppState>(
+      builder: (context, appState, child) {
+        return Column(
+          children: [
+            Container(
+              margin: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.surface,
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(
+                    color: Theme.of(context).shadowColor.withOpacity(0.2),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: TextField(
+                controller: _controller,
+                focusNode: _focusNode,
+                decoration: InputDecoration(
+                  hintText: 'Search places or coordinates...',
+                  prefixIcon: const Icon(Icons.search),
+                  suffixIcon: _controller.text.isNotEmpty
+                      ? IconButton(
+                          icon: const Icon(Icons.clear),
+                          onPressed: _onClear,
+                        )
+                      : null,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide.none,
+                  ),
+                  filled: true,
+                  fillColor: Theme.of(context).colorScheme.surface,
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
+                ),
+                onChanged: _onSearchChanged,
+              ),
+            ),
+            _buildResultsList(appState.searchResults, appState.isSearchLoading),
+          ],
+        );
+      },
+    );
+  }
+}

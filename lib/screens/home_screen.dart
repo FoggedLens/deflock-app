@@ -15,7 +15,9 @@ import '../widgets/node_tag_sheet.dart';
 import '../widgets/camera_provider_with_cache.dart';
 import '../widgets/download_area_dialog.dart';
 import '../widgets/measured_sheet.dart';
+import '../widgets/search_bar.dart';
 import '../models/osm_node.dart';
+import '../models/search_result.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -160,6 +162,25 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     });
   }
 
+  void _onSearchResultSelected(SearchResult result) {
+    // Jump to the search result location
+    try {
+      _mapController.animateTo(
+        dest: result.coordinates,
+        zoom: 16.0, // Good zoom level for viewing the area
+        duration: const Duration(milliseconds: 500),
+        curve: Curves.easeOut,
+      );
+    } catch (_) {
+      // Map controller not ready, fallback to immediate move
+      try {
+        _mapController.mapController.move(result.coordinates, 16.0);
+      } catch (_) {
+        debugPrint('[HomeScreen] Could not move to search result: ${result.coordinates}');
+      }
+    }
+  }
+
   void openNodeTagSheet(OsmNode node) {
     setState(() {
       _selectedNodeId = node.id; // Track selected node for highlighting
@@ -269,83 +290,94 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             ),
           ],
         ),
-        body: Stack(
+        body: Column(
           children: [
-            MapView(
-              key: _mapViewKey,
-              controller: _mapController,
-              followMeMode: appState.followMeMode,
-              sheetHeight: activeSheetHeight,
-              selectedNodeId: _selectedNodeId,
-              onNodeTap: openNodeTagSheet,
-              onUserGesture: () {
-                if (appState.followMeMode != FollowMeMode.off) {
-                  appState.setFollowMeMode(FollowMeMode.off);
-                }
-              },
+            // Search bar at the top
+            LocationSearchBar(
+              onResultSelected: _onSearchResultSelected,
             ),
-            Align(
-              alignment: Alignment.bottomCenter,
-              child: Padding(
-                padding: EdgeInsets.only(
-                  bottom: MediaQuery.of(context).padding.bottom + kBottomButtonBarOffset,
-                  left: 8,
-                  right: 8,
-                ),
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 600), // Match typical sheet width
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.surface,
-                      borderRadius: BorderRadius.circular(16),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Theme.of(context).shadowColor.withOpacity(0.3),
-                          blurRadius: 10,
-                          offset: Offset(0, -2),
-                        )
-                      ],
-                    ),
-                    margin: EdgeInsets.only(bottom: kBottomButtonBarOffset),
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                    child: Row(
-                    children: [
-                      Expanded(
-                        child: AnimatedBuilder(
-                          animation: LocalizationService.instance,
-                          builder: (context, child) => ElevatedButton.icon(
-                            icon: Icon(Icons.add_location_alt),
-                            label: Text(LocalizationService.instance.tagNode),
-                            onPressed: _openAddNodeSheet,
-                            style: ElevatedButton.styleFrom(
-                              minimumSize: Size(0, 48),
-                              textStyle: TextStyle(fontSize: 16),
-                            ),
-                          ),
-                        ),
-                      ),
-                      SizedBox(width: 12),
-                      Expanded(
-                        child: AnimatedBuilder(
-                          animation: LocalizationService.instance,
-                          builder: (context, child) => ElevatedButton.icon(
-                            icon: Icon(Icons.download_for_offline),
-                            label: Text(LocalizationService.instance.download),
-                            onPressed: () => showDialog(
-                              context: context,
-                              builder: (ctx) => DownloadAreaDialog(controller: _mapController.mapController),
-                            ),
-                            style: ElevatedButton.styleFrom(
-                              minimumSize: Size(0, 48),
-                              textStyle: TextStyle(fontSize: 16),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
+            // Map takes the rest of the space
+            Expanded(
+              child: Stack(
+                children: [
+                  MapView(
+                    key: _mapViewKey,
+                    controller: _mapController,
+                    followMeMode: appState.followMeMode,
+                    sheetHeight: activeSheetHeight,
+                    selectedNodeId: _selectedNodeId,
+                    onNodeTap: openNodeTagSheet,
+                    onUserGesture: () {
+                      if (appState.followMeMode != FollowMeMode.off) {
+                        appState.setFollowMeMode(FollowMeMode.off);
+                      }
+                    },
                   ),
-                ),
-                ),
+                  Align(
+                    alignment: Alignment.bottomCenter,
+                    child: Padding(
+                      padding: EdgeInsets.only(
+                        bottom: MediaQuery.of(context).padding.bottom + kBottomButtonBarOffset,
+                        left: 8,
+                        right: 8,
+                      ),
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 600), // Match typical sheet width
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: Theme.of(context).colorScheme.surface,
+                            borderRadius: BorderRadius.circular(16),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Theme.of(context).shadowColor.withOpacity(0.3),
+                                blurRadius: 10,
+                                offset: Offset(0, -2),
+                              )
+                            ],
+                          ),
+                          margin: EdgeInsets.only(bottom: kBottomButtonBarOffset),
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                          child: Row(
+                          children: [
+                            Expanded(
+                              child: AnimatedBuilder(
+                                animation: LocalizationService.instance,
+                                builder: (context, child) => ElevatedButton.icon(
+                                  icon: Icon(Icons.add_location_alt),
+                                  label: Text(LocalizationService.instance.tagNode),
+                                  onPressed: _openAddNodeSheet,
+                                  style: ElevatedButton.styleFrom(
+                                    minimumSize: Size(0, 48),
+                                    textStyle: TextStyle(fontSize: 16),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            SizedBox(width: 12),
+                            Expanded(
+                              child: AnimatedBuilder(
+                                animation: LocalizationService.instance,
+                                builder: (context, child) => ElevatedButton.icon(
+                                  icon: Icon(Icons.download_for_offline),
+                                  label: Text(LocalizationService.instance.download),
+                                  onPressed: () => showDialog(
+                                    context: context,
+                                    builder: (ctx) => DownloadAreaDialog(controller: _mapController.mapController),
+                                  ),
+                                  style: ElevatedButton.styleFrom(
+                                    minimumSize: Size(0, 48),
+                                    textStyle: TextStyle(fontSize: 16),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
           ],

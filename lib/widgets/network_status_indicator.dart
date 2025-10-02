@@ -67,7 +67,7 @@ class NetworkStatusIndicator extends StatelessWidget {
           }
 
           return Positioned(
-            top: MediaQuery.of(context).padding.top + 8,
+            top: 8, // Position relative to the map area (not the screen)
             left: 8,
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
