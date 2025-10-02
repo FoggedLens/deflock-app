@@ -71,3 +71,60 @@ Teil der breiteren DeFlock-Initiative zur Förderung von Überwachungstransparen
 
 Besuchen Sie: deflock.me
 Gebaut mit Flutter • Open Source
+
+---
+
+🇮🇹 ITALIANO
+
+DeFlock - Trasparenza della Sorveglianza
+
+DeFlock è un'app mobile orientata alla privacy per mappare l'infrastruttura di sorveglianza pubblica utilizzando OpenStreetMap. Documenta telecamere, ALPR, rilevatori di spari e altri dispositivi di sorveglianza nella tua comunità per rendere questa infrastruttura visibile e ricercabile.
+
+• Mappatura con capacità offline con aree scaricabili
+• Upload diretto su OpenStreetMap con OAuth2
+• Profili integrati per i principali produttori
+• Rispettoso della privacy - nessun dato utente raccolto
+• Multipli fornitori di mappe (OSM, immagini satellitari)
+
+Parte della più ampia iniziativa DeFlock per promuovere la trasparenza della sorveglianza.
+
+Visita: deflock.me
+Costruito con Flutter • Open Source
+
+---
+
+🇵🇹 PORTUGUÊS
+
+DeFlock - Transparência da Vigilância
+
+DeFlock é um aplicativo móvel focado na privacidade para mapear infraestrutura de vigilância pública usando OpenStreetMap. Documente câmeras, ALPRs, detectores de tiros e outros dispositivos de vigilância em sua comunidade para tornar essa infraestrutura visível e pesquisável.
+
+• Mapeamento com capacidade offline com áreas para download
+• Upload direto para OpenStreetMap com OAuth2
+• Perfis integrados para principais fabricantes
+• Respeitoso à privacidade - nenhum dado do usuário coletado
+• Múltiplos provedores de mapas (OSM, imagens de satélite)
+
+Parte da iniciativa mais ampla DeFlock para promover transparência na vigilância.
+
+Visite: deflock.me
+Construído com Flutter • Código Aberto
+
+---
+
+🇨🇳 中文
+
+DeFlock - 监控透明化
+
+DeFlock 是一款注重隐私的移动应用，使用 OpenStreetMap 绘制公共监控基础设施。记录您社区中的摄像头、车牌识别系统、枪击探测器和其他监控设备，使这些基础设施可见且可搜索。
+
+• 具有可下载区域的离线映射功能
+• 使用 OAuth2 直接上传到 OpenStreetMap
+• 主要制造商的内置配置文件
+• 尊重隐私 - 不收集用户数据
+• 多个地图提供商（OSM、卫星图像）
+
+DeFlock 更广泛倡议的一部分，旨在促进监控透明化。
+
+访问：deflock.me
+使用 Flutter 构建 • 开源

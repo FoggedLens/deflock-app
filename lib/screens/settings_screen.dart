@@ -73,6 +73,19 @@ class SettingsScreen extends StatelessWidget {
               subtitle: locService.t('settings.aboutSubtitle'),
               onTap: () => Navigator.pushNamed(context, '/settings/about'),
             ),
+            const Divider(),
+            
+            // Version display
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              child: Text(
+                'Version: $kClientVersion',
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: Theme.of(context).textTheme.bodySmall?.color?.withOpacity(0.6),
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ),
           ],
         ),
       ),
