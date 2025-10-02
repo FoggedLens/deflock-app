@@ -356,6 +356,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               sheetHeight: activeSheetHeight,
               selectedNodeId: _selectedNodeId,
               onNodeTap: openNodeTagSheet,
+              onSearchPressed: _onNavigationButtonPressed,
               onUserGesture: () {
                 if (appState.followMeMode != FollowMeMode.off) {
                   appState.setFollowMeMode(FollowMeMode.off);
@@ -436,16 +437,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   ),
                 ),
                 ),
-              ),
-            ),
-            // Search button as floating map control
-            Positioned(
-              bottom: 200, // Position above other controls
-              right: 16,
-              child: FloatingActionButton(
-                onPressed: _onNavigationButtonPressed,
-                tooltip: appState.hasActiveRoute ? 'Route Overview' : 'Search Location',
-                child: Icon(appState.hasActiveRoute ? Icons.route : Icons.search),
               ),
             ),
           ],

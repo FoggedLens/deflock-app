@@ -109,7 +109,17 @@ class NavigationState extends ChangeNotifier {
     _provisionalPinLocation = null;
     _provisionalPinAddress = null;
     _clearSearchResults();
-    debugPrint('[NavigationState] Cancelled search mode');
+    
+    // Also clear any partial route data
+    if (_routeStart != null && _routeEnd == null) {
+      _routeStart = null;
+      _routeStartAddress = null;
+    } else if (_routeEnd != null && _routeStart == null) {
+      _routeEnd = null;
+      _routeEndAddress = null;
+    }
+    
+    debugPrint('[NavigationState] Cancelled search mode - cleaned up provisional pin');
     notifyListeners();
   }
   
@@ -137,15 +147,32 @@ class NavigationState extends ChangeNotifier {
   
   /// Start route setup (user clicked "route to" or "route from")
   void startRouteSetup({required bool settingStart}) {
-    if (_mode != AppNavigationMode.search || _provisionalPinLocation == null) return;
+    debugPrint('[NavigationState] startRouteSetup called - settingStart: $settingStart, mode: $_mode, location: $_provisionalPinLocation');
+    
+    if (_mode != AppNavigationMode.search || _provisionalPinLocation == null) {
+      debugPrint('[NavigationState] startRouteSetup - early return');
+      return;
+    }
+    
+    // Clear any previous route data
+    _routeStart = null;
+    _routeEnd = null;
+    _routeStartAddress = null;
+    _routeEndAddress = null;
+    _routePath = null;
+    _routeDistance = null;
     
     _settingRouteStart = settingStart;
     if (settingStart) {
+      // "Route From" - this location is the START, we need to pick END
       _routeStart = _provisionalPinLocation;
       _routeStartAddress = _provisionalPinAddress;
+      debugPrint('[NavigationState] Set route start: $_routeStart');
     } else {
+      // "Route To" - this location is the END, we need to pick START  
       _routeEnd = _provisionalPinLocation;
       _routeEndAddress = _provisionalPinAddress;
+      debugPrint('[NavigationState] Set route end: $_routeEnd');
     }
     
     _mode = AppNavigationMode.routeSetup;
@@ -156,15 +183,24 @@ class NavigationState extends ChangeNotifier {
   
   /// Lock in second route location
   void selectRouteLocation() {
-    if (_mode != AppNavigationMode.routeSetup || _provisionalPinLocation == null) return;
+    debugPrint('[NavigationState] selectRouteLocation called - mode: $_mode, provisional: $_provisionalPinLocation');
+    
+    if (_mode != AppNavigationMode.routeSetup || _provisionalPinLocation == null) {
+      debugPrint('[NavigationState] selectRouteLocation - early return (mode: $_mode, location: $_provisionalPinLocation)');
+      return;
+    }
     
     if (_settingRouteStart) {
       _routeStart = _provisionalPinLocation;
       _routeStartAddress = _provisionalPinAddress;
+      debugPrint('[NavigationState] Set route start: $_routeStart');
     } else {
       _routeEnd = _provisionalPinLocation;
       _routeEndAddress = _provisionalPinAddress;
+      debugPrint('[NavigationState] Set route end: $_routeEnd');
     }
+    
+    debugPrint('[NavigationState] Route points - start: $_routeStart, end: $_routeEnd');
     
     // Start route calculation
     _calculateRoute();

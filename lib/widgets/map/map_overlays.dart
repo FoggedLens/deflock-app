@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:provider/provider.dart';
 
 import '../../app_state.dart';
 import '../../dev_config.dart';
@@ -13,6 +14,7 @@ class MapOverlays extends StatelessWidget {
   final AddNodeSession? session;
   final EditNodeSession? editSession;
   final String? attribution; // Attribution for current tile provider
+  final VoidCallback? onSearchPressed; // Callback for search button
 
   const MapOverlays({
     super.key,
@@ -21,6 +23,7 @@ class MapOverlays extends StatelessWidget {
     this.session,
     this.editSession,
     this.attribution,
+    this.onSearchPressed,
   });
 
   @override
@@ -113,45 +116,58 @@ class MapOverlays extends StatelessWidget {
         Positioned(
           bottom: bottomPositionFromButtonBar(kZoomControlsSpacingAboveButtonBar, MediaQuery.of(context).padding.bottom),
           right: 16,
-          child: Column(
-            children: [
-              // Layer selector button
-              const LayerSelectorButton(),
-              const SizedBox(height: 8),
-              // Zoom in button
-              FloatingActionButton(
-                mini: true,
-                heroTag: "zoom_in",
-                onPressed: () {
-                  try {
-                    final zoom = mapController.camera.zoom;
-                    mapController.move(mapController.camera.center, zoom + 1);
-                  } catch (_) {
-                    // Map controller not ready yet
-                  }
-                },
-                child: const Icon(Icons.add),
-              ),
-              const SizedBox(height: 8),
-              // Zoom out button  
-              FloatingActionButton(
-                mini: true,
-                heroTag: "zoom_out",
-                onPressed: () {
-                  try {
-                    final zoom = mapController.camera.zoom;
-                    mapController.move(mapController.camera.center, zoom - 1);
-                  } catch (_) {
-                    // Map controller not ready yet
-                  }
-                },
-                child: const Icon(Icons.remove),
-              ),
-            ],
+          child: Consumer<AppState>(
+            builder: (context, appState, child) {
+              return Column(
+                children: [
+                  // Search/Route button (top of controls)
+                  if (onSearchPressed != null)
+                    FloatingActionButton(
+                      mini: true,
+                      heroTag: "search_nav",
+                      onPressed: onSearchPressed,
+                      tooltip: appState.hasActiveRoute ? 'Route Overview' : 'Search Location',
+                      child: Icon(appState.hasActiveRoute ? Icons.route : Icons.search),
+                    ),
+                  if (onSearchPressed != null) const SizedBox(height: 8),
+                  
+                  // Layer selector button
+                  const LayerSelectorButton(),
+                  const SizedBox(height: 8),
+                  // Zoom in button
+                  FloatingActionButton(
+                    mini: true,
+                    heroTag: "zoom_in",
+                    onPressed: () {
+                      try {
+                        final zoom = mapController.camera.zoom;
+                        mapController.move(mapController.camera.center, zoom + 1);
+                      } catch (_) {
+                        // Map controller not ready yet
+                      }
+                    },
+                    child: const Icon(Icons.add),
+                  ),
+                  const SizedBox(height: 8),
+                  // Zoom out button  
+                  FloatingActionButton(
+                    mini: true,
+                    heroTag: "zoom_out",
+                    onPressed: () {
+                      try {
+                        final zoom = mapController.camera.zoom;
+                        mapController.move(mapController.camera.center, zoom - 1);
+                      } catch (_) {
+                        // Map controller not ready yet
+                      }
+                    },
+                    child: const Icon(Icons.remove),
+                  ),
+                ],
+              );
+            },
           ),
         ),
-
-
       ],
     );
   }

@@ -38,6 +38,7 @@ class MapView extends StatefulWidget {
     this.sheetHeight = 0.0,
     this.selectedNodeId,
     this.onNodeTap,
+    this.onSearchPressed,
   });
 
   final FollowMeMode followMeMode;
@@ -45,6 +46,7 @@ class MapView extends StatefulWidget {
   final double sheetHeight;
   final int? selectedNodeId;
   final void Function(OsmNode)? onNodeTap;
+  final VoidCallback? onSearchPressed;
 
   @override
   State<MapView> createState() => MapViewState();
@@ -497,6 +499,7 @@ class MapViewState extends State<MapView> {
           session: session,
           editSession: editSession,
           attribution: appState.selectedTileType?.attribution,
+          onSearchPressed: widget.onSearchPressed,
         ),
 
         // Network status indicator (top-left) - conditionally shown

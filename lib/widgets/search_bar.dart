@@ -180,22 +180,25 @@ class _LocationSearchBarState extends State<LocationSearchBar> {
                 focusNode: _focusNode,
                 decoration: InputDecoration(
                   hintText: 'Search places or coordinates...',
-                  prefixIcon: const Icon(Icons.search),
-                  suffixIcon: Row(
+                  prefixIcon: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      if (_controller.text.isNotEmpty)
-                        IconButton(
-                          icon: const Icon(Icons.clear),
-                          onPressed: _onClear,
-                        ),
                       IconButton(
                         icon: const Icon(Icons.close),
                         onPressed: _onCancel,
                         tooltip: 'Cancel search',
                       ),
+                      const Icon(Icons.search),
                     ],
                   ),
+                  prefixIconConstraints: const BoxConstraints(minWidth: 80),
+                  suffixIcon: _controller.text.isNotEmpty
+                      ? IconButton(
+                          icon: const Icon(Icons.clear),
+                          onPressed: _onClear,
+                          tooltip: 'Clear text',
+                        )
+                      : null,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                     borderSide: BorderSide.none,
