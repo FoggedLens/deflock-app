@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_map_animations/flutter_map_animations.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:latlong2/latlong.dart';
 import 'package:provider/provider.dart';
 
 import '../app_state.dart';
@@ -15,6 +16,7 @@ import '../widgets/node_tag_sheet.dart';
 import '../widgets/camera_provider_with_cache.dart';
 import '../widgets/download_area_dialog.dart';
 import '../widgets/measured_sheet.dart';
+import '../widgets/navigation_sheet.dart';
 import '../widgets/search_bar.dart';
 import '../models/osm_node.dart';
 import '../models/search_result.dart';
@@ -31,11 +33,13 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   final GlobalKey<MapViewState> _mapViewKey = GlobalKey<MapViewState>();
   late final AnimatedMapController _mapController;
   bool _editSheetShown = false;
+  bool _navigationSheetShown = false;
   
   // Track sheet heights for map positioning
   double _addSheetHeight = 0.0;
   double _editSheetHeight = 0.0;
   double _tagSheetHeight = 0.0;
+  double _navigationSheetHeight = 0.0;
   
   // Flag to prevent map bounce when transitioning from tag sheet to edit sheet
   bool _transitioningToEdit = false;
@@ -162,7 +166,50 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     });
   }
 
+  void _openNavigationSheet() {
+    final controller = _scaffoldKey.currentState!.showBottomSheet(
+      (ctx) => MeasuredSheet(
+        onHeightChanged: (height) {
+          setState(() {
+            _navigationSheetHeight = height;
+          });
+        },
+        child: const NavigationSheet(),
+      ),
+    );
+    
+    // Reset height when sheet is dismissed
+    controller.closed.then((_) {
+      setState(() {
+        _navigationSheetHeight = 0.0;
+      });
+    });
+  }
+
+  void _onNavigationButtonPressed() {
+    final appState = context.read<AppState>();
+    
+    if (appState.hasActiveRoute) {
+      // Route button - view route overview
+      appState.viewRouteOverview();
+    } else {
+      // Search button - enter search mode
+      try {
+        final mapCenter = _mapController.mapController.camera.center;
+        appState.enterSearchMode(mapCenter);
+      } catch (_) {
+        // Controller not ready, use fallback location
+        appState.enterSearchMode(LatLng(37.7749, -122.4194));
+      }
+    }
+  }
+
   void _onSearchResultSelected(SearchResult result) {
+    final appState = context.read<AppState>();
+    
+    // Update navigation state with selected result
+    appState.selectSearchResult(result);
+    
     // Jump to the search result location
     try {
       _mapController.animateTo(
@@ -246,12 +293,22 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       _editSheetShown = false;
     }
 
+    // Auto-open navigation sheet during search/route modes
+    if ((appState.isInSearchMode || appState.isInRouteMode) && !_navigationSheetShown) {
+      _navigationSheetShown = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) => _openNavigationSheet());
+    } else if (!appState.isInSearchMode && !appState.isInRouteMode) {
+      _navigationSheetShown = false;
+    }
+
     // Pass the active sheet height directly to the map
     final activeSheetHeight = _addSheetHeight > 0 
         ? _addSheetHeight 
         : (_editSheetHeight > 0 
             ? _editSheetHeight 
-            : _tagSheetHeight);
+            : (_navigationSheetHeight > 0
+                ? _navigationSheetHeight
+                : _tagSheetHeight));
 
     return MultiProvider(
       providers: [
@@ -290,94 +347,105 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             ),
           ],
         ),
-        body: Column(
+        body: Stack(
           children: [
-            // Search bar at the top
-            LocationSearchBar(
-              onResultSelected: _onSearchResultSelected,
+            MapView(
+              key: _mapViewKey,
+              controller: _mapController,
+              followMeMode: appState.followMeMode,
+              sheetHeight: activeSheetHeight,
+              selectedNodeId: _selectedNodeId,
+              onNodeTap: openNodeTagSheet,
+              onUserGesture: () {
+                if (appState.followMeMode != FollowMeMode.off) {
+                  appState.setFollowMeMode(FollowMeMode.off);
+                }
+              },
             ),
-            // Map takes the rest of the space
-            Expanded(
-              child: Stack(
-                children: [
-                  MapView(
-                    key: _mapViewKey,
-                    controller: _mapController,
-                    followMeMode: appState.followMeMode,
-                    sheetHeight: activeSheetHeight,
-                    selectedNodeId: _selectedNodeId,
-                    onNodeTap: openNodeTagSheet,
-                    onUserGesture: () {
-                      if (appState.followMeMode != FollowMeMode.off) {
-                        appState.setFollowMeMode(FollowMeMode.off);
-                      }
-                    },
-                  ),
-                  Align(
-                    alignment: Alignment.bottomCenter,
-                    child: Padding(
-                      padding: EdgeInsets.only(
-                        bottom: MediaQuery.of(context).padding.bottom + kBottomButtonBarOffset,
-                        left: 8,
-                        right: 8,
-                      ),
-                      child: ConstrainedBox(
-                        constraints: const BoxConstraints(maxWidth: 600), // Match typical sheet width
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: Theme.of(context).colorScheme.surface,
-                            borderRadius: BorderRadius.circular(16),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Theme.of(context).shadowColor.withOpacity(0.3),
-                                blurRadius: 10,
-                                offset: Offset(0, -2),
-                              )
-                            ],
+            // Search bar (slides in when in search mode)
+            if (appState.isInSearchMode) 
+              Positioned(
+                top: 0,
+                left: 0,
+                right: 0,
+                child: LocationSearchBar(
+                  onResultSelected: _onSearchResultSelected,
+                  onCancel: () => appState.cancelSearchMode(),
+                ),
+              ),
+            // Bottom button bar (restored to original)
+            Align(
+              alignment: Alignment.bottomCenter,
+              child: Padding(
+                padding: EdgeInsets.only(
+                  bottom: MediaQuery.of(context).padding.bottom + kBottomButtonBarOffset,
+                  left: 8,
+                  right: 8,
+                ),
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 600), // Match typical sheet width
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.surface,
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Theme.of(context).shadowColor.withOpacity(0.3),
+                          blurRadius: 10,
+                          offset: Offset(0, -2),
+                        )
+                      ],
+                    ),
+                    margin: EdgeInsets.only(bottom: kBottomButtonBarOffset),
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    child: Row(
+                    children: [
+                      Expanded(
+                        child: AnimatedBuilder(
+                          animation: LocalizationService.instance,
+                          builder: (context, child) => ElevatedButton.icon(
+                            icon: Icon(Icons.add_location_alt),
+                            label: Text(LocalizationService.instance.tagNode),
+                            onPressed: _openAddNodeSheet,
+                            style: ElevatedButton.styleFrom(
+                              minimumSize: Size(0, 48),
+                              textStyle: TextStyle(fontSize: 16),
+                            ),
                           ),
-                          margin: EdgeInsets.only(bottom: kBottomButtonBarOffset),
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                          child: Row(
-                          children: [
-                            Expanded(
-                              child: AnimatedBuilder(
-                                animation: LocalizationService.instance,
-                                builder: (context, child) => ElevatedButton.icon(
-                                  icon: Icon(Icons.add_location_alt),
-                                  label: Text(LocalizationService.instance.tagNode),
-                                  onPressed: _openAddNodeSheet,
-                                  style: ElevatedButton.styleFrom(
-                                    minimumSize: Size(0, 48),
-                                    textStyle: TextStyle(fontSize: 16),
-                                  ),
-                                ),
-                              ),
-                            ),
-                            SizedBox(width: 12),
-                            Expanded(
-                              child: AnimatedBuilder(
-                                animation: LocalizationService.instance,
-                                builder: (context, child) => ElevatedButton.icon(
-                                  icon: Icon(Icons.download_for_offline),
-                                  label: Text(LocalizationService.instance.download),
-                                  onPressed: () => showDialog(
-                                    context: context,
-                                    builder: (ctx) => DownloadAreaDialog(controller: _mapController.mapController),
-                                  ),
-                                  style: ElevatedButton.styleFrom(
-                                    minimumSize: Size(0, 48),
-                                    textStyle: TextStyle(fontSize: 16),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
                         ),
                       ),
+                      SizedBox(width: 12),
+                      Expanded(
+                        child: AnimatedBuilder(
+                          animation: LocalizationService.instance,
+                          builder: (context, child) => ElevatedButton.icon(
+                            icon: Icon(Icons.download_for_offline),
+                            label: Text(LocalizationService.instance.download),
+                            onPressed: () => showDialog(
+                              context: context,
+                              builder: (ctx) => DownloadAreaDialog(controller: _mapController.mapController),
+                            ),
+                            style: ElevatedButton.styleFrom(
+                              minimumSize: Size(0, 48),
+                              textStyle: TextStyle(fontSize: 16),
+                            ),
+                          ),
+                        ),
                       ),
-                    ),
+                    ],
                   ),
-                ],
+                ),
+                ),
+              ),
+            ),
+            // Search button as floating map control
+            Positioned(
+              bottom: 200, // Position above other controls
+              right: 16,
+              child: FloatingActionButton(
+                onPressed: _onNavigationButtonPressed,
+                tooltip: appState.hasActiveRoute ? 'Route Overview' : 'Search Location',
+                child: Icon(appState.hasActiveRoute ? Icons.route : Icons.search),
               ),
             ),
           ],

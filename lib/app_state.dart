@@ -13,6 +13,7 @@ import 'services/node_cache.dart';
 import 'services/tile_preview_service.dart';
 import 'widgets/camera_provider_with_cache.dart';
 import 'state/auth_state.dart';
+import 'state/navigation_state.dart';
 import 'state/operator_profile_state.dart';
 import 'state/profile_state.dart';
 import 'state/search_state.dart';
@@ -21,6 +22,7 @@ import 'state/settings_state.dart';
 import 'state/upload_queue_state.dart';
 
 // Re-export types
+export 'state/navigation_state.dart' show AppNavigationMode;
 export 'state/settings_state.dart' show UploadMode, FollowMeMode;
 export 'state/session_state.dart' show AddNodeSession, EditNodeSession;
 
@@ -30,6 +32,7 @@ class AppState extends ChangeNotifier {
   
   // State modules
   late final AuthState _authState;
+  late final NavigationState _navigationState;
   late final OperatorProfileState _operatorProfileState;
   late final ProfileState _profileState;
   late final SearchState _searchState;
@@ -42,6 +45,7 @@ class AppState extends ChangeNotifier {
   AppState() {
     instance = this;
     _authState = AuthState();
+    _navigationState = NavigationState();
     _operatorProfileState = OperatorProfileState();
     _profileState = ProfileState();
     _searchState = SearchState();
@@ -51,6 +55,7 @@ class AppState extends ChangeNotifier {
     
     // Set up state change listeners
     _authState.addListener(_onStateChanged);
+    _navigationState.addListener(_onStateChanged);
     _operatorProfileState.addListener(_onStateChanged);
     _profileState.addListener(_onStateChanged);
     _searchState.addListener(_onStateChanged);
@@ -67,6 +72,28 @@ class AppState extends ChangeNotifier {
   // Auth state
   bool get isLoggedIn => _authState.isLoggedIn;
   String get username => _authState.username;
+  
+  // Navigation state
+  AppNavigationMode get navigationMode => _navigationState.mode;
+  LatLng? get provisionalPinLocation => _navigationState.provisionalPinLocation;
+  String? get provisionalPinAddress => _navigationState.provisionalPinAddress;
+  bool get showProvisionalPin => _navigationState.showProvisionalPin;
+  bool get isInSearchMode => _navigationState.isInSearchMode;
+  bool get isInRouteMode => _navigationState.isInRouteMode;
+  bool get hasActiveRoute => _navigationState.hasActiveRoute;
+  List<LatLng>? get routePath => _navigationState.routePath;
+  
+  // Route state
+  LatLng? get routeStart => _navigationState.routeStart;
+  LatLng? get routeEnd => _navigationState.routeEnd;
+  String? get routeStartAddress => _navigationState.routeStartAddress;
+  String? get routeEndAddress => _navigationState.routeEndAddress;
+  double? get routeDistance => _navigationState.routeDistance;
+  bool get settingRouteStart => _navigationState.settingRouteStart;
+  
+  // Navigation search state
+  bool get isNavigationSearchLoading => _navigationState.isSearchLoading;
+  List<SearchResult> get navigationSearchResults => _navigationState.searchResults;
   
   // Profile state
   List<NodeProfile> get profiles => _profileState.profiles;
@@ -250,6 +277,56 @@ class AppState extends ChangeNotifier {
     _searchState.clearResults();
   }
 
+  // ---------- Navigation Methods ----------
+  void enterSearchMode(LatLng mapCenter) {
+    _navigationState.enterSearchMode(mapCenter);
+  }
+
+  void cancelSearchMode() {
+    _navigationState.cancelSearchMode();
+  }
+
+  void updateProvisionalPinLocation(LatLng newLocation) {
+    _navigationState.updateProvisionalPinLocation(newLocation);
+  }
+
+  void selectSearchResult(SearchResult result) {
+    _navigationState.selectSearchResult(result);
+  }
+
+  void startRouteSetup({required bool settingStart}) {
+    _navigationState.startRouteSetup(settingStart: settingStart);
+  }
+
+  void selectRouteLocation() {
+    _navigationState.selectRouteLocation();
+  }
+
+  void startRoute() {
+    _navigationState.startRoute();
+  }
+
+  void cancelRoute() {
+    _navigationState.cancelRoute();
+  }
+
+  void viewRouteOverview() {
+    _navigationState.viewRouteOverview();
+  }
+
+  void returnToActiveRoute() {
+    _navigationState.returnToActiveRoute();
+  }
+
+  // Navigation search methods
+  Future<void> searchNavigation(String query) async {
+    await _navigationState.search(query);
+  }
+
+  void clearNavigationSearchResults() {
+    _navigationState.clearSearchResults();
+  }
+
   // ---------- Settings Methods ----------
   Future<void> setOfflineMode(bool enabled) async {
     await _settingsState.setOfflineMode(enabled);
@@ -347,6 +424,7 @@ class AppState extends ChangeNotifier {
   @override
   void dispose() {
     _authState.removeListener(_onStateChanged);
+    _navigationState.removeListener(_onStateChanged);
     _operatorProfileState.removeListener(_onStateChanged);
     _profileState.removeListener(_onStateChanged);
     _searchState.removeListener(_onStateChanged);

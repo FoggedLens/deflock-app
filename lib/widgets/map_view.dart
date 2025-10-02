@@ -21,6 +21,7 @@ import 'map/tile_layer_manager.dart';
 import 'map/camera_refresh_controller.dart';
 import 'map/gps_controller.dart';
 import 'network_status_indicator.dart';
+import 'provisional_pin.dart';
 import 'proximity_alert_banner.dart';
 import '../dev_config.dart';
 import '../app_state.dart' show FollowMeMode;
@@ -374,10 +375,33 @@ class MapViewState extends State<MapView> {
           }
         }
 
+        // Build provisional pin for navigation/search mode
+        if (appState.showProvisionalPin && appState.provisionalPinLocation != null) {
+          centerMarkers.add(
+            Marker(
+              point: appState.provisionalPinLocation!,
+              width: 48.0,
+              height: 48.0,
+              child: const ProvisionalPin(),
+            ),
+          );
+        }
+
+        // Build route path visualization
+        final routeLines = <Polyline>[];
+        if (appState.routePath != null && appState.routePath!.length > 1) {
+          routeLines.add(Polyline(
+            points: appState.routePath!,
+            color: Colors.blue,
+            strokeWidth: 4.0,
+          ));
+        }
+
         return Stack(
           children: [
             PolygonLayer(polygons: overlays),
             if (editLines.isNotEmpty) PolylineLayer(polylines: editLines),
+            if (routeLines.isNotEmpty) PolylineLayer(polylines: routeLines),
             MarkerLayer(markers: [...markers, ...centerMarkers]),
           ],
         );
@@ -404,6 +428,11 @@ class MapViewState extends State<MapView> {
               }
               if (editSession != null) {
                 appState.updateEditSession(target: pos.center);
+              }
+              
+              // Update provisional pin location during navigation search/routing
+              if (appState.showProvisionalPin) {
+                appState.updateProvisionalPinLocation(pos.center);
               }
               
               // Start dual-source waiting when map moves (user is expecting new tiles AND nodes)
