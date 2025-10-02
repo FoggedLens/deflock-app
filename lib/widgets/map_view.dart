@@ -203,6 +203,11 @@ class MapViewState extends State<MapView> {
   void retryLocationInit() {
     _gpsController.retryLocationInit();
   }
+  
+  /// Get current user location
+  LatLng? getUserLocation() {
+    return _gpsController.currentLocation;
+  }
 
   /// Expose static methods from MapPositionManager for external access
   static Future<void> clearStoredMapPosition() => 
@@ -390,7 +395,7 @@ class MapViewState extends State<MapView> {
         }
 
         // Build start/end pins for route visualization
-        if (appState.showingOverview || appState.isInRouteMode) {
+        if (appState.showingOverview || appState.isInRouteMode || appState.isSettingSecondPoint) {
           if (appState.routeStart != null) {
             centerMarkers.add(
               Marker(
@@ -415,13 +420,15 @@ class MapViewState extends State<MapView> {
 
         // Build route path visualization
         final routeLines = <Polyline>[];
-        if (appState.routePath != null && appState.routePath!.length > 1 && 
-            (appState.showingOverview || appState.isInRouteMode)) {
-          routeLines.add(Polyline(
-            points: appState.routePath!,
-            color: Colors.blue,
-            strokeWidth: 4.0,
-          ));
+        if (appState.routePath != null && appState.routePath!.length > 1) {
+          // Show route line during overview or active route
+          if (appState.showingOverview || appState.isInRouteMode) {
+            routeLines.add(Polyline(
+              points: appState.routePath!,
+              color: Colors.blue,
+              strokeWidth: 4.0,
+            ));
+          }
         }
 
         return Stack(

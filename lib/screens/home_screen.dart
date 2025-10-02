@@ -174,7 +174,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             _navigationSheetHeight = height;
           });
         },
-        child: const NavigationSheet(),
+        child: NavigationSheet(
+          onStartRoute: _onStartRoute,
+        ),
       ),
     );
     
@@ -183,7 +185,32 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       setState(() {
         _navigationSheetHeight = 0.0;
       });
+      
+      // If we're in route active mode and showing overview, reset the overview flag
+      // This fixes the stuck route button issue
+      final appState = context.read<AppState>();
+      if (appState.isInRouteMode && appState.showingOverview) {
+        debugPrint('[HomeScreen] Sheet dismissed during route overview - hiding overview');
+        appState.hideRouteOverview();
+      }
     });
+  }
+
+  void _onStartRoute() {
+    final appState = context.read<AppState>();
+    
+    // Get user location from MapView GPS controller and check if we should auto-enable follow-me
+    try {
+      final userLocation = _mapViewKey.currentState?.getUserLocation();
+      if (userLocation != null && appState.shouldAutoEnableFollowMe(userLocation)) {
+        debugPrint('[HomeScreen] Auto-enabling follow-me mode - user within 1km of start');
+        appState.setFollowMeMode(FollowMeMode.northUp);
+      }
+    } catch (e) {
+      debugPrint('[HomeScreen] Could not get user location for auto follow-me: $e');
+    }
+    
+    appState.startRoute();
   }
 
   void _onNavigationButtonPressed() {

@@ -6,7 +6,12 @@ import 'package:latlong2/latlong.dart';
 import '../app_state.dart';
 
 class NavigationSheet extends StatelessWidget {
-  const NavigationSheet({super.key});
+  final VoidCallback? onStartRoute;
+  
+  const NavigationSheet({
+    super.key,
+    this.onStartRoute,
+  });
 
   String _formatCoordinates(LatLng coordinates) {
     return '${coordinates.latitude.toStringAsFixed(6)}, ${coordinates.longitude.toStringAsFixed(6)}';
@@ -207,7 +212,7 @@ class NavigationSheet extends StatelessWidget {
                         child: ElevatedButton.icon(
                           icon: const Icon(Icons.play_arrow),
                           label: const Text('Start'),
-                          onPressed: () => appState.startRoute(),
+                          onPressed: onStartRoute ?? () => appState.startRoute(),
                         ),
                       ),
                       const SizedBox(width: 12),

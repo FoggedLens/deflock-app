@@ -309,6 +309,14 @@ class AppState extends ChangeNotifier {
 
   void startRoute() {
     _navigationState.startRoute();
+    
+    // Auto-enable follow-me if user is near the start point
+    // We need to get user location from the GPS controller
+    // This will be handled in HomeScreen where we have access to MapView
+  }
+  
+  bool shouldAutoEnableFollowMe(LatLng? userLocation) {
+    return _navigationState.shouldAutoEnableFollowMe(userLocation);
   }
 
   void showRouteOverview() {

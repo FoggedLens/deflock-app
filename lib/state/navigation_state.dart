@@ -227,6 +227,17 @@ class NavigationState extends ChangeNotifier {
     notifyListeners();
   }
   
+  /// Check if user should auto-enable follow-me (called from outside with user location)
+  bool shouldAutoEnableFollowMe(LatLng? userLocation) {
+    if (userLocation == null || _routeStart == null) return false;
+    
+    final distanceToStart = const Distance().as(LengthUnit.Meter, userLocation, _routeStart!);
+    final shouldEnable = distanceToStart <= 1000; // Within 1km
+    
+    debugPrint('[NavigationState] Distance to start: ${distanceToStart.toStringAsFixed(0)}m, auto follow-me: $shouldEnable');
+    return shouldEnable;
+  }
+  
   /// Show route overview (from route button during active navigation)
   void showRouteOverview() {
     if (_mode != AppNavigationMode.routeActive) return;
