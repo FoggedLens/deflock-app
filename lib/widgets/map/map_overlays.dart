@@ -120,8 +120,8 @@ class MapOverlays extends StatelessWidget {
             builder: (context, appState, child) {
               return Column(
                 children: [
-                  // Search/Route button (top of controls)
-                  if (onSearchPressed != null)
+                  // Search/Route button (top of controls) - hide when in search/route modes
+                  if (onSearchPressed != null && !appState.isInSearchMode && !appState.isInRouteMode)
                     FloatingActionButton(
                       mini: true,
                       heroTag: "search_nav",
@@ -129,7 +129,8 @@ class MapOverlays extends StatelessWidget {
                       tooltip: appState.hasActiveRoute ? 'Route Overview' : 'Search Location',
                       child: Icon(appState.hasActiveRoute ? Icons.route : Icons.search),
                     ),
-                  if (onSearchPressed != null) const SizedBox(height: 8),
+                  if (onSearchPressed != null && !appState.isInSearchMode && !appState.isInRouteMode) 
+                    const SizedBox(height: 8),
                   
                   // Layer selector button
                   const LayerSelectorButton(),

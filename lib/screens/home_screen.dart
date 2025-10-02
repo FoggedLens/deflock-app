@@ -189,16 +189,22 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   void _onNavigationButtonPressed() {
     final appState = context.read<AppState>();
     
+    debugPrint('[HomeScreen] Navigation button pressed - hasActiveRoute: ${appState.hasActiveRoute}, navigationMode: ${appState.navigationMode}');
+    
     if (appState.hasActiveRoute) {
       // Route button - view route overview
+      debugPrint('[HomeScreen] Viewing route overview');
       appState.viewRouteOverview();
     } else {
       // Search button - enter search mode
+      debugPrint('[HomeScreen] Entering search mode');
       try {
         final mapCenter = _mapController.mapController.camera.center;
+        debugPrint('[HomeScreen] Map center: $mapCenter');
         appState.enterSearchMode(mapCenter);
-      } catch (_) {
+      } catch (e) {
         // Controller not ready, use fallback location
+        debugPrint('[HomeScreen] Map controller not ready: $e, using fallback');
         appState.enterSearchMode(LatLng(37.7749, -122.4194));
       }
     }

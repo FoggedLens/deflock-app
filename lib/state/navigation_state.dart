@@ -73,7 +73,12 @@ class NavigationState extends ChangeNotifier {
   
   /// Enter search mode with provisional pin at current map center
   void enterSearchMode(LatLng mapCenter) {
-    if (_mode != AppNavigationMode.normal) return;
+    debugPrint('[NavigationState] enterSearchMode called - current mode: $_mode, mapCenter: $mapCenter');
+    
+    if (_mode != AppNavigationMode.normal) {
+      debugPrint('[NavigationState] Cannot enter search mode - current mode is $_mode (not normal)');
+      return;
+    }
     
     _mode = AppNavigationMode.search;
     _provisionalPinLocation = mapCenter;
@@ -103,6 +108,8 @@ class NavigationState extends ChangeNotifier {
   
   /// Cancel search mode and return to normal
   void cancelSearchMode() {
+    debugPrint('[NavigationState] cancelSearchMode called - mode: $_mode, isInSearch: $isInSearchMode, isInRoute: $isInRouteMode');
+    
     if (!isInSearchMode && _mode != AppNavigationMode.routeSetup) return;
     
     _mode = AppNavigationMode.normal;
@@ -110,16 +117,16 @@ class NavigationState extends ChangeNotifier {
     _provisionalPinAddress = null;
     _clearSearchResults();
     
-    // Also clear any partial route data
-    if (_routeStart != null && _routeEnd == null) {
-      _routeStart = null;
-      _routeStartAddress = null;
-    } else if (_routeEnd != null && _routeStart == null) {
-      _routeEnd = null;
-      _routeEndAddress = null;
-    }
+    // Clear ALL route data when canceling
+    _routeStart = null;
+    _routeEnd = null;
+    _routeStartAddress = null;
+    _routeEndAddress = null;
+    _routePath = null;
+    _routeDistance = null;
+    _settingRouteStart = true;
     
-    debugPrint('[NavigationState] Cancelled search mode - cleaned up provisional pin');
+    debugPrint('[NavigationState] Cancelled search mode - cleaned up all data');
     notifyListeners();
   }
   
@@ -162,17 +169,18 @@ class NavigationState extends ChangeNotifier {
     _routePath = null;
     _routeDistance = null;
     
-    _settingRouteStart = settingStart;
     if (settingStart) {
-      // "Route From" - this location is the START, we need to pick END
+      // "Route From" - this location is the START, now we need to pick END
       _routeStart = _provisionalPinLocation;
       _routeStartAddress = _provisionalPinAddress;
-      debugPrint('[NavigationState] Set route start: $_routeStart');
+      _settingRouteStart = false; // Next, we'll be setting the END
+      debugPrint('[NavigationState] Set route start: $_routeStart, next will set END');
     } else {
-      // "Route To" - this location is the END, we need to pick START  
+      // "Route To" - this location is the END, now we need to pick START  
       _routeEnd = _provisionalPinLocation;
       _routeEndAddress = _provisionalPinAddress;
-      debugPrint('[NavigationState] Set route end: $_routeEnd');
+      _settingRouteStart = true; // Next, we'll be setting the START
+      debugPrint('[NavigationState] Set route end: $_routeEnd, next will set START');
     }
     
     _mode = AppNavigationMode.routeSetup;

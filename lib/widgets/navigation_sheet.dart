@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:latlong2/latlong.dart';
@@ -171,6 +172,7 @@ class NavigationSheet extends StatelessWidget {
                     icon: const Icon(Icons.check),
                     label: const Text('Select Location'),
                     onPressed: () {
+                      debugPrint('[NavigationSheet] Select Location button pressed');
                       appState.selectRouteLocation();
                     },
                   ),
