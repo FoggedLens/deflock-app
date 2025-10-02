@@ -5,6 +5,13 @@
   "app": {
     "title": "DeFlock"
   },
+  "about": {
+    "title": "DeFlock - Surveillance Transparency",
+    "description": "DeFlock is a privacy-focused mobile app for mapping public surveillance infrastructure using OpenStreetMap. Document cameras, ALPRs, gunshot detectors, and other surveillance devices in your community to make this infrastructure visible and searchable.",
+    "features": "• Offline-capable mapping with downloadable areas\n• Upload directly to OpenStreetMap with OAuth2\n• Built-in profiles for major manufacturers\n• Privacy-respecting - no user data collected\n• Multiple map tile providers (OSM, satellite imagery)",
+    "initiative": "Part of the broader DeFlock initiative to promote surveillance transparency.",
+    "footer": "Visit: deflock.me\nBuilt with Flutter • Open Source"
+  },
   "actions": {
     "tagNode": "New Node",
     "download": "Download",
