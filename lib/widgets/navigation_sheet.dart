@@ -180,6 +180,50 @@ class NavigationSheet extends StatelessWidget {
                 ),
               ],
 
+              // ROUTING ERROR: Show error with retry option
+              if (appState.hasRoutingError && !appState.isCalculating) ...[
+                Icon(
+                  Icons.error_outline,
+                  size: 48,
+                  color: Colors.red[400],
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  'Route calculation failed',
+                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  appState.routingError ?? 'Unknown error',
+                  style: TextStyle(color: Colors.grey[600]),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        icon: const Icon(Icons.refresh),
+                        label: const Text('Retry'),
+                        onPressed: () {
+                          // Retry route calculation
+                          appState.retryRouteCalculation();
+                        },
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        icon: const Icon(Icons.close),
+                        label: const Text('Cancel'),
+                        onPressed: () => appState.cancelNavigation(),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+
               // ROUTE OVERVIEW: Show route details with start/cancel options
               if (appState.showingOverview) ...[
                 if (appState.routeStart != null) ...[

@@ -95,6 +95,8 @@ class AppState extends ChangeNotifier {
   bool get isSettingSecondPoint => _navigationState.isSettingSecondPoint;
   bool get isCalculating => _navigationState.isCalculating;
   bool get showingOverview => _navigationState.showingOverview;
+  String? get routingError => _navigationState.routingError;
+  bool get hasRoutingError => _navigationState.hasRoutingError;
   
   // Navigation search state
   bool get isNavigationSearchLoading => _navigationState.isSearchLoading;
@@ -338,6 +340,10 @@ class AppState extends ChangeNotifier {
 
   void clearNavigationSearchResults() {
     _navigationState.clearSearchResults();
+  }
+
+  void retryRouteCalculation() {
+    _navigationState.retryRouteCalculation();
   }
 
   // ---------- Settings Methods ----------

@@ -3,6 +3,7 @@ import 'package:latlong2/latlong.dart';
 
 import '../models/search_result.dart';
 import '../services/search_service.dart';
+import '../services/routing_service.dart';
 
 /// Simplified navigation modes - brutalist approach
 enum AppNavigationMode {
@@ -14,6 +15,7 @@ enum AppNavigationMode {
 /// Simplified navigation state - fewer modes, clearer logic
 class NavigationState extends ChangeNotifier {
   final SearchService _searchService = SearchService();
+  final RoutingService _routingService = RoutingService();
   
   // Core state - just 3 modes
   AppNavigationMode _mode = AppNavigationMode.normal;
@@ -22,6 +24,7 @@ class NavigationState extends ChangeNotifier {
   bool _isSettingSecondPoint = false;
   bool _isCalculating = false;
   bool _showingOverview = false;
+  String? _routingError;
   
   // Search state
   bool _isSearchLoading = false;
@@ -46,6 +49,8 @@ class NavigationState extends ChangeNotifier {
   bool get isSettingSecondPoint => _isSettingSecondPoint;
   bool get isCalculating => _isCalculating;
   bool get showingOverview => _showingOverview;
+  String? get routingError => _routingError;
+  bool get hasRoutingError => _routingError != null;
   
   bool get isSearchLoading => _isSearchLoading;
   List<SearchResult> get searchResults => List.unmodifiable(_searchResults);
@@ -113,6 +118,7 @@ class NavigationState extends ChangeNotifier {
     _isCalculating = false;
     _showingOverview = false;
     _nextPointIsStart = false;
+    _routingError = null;
     
     // Clear search
     _clearSearchResults();
@@ -190,28 +196,52 @@ class NavigationState extends ChangeNotifier {
     }
     
     _isSettingSecondPoint = false;
+    _routingError = null; // Clear any previous errors
     _calculateRoute();
   }
   
-  /// Calculate route
+  /// Retry route calculation (for error recovery)
+  void retryRouteCalculation() {
+    if (_routeStart == null || _routeEnd == null) return;
+    
+    debugPrint('[NavigationState] Retrying route calculation');
+    _routingError = null;
+    _calculateRoute();
+  }
+  
+  /// Calculate route using OSRM
   void _calculateRoute() {
     if (_routeStart == null || _routeEnd == null) return;
     
-    debugPrint('[NavigationState] Calculating route...');
+    debugPrint('[NavigationState] Calculating route with OSRM...');
     _isCalculating = true;
+    _routingError = null;
     notifyListeners();
     
-    // Mock route calculation
-    Future.delayed(const Duration(seconds: 1), () {
-      if (!_isCalculating) return; // Canceled
+    _routingService.calculateRoute(
+      start: _routeStart!,
+      end: _routeEnd!,
+      profile: 'driving', // Could make this configurable later
+    ).then((routeResult) {
+      if (!_isCalculating) return; // Canceled while calculating
       
-      _routePath = [_routeStart!, _routeEnd!];
-      _routeDistance = const Distance().as(LengthUnit.Meter, _routeStart!, _routeEnd!);
+      _routePath = routeResult.waypoints;
+      _routeDistance = routeResult.distanceMeters;
       _isCalculating = false;
       _showingOverview = true;
       _provisionalPinLocation = null; // Hide provisional pin
       
-      debugPrint('[NavigationState] Route calculated: ${(_routeDistance! / 1000).toStringAsFixed(1)} km');
+      debugPrint('[NavigationState] OSRM route calculated: ${routeResult.toString()}');
+      notifyListeners();
+      
+    }).catchError((error) {
+      if (!_isCalculating) return; // Canceled while calculating
+      
+      debugPrint('[NavigationState] Route calculation failed: $error');
+      _isCalculating = false;
+      _routingError = error.toString().replaceAll('RoutingException: ', '');
+      
+      // Don't show overview on error, stay in current state
       notifyListeners();
     });
   }
