@@ -31,8 +31,7 @@ double bottomPositionFromButtonBar(double spacingAboveButtonBar, double safeArea
   return safeAreaBottom + kBottomButtonBarOffset + kButtonBarHeight + spacingAboveButtonBar;
 }
 
-// Add Camera icon vertical offset (no offset needed since circle is centered)
-const double kAddPinYOffset = 0.0;
+
 
 // Client name for OSM uploads ("created_by" tag)
 const String kClientName = 'DeFlock';
