@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 
 import '../../app_state.dart';
 import '../../dev_config.dart';
+import '../../services/localization_service.dart';
 import '../camera_icon.dart';
 import 'layer_selector_button.dart';
 
@@ -126,7 +127,9 @@ class MapOverlays extends StatelessWidget {
                       mini: true,
                       heroTag: "search_nav",
                       onPressed: onSearchPressed,
-                      tooltip: appState.showRouteButton ? 'Route Overview' : 'Search Location',
+                      tooltip: appState.showRouteButton 
+                          ? LocalizationService.instance.t('navigation.routeOverview')
+                          : LocalizationService.instance.t('navigation.searchLocation'),
                       child: Icon(appState.showRouteButton ? Icons.route : Icons.search),
                     ),
                   if (onSearchPressed != null && (appState.showSearchButton || appState.showRouteButton)) 

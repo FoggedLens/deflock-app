@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:latlong2/latlong.dart';
 
 import '../app_state.dart';
+import '../services/localization_service.dart';
 
 class NavigationSheet extends StatelessWidget {
   final VoidCallback? onStartRoute;
@@ -94,32 +95,32 @@ class NavigationSheet extends StatelessWidget {
               // SEARCH MODE: Initial location with route options
               if (navigationMode == AppNavigationMode.search && !appState.isSettingSecondPoint && !appState.isCalculating && !appState.showingOverview && provisionalLocation != null) ...[
                 _buildLocationInfo(
-                  label: 'Location',
+                  label: LocalizationService.instance.t('navigation.location'),
                   coordinates: provisionalLocation,
                   address: provisionalAddress,
                 ),
                 const SizedBox(height: 16),
                 Row(
                   children: [
-                    Expanded(
-                      child: ElevatedButton.icon(
-                        icon: const Icon(Icons.directions),
-                        label: const Text('Route To'),
-                        onPressed: () {
-                          appState.startRoutePlanning(thisLocationIsStart: false);
-                        },
+                      Expanded(
+                        child: ElevatedButton.icon(
+                          icon: const Icon(Icons.directions),
+                          label: Text(LocalizationService.instance.t('navigation.routeTo')),
+                          onPressed: () {
+                            appState.startRoutePlanning(thisLocationIsStart: false);
+                          },
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: ElevatedButton.icon(
-                        icon: const Icon(Icons.my_location),
-                        label: const Text('Route From'),
-                        onPressed: () {
-                          appState.startRoutePlanning(thisLocationIsStart: true);
-                        },
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: ElevatedButton.icon(
+                          icon: const Icon(Icons.my_location),
+                          label: Text(LocalizationService.instance.t('navigation.routeFrom')),
+                          onPressed: () {
+                            appState.startRoutePlanning(thisLocationIsStart: true);
+                          },
+                        ),
                       ),
-                    ),
                   ],
                 ),
               ],
@@ -129,7 +130,7 @@ class NavigationSheet extends StatelessWidget {
                 // Show existing route points
                 if (appState.routeStart != null) ...[
                   _buildLocationInfo(
-                    label: 'Start',
+                    label: LocalizationService.instance.t('navigation.startPoint'),
                     coordinates: appState.routeStart!,
                     address: appState.routeStartAddress,
                   ),
@@ -137,7 +138,7 @@ class NavigationSheet extends StatelessWidget {
                 ],
                 if (appState.routeEnd != null) ...[
                   _buildLocationInfo(
-                    label: 'End',
+                    label: LocalizationService.instance.t('navigation.endPoint'),
                     coordinates: appState.routeEnd!,
                     address: appState.routeEndAddress,
                   ),
@@ -146,7 +147,9 @@ class NavigationSheet extends StatelessWidget {
                 
                 // Show the point we're selecting
                 _buildLocationInfo(
-                  label: appState.settingRouteStart ? 'Start (select)' : 'End (select)',
+                  label: appState.settingRouteStart 
+                    ? LocalizationService.instance.t('navigation.startSelect')
+                    : LocalizationService.instance.t('navigation.endSelect'),
                   coordinates: provisionalLocation,
                   address: provisionalAddress,
                 ),
@@ -154,7 +157,7 @@ class NavigationSheet extends StatelessWidget {
                 
                 ElevatedButton.icon(
                   icon: const Icon(Icons.check),
-                  label: const Text('Select Location'),
+                  label: Text(LocalizationService.instance.t('navigation.selectLocation')),
                   onPressed: () {
                     debugPrint('[NavigationSheet] Select Location button pressed');
                     appState.selectSecondRoutePoint();
@@ -172,11 +175,14 @@ class NavigationSheet extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 16),
-                const Text('Calculating route...', textAlign: TextAlign.center),
+                Text(
+                  LocalizationService.instance.t('navigation.calculatingRoute'),
+                  textAlign: TextAlign.center,
+                ),
                 const SizedBox(height: 16),
                 ElevatedButton(
                   onPressed: () => appState.cancelNavigation(),
-                  child: const Text('Cancel'),
+                  child: Text(LocalizationService.instance.t('actions.cancel')),
                 ),
               ],
 
@@ -189,7 +195,7 @@ class NavigationSheet extends StatelessWidget {
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  'Route calculation failed',
+                  LocalizationService.instance.t('navigation.routeCalculationFailed'),
                   style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   textAlign: TextAlign.center,
                 ),
@@ -205,7 +211,7 @@ class NavigationSheet extends StatelessWidget {
                     Expanded(
                       child: ElevatedButton.icon(
                         icon: const Icon(Icons.refresh),
-                        label: const Text('Retry'),
+                        label: Text(LocalizationService.instance.t('navigation.retry')),
                         onPressed: () {
                           // Retry route calculation
                           appState.retryRouteCalculation();
@@ -216,7 +222,7 @@ class NavigationSheet extends StatelessWidget {
                     Expanded(
                       child: ElevatedButton.icon(
                         icon: const Icon(Icons.close),
-                        label: const Text('Cancel'),
+                        label: Text(LocalizationService.instance.t('actions.cancel')),
                         onPressed: () => appState.cancelNavigation(),
                       ),
                     ),
@@ -228,7 +234,7 @@ class NavigationSheet extends StatelessWidget {
               if (appState.showingOverview) ...[
                 if (appState.routeStart != null) ...[
                   _buildLocationInfo(
-                    label: 'Start',
+                    label: LocalizationService.instance.t('navigation.startPoint'),
                     coordinates: appState.routeStart!,
                     address: appState.routeStartAddress,
                   ),
@@ -236,7 +242,7 @@ class NavigationSheet extends StatelessWidget {
                 ],
                 if (appState.routeEnd != null) ...[
                   _buildLocationInfo(
-                    label: 'End',
+                    label: LocalizationService.instance.t('navigation.endPoint'),
                     coordinates: appState.routeEnd!,
                     address: appState.routeEndAddress,
                   ),
@@ -244,7 +250,7 @@ class NavigationSheet extends StatelessWidget {
                 ],
                 if (appState.routeDistance != null) ...[
                   Text(
-                    'Distance: ${(appState.routeDistance! / 1000).toStringAsFixed(1)} km',
+                    LocalizationService.instance.t('navigation.distance', params: [(appState.routeDistance! / 1000).toStringAsFixed(1)]),
                     style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 16),
@@ -257,7 +263,7 @@ class NavigationSheet extends StatelessWidget {
                       Expanded(
                         child: ElevatedButton.icon(
                           icon: const Icon(Icons.play_arrow),
-                          label: const Text('Start'),
+                          label: Text(LocalizationService.instance.t('navigation.start')),
                           onPressed: onStartRoute ?? () => appState.startRoute(),
                         ),
                       ),
@@ -265,7 +271,7 @@ class NavigationSheet extends StatelessWidget {
                       Expanded(
                         child: ElevatedButton.icon(
                           icon: const Icon(Icons.close),
-                          label: const Text('Cancel'),
+                          label: Text(LocalizationService.instance.t('actions.cancel')),
                           onPressed: () => appState.cancelNavigation(),
                         ),
                       ),
@@ -274,7 +280,7 @@ class NavigationSheet extends StatelessWidget {
                       Expanded(
                         child: ElevatedButton.icon(
                           icon: const Icon(Icons.play_arrow),
-                          label: const Text('Resume'),
+                          label: Text(LocalizationService.instance.t('navigation.resume')),
                           onPressed: onResumeRoute ?? () => appState.hideRouteOverview(),
                         ),
                       ),
@@ -282,7 +288,7 @@ class NavigationSheet extends StatelessWidget {
                       Expanded(
                         child: ElevatedButton.icon(
                           icon: const Icon(Icons.close),
-                          label: const Text('End Route'),
+                          label: Text(LocalizationService.instance.t('navigation.endRoute')),
                           onPressed: () => appState.cancelRoute(),
                         ),
                       ),

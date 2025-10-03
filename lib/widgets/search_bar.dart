@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../app_state.dart';
 import '../models/search_result.dart';
+import '../services/localization_service.dart';
 import '../widgets/debouncer.dart';
 
 class LocationSearchBar extends StatefulWidget {
@@ -115,24 +116,24 @@ class _LocationSearchBarState extends State<LocationSearchBar> {
         mainAxisSize: MainAxisSize.min,
         children: [
           if (isLoading)
-            const Padding(
-              padding: EdgeInsets.all(16),
+            Padding(
+              padding: const EdgeInsets.all(16),
               child: Row(
                 children: [
-                  SizedBox(
+                  const SizedBox(
                     width: 20,
                     height: 20,
                     child: CircularProgressIndicator(strokeWidth: 2),
                   ),
-                  SizedBox(width: 12),
-                  Text('Searching...'),
+                  const SizedBox(width: 12),
+                  Text(LocalizationService.instance.t('navigation.searching')),
                 ],
               ),
             )
           else if (results.isEmpty && _controller.text.isNotEmpty)
-            const Padding(
-              padding: EdgeInsets.all(16),
-              child: Text('No results found'),
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Text(LocalizationService.instance.t('navigation.noResultsFound')),
             )
           else
             ...results.map((result) => ListTile(
@@ -179,14 +180,14 @@ class _LocationSearchBarState extends State<LocationSearchBar> {
                 controller: _controller,
                 focusNode: _focusNode,
                 decoration: InputDecoration(
-                  hintText: 'Search places or coordinates...',
+                  hintText: LocalizationService.instance.t('navigation.searchPlaceholder'),
                   prefixIcon: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       IconButton(
                         icon: const Icon(Icons.close),
                         onPressed: _onCancel,
-                        tooltip: 'Cancel search',
+                        tooltip: LocalizationService.instance.t('navigation.cancelSearch'),
                       ),
                       const Icon(Icons.search),
                     ],
@@ -196,7 +197,7 @@ class _LocationSearchBarState extends State<LocationSearchBar> {
                       ? IconButton(
                           icon: const Icon(Icons.clear),
                           onPressed: _onClear,
-                          tooltip: 'Clear text',
+                          tooltip: LocalizationService.instance.t('actions.clear'),
                         )
                       : null,
                   border: OutlineInputBorder(
