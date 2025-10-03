@@ -7,10 +7,12 @@ import '../app_state.dart';
 
 class NavigationSheet extends StatelessWidget {
   final VoidCallback? onStartRoute;
+  final VoidCallback? onResumeRoute;
   
   const NavigationSheet({
     super.key,
     this.onStartRoute,
+    this.onResumeRoute,
   });
 
   String _formatCoordinates(LatLng coordinates) {
@@ -229,7 +231,7 @@ class NavigationSheet extends StatelessWidget {
                         child: ElevatedButton.icon(
                           icon: const Icon(Icons.play_arrow),
                           label: const Text('Resume'),
-                          onPressed: () => appState.hideRouteOverview(),
+                          onPressed: onResumeRoute ?? () => appState.hideRouteOverview(),
                         ),
                       ),
                       const SizedBox(width: 12),

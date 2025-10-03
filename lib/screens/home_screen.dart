@@ -176,6 +176,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         },
         child: NavigationSheet(
           onStartRoute: _onStartRoute,
+          onResumeRoute: _onResumeRoute,
         ),
       ),
     );
@@ -186,10 +187,15 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         _navigationSheetHeight = 0.0;
       });
       
-      // If we're in route active mode and showing overview, reset the overview flag
-      // This fixes the stuck route button issue
+      // Handle different dismissal scenarios
       final appState = context.read<AppState>();
-      if (appState.isInRouteMode && appState.showingOverview) {
+      
+      if (appState.isSettingSecondPoint) {
+        // If user dismisses sheet while setting second point, cancel everything
+        debugPrint('[HomeScreen] Sheet dismissed during second point selection - canceling navigation');
+        appState.cancelNavigation();
+      } else if (appState.isInRouteMode && appState.showingOverview) {
+        // If we're in route active mode and showing overview, just hide the overview
         debugPrint('[HomeScreen] Sheet dismissed during route overview - hiding overview');
         appState.hideRouteOverview();
       }
@@ -199,18 +205,116 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   void _onStartRoute() {
     final appState = context.read<AppState>();
     
-    // Get user location from MapView GPS controller and check if we should auto-enable follow-me
+    // Get user location and check if we should auto-enable follow-me
+    LatLng? userLocation;
+    bool enableFollowMe = false;
+    
     try {
-      final userLocation = _mapViewKey.currentState?.getUserLocation();
+      userLocation = _mapViewKey.currentState?.getUserLocation();
       if (userLocation != null && appState.shouldAutoEnableFollowMe(userLocation)) {
         debugPrint('[HomeScreen] Auto-enabling follow-me mode - user within 1km of start');
         appState.setFollowMeMode(FollowMeMode.northUp);
+        enableFollowMe = true;
       }
     } catch (e) {
       debugPrint('[HomeScreen] Could not get user location for auto follow-me: $e');
     }
     
+    // Start the route
     appState.startRoute();
+    
+    // Zoom to level 14 and center appropriately
+    _zoomAndCenterForRoute(enableFollowMe, userLocation, appState.routeStart);
+  }
+  
+  void _zoomAndCenterForRoute(bool followMeEnabled, LatLng? userLocation, LatLng? routeStart) {
+    try {
+      LatLng centerLocation;
+      
+      if (followMeEnabled && userLocation != null) {
+        // Center on user if follow-me is enabled
+        centerLocation = userLocation;
+        debugPrint('[HomeScreen] Centering on user location for route start');
+      } else if (routeStart != null) {
+        // Center on start pin if user is far away or no GPS
+        centerLocation = routeStart;
+        debugPrint('[HomeScreen] Centering on route start pin');
+      } else {
+        debugPrint('[HomeScreen] No valid location to center on');
+        return;
+      }
+      
+      // Animate to zoom 14 and center location
+      _mapController.animateTo(
+        dest: centerLocation,
+        zoom: 14.0,
+        duration: const Duration(milliseconds: 800),
+        curve: Curves.easeInOut,
+      );
+    } catch (e) {
+      debugPrint('[HomeScreen] Could not zoom/center for route: $e');
+    }
+  }
+  
+  void _onResumeRoute() {
+    final appState = context.read<AppState>();
+    
+    // Hide the overview
+    appState.hideRouteOverview();
+    
+    // Zoom and center for resumed route
+    // For resume, we always center on user if GPS is available, otherwise start pin
+    LatLng? userLocation;
+    try {
+      userLocation = _mapViewKey.currentState?.getUserLocation();
+    } catch (e) {
+      debugPrint('[HomeScreen] Could not get user location for route resume: $e');
+    }
+    
+    _zoomAndCenterForRoute(
+      appState.followMeMode != FollowMeMode.off, // Use current follow-me state
+      userLocation, 
+      appState.routeStart
+    );
+  }
+  
+  void _zoomToShowFullRoute(AppState appState) {
+    if (appState.routeStart == null || appState.routeEnd == null) return;
+    
+    try {
+      // Calculate the bounds of the route
+      final start = appState.routeStart!;
+      final end = appState.routeEnd!;
+      
+      // Find the center point between start and end
+      final centerLat = (start.latitude + end.latitude) / 2;
+      final centerLng = (start.longitude + end.longitude) / 2;
+      final center = LatLng(centerLat, centerLng);
+      
+      // Calculate distance between points to determine appropriate zoom
+      final distance = const Distance().as(LengthUnit.Meter, start, end);
+      double zoom;
+      if (distance < 500) {
+        zoom = 16.0;
+      } else if (distance < 2000) {
+        zoom = 14.0;
+      } else if (distance < 10000) {
+        zoom = 12.0;
+      } else {
+        zoom = 10.0;
+      }
+      
+      debugPrint('[HomeScreen] Zooming to show full route - distance: ${distance.toStringAsFixed(0)}m, zoom: $zoom');
+      
+      _mapController.animateTo(
+        dest: center,
+        zoom: zoom,
+        duration: const Duration(milliseconds: 800),
+        curve: Curves.easeInOut,
+      );
+    } catch (e) {
+      debugPrint('[HomeScreen] Could not zoom to show full route: $e');
+    }
   }
 
   void _onNavigationButtonPressed() {
@@ -219,9 +323,12 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     debugPrint('[HomeScreen] Navigation button pressed - showRouteButton: ${appState.showRouteButton}, navigationMode: ${appState.navigationMode}');
     
     if (appState.showRouteButton) {
-      // Route button - show route overview
+      // Route button - show route overview and zoom to show route
       debugPrint('[HomeScreen] Showing route overview');
       appState.showRouteOverview();
+      
+      // Zoom out a bit to show the full route when viewing overview
+      _zoomToShowFullRoute(appState);
     } else {
       // Search button - enter search mode
       debugPrint('[HomeScreen] Entering search mode');
