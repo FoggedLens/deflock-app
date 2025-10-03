@@ -5,6 +5,13 @@
   "app": {
     "title": "DeFlock"
   },
+  "about": {
+    "title": "DeFlock - 监控透明化",
+    "description": "DeFlock 是一款注重隐私的移动应用，使用 OpenStreetMap 绘制公共监控基础设施。记录您社区中的摄像头、车牌识别系统、枪击探测器和其他监控设备，使这些基础设施可见且可搜索。",
+    "features": "• 具有可下载区域的离线映射功能\n• 使用 OAuth2 直接上传到 OpenStreetMap\n• 主要制造商的内置配置文件\n• 尊重隐私 - 不收集用户数据\n• 多个地图提供商（OSM、卫星图像）",
+    "initiative": "DeFlock 更广泛倡议的一部分，旨在促进监控透明化。",
+    "footer": "访问：deflock.me\n使用 Flutter 构建 • 开源"
+  },
   "actions": {
     "tagNode": "新建节点",
     "download": "下载",

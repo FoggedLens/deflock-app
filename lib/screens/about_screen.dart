@@ -14,36 +14,42 @@ class AboutScreen extends StatelessWidget {
         appBar: AppBar(
           title: Text(locService.t('settings.aboutThisApp')),
         ),
-        body: FutureBuilder<String>(
-          future: DefaultAssetBundle.of(context).loadString('assets/info.txt'),
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Center(
-                child: CircularProgressIndicator(),
-              );
-            }
-            
-            if (snapshot.hasError) {
-              return Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Text(
-                    'Error loading info: ${snapshot.error}',
-                    style: Theme.of(context).textTheme.bodyLarge,
-                    textAlign: TextAlign.center,
-                  ),
+        body: SingleChildScrollView(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                locService.t('about.title'),
+                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                  fontWeight: FontWeight.bold,
                 ),
-              );
-            }
-            
-            return SingleChildScrollView(
-              padding: const EdgeInsets.all(16),
-              child: Text(
-                snapshot.data ?? 'No info available.',
+              ),
+              const SizedBox(height: 16),
+              Text(
+                locService.t('about.description'),
                 style: Theme.of(context).textTheme.bodyLarge,
               ),
-            );
-          },
+              const SizedBox(height: 16),
+              Text(
+                locService.t('about.features'),
+                style: Theme.of(context).textTheme.bodyLarge,
+              ),
+              const SizedBox(height: 16),
+              Text(
+                locService.t('about.initiative'),
+                style: Theme.of(context).textTheme.bodyLarge,
+              ),
+              const SizedBox(height: 24),
+              Text(
+                locService.t('about.footer'),
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: Theme.of(context).textTheme.bodySmall?.color,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
         ),
       ),
     );
