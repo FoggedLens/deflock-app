@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 
 import '../models/pending_upload.dart';
 import '../dev_config.dart';
+import 'version_service.dart';
 import '../app_state.dart';
 
 class Uploader {
@@ -32,7 +33,7 @@ class Uploader {
       final csXml = '''
         <osm>
           <changeset>
-            <tag k="created_by" v="$kClientName $kClientVersion"/>
+            <tag k="created_by" v="$kClientName ${VersionService().version}"/>
             <tag k="comment" v="$action ${p.profile.name} surveillance node"/>
           </changeset>
         </osm>''';

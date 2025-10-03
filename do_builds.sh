@@ -23,7 +23,7 @@ for arg in "$@"; do
   esac
 done
 
-appver=$(grep "kClientVersion" lib/dev_config.dart | cut -d '=' -f 2 | tr -d ';' | tr -d "\'" | tr -d " ")
+appver=$(grep "version:" pubspec.yaml | head -1 | cut -d ':' -f 2 | tr -d ' ')
 echo
 echo "Building app version ${appver}..."
 echo

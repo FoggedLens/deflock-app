@@ -11,11 +11,15 @@ import 'screens/advanced_settings_screen.dart';
 import 'screens/language_settings_screen.dart';
 import 'screens/about_screen.dart';
 import 'services/localization_service.dart';
+import 'services/version_service.dart';
 
 
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  
+  // Initialize version service
+  await VersionService().init();
   
   // Initialize localization service
   await LocalizationService.instance.init();

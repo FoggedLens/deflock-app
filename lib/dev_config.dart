@@ -34,12 +34,12 @@ double bottomPositionFromButtonBar(double spacingAboveButtonBar, double safeArea
 // Add Camera icon vertical offset (no offset needed since circle is centered)
 const double kAddPinYOffset = 0.0;
 
-// Client name and version for OSM uploads ("created_by" tag)
+// Client name for OSM uploads ("created_by" tag)
 const String kClientName = 'DeFlock';
-const String kClientVersion = '1.0.2';
+// Note: Version is now dynamically retrieved from VersionService
 
 // Development/testing features - set to false for production builds
-const bool kEnableDevelopmentModes = false; // Set to false to hide sandbox/simulate modes and force production mode
+const bool kEnableDevelopmentModes = true; // Set to false to hide sandbox/simulate modes and force production mode
 
 // Navigation features - set to false to hide navigation UI elements while in development
 const bool kEnableNavigationFeatures = kEnableDevelopmentModes; // Hide navigation until fully implemented
