@@ -41,6 +41,9 @@ const String kClientVersion = '1.0.2';
 // Development/testing features - set to false for production builds
 const bool kEnableDevelopmentModes = false; // Set to false to hide sandbox/simulate modes and force production mode
 
+// Navigation features - set to false to hide navigation UI elements while in development
+const bool kEnableNavigationFeatures = kEnableDevelopmentModes; // Hide navigation until fully implemented
+
 // Marker/node interaction
 const int kCameraMinZoomLevel = 10; // Minimum zoom to show nodes (Overpass)
 const int kOsmApiMinZoomLevel = 13; // Minimum zoom for OSM API bbox queries (sandbox mode)

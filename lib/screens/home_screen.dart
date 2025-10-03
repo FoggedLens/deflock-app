@@ -433,13 +433,15 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       _editSheetShown = false;
     }
 
-    // Auto-open navigation sheet when needed - simplified logic
-    final shouldShowNavSheet = appState.isInSearchMode || appState.showingOverview;
-    if (shouldShowNavSheet && !_navigationSheetShown) {
-      _navigationSheetShown = true;
-      WidgetsBinding.instance.addPostFrameCallback((_) => _openNavigationSheet());
-    } else if (!shouldShowNavSheet) {
-      _navigationSheetShown = false;
+    // Auto-open navigation sheet when needed - simplified logic (only in dev mode)
+    if (kEnableNavigationFeatures) {
+      final shouldShowNavSheet = appState.isInSearchMode || appState.showingOverview;
+      if (shouldShowNavSheet && !_navigationSheetShown) {
+        _navigationSheetShown = true;
+        WidgetsBinding.instance.addPostFrameCallback((_) => _openNavigationSheet());
+      } else if (!shouldShowNavSheet) {
+        _navigationSheetShown = false;
+      }
     }
 
     // Pass the active sheet height directly to the map
@@ -498,15 +500,15 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               sheetHeight: activeSheetHeight,
               selectedNodeId: _selectedNodeId,
               onNodeTap: openNodeTagSheet,
-              onSearchPressed: _onNavigationButtonPressed,
+              onSearchPressed: kEnableNavigationFeatures ? _onNavigationButtonPressed : null,
               onUserGesture: () {
                 if (appState.followMeMode != FollowMeMode.off) {
                   appState.setFollowMeMode(FollowMeMode.off);
                 }
               },
             ),
-            // Search bar (slides in when in search mode)
-            if (appState.isInSearchMode) 
+            // Search bar (slides in when in search mode) - only in dev mode
+            if (kEnableNavigationFeatures && appState.isInSearchMode) 
               Positioned(
                 top: 0,
                 left: 0,

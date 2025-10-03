@@ -39,14 +39,17 @@ class SettingsScreen extends StatelessWidget {
             ),
             const Divider(),
             
-            _buildNavigationTile(
-              context,
-              icon: Icons.navigation,
-              title: locService.t('navigation.navigationSettings'),
-              subtitle: locService.t('navigation.navigationSettingsSubtitle'),
-              onTap: () => Navigator.pushNamed(context, '/settings/navigation'),
-            ),
-            const Divider(),
+            // Only show navigation settings in development builds
+            if (kEnableNavigationFeatures) ...[
+              _buildNavigationTile(
+                context,
+                icon: Icons.navigation,
+                title: locService.t('navigation.navigationSettings'),
+                subtitle: locService.t('navigation.navigationSettingsSubtitle'),
+                onTap: () => Navigator.pushNamed(context, '/settings/navigation'),
+              ),
+              const Divider(),
+            ],
             
             _buildNavigationTile(
               context,

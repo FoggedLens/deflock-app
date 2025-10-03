@@ -121,8 +121,8 @@ class MapOverlays extends StatelessWidget {
             builder: (context, appState, child) {
               return Column(
                 children: [
-                  // Navigation button - simplified logic
-                  if (onSearchPressed != null && (appState.showSearchButton || appState.showRouteButton))
+                  // Navigation button - simplified logic (only show in dev mode)
+                  if (kEnableNavigationFeatures && onSearchPressed != null && (appState.showSearchButton || appState.showRouteButton)) ...[
                     FloatingActionButton(
                       mini: true,
                       heroTag: "search_nav",
@@ -132,8 +132,8 @@ class MapOverlays extends StatelessWidget {
                           : LocalizationService.instance.t('navigation.searchLocation'),
                       child: Icon(appState.showRouteButton ? Icons.route : Icons.search),
                     ),
-                  if (onSearchPressed != null && (appState.showSearchButton || appState.showRouteButton)) 
                     const SizedBox(height: 8),
+                  ],
                   
                   // Layer selector button
                   const LayerSelectorButton(),
