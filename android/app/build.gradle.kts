@@ -62,6 +62,9 @@ android {
         release {
             if (keystorePropertiesFile.exists()) {
                 signingConfig = signingConfigs.getByName("release")
+            } else {
+                // Fall back to debug signing for development builds
+                signingConfig = signingConfigs.getByName("debug")
             }
         }
     }
