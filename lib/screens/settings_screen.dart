@@ -73,7 +73,7 @@ class SettingsScreen extends StatelessWidget {
             _buildNavigationTile(
               context,
               icon: Icons.language,
-              title: locService.t('settings.language'),
+              title: '🌎 ${locService.t('settings.language')}',
               subtitle: locService.t('settings.languageSubtitle'),
               onTap: () => Navigator.pushNamed(context, '/settings/language'),
             ),
