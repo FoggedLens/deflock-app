@@ -1,7 +1,7 @@
 name: deflockapp
 description: Map public surveillance infrastructure with OpenStreetMap
 publish_to: "none"
-version: 1.0.7
+version: 1.0.8
 
 environment:
   sdk: ">=3.5.0 <4.0.0"   # oauth2_client 4.x needs Dart 3.5+
@@ -39,20 +39,23 @@ flutter:
   uses-material-design: true
 
   assets:
-    - assets/info.txt
     - assets/app_icon.png
+    - assets/android_app_icon.png
     - assets/transparent_1x1.png
     - assets/deflock-logo.svg
     - lib/localizations/
 
-flutter_native_splash:
-  color: "#152131"
-  image: assets/app_icon.png
-  android: true
-  ios: true
-
-flutter_icons:
+flutter_launcher_icons:
   android: true
   ios: true
   image_path: "assets/app_icon.png"
   min_sdk_android: 21
+  adaptive_icon_background: "assets/android_app_icon.png"
+  adaptive_icon_foreground: "assets/transparent_1x1.png"
+
+flutter_native_splash:
+  color: "#152131"
+  image: assets/app_icon.png
+  android_12:
+  android: true
+  ios: true
