@@ -293,6 +293,13 @@
     "showIndicator": "Netzwerkstatus-Anzeige anzeigen",
     "showIndicatorSubtitle": "Netzwerk-Ladestatus und Fehlerstatus auf der Karte anzeigen"
   },
+  "about": {
+    "title": "DeFlock - Überwachungs-Transparenz",
+    "description": "DeFlock ist eine datenschutzorientierte mobile App zur Kartierung öffentlicher Überwachungsinfrastruktür mit OpenStreetMap. Dokumentieren Sie Kameras, ALPRs, Schussdetektoren und andere Überwachungsgeräte in Ihrer Gemeinde, um diese Infrastruktur sichtbar und durchsuchbar zu machen.",
+    "features": "• Offline-fähige Kartierung mit herunterladbaren Bereichen\n• Direkter Upload zu OpenStreetMap mit OAuth2\n• Integrierte Profile für große Hersteller\n• Datenschutzfreundlich - keine Nutzerdaten gesammelt\n• Multiple Kartenanbieter (OSM, Satellitenbilder)",
+    "initiative": "Teil der breiteren DeFlock-Initiative zur Förderung von Überwachungstransparenz.",
+    "footer": "Besuchen Sie: deflock.me\nGebaut mit Flutter • Open Source"
+  },
   "navigation": {
     "searchLocation": "Ort suchen",
     "searchPlaceholder": "Orte oder Koordinaten suchen...",

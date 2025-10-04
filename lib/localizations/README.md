@@ -18,6 +18,11 @@ Want to add support for your language? It's simple:
      "app": {
        "title": "DeFlock"  ← Keep this as-is
      },
+     "about": {
+       "title": "Your Translation Here",
+       "description": "Your Translation Here",
+       ...
+     },
      "actions": {
        "tagNode": "Your Translation Here",
        "download": "Your Translation Here",
@@ -26,9 +31,7 @@ Want to add support for your language? It's simple:
    }
    ```
 
-3. **Add your language to the About screen**: Edit `assets/info.txt` and add your language section at the bottom (copy the English section and translate it)
-
-4. **Submit a PR** with your JSON file and the updated about.txt. Done!
+3. **Submit a PR** with your JSON file. Done!
 
 The new language will automatically appear in Settings → Language.
 
@@ -45,12 +48,14 @@ The new language will automatically appear in Settings → Language.
 - `es.json` - Español 
 - `fr.json` - Français
 - `de.json` - Deutsch
+- `it.json` - Italiano
+- `pt.json` - Português
+- `zh.json` - 中文
 
 ## Files to Update
 
-For a complete translation, you'll need to touch:
-1. **`lib/localizations/xx.json`** - Main UI translations (buttons, menus, etc.)
-2. **`assets/info.txt`** - About screen content (add your language section)
+For a complete translation, you only need to update:
+1. **`lib/localizations/xx.json`** - All UI translations including about content
 
 ## That's It!
 

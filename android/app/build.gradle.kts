@@ -18,7 +18,7 @@ android {
     namespace = "me.deflock.deflockapp"
 
     // Matches current stable Flutter (compileSdk 34 as of July 2025)
-    compileSdk = 35
+    compileSdk = 36
 
     // NDK only needed if you build native plugins; keep your pinned version
     ndkVersion = "27.0.12077973"
@@ -40,7 +40,7 @@ android {
         // oauth2_client 4.x & flutter_web_auth_2 5.x require minSdk 23
         // ────────────────────────────────────────────────────────────
         minSdk = 23
-        targetSdk = 34
+        targetSdk = 36
 
         // Flutter tool injects these during `flutter build`
         versionCode = flutter.versionCode
