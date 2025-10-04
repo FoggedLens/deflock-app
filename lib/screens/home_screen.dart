@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_map_animations/flutter_map_animations.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:latlong2/latlong.dart';
 import 'package:provider/provider.dart';
 
 import '../app_state.dart';
@@ -15,6 +16,7 @@ import '../widgets/node_tag_sheet.dart';
 import '../widgets/camera_provider_with_cache.dart';
 import '../widgets/download_area_dialog.dart';
 import '../widgets/measured_sheet.dart';
+import '../widgets/navigation_sheet.dart';
 import '../widgets/search_bar.dart';
 import '../models/osm_node.dart';
 import '../models/search_result.dart';
@@ -31,11 +33,13 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   final GlobalKey<MapViewState> _mapViewKey = GlobalKey<MapViewState>();
   late final AnimatedMapController _mapController;
   bool _editSheetShown = false;
+  bool _navigationSheetShown = false;
   
   // Track sheet heights for map positioning
   double _addSheetHeight = 0.0;
   double _editSheetHeight = 0.0;
   double _tagSheetHeight = 0.0;
+  double _navigationSheetHeight = 0.0;
   
   // Flag to prevent map bounce when transitioning from tag sheet to edit sheet
   bool _transitioningToEdit = false;
@@ -162,7 +166,190 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     });
   }
 
+  void _openNavigationSheet() {
+    final controller = _scaffoldKey.currentState!.showBottomSheet(
+      (ctx) => MeasuredSheet(
+        onHeightChanged: (height) {
+          setState(() {
+            _navigationSheetHeight = height;
+          });
+        },
+        child: NavigationSheet(
+          onStartRoute: _onStartRoute,
+          onResumeRoute: _onResumeRoute,
+        ),
+      ),
+    );
+    
+    // Reset height when sheet is dismissed
+    controller.closed.then((_) {
+      setState(() {
+        _navigationSheetHeight = 0.0;
+      });
+      
+      // Handle different dismissal scenarios
+      final appState = context.read<AppState>();
+      
+      if (appState.isSettingSecondPoint) {
+        // If user dismisses sheet while setting second point, cancel everything
+        debugPrint('[HomeScreen] Sheet dismissed during second point selection - canceling navigation');
+        appState.cancelNavigation();
+      } else if (appState.isInRouteMode && appState.showingOverview) {
+        // If we're in route active mode and showing overview, just hide the overview
+        debugPrint('[HomeScreen] Sheet dismissed during route overview - hiding overview');
+        appState.hideRouteOverview();
+      }
+    });
+  }
+
+  void _onStartRoute() {
+    final appState = context.read<AppState>();
+    
+    // Get user location and check if we should auto-enable follow-me
+    LatLng? userLocation;
+    bool enableFollowMe = false;
+    
+    try {
+      userLocation = _mapViewKey.currentState?.getUserLocation();
+      if (userLocation != null && appState.shouldAutoEnableFollowMe(userLocation)) {
+        debugPrint('[HomeScreen] Auto-enabling follow-me mode - user within 1km of start');
+        appState.setFollowMeMode(FollowMeMode.northUp);
+        enableFollowMe = true;
+      }
+    } catch (e) {
+      debugPrint('[HomeScreen] Could not get user location for auto follow-me: $e');
+    }
+    
+    // Start the route
+    appState.startRoute();
+    
+    // Zoom to level 14 and center appropriately
+    _zoomAndCenterForRoute(enableFollowMe, userLocation, appState.routeStart);
+  }
+  
+  void _zoomAndCenterForRoute(bool followMeEnabled, LatLng? userLocation, LatLng? routeStart) {
+    try {
+      LatLng centerLocation;
+      
+      if (followMeEnabled && userLocation != null) {
+        // Center on user if follow-me is enabled
+        centerLocation = userLocation;
+        debugPrint('[HomeScreen] Centering on user location for route start');
+      } else if (routeStart != null) {
+        // Center on start pin if user is far away or no GPS
+        centerLocation = routeStart;
+        debugPrint('[HomeScreen] Centering on route start pin');
+      } else {
+        debugPrint('[HomeScreen] No valid location to center on');
+        return;
+      }
+      
+      // Animate to zoom 14 and center location
+      _mapController.animateTo(
+        dest: centerLocation,
+        zoom: 14.0,
+        duration: const Duration(milliseconds: 800),
+        curve: Curves.easeInOut,
+      );
+    } catch (e) {
+      debugPrint('[HomeScreen] Could not zoom/center for route: $e');
+    }
+  }
+  
+  void _onResumeRoute() {
+    final appState = context.read<AppState>();
+    
+    // Hide the overview
+    appState.hideRouteOverview();
+    
+    // Zoom and center for resumed route
+    // For resume, we always center on user if GPS is available, otherwise start pin
+    LatLng? userLocation;
+    try {
+      userLocation = _mapViewKey.currentState?.getUserLocation();
+    } catch (e) {
+      debugPrint('[HomeScreen] Could not get user location for route resume: $e');
+    }
+    
+    _zoomAndCenterForRoute(
+      appState.followMeMode != FollowMeMode.off, // Use current follow-me state
+      userLocation, 
+      appState.routeStart
+    );
+  }
+  
+  void _zoomToShowFullRoute(AppState appState) {
+    if (appState.routeStart == null || appState.routeEnd == null) return;
+    
+    try {
+      // Calculate the bounds of the route
+      final start = appState.routeStart!;
+      final end = appState.routeEnd!;
+      
+      // Find the center point between start and end
+      final centerLat = (start.latitude + end.latitude) / 2;
+      final centerLng = (start.longitude + end.longitude) / 2;
+      final center = LatLng(centerLat, centerLng);
+      
+      // Calculate distance between points to determine appropriate zoom
+      final distance = const Distance().as(LengthUnit.Meter, start, end);
+      double zoom;
+      if (distance < 500) {
+        zoom = 16.0;
+      } else if (distance < 2000) {
+        zoom = 14.0;
+      } else if (distance < 10000) {
+        zoom = 12.0;
+      } else {
+        zoom = 10.0;
+      }
+      
+      debugPrint('[HomeScreen] Zooming to show full route - distance: ${distance.toStringAsFixed(0)}m, zoom: $zoom');
+      
+      _mapController.animateTo(
+        dest: center,
+        zoom: zoom,
+        duration: const Duration(milliseconds: 800),
+        curve: Curves.easeInOut,
+      );
+    } catch (e) {
+      debugPrint('[HomeScreen] Could not zoom to show full route: $e');
+    }
+  }
+
+  void _onNavigationButtonPressed() {
+    final appState = context.read<AppState>();
+    
+    debugPrint('[HomeScreen] Navigation button pressed - showRouteButton: ${appState.showRouteButton}, navigationMode: ${appState.navigationMode}');
+    
+    if (appState.showRouteButton) {
+      // Route button - show route overview and zoom to show route
+      debugPrint('[HomeScreen] Showing route overview');
+      appState.showRouteOverview();
+      
+      // Zoom out a bit to show the full route when viewing overview
+      _zoomToShowFullRoute(appState);
+    } else {
+      // Search button - enter search mode
+      debugPrint('[HomeScreen] Entering search mode');
+      try {
+        final mapCenter = _mapController.mapController.camera.center;
+        debugPrint('[HomeScreen] Map center: $mapCenter');
+        appState.enterSearchMode(mapCenter);
+      } catch (e) {
+        // Controller not ready, use fallback location
+        debugPrint('[HomeScreen] Map controller not ready: $e, using fallback');
+        appState.enterSearchMode(LatLng(37.7749, -122.4194));
+      }
+    }
+  }
+
   void _onSearchResultSelected(SearchResult result) {
+    final appState = context.read<AppState>();
+    
+    // Update navigation state with selected result
+    appState.selectSearchResult(result);
+    
     // Jump to the search result location
     try {
       _mapController.animateTo(
@@ -246,12 +433,25 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       _editSheetShown = false;
     }
 
+    // Auto-open navigation sheet when needed - simplified logic (only in dev mode)
+    if (kEnableNavigationFeatures) {
+      final shouldShowNavSheet = appState.isInSearchMode || appState.showingOverview;
+      if (shouldShowNavSheet && !_navigationSheetShown) {
+        _navigationSheetShown = true;
+        WidgetsBinding.instance.addPostFrameCallback((_) => _openNavigationSheet());
+      } else if (!shouldShowNavSheet) {
+        _navigationSheetShown = false;
+      }
+    }
+
     // Pass the active sheet height directly to the map
     final activeSheetHeight = _addSheetHeight > 0 
         ? _addSheetHeight 
         : (_editSheetHeight > 0 
             ? _editSheetHeight 
-            : _tagSheetHeight);
+            : (_navigationSheetHeight > 0
+                ? _navigationSheetHeight
+                : _tagSheetHeight));
 
     return MultiProvider(
       providers: [
@@ -260,6 +460,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       child: Scaffold(
         key: _scaffoldKey,
         appBar: AppBar(
+          automaticallyImplyLeading: false, // Disable automatic back button
           title: SvgPicture.asset(
             'assets/deflock-logo.svg',
             height: 28,
@@ -290,94 +491,96 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             ),
           ],
         ),
-        body: Column(
+        body: Stack(
           children: [
-            // Search bar at the top
-            LocationSearchBar(
-              onResultSelected: _onSearchResultSelected,
+            MapView(
+              key: _mapViewKey,
+              controller: _mapController,
+              followMeMode: appState.followMeMode,
+              sheetHeight: activeSheetHeight,
+              selectedNodeId: _selectedNodeId,
+              onNodeTap: openNodeTagSheet,
+              onSearchPressed: kEnableNavigationFeatures ? _onNavigationButtonPressed : null,
+              onUserGesture: () {
+                if (appState.followMeMode != FollowMeMode.off) {
+                  appState.setFollowMeMode(FollowMeMode.off);
+                }
+              },
             ),
-            // Map takes the rest of the space
-            Expanded(
-              child: Stack(
-                children: [
-                  MapView(
-                    key: _mapViewKey,
-                    controller: _mapController,
-                    followMeMode: appState.followMeMode,
-                    sheetHeight: activeSheetHeight,
-                    selectedNodeId: _selectedNodeId,
-                    onNodeTap: openNodeTagSheet,
-                    onUserGesture: () {
-                      if (appState.followMeMode != FollowMeMode.off) {
-                        appState.setFollowMeMode(FollowMeMode.off);
-                      }
-                    },
-                  ),
-                  Align(
-                    alignment: Alignment.bottomCenter,
-                    child: Padding(
-                      padding: EdgeInsets.only(
-                        bottom: MediaQuery.of(context).padding.bottom + kBottomButtonBarOffset,
-                        left: 8,
-                        right: 8,
-                      ),
-                      child: ConstrainedBox(
-                        constraints: const BoxConstraints(maxWidth: 600), // Match typical sheet width
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: Theme.of(context).colorScheme.surface,
-                            borderRadius: BorderRadius.circular(16),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Theme.of(context).shadowColor.withOpacity(0.3),
-                                blurRadius: 10,
-                                offset: Offset(0, -2),
-                              )
-                            ],
+            // Search bar (slides in when in search mode) - only in dev mode
+            if (kEnableNavigationFeatures && appState.isInSearchMode) 
+              Positioned(
+                top: 0,
+                left: 0,
+                right: 0,
+                child: LocationSearchBar(
+                  onResultSelected: _onSearchResultSelected,
+                  onCancel: () => appState.cancelNavigation(),
+                ),
+              ),
+            // Bottom button bar (restored to original)
+            Align(
+              alignment: Alignment.bottomCenter,
+              child: Padding(
+                padding: EdgeInsets.only(
+                  bottom: MediaQuery.of(context).padding.bottom + kBottomButtonBarOffset,
+                  left: 8,
+                  right: 8,
+                ),
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 600), // Match typical sheet width
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.surface,
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Theme.of(context).shadowColor.withOpacity(0.3),
+                          blurRadius: 10,
+                          offset: Offset(0, -2),
+                        )
+                      ],
+                    ),
+                    margin: EdgeInsets.only(bottom: kBottomButtonBarOffset),
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    child: Row(
+                    children: [
+                      Expanded(
+                        child: AnimatedBuilder(
+                          animation: LocalizationService.instance,
+                          builder: (context, child) => ElevatedButton.icon(
+                            icon: Icon(Icons.add_location_alt),
+                            label: Text(LocalizationService.instance.tagNode),
+                            onPressed: _openAddNodeSheet,
+                            style: ElevatedButton.styleFrom(
+                              minimumSize: Size(0, 48),
+                              textStyle: TextStyle(fontSize: 16),
+                            ),
                           ),
-                          margin: EdgeInsets.only(bottom: kBottomButtonBarOffset),
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                          child: Row(
-                          children: [
-                            Expanded(
-                              child: AnimatedBuilder(
-                                animation: LocalizationService.instance,
-                                builder: (context, child) => ElevatedButton.icon(
-                                  icon: Icon(Icons.add_location_alt),
-                                  label: Text(LocalizationService.instance.tagNode),
-                                  onPressed: _openAddNodeSheet,
-                                  style: ElevatedButton.styleFrom(
-                                    minimumSize: Size(0, 48),
-                                    textStyle: TextStyle(fontSize: 16),
-                                  ),
-                                ),
-                              ),
-                            ),
-                            SizedBox(width: 12),
-                            Expanded(
-                              child: AnimatedBuilder(
-                                animation: LocalizationService.instance,
-                                builder: (context, child) => ElevatedButton.icon(
-                                  icon: Icon(Icons.download_for_offline),
-                                  label: Text(LocalizationService.instance.download),
-                                  onPressed: () => showDialog(
-                                    context: context,
-                                    builder: (ctx) => DownloadAreaDialog(controller: _mapController.mapController),
-                                  ),
-                                  style: ElevatedButton.styleFrom(
-                                    minimumSize: Size(0, 48),
-                                    textStyle: TextStyle(fontSize: 16),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
                         ),
                       ),
+                      SizedBox(width: 12),
+                      Expanded(
+                        child: AnimatedBuilder(
+                          animation: LocalizationService.instance,
+                          builder: (context, child) => ElevatedButton.icon(
+                            icon: Icon(Icons.download_for_offline),
+                            label: Text(LocalizationService.instance.download),
+                            onPressed: () => showDialog(
+                              context: context,
+                              builder: (ctx) => DownloadAreaDialog(controller: _mapController.mapController),
+                            ),
+                            style: ElevatedButton.styleFrom(
+                              minimumSize: Size(0, 48),
+                              textStyle: TextStyle(fontSize: 16),
+                            ),
+                          ),
+                        ),
                       ),
-                    ),
+                    ],
                   ),
-                ],
+                ),
+                ),
               ),
             ),
           ],

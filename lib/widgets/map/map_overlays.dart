@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:provider/provider.dart';
 
 import '../../app_state.dart';
 import '../../dev_config.dart';
+import '../../services/localization_service.dart';
 import '../camera_icon.dart';
 import 'layer_selector_button.dart';
 
@@ -13,6 +15,7 @@ class MapOverlays extends StatelessWidget {
   final AddNodeSession? session;
   final EditNodeSession? editSession;
   final String? attribution; // Attribution for current tile provider
+  final VoidCallback? onSearchPressed; // Callback for search button
 
   const MapOverlays({
     super.key,
@@ -21,6 +24,7 @@ class MapOverlays extends StatelessWidget {
     this.session,
     this.editSession,
     this.attribution,
+    this.onSearchPressed,
   });
 
   @override
@@ -113,45 +117,61 @@ class MapOverlays extends StatelessWidget {
         Positioned(
           bottom: bottomPositionFromButtonBar(kZoomControlsSpacingAboveButtonBar, MediaQuery.of(context).padding.bottom),
           right: 16,
-          child: Column(
-            children: [
-              // Layer selector button
-              const LayerSelectorButton(),
-              const SizedBox(height: 8),
-              // Zoom in button
-              FloatingActionButton(
-                mini: true,
-                heroTag: "zoom_in",
-                onPressed: () {
-                  try {
-                    final zoom = mapController.camera.zoom;
-                    mapController.move(mapController.camera.center, zoom + 1);
-                  } catch (_) {
-                    // Map controller not ready yet
-                  }
-                },
-                child: const Icon(Icons.add),
-              ),
-              const SizedBox(height: 8),
-              // Zoom out button  
-              FloatingActionButton(
-                mini: true,
-                heroTag: "zoom_out",
-                onPressed: () {
-                  try {
-                    final zoom = mapController.camera.zoom;
-                    mapController.move(mapController.camera.center, zoom - 1);
-                  } catch (_) {
-                    // Map controller not ready yet
-                  }
-                },
-                child: const Icon(Icons.remove),
-              ),
-            ],
+          child: Consumer<AppState>(
+            builder: (context, appState, child) {
+              return Column(
+                children: [
+                  // Navigation button - simplified logic (only show in dev mode)
+                  if (kEnableNavigationFeatures && onSearchPressed != null && (appState.showSearchButton || appState.showRouteButton)) ...[
+                    FloatingActionButton(
+                      mini: true,
+                      heroTag: "search_nav",
+                      onPressed: onSearchPressed,
+                      tooltip: appState.showRouteButton 
+                          ? LocalizationService.instance.t('navigation.routeOverview')
+                          : LocalizationService.instance.t('navigation.searchLocation'),
+                      child: Icon(appState.showRouteButton ? Icons.route : Icons.search),
+                    ),
+                    const SizedBox(height: 8),
+                  ],
+                  
+                  // Layer selector button
+                  const LayerSelectorButton(),
+                  const SizedBox(height: 8),
+                  // Zoom in button
+                  FloatingActionButton(
+                    mini: true,
+                    heroTag: "zoom_in",
+                    onPressed: () {
+                      try {
+                        final zoom = mapController.camera.zoom;
+                        mapController.move(mapController.camera.center, zoom + 1);
+                      } catch (_) {
+                        // Map controller not ready yet
+                      }
+                    },
+                    child: const Icon(Icons.add),
+                  ),
+                  const SizedBox(height: 8),
+                  // Zoom out button  
+                  FloatingActionButton(
+                    mini: true,
+                    heroTag: "zoom_out",
+                    onPressed: () {
+                      try {
+                        final zoom = mapController.camera.zoom;
+                        mapController.move(mapController.camera.center, zoom - 1);
+                      } catch (_) {
+                        // Map controller not ready yet
+                      }
+                    },
+                    child: const Icon(Icons.remove),
+                  ),
+                ],
+              );
+            },
           ),
         ),
-
-
       ],
     );
   }

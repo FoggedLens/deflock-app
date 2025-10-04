@@ -3,6 +3,7 @@ import 'settings/sections/auth_section.dart';
 import 'settings/sections/upload_mode_section.dart';
 import 'settings/sections/queue_section.dart';
 import '../services/localization_service.dart';
+import '../services/version_service.dart';
 import '../dev_config.dart';
 
 class SettingsScreen extends StatelessWidget {
@@ -38,6 +39,18 @@ class SettingsScreen extends StatelessWidget {
               onTap: () => Navigator.pushNamed(context, '/settings/profiles'),
             ),
             const Divider(),
+            
+            // Only show navigation settings in development builds
+            if (kEnableNavigationFeatures) ...[
+              _buildNavigationTile(
+                context,
+                icon: Icons.navigation,
+                title: locService.t('navigation.navigationSettings'),
+                subtitle: locService.t('navigation.navigationSettingsSubtitle'),
+                onTap: () => Navigator.pushNamed(context, '/settings/navigation'),
+              ),
+              const Divider(),
+            ],
             
             _buildNavigationTile(
               context,
@@ -79,7 +92,7 @@ class SettingsScreen extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               child: Text(
-                'Version: $kClientVersion',
+                'Version: ${VersionService().version}',
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
                   color: Theme.of(context).textTheme.bodySmall?.color?.withOpacity(0.6),
                 ),

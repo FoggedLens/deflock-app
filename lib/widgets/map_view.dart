@@ -21,6 +21,7 @@ import 'map/tile_layer_manager.dart';
 import 'map/camera_refresh_controller.dart';
 import 'map/gps_controller.dart';
 import 'network_status_indicator.dart';
+import 'provisional_pin.dart';
 import 'proximity_alert_banner.dart';
 import '../dev_config.dart';
 import '../app_state.dart' show FollowMeMode;
@@ -37,6 +38,7 @@ class MapView extends StatefulWidget {
     this.sheetHeight = 0.0,
     this.selectedNodeId,
     this.onNodeTap,
+    this.onSearchPressed,
   });
 
   final FollowMeMode followMeMode;
@@ -44,6 +46,7 @@ class MapView extends StatefulWidget {
   final double sheetHeight;
   final int? selectedNodeId;
   final void Function(OsmNode)? onNodeTap;
+  final VoidCallback? onSearchPressed;
 
   @override
   State<MapView> createState() => MapViewState();
@@ -199,6 +202,11 @@ class MapViewState extends State<MapView> {
   /// Public method to retry location initialization (e.g., after permission granted)
   void retryLocationInit() {
     _gpsController.retryLocationInit();
+  }
+  
+  /// Get current user location
+  LatLng? getUserLocation() {
+    return _gpsController.currentLocation;
   }
 
   /// Expose static methods from MapPositionManager for external access
@@ -374,10 +382,60 @@ class MapViewState extends State<MapView> {
           }
         }
 
+        // Build provisional pin for navigation/search mode
+        if (appState.showProvisionalPin && appState.provisionalPinLocation != null) {
+          centerMarkers.add(
+            Marker(
+              point: appState.provisionalPinLocation!,
+              width: 32.0,
+              height: 32.0,
+              child: const ProvisionalPin(),
+            ),
+          );
+        }
+
+        // Build start/end pins for route visualization
+        if (appState.showingOverview || appState.isInRouteMode || appState.isSettingSecondPoint) {
+          if (appState.routeStart != null) {
+            centerMarkers.add(
+              Marker(
+                point: appState.routeStart!,
+                width: 32.0,
+                height: 32.0,
+                child: const LocationPin(type: PinType.start),
+              ),
+            );
+          }
+          if (appState.routeEnd != null) {
+            centerMarkers.add(
+              Marker(
+                point: appState.routeEnd!,
+                width: 32.0,
+                height: 32.0,
+                child: const LocationPin(type: PinType.end),
+              ),
+            );
+          }
+        }
+
+        // Build route path visualization
+        final routeLines = <Polyline>[];
+        if (appState.routePath != null && appState.routePath!.length > 1) {
+          // Show route line during overview or active route
+          if (appState.showingOverview || appState.isInRouteMode) {
+            routeLines.add(Polyline(
+              points: appState.routePath!,
+              color: Colors.blue,
+              strokeWidth: 4.0,
+            ));
+          }
+        }
+
         return Stack(
           children: [
             PolygonLayer(polygons: overlays),
             if (editLines.isNotEmpty) PolylineLayer(polylines: editLines),
+            if (routeLines.isNotEmpty) PolylineLayer(polylines: routeLines),
             MarkerLayer(markers: [...markers, ...centerMarkers]),
           ],
         );
@@ -404,6 +462,11 @@ class MapViewState extends State<MapView> {
               }
               if (editSession != null) {
                 appState.updateEditSession(target: pos.center);
+              }
+              
+              // Update provisional pin location during navigation search/routing
+              if (appState.showProvisionalPin) {
+                appState.updateProvisionalPinLocation(pos.center);
               }
               
               // Start dual-source waiting when map moves (user is expecting new tiles AND nodes)
@@ -468,6 +531,7 @@ class MapViewState extends State<MapView> {
           session: session,
           editSession: editSession,
           attribution: appState.selectedTileType?.attribution,
+          onSearchPressed: widget.onSearchPressed,
         ),
 
         // Network status indicator (top-left) - conditionally shown
