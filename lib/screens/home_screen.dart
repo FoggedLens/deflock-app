@@ -522,15 +522,15 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               sheetHeight: activeSheetHeight,
               selectedNodeId: _selectedNodeId,
               onNodeTap: openNodeTagSheet,
-              onSearchPressed: kEnableNavigationFeatures ? _onNavigationButtonPressed : null,
+              onSearchPressed: (enableSearchFeatures(offlineMode: appState.offlineMode) || enableNavigationFeatures(offlineMode: appState.offlineMode)) ? _onNavigationButtonPressed : null,
               onUserGesture: () {
                 if (appState.followMeMode != FollowMeMode.off) {
                   appState.setFollowMeMode(FollowMeMode.off);
                 }
               },
             ),
-            // Search bar (slides in when in search mode) - only in dev mode
-            if (kEnableNavigationFeatures && appState.isInSearchMode) 
+            // Search bar (slides in when in search mode) - available based on feature flags
+            if (enableSearchFeatures(offlineMode: appState.offlineMode) && appState.isInSearchMode) 
               Positioned(
                 top: 0,
                 left: 0,

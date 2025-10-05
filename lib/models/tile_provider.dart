@@ -186,7 +186,7 @@ class DefaultTileProviders {
           TileType(
             id: 'opentopomap_topo',
             name: 'Topographic',
-            urlTemplate: 'https://tile.memomaps.de/tilegen/{z}/{y}/{x}.png',
+            urlTemplate: 'https://tile.memomaps.de/tilegen/{z}/{x}/{y}.png',
             attribution: 'Kartendaten: © OpenStreetMap-Mitwirkende, SRTM | Kartendarstellung: © OpenTopoMap (CC-BY-SA)',
             maxZoom: 18,
           ),

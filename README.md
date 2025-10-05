@@ -79,8 +79,6 @@ cp lib/keys.dart.example lib/keys.dart
 ## Roadmap
 
 ### Needed Bugfixes
-- No seach or navigation while offline (the thing we do now)
-- Let user search in release builds, just not navigate
 - Swap in tsbichof avoidance routing API
 
 ### Current Development
