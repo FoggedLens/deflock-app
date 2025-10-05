@@ -525,16 +525,13 @@ class MapViewState extends State<MapView> {
         ),
 
         // All map overlays (mode indicator, zoom, attribution, add pin)
-        MediaQuery(
-          data: MediaQuery.of(context).copyWith(viewInsets: EdgeInsets.zero),
-          child: MapOverlays(
-            mapController: _controller.mapController,
-            uploadMode: appState.uploadMode,
-            session: session,
-            editSession: editSession,
-            attribution: appState.selectedTileType?.attribution,
-            onSearchPressed: widget.onSearchPressed,
-          ),
+        MapOverlays(
+          mapController: _controller.mapController,
+          uploadMode: appState.uploadMode,
+          session: session,
+          editSession: editSession,
+          attribution: appState.selectedTileType?.attribution,
+          onSearchPressed: widget.onSearchPressed,
         ),
 
         // Network status indicator (top-left) - conditionally shown

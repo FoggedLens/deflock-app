@@ -477,7 +477,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       providers: [
         ChangeNotifierProvider<CameraProviderWithCache>(create: (_) => CameraProviderWithCache()),
       ],
-      child: Scaffold(
+      child: MediaQuery(
+        data: MediaQuery.of(context).copyWith(viewInsets: EdgeInsets.zero),
+        child: Scaffold(
         key: _scaffoldKey,
         appBar: AppBar(
           automaticallyImplyLeading: false, // Disable automatic back button
@@ -605,6 +607,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             ),
           ],
         ),
+      ),
       ),
     );
   }
