@@ -102,13 +102,18 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     final session = appState.session!;          // guaranteed non‑null now
 
     final controller = _scaffoldKey.currentState!.showBottomSheet(
-      (ctx) => MeasuredSheet(
-        onHeightChanged: (height) {
-          setState(() {
-            _addSheetHeight = height;
-          });
-        },
-        child: AddNodeSheet(session: session),
+      (ctx) => Padding(
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(context).padding.bottom, // Only safe area, no keyboard
+        ),
+        child: MeasuredSheet(
+          onHeightChanged: (height) {
+            setState(() {
+              _addSheetHeight = height + MediaQuery.of(context).padding.bottom;
+            });
+          },
+          child: AddNodeSheet(session: session),
+        ),
       ),
     );
     
@@ -140,19 +145,24 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       if (!mounted) return;
       
       final controller = _scaffoldKey.currentState!.showBottomSheet(
-        (ctx) => MeasuredSheet(
-          onHeightChanged: (height) {
-            setState(() {
-              _editSheetHeight = height;
-              // Clear transition flag and reset tag sheet height once edit sheet starts sizing
-              if (height > 0 && _transitioningToEdit) {
-                _transitioningToEdit = false;
-                _tagSheetHeight = 0.0; // Now safe to reset
-                _selectedNodeId = null; // Clear selection when moving to edit
-              }
-            });
-          },
-          child: EditNodeSheet(session: session),
+        (ctx) => Padding(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).padding.bottom, // Only safe area, no keyboard
+          ),
+          child: MeasuredSheet(
+            onHeightChanged: (height) {
+              setState(() {
+                _editSheetHeight = height + MediaQuery.of(context).padding.bottom;
+                // Clear transition flag and reset tag sheet height once edit sheet starts sizing
+                if (height > 0 && _transitioningToEdit) {
+                  _transitioningToEdit = false;
+                  _tagSheetHeight = 0.0; // Now safe to reset
+                  _selectedNodeId = null; // Clear selection when moving to edit
+                }
+              });
+            },
+            child: EditNodeSheet(session: session),
+          ),
         ),
       );
       
@@ -168,15 +178,20 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
   void _openNavigationSheet() {
     final controller = _scaffoldKey.currentState!.showBottomSheet(
-      (ctx) => MeasuredSheet(
-        onHeightChanged: (height) {
-          setState(() {
-            _navigationSheetHeight = height;
-          });
-        },
-        child: NavigationSheet(
-          onStartRoute: _onStartRoute,
-          onResumeRoute: _onResumeRoute,
+      (ctx) => Padding(
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(context).padding.bottom, // Only safe area, no keyboard
+        ),
+        child: MeasuredSheet(
+          onHeightChanged: (height) {
+            setState(() {
+              _navigationSheetHeight = height + MediaQuery.of(context).padding.bottom;
+            });
+          },
+          child: NavigationSheet(
+            onStartRoute: _onStartRoute,
+            onResumeRoute: _onResumeRoute,
+          ),
         ),
       ),
     );
@@ -392,19 +407,24 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     }
     
     final controller = _scaffoldKey.currentState!.showBottomSheet(
-      (ctx) => MeasuredSheet(
-        onHeightChanged: (height) {
-          setState(() {
-            _tagSheetHeight = height;
-          });
-        },
-        child: NodeTagSheet(
-          node: node,
-          onEditPressed: () {
-            final appState = context.read<AppState>();
-            appState.startEditSession(node);
-            // This will trigger _openEditNodeSheet via the existing auto-show logic
+      (ctx) => Padding(
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(context).padding.bottom, // Only safe area, no keyboard
+        ),
+        child: MeasuredSheet(
+          onHeightChanged: (height) {
+            setState(() {
+              _tagSheetHeight = height + MediaQuery.of(context).padding.bottom;
+            });
           },
+          child: NodeTagSheet(
+            node: node,
+            onEditPressed: () {
+              final appState = context.read<AppState>();
+              appState.startEditSession(node);
+              // This will trigger _openEditNodeSheet via the existing auto-show logic
+            },
+          ),
         ),
       ),
     );
