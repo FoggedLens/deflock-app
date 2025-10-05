@@ -155,30 +155,6 @@ class DefaultTileProviders {
         ],
       ),
       TileProvider(
-        id: 'google',
-        name: 'Google',
-        tileTypes: [
-          TileType(
-            id: 'google_hybrid',
-            name: 'Satellite + Roads',
-            urlTemplate: 'https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}',
-            attribution: '© Google',
-          ),
-          TileType(
-            id: 'google_satellite',
-            name: 'Satellite Only',
-            urlTemplate: 'https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}',
-            attribution: '© Google',
-          ),
-          TileType(
-            id: 'google_roadmap',
-            name: 'Road Map',
-            urlTemplate: 'https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}',
-            attribution: '© Google',
-          ),
-        ],
-      ),
-      TileProvider(
         id: 'esri',
         name: 'Esri',
         tileTypes: [
