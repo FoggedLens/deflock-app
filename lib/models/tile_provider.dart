@@ -155,18 +155,6 @@ class DefaultTileProviders {
         ],
       ),
       TileProvider(
-        id: 'esri',
-        name: 'Esri',
-        tileTypes: [
-          TileType(
-            id: 'esri_satellite',
-            name: 'Satellite Imagery',
-            urlTemplate: 'https://services.arcgisonline.com/ArcGis/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}.png',
-            attribution: '© Esri © Maxar',
-          ),
-        ],
-      ),
-      TileProvider(
         id: 'mapbox',
         name: 'Mapbox',
         tileTypes: [
