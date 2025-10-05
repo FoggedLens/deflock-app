@@ -79,9 +79,10 @@ cp lib/keys.dart.example lib/keys.dart
 ## Roadmap
 
 ### Needed Bugfixes
-- Swap in tsbichof avoidance routing API
+- Are offline areas really working? Are they preferred for fast loading even when online? Check working.
 
 ### Current Development
+- Swap in alprwatch.org/directions avoidance routing API
 - Help button with links to email, discord, and website
 - Move download button?
 - Clean cache when nodes have disappeared / been deleted by others / queue item was deleted
@@ -92,7 +93,7 @@ cp lib/keys.dart.example lib/keys.dart
 ### Future Features & Wishlist
 - Update offline area nodes while browsing?
 - Suspected locations toggle (alprwatch.com/flock/utilities)
-- Route planning that avoids surveillance devices (alprwatch.com/directions)
+- Offline navigation 
 
 ### Maybes
 - Yellow ring for devices missing specific tag details?
