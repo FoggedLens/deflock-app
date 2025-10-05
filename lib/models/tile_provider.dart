@@ -180,33 +180,6 @@ class DefaultTileProviders {
         ],
       ),
       TileProvider(
-        id: 'usgs',
-        name: 'USGS',
-        tileTypes: [
-          TileType(
-            id: 'usgs_imagery_only',
-            name: 'Imagery Only',
-            urlTemplate: 'https://basemap.nationalmap.gov/arcgis/rest/services/USGSImageryOnly/MapServer/tile/{z}/{y}/{x}',
-            attribution: 'USGS The National Map',
-            maxZoom: 23,
-          ),
-          TileType(
-            id: 'usgs_imagery_topo',
-            name: 'Imagery Topo',
-            urlTemplate: 'https://basemap.nationalmap.gov/arcgis/rest/services/USGSImageryTopo/MapServer/tile/{z}/{y}/{x}',
-            attribution: 'USGS The National Map',
-            maxZoom: 23,
-          ),
-          TileType(
-            id: 'usgs_topo',
-            name: 'USGS Topo',
-            urlTemplate: 'https://basemap.nationalmap.gov/arcgis/rest/services/USGSTopo/MapServer/tile/{z}/{y}/{x}',
-            attribution: 'USGS The National Map',
-            maxZoom: 23,
-          ),
-        ],
-      ),
-      TileProvider(
         id: 'opentopomap_memomaps',
         name: 'OpenTopoMap/Memomaps',
         tileTypes: [
