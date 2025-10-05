@@ -256,6 +256,7 @@ class _TileTypeDialogState extends State<_TileTypeDialog> {
   late final TextEditingController _nameController;
   late final TextEditingController _urlController;
   late final TextEditingController _attributionController;
+  late final TextEditingController _maxZoomController;
   Uint8List? _previewTile;
   bool _isLoadingPreview = false;
 
@@ -266,6 +267,7 @@ class _TileTypeDialogState extends State<_TileTypeDialog> {
     _nameController = TextEditingController(text: tileType?.name ?? '');
     _urlController = TextEditingController(text: tileType?.urlTemplate ?? '');
     _attributionController = TextEditingController(text: tileType?.attribution ?? '');
+    _maxZoomController = TextEditingController(text: (tileType?.maxZoom ?? 18).toString());
     _previewTile = tileType?.previewTile;
   }
 
@@ -274,6 +276,7 @@ class _TileTypeDialogState extends State<_TileTypeDialog> {
     _nameController.dispose();
     _urlController.dispose();
     _attributionController.dispose();
+    _maxZoomController.dispose();
     super.dispose();
   }
 
@@ -324,6 +327,22 @@ class _TileTypeDialogState extends State<_TileTypeDialog> {
                       hintText: locService.t('tileTypeEditor.attributionHint'),
                     ),
                     validator: (value) => value?.trim().isEmpty == true ? locService.t('tileTypeEditor.attributionRequired') : null,
+                  ),
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    controller: _maxZoomController,
+                    decoration: InputDecoration(
+                      labelText: locService.t('tileTypeEditor.maxZoom'),
+                      hintText: locService.t('tileTypeEditor.maxZoomHint'),
+                    ),
+                    keyboardType: TextInputType.number,
+                    validator: (value) {
+                      if (value?.trim().isEmpty == true) return locService.t('tileTypeEditor.maxZoomRequired');
+                      final zoom = int.tryParse(value!);
+                      if (zoom == null) return locService.t('tileTypeEditor.maxZoomInvalid');
+                      if (zoom < 1 || zoom > kAbsoluteMaxZoom) return locService.t('tileTypeEditor.maxZoomRange', params: ['1', kAbsoluteMaxZoom.toString()]);
+                      return null;
+                    },
                   ),
                   const SizedBox(height: 16),
                   Row(
@@ -425,6 +444,7 @@ class _TileTypeDialogState extends State<_TileTypeDialog> {
       urlTemplate: _urlController.text.trim(),
       attribution: _attributionController.text.trim(),
       previewTile: _previewTile,
+      maxZoom: int.parse(_maxZoomController.text.trim()),
     );
 
     widget.onSave(tileType);

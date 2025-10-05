@@ -452,7 +452,7 @@ class MapViewState extends State<MapView> {
             options: MapOptions(
               initialCenter: _gpsController.currentLocation ?? _positionManager.initialLocation ?? LatLng(37.7749, -122.4194),
             initialZoom: _positionManager.initialZoom ?? 15,
-            maxZoom: 19,
+            maxZoom: (appState.selectedTileType?.maxZoom ?? 18).toDouble(),
             onPositionChanged: (pos, gesture) {
               setState(() {}); // Instant UI update for zoom, etc.
               if (gesture) widget.onUserGesture();

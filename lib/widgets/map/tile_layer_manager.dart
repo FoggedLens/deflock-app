@@ -78,6 +78,7 @@ class TileLayerManager {
     return TileLayer(
       urlTemplate: urlTemplate,
       userAgentPackageName: 'me.deflock.deflockapp',
+      maxZoom: selectedTileType?.maxZoom?.toDouble() ?? 18.0,
       tileProvider: NetworkTileProvider(
         httpClient: _tileHttpClient,
         // Enable flutter_map caching - cache busting handled by URL changes and FlutterMap key

@@ -8,6 +8,7 @@ class TileType {
   final String urlTemplate;
   final String attribution;
   final Uint8List? previewTile; // Single tile image data for preview
+  final int maxZoom; // Maximum zoom level for this tile type
 
   const TileType({
     required this.id,
@@ -15,6 +16,7 @@ class TileType {
     required this.urlTemplate,
     required this.attribution,
     this.previewTile,
+    this.maxZoom = 18, // Default max zoom level
   });
 
   /// Create URL for a specific tile, replacing template variables
@@ -40,6 +42,7 @@ class TileType {
     'urlTemplate': urlTemplate,
     'attribution': attribution,
     'previewTile': previewTile != null ? base64Encode(previewTile!) : null,
+    'maxZoom': maxZoom,
   };
 
   static TileType fromJson(Map<String, dynamic> json) => TileType(
@@ -50,6 +53,7 @@ class TileType {
     previewTile: json['previewTile'] != null 
         ? base64Decode(json['previewTile'])
         : null,
+    maxZoom: json['maxZoom'] ?? 18, // Default to 18 if not specified
   );
 
   TileType copyWith({
@@ -58,12 +62,14 @@ class TileType {
     String? urlTemplate,
     String? attribution,
     Uint8List? previewTile,
+    int? maxZoom,
   }) => TileType(
     id: id ?? this.id,
     name: name ?? this.name,
     urlTemplate: urlTemplate ?? this.urlTemplate,
     attribution: attribution ?? this.attribution,
     previewTile: previewTile ?? this.previewTile,
+    maxZoom: maxZoom ?? this.maxZoom,
   );
 
   @override
@@ -151,6 +157,7 @@ class DefaultTileProviders {
             name: 'Street Map',
             urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
             attribution: '© OpenStreetMap contributors',
+            maxZoom: 19,
           ),
         ],
       ),
