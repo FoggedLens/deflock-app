@@ -191,6 +191,11 @@
     "attribution": "归属",
     "attributionHint": "© 地图提供商",
     "attributionRequired": "归属为必填项",
+    "maxZoom": "最大缩放级别",
+    "maxZoomHint": "最大缩放级别 (1-23)",
+    "maxZoomRequired": "最大缩放为必填项",
+    "maxZoomInvalid": "最大缩放必须为数字",
+    "maxZoomRange": "最大缩放必须在 {} 和 {} 之间",
     "fetchPreview": "获取预览",
     "previewTileLoaded": "预览瓦片加载成功",
     "previewTileFailed": "获取预览失败：{}",
@@ -208,7 +213,8 @@
   },
   "mapTiles": {
     "title": "地图瓦片",
-    "manageProviders": "管理提供商"
+    "manageProviders": "管理提供商",
+    "attribution": "地图归属"
   },
   "profileEditor": {
     "viewProfile": "查看配置文件",

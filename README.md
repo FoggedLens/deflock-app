@@ -13,7 +13,7 @@ A comprehensive Flutter app for mapping public surveillance infrastructure with 
 - **Map surveillance infrastructure** including cameras, ALPRs, gunshot detectors, and more with precise location, direction, and manufacturer details
 - **Upload to OpenStreetMap** with OAuth2 integration (live or sandbox modes)
 - **Work completely offline** with downloadable map areas and device data, plus upload queue
-- **Multiple map types** including satellite imagery from Esri, Mapbox, and OpenStreetMap, plus custom map tile provider support
+- **Multiple map types** including satellite imagery from USGS, Esri, Mapbox, and topographic maps from OpenTopoMap, plus custom map tile provider support
 - **Editing Ability** to update existing device locations and properties
 - **Built-in device profiles** for Flock Safety, Motorola, Genetec, Leonardo, and other major manufacturers, plus custom profiles for more specific tag sets
 
@@ -22,7 +22,7 @@ A comprehensive Flutter app for mapping public surveillance infrastructure with 
 ## Key Features
 
 ### Map & Navigation
-- **Multi-source tiles**: Switch between OpenStreetMap, Esri imagery, Mapbox, and any custom providers
+- **Multi-source tiles**: Switch between OpenStreetMap, USGS imagery, Esri imagery, Mapbox, OpenTopoMap, and any custom providers
 - **Offline-first design**: Download a region for complete offline operation
 - **Smooth UX**: Intuitive controls, follow-me mode with GPS rotation, and gesture-friendly interactions
 - **Device visualization**: Color-coded markers showing real devices (blue), pending uploads (purple), pending edits (grey), devices being edited (orange), and pending deletions (red)
@@ -79,7 +79,6 @@ cp lib/keys.dart.example lib/keys.dart
 ## Roadmap
 
 ### Needed Bugfixes
-- Map providers
 - No seach or navigation while offline (the thing we do now)
 - Let user search in release builds, just not navigate
 - Swap in tsbichof avoidance routing API

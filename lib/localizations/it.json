@@ -191,6 +191,11 @@
     "attribution": "Attribuzione",
     "attributionHint": "© Fornitore Mappe",
     "attributionRequired": "L'attribuzione è obbligatoria",
+    "maxZoom": "Livello Zoom Massimo",
+    "maxZoomHint": "Livello di zoom massimo (1-23)",
+    "maxZoomRequired": "Il zoom massimo è obbligatorio",
+    "maxZoomInvalid": "Il zoom massimo deve essere un numero",
+    "maxZoomRange": "Il zoom massimo deve essere tra {} e {}",
     "fetchPreview": "Ottieni Anteprima",
     "previewTileLoaded": "Tile di anteprima caricato con successo",
     "previewTileFailed": "Impossibile ottenere l'anteprima: {}",
@@ -208,7 +213,8 @@
   },
   "mapTiles": {
     "title": "Tile Mappa",
-    "manageProviders": "Gestisci Fornitori"
+    "manageProviders": "Gestisci Fornitori",
+    "attribution": "Attribuzione Mappa"
   },
   "profileEditor": {
     "viewProfile": "Visualizza Profilo",

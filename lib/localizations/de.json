@@ -184,6 +184,11 @@
     "attribution": "Zuschreibung",
     "attributionHint": "© Karten-Anbieter",
     "attributionRequired": "Zuschreibung ist erforderlich",
+    "maxZoom": "Max Zoom-Stufe",
+    "maxZoomHint": "Maximale Zoom-Stufe (1-23)",
+    "maxZoomRequired": "Max Zoom ist erforderlich",
+    "maxZoomInvalid": "Max Zoom muss eine Zahl sein",
+    "maxZoomRange": "Max Zoom muss zwischen {} und {} liegen",
     "fetchPreview": "Vorschau Laden",
     "previewTileLoaded": "Vorschau-Kachel erfolgreich geladen",
     "previewTileFailed": "Vorschau laden fehlgeschlagen: {}",
@@ -201,7 +206,8 @@
   },
   "mapTiles": {
     "title": "Karten-Kacheln",
-    "manageProviders": "Anbieter Verwalten"
+    "manageProviders": "Anbieter Verwalten",
+    "attribution": "Karten-Zuschreibung"
   },
   "profileEditor": {
     "viewProfile": "Profil Anzeigen",

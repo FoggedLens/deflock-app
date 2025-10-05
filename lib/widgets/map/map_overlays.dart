@@ -27,6 +27,27 @@ class MapOverlays extends StatelessWidget {
     this.onSearchPressed,
   });
 
+  /// Show full attribution text in a dialog
+  void _showAttributionDialog(BuildContext context, String attribution) {
+    final locService = LocalizationService.instance;
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(locService.t('mapTiles.attribution')),
+        content: SelectableText(
+          attribution,
+          style: const TextStyle(fontSize: 14),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text(locService.t('actions.close')),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Stack(
@@ -97,17 +118,23 @@ class MapOverlays extends StatelessWidget {
           Positioned(
             bottom: bottomPositionFromButtonBar(kAttributionSpacingAboveButtonBar, MediaQuery.of(context).padding.bottom),
             left: 10,
-            child: Container(
-              decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.surface.withOpacity(0.9),
-                borderRadius: BorderRadius.circular(4),
-              ),
-              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
-              child: Text(
-                attribution!,
-                style: TextStyle(
-                  fontSize: 11,
-                  color: Theme.of(context).colorScheme.onSurface,
+            child: GestureDetector(
+              onTap: () => _showAttributionDialog(context, attribution!),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.surface.withOpacity(0.9),
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+                constraints: const BoxConstraints(maxWidth: 250),
+                child: Text(
+                  attribution!,
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: Theme.of(context).colorScheme.onSurface,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
                 ),
               ),
             ),

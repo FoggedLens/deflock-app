@@ -79,7 +79,7 @@ const int kMaxUserDownloadZoomSpan = 7;
 // Download area limits and constants
 const int kMaxReasonableTileCount = 20000;
 const int kAbsoluteMaxTileCount = 50000;
-const int kAbsoluteMaxZoom = 19;
+const int kAbsoluteMaxZoom = 23;
 
 // Camera icon configuration
 const double kCameraIconDiameter = 20.0;

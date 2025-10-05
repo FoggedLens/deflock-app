@@ -153,6 +153,9 @@ class SettingsState extends ChangeNotifier {
           _tileProviders = providersList
               .map((json) => TileProvider.fromJson(json))
               .toList();
+          
+          // Migration: Add any missing built-in providers
+          await _addMissingBuiltinProviders(prefs);
         }
       } catch (e) {
         debugPrint('Error loading tile providers: $e');
@@ -162,6 +165,25 @@ class SettingsState extends ChangeNotifier {
     } else {
       // First time - use defaults
       _tileProviders = DefaultTileProviders.createDefaults();
+      await _saveTileProviders(prefs);
+    }
+  }
+
+  /// Add any built-in providers that are missing from user's configuration
+  Future<void> _addMissingBuiltinProviders(SharedPreferences prefs) async {
+    final defaultProviders = DefaultTileProviders.createDefaults();
+    final existingProviderIds = _tileProviders.map((p) => p.id).toSet();
+    bool hasUpdates = false;
+    
+    for (final defaultProvider in defaultProviders) {
+      if (!existingProviderIds.contains(defaultProvider.id)) {
+        _tileProviders.add(defaultProvider);
+        hasUpdates = true;
+        debugPrint('SettingsState: Added missing built-in provider: ${defaultProvider.name}');
+      }
+    }
+    
+    if (hasUpdates) {
       await _saveTileProviders(prefs);
     }
   }
