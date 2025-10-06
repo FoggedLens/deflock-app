@@ -1,7 +1,7 @@
 name: deflockapp
 description: Map public surveillance infrastructure with OpenStreetMap
 publish_to: "none"
-version: 1.1.0
+version: 1.1.0+2.   # The thing after the + is the google versionCode
 
 environment:
   sdk: ">=3.5.0 <4.0.0"   # oauth2_client 4.x needs Dart 3.5+
