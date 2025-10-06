@@ -4,6 +4,9 @@ on:
     tags:
       - '*'
 
+permissions:
+  contents: write
+
 jobs:
   get-version:
     name: Get Version
