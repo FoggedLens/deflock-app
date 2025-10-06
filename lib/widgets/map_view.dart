@@ -222,7 +222,7 @@ class MapViewState extends State<MapView> {
     if (uploadMode == UploadMode.sandbox) {
       return kOsmApiMinZoomLevel;
     } else {
-      return kCameraMinZoomLevel;
+      return kNodeMinZoomLevel;
     }
   }
 
@@ -370,8 +370,8 @@ class MapViewState extends State<MapView> {
             centerMarkers.add(
               Marker(
                 point: center,
-                width: kCameraIconDiameter,
-                height: kCameraIconDiameter,
+                width: kNodeIconDiameter,
+                height: kNodeIconDiameter,
                 child: CameraIcon(
                   type: editSession != null ? CameraIconType.editing : CameraIconType.mock,
                 ),
@@ -573,7 +573,7 @@ class MapViewState extends State<MapView> {
         if (originalCoord != null) {
           lines.add(Polyline(
             points: [originalCoord, camera.coord],
-            color: kCameraRingColorPending,
+            color: kNodeRingColorPending,
             strokeWidth: 3.0,
           ));
         }

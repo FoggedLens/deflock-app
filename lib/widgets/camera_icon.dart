@@ -19,31 +19,31 @@ class CameraIcon extends StatelessWidget {
   Color get _ringColor {
     switch (type) {
       case CameraIconType.real:
-        return kCameraRingColorReal;
+        return kNodeRingColorReal;
       case CameraIconType.mock:
-        return kCameraRingColorMock;
+        return kNodeRingColorMock;
       case CameraIconType.pending:
-        return kCameraRingColorPending;
+        return kNodeRingColorPending;
       case CameraIconType.editing:
-        return kCameraRingColorEditing;
+        return kNodeRingColorEditing;
       case CameraIconType.pendingEdit:
-        return kCameraRingColorPendingEdit;
+        return kNodeRingColorPendingEdit;
       case CameraIconType.pendingDeletion:
-        return kCameraRingColorPendingDeletion;
+        return kNodeRingColorPendingDeletion;
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: kCameraIconDiameter,
-      height: kCameraIconDiameter,
+      width: kNodeIconDiameter,
+      height: kNodeIconDiameter,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: Colors.black.withOpacity(kCameraDotOpacity),
+        color: Colors.black.withOpacity(kNodeDotOpacity),
         border: Border.all(
           color: _ringColor,
-          width: kCameraRingThickness,
+          width: kNodeRingThickness,
         ),
       ),
     );

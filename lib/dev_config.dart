@@ -62,7 +62,7 @@ bool enableNavigationFeatures({required bool offlineMode}) {
 }
 
 // Marker/node interaction
-const int kCameraMinZoomLevel = 10; // Minimum zoom to show nodes (Overpass)
+const int kNodeMinZoomLevel = 10; // Minimum zoom to show nodes (Overpass)
 const int kOsmApiMinZoomLevel = 13; // Minimum zoom for OSM API bbox queries (sandbox mode)
 const Duration kMarkerTapTimeout = Duration(milliseconds: 250);
 const Duration kDebounceCameraRefresh = Duration(milliseconds: 500);
@@ -76,11 +76,6 @@ const int kProximityAlertDefaultDistance = 200; // meters
 const int kProximityAlertMinDistance = 50; // meters
 const int kProximityAlertMaxDistance = 1000; // meters
 const Duration kProximityAlertCooldown = Duration(minutes: 10); // Cooldown between alerts for same node
-
-// Last map location and settings storage
-const String kLastMapLatKey = 'last_map_latitude';
-const String kLastMapLngKey = 'last_map_longitude';
-const String kLastMapZoomKey = 'last_map_zoom';
 
 // Tile/OSM fetch retry parameters (for tunable backoff)
 const int kTileFetchMaxAttempts = 3;
@@ -99,13 +94,13 @@ const int kMaxReasonableTileCount = 20000;
 const int kAbsoluteMaxTileCount = 50000;
 const int kAbsoluteMaxZoom = 23;
 
-// Camera icon configuration
-const double kCameraIconDiameter = 20.0;
-const double kCameraRingThickness = 4.0;
-const double kCameraDotOpacity = 0.4; // Opacity for the grey dot interior
-const Color kCameraRingColorReal = Color(0xC43F55F3); // Real nodes from OSM - blue
-const Color kCameraRingColorMock = Color(0xC4FFFFFF); // Add node mock point - white
-const Color kCameraRingColorPending = Color(0xC49C27B0); // Submitted/pending nodes - purple
-const Color kCameraRingColorEditing = Color(0xC4FF9800); // Node being edited - orange
-const Color kCameraRingColorPendingEdit = Color(0xC4757575); // Original node with pending edit - grey
-const Color kCameraRingColorPendingDeletion = Color(0xA4F44336); // Node pending deletion - red, slightly transparent
+// Node icon configuration
+const double kNodeIconDiameter = 20.0;
+const double kNodeRingThickness = 4.0;
+const double kNodeDotOpacity = 0.4; // Opacity for the grey dot interior
+const Color kNodeRingColorReal = Color(0xC43F55F3); // Real nodes from OSM - blue
+const Color kNodeRingColorMock = Color(0xC4FFFFFF); // Add node mock point - white
+const Color kNodeRingColorPending = Color(0xC49C27B0); // Submitted/pending nodes - purple
+const Color kNodeRingColorEditing = Color(0xC4FF9800); // Node being edited - orange
+const Color kNodeRingColorPendingEdit = Color(0xC4757575); // Original node with pending edit - grey
+const Color kNodeRingColorPendingDeletion = Color(0xA4F44336); // Node pending deletion - red, slightly transparent

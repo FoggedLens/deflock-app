@@ -3,8 +3,6 @@ import 'package:flutter_map_animations/flutter_map_animations.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../../dev_config.dart';
-
 
 /// Manages map position persistence and initial positioning.
 /// Handles saving/loading last map position and moving to initial locations.
@@ -27,9 +25,9 @@ class MapPositionManager {
   Future<void> loadLastMapPosition() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      final lat = prefs.getDouble(kLastMapLatKey);
-      final lng = prefs.getDouble(kLastMapLngKey);
-      final zoom = prefs.getDouble(kLastMapZoomKey);
+      final lat = prefs.getDouble('last_map_latitude');
+      final lng = prefs.getDouble('last_map_longitude');
+      final zoom = prefs.getDouble('last_map_zoom');
       
       if (lat != null && lng != null && 
           _isValidCoordinate(lat) && _isValidCoordinate(lng)) {
@@ -80,9 +78,9 @@ class MapPositionManager {
       }
       
       final prefs = await SharedPreferences.getInstance();
-      await prefs.setDouble(kLastMapLatKey, location.latitude);
-      await prefs.setDouble(kLastMapLngKey, location.longitude);
-      await prefs.setDouble(kLastMapZoomKey, zoom);
+      await prefs.setDouble('last_map_latitude', location.latitude);
+      await prefs.setDouble('last_map_longitude', location.longitude);
+      await prefs.setDouble('last_map_zoom', zoom);
       debugPrint('[MapPositionManager] Saved last map position: ${location.latitude}, ${location.longitude}, zoom: $zoom');
     } catch (e) {
       debugPrint('[MapPositionManager] Failed to save last map position: $e');
@@ -95,9 +93,9 @@ class MapPositionManager {
   static Future<void> clearStoredMapPosition() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      await prefs.remove(kLastMapLatKey);
-      await prefs.remove(kLastMapLngKey);
-      await prefs.remove(kLastMapZoomKey);
+      await prefs.remove('last_map_latitude');
+      await prefs.remove('last_map_longitude');
+      await prefs.remove('last_map_zoom');
       debugPrint('[MapPositionManager] Cleared stored map position');
     } catch (e) {
       debugPrint('[MapPositionManager] Failed to clear stored map position: $e');
