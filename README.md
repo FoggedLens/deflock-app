@@ -84,9 +84,7 @@ cp lib/keys.dart.example lib/keys.dart
 ### Current Development
 - Swap in alprwatch.org/directions avoidance routing API
 - Help button with links to email, discord, and website
-- Move download button?
 - Clean cache when nodes have disappeared / been deleted by others / queue item was deleted
-- Clean up dev_config
 - Improve offline area node refresh live display
 - Add default operator profiles (Lowe’s etc)
 

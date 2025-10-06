@@ -181,10 +181,16 @@ jobs:
         with:
           name: deflock_v${{ needs.get-version.outputs.version }}.ipa
 
+      - name: Rename files for release
+        run: |
+          mv app-release.apk deflock_v${{ needs.get-version.outputs.version }}.apk
+          mv app-release.aab deflock_v${{ needs.get-version.outputs.version }}.aab
+          mv Runner.ipa deflock_v${{ needs.get-version.outputs.version }}.ipa
+
       - name: Attach assets to release
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            app-release.apk
-            app-release.aab
-            Runner.ipa
+            deflock_v${{ needs.get-version.outputs.version }}.apk
+            deflock_v${{ needs.get-version.outputs.version }}.aab
+            deflock_v${{ needs.get-version.outputs.version }}.ipa
