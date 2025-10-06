@@ -18,7 +18,9 @@ import '../widgets/download_area_dialog.dart';
 import '../widgets/measured_sheet.dart';
 import '../widgets/navigation_sheet.dart';
 import '../widgets/search_bar.dart';
+import '../widgets/suspected_location_sheet.dart';
 import '../models/osm_node.dart';
+import '../models/suspected_location.dart';
 import '../models/search_result.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -455,6 +457,52 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     });
   }
 
+  void openSuspectedLocationSheet(SuspectedLocation location) {
+    final appState = context.read<AppState>();
+    appState.selectSuspectedLocation(location);
+    
+    // Start smooth centering animation simultaneously with sheet opening
+    try {
+      _mapController.animateTo(
+        dest: location.centroid,
+        zoom: _mapController.mapController.camera.zoom,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeOut,
+      );
+    } catch (_) {
+      // Map controller not ready, fallback to immediate move
+      try {
+        _mapController.mapController.move(location.centroid, _mapController.mapController.camera.zoom);
+      } catch (_) {
+        // Controller really not ready, skip centering
+      }
+    }
+    
+    final controller = _scaffoldKey.currentState!.showBottomSheet(
+      (ctx) => Padding(
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(context).padding.bottom, // Only safe area, no keyboard
+        ),
+        child: MeasuredSheet(
+          onHeightChanged: (height) {
+            setState(() {
+              _tagSheetHeight = height + MediaQuery.of(context).padding.bottom;
+            });
+          },
+          child: SuspectedLocationSheet(location: location),
+        ),
+      ),
+    );
+    
+    // Reset height and clear selection when sheet is dismissed
+    controller.closed.then((_) {
+      setState(() {
+        _tagSheetHeight = 0.0;
+      });
+      appState.clearSuspectedLocationSelection();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final appState = context.watch<AppState>();
@@ -536,6 +584,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               sheetHeight: activeSheetHeight,
               selectedNodeId: _selectedNodeId,
               onNodeTap: openNodeTagSheet,
+              onSuspectedLocationTap: openSuspectedLocationSheet,
               onSearchPressed: _onNavigationButtonPressed,
               onUserGesture: () {
                 if (appState.followMeMode != FollowMeMode.off) {

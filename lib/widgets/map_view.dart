@@ -9,6 +9,7 @@ import '../services/offline_area_service.dart';
 import '../services/network_status.dart';
 import '../models/osm_node.dart';
 import '../models/node_profile.dart';
+import '../models/suspected_location.dart';
 import '../models/tile_provider.dart';
 import 'debouncer.dart';
 import 'camera_provider_with_cache.dart';
@@ -20,6 +21,7 @@ import 'map/map_position_manager.dart';
 import 'map/tile_layer_manager.dart';
 import 'map/camera_refresh_controller.dart';
 import 'map/gps_controller.dart';
+import 'map/suspected_location_markers.dart';
 import 'network_status_indicator.dart';
 import 'provisional_pin.dart';
 import 'proximity_alert_banner.dart';
@@ -38,6 +40,7 @@ class MapView extends StatefulWidget {
     this.sheetHeight = 0.0,
     this.selectedNodeId,
     this.onNodeTap,
+    this.onSuspectedLocationTap,
     this.onSearchPressed,
   });
 
@@ -46,6 +49,7 @@ class MapView extends StatefulWidget {
   final double sheetHeight;
   final int? selectedNodeId;
   final void Function(OsmNode)? onNodeTap;
+  final void Function(SuspectedLocation)? onSuspectedLocationTap;
   final VoidCallback? onSearchPressed;
 
   @override
@@ -336,13 +340,37 @@ class MapViewState extends State<MapView> {
             ? cameraProvider.getCachedNodesForBounds(mapBounds)
             : <OsmNode>[];
         
+        // Determine if we should dim camera markers (when suspected location is selected)
+        final shouldDimCameras = appState.selectedSuspectedLocation != null;
+        
         final markers = CameraMarkersBuilder.buildCameraMarkers(
           cameras: cameras,
           mapController: _controller.mapController,
           userLocation: _gpsController.currentLocation,
           selectedNodeId: widget.selectedNodeId,
           onNodeTap: widget.onNodeTap,
+          shouldDim: shouldDimCameras,
         );
+
+        // Build suspected location markers
+        final suspectedLocationMarkers = <Marker>[];
+        if (appState.suspectedLocationsEnabled && mapBounds != null) {
+          final suspectedLocations = appState.getSuspectedLocationsInBounds(
+            north: mapBounds.north,
+            south: mapBounds.south,
+            east: mapBounds.east,
+            west: mapBounds.west,
+          );
+          
+          suspectedLocationMarkers.addAll(
+            SuspectedLocationMarkersBuilder.buildSuspectedLocationMarkers(
+              locations: suspectedLocations,
+              mapController: _controller.mapController,
+              selectedLocationId: appState.selectedSuspectedLocation?.ticketNo,
+              onLocationTap: widget.onSuspectedLocationTap,
+            ),
+          );
+        }
 
         // Get current zoom level for direction cones
         double currentZoom = 15.0; // fallback
@@ -358,6 +386,21 @@ class MapViewState extends State<MapView> {
           session: session,
           editSession: editSession,
         );
+
+        // Add suspected location bounds if one is selected
+        if (appState.selectedSuspectedLocation != null) {
+          final selectedLocation = appState.selectedSuspectedLocation!;
+          if (selectedLocation.bounds.isNotEmpty) {
+            overlays.add(
+              Polygon(
+                points: selectedLocation.bounds,
+                color: Colors.orange.withOpacity(0.3),
+                borderColor: Colors.orange,
+                borderStrokeWidth: 2.0,
+              ),
+            );
+          }
+        }
 
         // Build edit lines connecting original cameras to their edited positions
         final editLines = _buildEditLines(cameras);
@@ -436,7 +479,7 @@ class MapViewState extends State<MapView> {
             PolygonLayer(polygons: overlays),
             if (editLines.isNotEmpty) PolylineLayer(polylines: editLines),
             if (routeLines.isNotEmpty) PolylineLayer(polylines: routeLines),
-            MarkerLayer(markers: [...markers, ...centerMarkers]),
+            MarkerLayer(markers: [...markers, ...suspectedLocationMarkers, ...centerMarkers]),
           ],
         );
       }

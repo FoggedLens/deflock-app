@@ -6,6 +6,7 @@ import 'models/node_profile.dart';
 import 'models/operator_profile.dart';
 import 'models/osm_node.dart';
 import 'models/pending_upload.dart';
+import 'models/suspected_location.dart';
 import 'models/tile_provider.dart';
 import 'models/search_result.dart';
 import 'services/offline_area_service.dart';
@@ -19,6 +20,7 @@ import 'state/profile_state.dart';
 import 'state/search_state.dart';
 import 'state/session_state.dart';
 import 'state/settings_state.dart';
+import 'state/suspected_location_state.dart';
 import 'state/upload_queue_state.dart';
 
 // Re-export types
@@ -38,6 +40,7 @@ class AppState extends ChangeNotifier {
   late final SearchState _searchState;
   late final SessionState _sessionState;
   late final SettingsState _settingsState;
+  late final SuspectedLocationState _suspectedLocationState;
   late final UploadQueueState _uploadQueueState;
 
   bool _isInitialized = false;
@@ -51,6 +54,7 @@ class AppState extends ChangeNotifier {
     _searchState = SearchState();
     _sessionState = SessionState();
     _settingsState = SettingsState();
+    _suspectedLocationState = SuspectedLocationState();
     _uploadQueueState = UploadQueueState();
     
     // Set up state change listeners
@@ -61,6 +65,7 @@ class AppState extends ChangeNotifier {
     _searchState.addListener(_onStateChanged);
     _sessionState.addListener(_onStateChanged);
     _settingsState.addListener(_onStateChanged);
+    _suspectedLocationState.addListener(_onStateChanged);
     _uploadQueueState.addListener(_onStateChanged);
     
     _init();
@@ -139,6 +144,13 @@ class AppState extends ChangeNotifier {
   int get pendingCount => _uploadQueueState.pendingCount;
   List<PendingUpload> get pendingUploads => _uploadQueueState.pendingUploads;
 
+  // Suspected location state
+  List<SuspectedLocation> get suspectedLocations => _suspectedLocationState.locations;
+  SuspectedLocation? get selectedSuspectedLocation => _suspectedLocationState.selectedLocation;
+  bool get suspectedLocationsEnabled => _suspectedLocationState.isEnabled;
+  bool get suspectedLocationsLoading => _suspectedLocationState.isLoading;
+  DateTime? get suspectedLocationsLastFetch => _suspectedLocationState.lastFetchTime;
+
   void _onStateChanged() {
     notifyListeners();
   }
@@ -153,6 +165,7 @@ class AppState extends ChangeNotifier {
     
     await _operatorProfileState.init();
     await _profileState.init();
+    await _suspectedLocationState.init();
     await _uploadQueueState.init();
     await _authState.init(_settingsState.uploadMode);
     
@@ -422,6 +435,37 @@ class AppState extends ChangeNotifier {
     _startUploader(); // resume uploader if not busy
   }
 
+  // ---------- Suspected Location Methods ----------
+  Future<void> setSuspectedLocationsEnabled(bool enabled) async {
+    await _suspectedLocationState.setEnabled(enabled);
+  }
+
+  Future<bool> refreshSuspectedLocations() async {
+    return await _suspectedLocationState.refreshData();
+  }
+
+  void selectSuspectedLocation(SuspectedLocation location) {
+    _suspectedLocationState.selectLocation(location);
+  }
+
+  void clearSuspectedLocationSelection() {
+    _suspectedLocationState.clearSelection();
+  }
+
+  List<SuspectedLocation> getSuspectedLocationsInBounds({
+    required double north,
+    required double south,
+    required double east,
+    required double west,
+  }) {
+    return _suspectedLocationState.getLocationsInBounds(
+      north: north,
+      south: south,
+      east: east,
+      west: west,
+    );
+  }
+
   // ---------- Private Methods ----------
   /// Attempts to fetch missing tile preview images in the background (fire and forget)
   void _fetchMissingTilePreviews() {
@@ -449,6 +493,7 @@ class AppState extends ChangeNotifier {
     _searchState.removeListener(_onStateChanged);
     _sessionState.removeListener(_onStateChanged);
     _settingsState.removeListener(_onStateChanged);
+    _suspectedLocationState.removeListener(_onStateChanged);
     _uploadQueueState.removeListener(_onStateChanged);
     
     _uploadQueueState.dispose();

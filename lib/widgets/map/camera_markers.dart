@@ -95,6 +95,7 @@ class CameraMarkersBuilder {
     LatLng? userLocation,
     int? selectedNodeId,
     void Function(OsmNode)? onNodeTap,
+    bool shouldDim = false,
   }) {
     final markers = <Marker>[
       // Camera markers
@@ -103,14 +104,14 @@ class CameraMarkersBuilder {
         .map((n) {
           // Check if this node should be highlighted (selected) or dimmed
           final isSelected = selectedNodeId == n.id;
-          final shouldDim = selectedNodeId != null && !isSelected;
+          final shouldDimNode = shouldDim || (selectedNodeId != null && !isSelected);
           
           return Marker(
             point: n.coord,
             width: kNodeIconDiameter,
             height: kNodeIconDiameter,
             child: Opacity(
-              opacity: shouldDim ? 0.5 : 1.0,
+              opacity: shouldDimNode ? 0.5 : 1.0,
               child: CameraMapMarker(
                 node: n, 
                 mapController: mapController,

@@ -20,6 +20,7 @@ dependencies:
   flutter_svg: ^2.0.10
   xml: ^6.4.2
   flutter_local_notifications: ^17.2.2
+  url_launcher: ^6.3.0
 
   # Auth, storage, prefs
   oauth2_client: ^4.2.0
@@ -30,6 +31,7 @@ dependencies:
   shared_preferences: ^2.2.2
   uuid: ^4.0.0
   package_info_plus: ^8.0.0
+  csv: ^6.0.0
 
 dev_dependencies:
   flutter_launcher_icons: ^0.14.4
