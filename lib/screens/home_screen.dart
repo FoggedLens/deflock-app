@@ -345,16 +345,30 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       // Zoom out a bit to show the full route when viewing overview
       _zoomToShowFullRoute(appState);
     } else {
-      // Search button - enter search mode
-      debugPrint('[HomeScreen] Entering search mode');
-      try {
-        final mapCenter = _mapController.mapController.camera.center;
-        debugPrint('[HomeScreen] Map center: $mapCenter');
-        appState.enterSearchMode(mapCenter);
-      } catch (e) {
-        // Controller not ready, use fallback location
-        debugPrint('[HomeScreen] Map controller not ready: $e, using fallback');
-        appState.enterSearchMode(LatLng(37.7749, -122.4194));
+      // Search button
+      if (appState.offlineMode) {
+        // Show offline snackbar instead of entering search mode
+        debugPrint('[HomeScreen] Search disabled - offline mode');
+        ScaffoldMessenger.of(context).clearSnackBars();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Search not available while offline'),
+            duration: const Duration(seconds: 3),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      } else {
+        // Enter search mode normally
+        debugPrint('[HomeScreen] Entering search mode');
+        try {
+          final mapCenter = _mapController.mapController.camera.center;
+          debugPrint('[HomeScreen] Map center: $mapCenter');
+          appState.enterSearchMode(mapCenter);
+        } catch (e) {
+          // Controller not ready, use fallback location
+          debugPrint('[HomeScreen] Map controller not ready: $e, using fallback');
+          appState.enterSearchMode(LatLng(37.7749, -122.4194));
+        }
       }
     }
   }
@@ -522,15 +536,15 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               sheetHeight: activeSheetHeight,
               selectedNodeId: _selectedNodeId,
               onNodeTap: openNodeTagSheet,
-              onSearchPressed: (enableSearchFeatures(offlineMode: appState.offlineMode) || enableNavigationFeatures(offlineMode: appState.offlineMode)) ? _onNavigationButtonPressed : null,
+              onSearchPressed: _onNavigationButtonPressed,
               onUserGesture: () {
                 if (appState.followMeMode != FollowMeMode.off) {
                   appState.setFollowMeMode(FollowMeMode.off);
                 }
               },
             ),
-            // Search bar (slides in when in search mode) - available based on feature flags
-            if (enableSearchFeatures(offlineMode: appState.offlineMode) && appState.isInSearchMode) 
+            // Search bar (slides in when in search mode) - only online since search doesn't work offline
+            if (!appState.offlineMode && appState.isInSearchMode) 
               Positioned(
                 top: 0,
                 left: 0,
@@ -568,6 +582,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     child: Row(
                     children: [
                       Expanded(
+                        flex: 7, // 70% for primary action
                         child: AnimatedBuilder(
                           animation: LocalizationService.instance,
                           builder: (context, child) => ElevatedButton.icon(
@@ -583,18 +598,22 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                       ),
                       SizedBox(width: 12),
                       Expanded(
+                        flex: 3, // 30% for secondary action
                         child: AnimatedBuilder(
                           animation: LocalizationService.instance,
-                          builder: (context, child) => ElevatedButton.icon(
-                            icon: Icon(Icons.download_for_offline),
-                            label: Text(LocalizationService.instance.download),
-                            onPressed: () => showDialog(
-                              context: context,
-                              builder: (ctx) => DownloadAreaDialog(controller: _mapController.mapController),
-                            ),
-                            style: ElevatedButton.styleFrom(
-                              minimumSize: Size(0, 48),
-                              textStyle: TextStyle(fontSize: 16),
+                          builder: (context, child) => FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: ElevatedButton.icon(
+                              icon: Icon(Icons.download_for_offline),
+                              label: Text(LocalizationService.instance.download),
+                              onPressed: () => showDialog(
+                                context: context,
+                                builder: (ctx) => DownloadAreaDialog(controller: _mapController.mapController),
+                              ),
+                              style: ElevatedButton.styleFrom(
+                                minimumSize: Size(0, 48),
+                                textStyle: TextStyle(fontSize: 16),
+                              ),
                             ),
                           ),
                         ),

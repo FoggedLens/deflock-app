@@ -43,15 +43,6 @@ const bool kEnableDevelopmentModes = false; // Set to false to hide sandbox/simu
 // Navigation features - set to false to hide navigation UI elements while in development
 const bool kEnableNavigationFeatures = kEnableDevelopmentModes; // Hide navigation until fully implemented
 
-/// Search availability: dev builds always, release builds only when online
-bool enableSearchFeatures({required bool offlineMode}) {
-  if (kEnableDevelopmentModes) {
-    return true; // Dev builds: always allow search
-  } else {
-    return !offlineMode; // Release builds: only when online
-  }
-}
-
 /// Navigation availability: only dev builds, and only when online
 bool enableNavigationFeatures({required bool offlineMode}) {
   if (!kEnableDevelopmentModes) {

@@ -148,49 +148,17 @@ class MapOverlays extends StatelessWidget {
             builder: (context, appState, child) {
               return Column(
                 children: [
-                  // Search/Navigation button - show based on new feature flags
+                  // Search/Navigation button - show search button always, show route button only in dev mode when online
                   if (onSearchPressed != null) ...[
-                    // Show search button if search is available OR if showing route button
-                    if ((enableSearchFeatures(offlineMode: appState.offlineMode) && appState.showSearchButton) || 
-                        (enableNavigationFeatures(offlineMode: appState.offlineMode) && appState.showRouteButton)) ...[
+                    if (appState.showSearchButton || (enableNavigationFeatures(offlineMode: appState.offlineMode) && appState.showRouteButton)) ...[
                       FloatingActionButton(
                         mini: true,
                         heroTag: "search_nav",
-                        onPressed: () {
-                          // If offline and trying to search, show snackbar
-                          if (appState.showSearchButton && appState.offlineMode && !kEnableDevelopmentModes) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text('Search not available offline'),
-                                duration: Duration(seconds: 2),
-                              ),
-                            );
-                          } else {
-                            onSearchPressed?.call();
-                          }
-                        },
+                        onPressed: onSearchPressed,
                         tooltip: appState.showRouteButton 
                             ? LocalizationService.instance.t('navigation.routeOverview')
                             : LocalizationService.instance.t('navigation.searchLocation'),
                         child: Icon(appState.showRouteButton ? Icons.route : Icons.search),
-                      ),
-                      const SizedBox(height: 8),
-                    ]
-                    // Show disabled search button with snackbar in release builds when offline
-                    else if (appState.showSearchButton && !kEnableDevelopmentModes) ...[
-                      FloatingActionButton(
-                        mini: true,
-                        heroTag: "search_nav",
-                        onPressed: () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text('Search not available offline'),
-                              duration: Duration(seconds: 2),
-                            ),
-                          );
-                        },
-                        tooltip: LocalizationService.instance.t('navigation.searchLocation'),
-                        child: Icon(Icons.search),
                       ),
                       const SizedBox(height: 8),
                     ],
