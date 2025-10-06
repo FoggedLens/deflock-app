@@ -1,5 +1,8 @@
 name: Build Release
-on: workflow_dispatch
+on:
+  push:
+    tags:
+      - '*'
 
 jobs:
   get-version:
@@ -154,3 +157,31 @@ jobs:
           name: deflock_v${{ needs.get-version.outputs.version }}.ipa
           path: Runner.ipa
           if-no-files-found: 'error'
+
+  attach-to-release:
+    name: Attach Assets to Release
+    needs: [get-version, build-android-apk, build-android-aab, build-ios]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download APK artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: deflock_v${{ needs.get-version.outputs.version }}.apk
+
+      - name: Download AAB artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: deflock_v${{ needs.get-version.outputs.version }}.aab
+
+      - name: Download IPA artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: deflock_v${{ needs.get-version.outputs.version }}.ipa
+
+      - name: Attach assets to release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            app-release.apk
+            app-release.aab
+            Runner.ipa
