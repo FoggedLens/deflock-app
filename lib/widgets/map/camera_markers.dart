@@ -107,8 +107,8 @@ class CameraMarkersBuilder {
           
           return Marker(
             point: n.coord,
-            width: kCameraIconDiameter,
-            height: kCameraIconDiameter,
+            width: kNodeIconDiameter,
+            height: kNodeIconDiameter,
             child: Opacity(
               opacity: shouldDim ? 0.5 : 1.0,
               child: CameraMapMarker(

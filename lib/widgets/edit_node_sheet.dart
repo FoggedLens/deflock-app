@@ -53,10 +53,7 @@ class EditNodeSheet extends StatelessWidget {
           }
         }
 
-        return Padding(
-          padding:
-              EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
-          child: Column(
+        return Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               const SizedBox(height: 12),
@@ -199,7 +196,6 @@ class EditNodeSheet extends StatelessWidget {
               ),
               const SizedBox(height: 20),
             ],
-          ),
         );
       },
     );

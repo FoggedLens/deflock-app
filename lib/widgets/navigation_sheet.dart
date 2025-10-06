@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:latlong2/latlong.dart';
 
 import '../app_state.dart';
+import '../dev_config.dart';
 import '../services/localization_service.dart';
 
 class NavigationSheet extends StatelessWidget {
@@ -100,29 +101,32 @@ class NavigationSheet extends StatelessWidget {
                   address: provisionalAddress,
                 ),
                 const SizedBox(height: 16),
-                Row(
-                  children: [
-                      Expanded(
-                        child: ElevatedButton.icon(
-                          icon: const Icon(Icons.directions),
-                          label: Text(LocalizationService.instance.t('navigation.routeTo')),
-                          onPressed: () {
-                            appState.startRoutePlanning(thisLocationIsStart: false);
-                          },
+                // Only show routing buttons if navigation features are enabled
+                if (enableNavigationFeatures(offlineMode: appState.offlineMode)) ...[
+                  Row(
+                    children: [
+                        Expanded(
+                          child: ElevatedButton.icon(
+                            icon: const Icon(Icons.directions),
+                            label: Text(LocalizationService.instance.t('navigation.routeTo')),
+                            onPressed: () {
+                              appState.startRoutePlanning(thisLocationIsStart: false);
+                            },
+                          ),
                         ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: ElevatedButton.icon(
-                          icon: const Icon(Icons.my_location),
-                          label: Text(LocalizationService.instance.t('navigation.routeFrom')),
-                          onPressed: () {
-                            appState.startRoutePlanning(thisLocationIsStart: true);
-                          },
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: ElevatedButton.icon(
+                            icon: const Icon(Icons.my_location),
+                            label: Text(LocalizationService.instance.t('navigation.routeFrom')),
+                            onPressed: () {
+                              appState.startRoutePlanning(thisLocationIsStart: true);
+                            },
+                          ),
                         ),
-                      ),
-                  ],
-                ),
+                    ],
+                  ),
+                ],
               ],
 
               // SETTING SECOND POINT: Show both points and select button

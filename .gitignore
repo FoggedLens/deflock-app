@@ -25,6 +25,11 @@ android/app/profile/
 android/app/release/
 *.iml
 
+# Generated icons and splash screens (exclude manually maintained files)
+android/app/src/main/res/drawable*/
+android/app/src/main/res/mipmap*/
+!android/app/src/main/res/values*/
+
 # ───────────────────────────────
 # iOS / macOS
 # ───────────────────────────────
@@ -37,9 +42,17 @@ ios/Runner.xcworkspace/
 macos/Pods/
 macos/.generated/
 macos/Flutter/ephemeral/
-# CocoaPods – commit Podfile.lock if you need reproducible iOS builds
+# CocoaPods – commit Podfile.lock if you need reproducible iOS builds
 Podfile.lock
 Pods/
+
+# Generated icons and splash screens  
+ios/Runner/Assets.xcassets/AppIcon.appiconset/*
+ios/Runner/Assets.xcassets/LaunchImage.imageset/*
+ios/Runner/Assets.xcassets/LaunchBackground.imageset/*
+!ios/Runner/Assets.xcassets/AppIcon.appiconset/.gitkeep
+!ios/Runner/Assets.xcassets/LaunchImage.imageset/.gitkeep
+!ios/Runner/Assets.xcassets/LaunchBackground.imageset/.gitkeep
 
 # Xcode user data & build artifacts
 *.xcworkspace

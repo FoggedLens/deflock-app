@@ -191,6 +191,11 @@
     "attribution": "Attribution",
     "attributionHint": "© Fournisseur de Cartes",
     "attributionRequired": "L'attribution est requise",
+    "maxZoom": "Niveau de Zoom Maximum",
+    "maxZoomHint": "Niveau de zoom maximum (1-23)",
+    "maxZoomRequired": "Le zoom maximum est requis",
+    "maxZoomInvalid": "Le zoom maximum doit être un nombre",
+    "maxZoomRange": "Le zoom maximum doit être entre {} et {}",
     "fetchPreview": "Récupérer Aperçu",
     "previewTileLoaded": "Tuile d'aperçu chargée avec succès",
     "previewTileFailed": "Échec de récupération de l'aperçu: {}",
@@ -208,7 +213,8 @@
   },
   "mapTiles": {
     "title": "Tuiles de Carte",
-    "manageProviders": "Gérer Fournisseurs"
+    "manageProviders": "Gérer Fournisseurs",
+    "attribution": "Attribution de Carte"
   },
   "profileEditor": {
     "viewProfile": "Voir Profil",

@@ -44,6 +44,11 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
+      - name: Generate icons and splash screens
+        run: |
+          dart run flutter_launcher_icons
+          dart run flutter_native_splash:create
+
       - name: Decode Keystore
         run: |
           echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > android/app/keystore.jks
@@ -88,6 +93,11 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
+      - name: Generate icons and splash screens
+        run: |
+          dart run flutter_launcher_icons
+          dart run flutter_native_splash:create
+
       - name: Decode Keystore
         run: |
           echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > android/app/keystore.jks
@@ -125,14 +135,17 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
+      - name: Generate icons and splash screens
+        run: |
+          dart run flutter_launcher_icons
+          dart run flutter_native_splash:create
+
 #      - name: Build iOS .ipa
 #        run: flutter build ipa --release
 
       - name: Build iOS .app
-        run: flutter build ios --release --no-codesign
-
-      - name: Convert to IPA
         run: |
+          flutter build ios --release --no-codesign
           ./app2ipa.sh build/ios/iphoneos/Runner.app
 
       - name: Upload IPA artifact

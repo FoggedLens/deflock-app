@@ -102,13 +102,18 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     final session = appState.session!;          // guaranteed non‑null now
 
     final controller = _scaffoldKey.currentState!.showBottomSheet(
-      (ctx) => MeasuredSheet(
-        onHeightChanged: (height) {
-          setState(() {
-            _addSheetHeight = height;
-          });
-        },
-        child: AddNodeSheet(session: session),
+      (ctx) => Padding(
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(context).padding.bottom, // Only safe area, no keyboard
+        ),
+        child: MeasuredSheet(
+          onHeightChanged: (height) {
+            setState(() {
+              _addSheetHeight = height + MediaQuery.of(context).padding.bottom;
+            });
+          },
+          child: AddNodeSheet(session: session),
+        ),
       ),
     );
     
@@ -140,19 +145,24 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       if (!mounted) return;
       
       final controller = _scaffoldKey.currentState!.showBottomSheet(
-        (ctx) => MeasuredSheet(
-          onHeightChanged: (height) {
-            setState(() {
-              _editSheetHeight = height;
-              // Clear transition flag and reset tag sheet height once edit sheet starts sizing
-              if (height > 0 && _transitioningToEdit) {
-                _transitioningToEdit = false;
-                _tagSheetHeight = 0.0; // Now safe to reset
-                _selectedNodeId = null; // Clear selection when moving to edit
-              }
-            });
-          },
-          child: EditNodeSheet(session: session),
+        (ctx) => Padding(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).padding.bottom, // Only safe area, no keyboard
+          ),
+          child: MeasuredSheet(
+            onHeightChanged: (height) {
+              setState(() {
+                _editSheetHeight = height + MediaQuery.of(context).padding.bottom;
+                // Clear transition flag and reset tag sheet height once edit sheet starts sizing
+                if (height > 0 && _transitioningToEdit) {
+                  _transitioningToEdit = false;
+                  _tagSheetHeight = 0.0; // Now safe to reset
+                  _selectedNodeId = null; // Clear selection when moving to edit
+                }
+              });
+            },
+            child: EditNodeSheet(session: session),
+          ),
         ),
       );
       
@@ -168,15 +178,20 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
   void _openNavigationSheet() {
     final controller = _scaffoldKey.currentState!.showBottomSheet(
-      (ctx) => MeasuredSheet(
-        onHeightChanged: (height) {
-          setState(() {
-            _navigationSheetHeight = height;
-          });
-        },
-        child: NavigationSheet(
-          onStartRoute: _onStartRoute,
-          onResumeRoute: _onResumeRoute,
+      (ctx) => Padding(
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(context).padding.bottom, // Only safe area, no keyboard
+        ),
+        child: MeasuredSheet(
+          onHeightChanged: (height) {
+            setState(() {
+              _navigationSheetHeight = height + MediaQuery.of(context).padding.bottom;
+            });
+          },
+          child: NavigationSheet(
+            onStartRoute: _onStartRoute,
+            onResumeRoute: _onResumeRoute,
+          ),
         ),
       ),
     );
@@ -330,16 +345,30 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       // Zoom out a bit to show the full route when viewing overview
       _zoomToShowFullRoute(appState);
     } else {
-      // Search button - enter search mode
-      debugPrint('[HomeScreen] Entering search mode');
-      try {
-        final mapCenter = _mapController.mapController.camera.center;
-        debugPrint('[HomeScreen] Map center: $mapCenter');
-        appState.enterSearchMode(mapCenter);
-      } catch (e) {
-        // Controller not ready, use fallback location
-        debugPrint('[HomeScreen] Map controller not ready: $e, using fallback');
-        appState.enterSearchMode(LatLng(37.7749, -122.4194));
+      // Search button
+      if (appState.offlineMode) {
+        // Show offline snackbar instead of entering search mode
+        debugPrint('[HomeScreen] Search disabled - offline mode');
+        ScaffoldMessenger.of(context).clearSnackBars();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Search not available while offline'),
+            duration: const Duration(seconds: 3),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      } else {
+        // Enter search mode normally
+        debugPrint('[HomeScreen] Entering search mode');
+        try {
+          final mapCenter = _mapController.mapController.camera.center;
+          debugPrint('[HomeScreen] Map center: $mapCenter');
+          appState.enterSearchMode(mapCenter);
+        } catch (e) {
+          // Controller not ready, use fallback location
+          debugPrint('[HomeScreen] Map controller not ready: $e, using fallback');
+          appState.enterSearchMode(LatLng(37.7749, -122.4194));
+        }
       }
     }
   }
@@ -392,19 +421,24 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     }
     
     final controller = _scaffoldKey.currentState!.showBottomSheet(
-      (ctx) => MeasuredSheet(
-        onHeightChanged: (height) {
-          setState(() {
-            _tagSheetHeight = height;
-          });
-        },
-        child: NodeTagSheet(
-          node: node,
-          onEditPressed: () {
-            final appState = context.read<AppState>();
-            appState.startEditSession(node);
-            // This will trigger _openEditNodeSheet via the existing auto-show logic
+      (ctx) => Padding(
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(context).padding.bottom, // Only safe area, no keyboard
+        ),
+        child: MeasuredSheet(
+          onHeightChanged: (height) {
+            setState(() {
+              _tagSheetHeight = height + MediaQuery.of(context).padding.bottom;
+            });
           },
+          child: NodeTagSheet(
+            node: node,
+            onEditPressed: () {
+              final appState = context.read<AppState>();
+              appState.startEditSession(node);
+              // This will trigger _openEditNodeSheet via the existing auto-show logic
+            },
+          ),
         ),
       ),
     );
@@ -457,7 +491,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       providers: [
         ChangeNotifierProvider<CameraProviderWithCache>(create: (_) => CameraProviderWithCache()),
       ],
-      child: Scaffold(
+      child: MediaQuery(
+        data: MediaQuery.of(context).copyWith(viewInsets: EdgeInsets.zero),
+        child: Scaffold(
         key: _scaffoldKey,
         appBar: AppBar(
           automaticallyImplyLeading: false, // Disable automatic back button
@@ -500,15 +536,15 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               sheetHeight: activeSheetHeight,
               selectedNodeId: _selectedNodeId,
               onNodeTap: openNodeTagSheet,
-              onSearchPressed: kEnableNavigationFeatures ? _onNavigationButtonPressed : null,
+              onSearchPressed: _onNavigationButtonPressed,
               onUserGesture: () {
                 if (appState.followMeMode != FollowMeMode.off) {
                   appState.setFollowMeMode(FollowMeMode.off);
                 }
               },
             ),
-            // Search bar (slides in when in search mode) - only in dev mode
-            if (kEnableNavigationFeatures && appState.isInSearchMode) 
+            // Search bar (slides in when in search mode) - only online since search doesn't work offline
+            if (!appState.offlineMode && appState.isInSearchMode) 
               Positioned(
                 top: 0,
                 left: 0,
@@ -546,6 +582,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     child: Row(
                     children: [
                       Expanded(
+                        flex: 7, // 70% for primary action
                         child: AnimatedBuilder(
                           animation: LocalizationService.instance,
                           builder: (context, child) => ElevatedButton.icon(
@@ -561,18 +598,22 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                       ),
                       SizedBox(width: 12),
                       Expanded(
+                        flex: 3, // 30% for secondary action
                         child: AnimatedBuilder(
                           animation: LocalizationService.instance,
-                          builder: (context, child) => ElevatedButton.icon(
-                            icon: Icon(Icons.download_for_offline),
-                            label: Text(LocalizationService.instance.download),
-                            onPressed: () => showDialog(
-                              context: context,
-                              builder: (ctx) => DownloadAreaDialog(controller: _mapController.mapController),
-                            ),
-                            style: ElevatedButton.styleFrom(
-                              minimumSize: Size(0, 48),
-                              textStyle: TextStyle(fontSize: 16),
+                          builder: (context, child) => FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: ElevatedButton.icon(
+                              icon: Icon(Icons.download_for_offline),
+                              label: Text(LocalizationService.instance.download),
+                              onPressed: () => showDialog(
+                                context: context,
+                                builder: (ctx) => DownloadAreaDialog(controller: _mapController.mapController),
+                              ),
+                              style: ElevatedButton.styleFrom(
+                                minimumSize: Size(0, 48),
+                                textStyle: TextStyle(fontSize: 16),
+                              ),
                             ),
                           ),
                         ),
@@ -585,6 +626,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             ),
           ],
         ),
+      ),
       ),
     );
   }

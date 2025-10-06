@@ -222,7 +222,7 @@ class MapViewState extends State<MapView> {
     if (uploadMode == UploadMode.sandbox) {
       return kOsmApiMinZoomLevel;
     } else {
-      return kCameraMinZoomLevel;
+      return kNodeMinZoomLevel;
     }
   }
 
@@ -370,8 +370,8 @@ class MapViewState extends State<MapView> {
             centerMarkers.add(
               Marker(
                 point: center,
-                width: kCameraIconDiameter,
-                height: kCameraIconDiameter,
+                width: kNodeIconDiameter,
+                height: kNodeIconDiameter,
                 child: CameraIcon(
                   type: editSession != null ? CameraIconType.editing : CameraIconType.mock,
                 ),
@@ -452,7 +452,7 @@ class MapViewState extends State<MapView> {
             options: MapOptions(
               initialCenter: _gpsController.currentLocation ?? _positionManager.initialLocation ?? LatLng(37.7749, -122.4194),
             initialZoom: _positionManager.initialZoom ?? 15,
-            maxZoom: 19,
+            maxZoom: (appState.selectedTileType?.maxZoom ?? 18).toDouble(),
             onPositionChanged: (pos, gesture) {
               setState(() {}); // Instant UI update for zoom, etc.
               if (gesture) widget.onUserGesture();
@@ -573,7 +573,7 @@ class MapViewState extends State<MapView> {
         if (originalCoord != null) {
           lines.add(Polyline(
             points: [originalCoord, camera.coord],
-            color: kCameraRingColorPending,
+            color: kNodeRingColorPending,
             strokeWidth: 3.0,
           ));
         }

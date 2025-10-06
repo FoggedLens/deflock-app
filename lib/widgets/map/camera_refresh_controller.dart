@@ -69,12 +69,12 @@ class CameraRefreshController {
     }
     
     final zoom = controller.mapController.camera.zoom;
-    if (zoom < kCameraMinZoomLevel) {
+    if (zoom < kNodeMinZoomLevel) {
       // Show a snackbar-style bubble warning
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Cameras not drawn below zoom level $kCameraMinZoomLevel'),
+            content: Text('Nodes not drawn below zoom level $kNodeMinZoomLevel'),
             duration: const Duration(seconds: 2),
           ),
         );
