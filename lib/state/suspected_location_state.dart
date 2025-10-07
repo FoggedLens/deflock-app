@@ -12,8 +12,20 @@ class SuspectedLocationState extends ChangeNotifier {
   /// Currently selected suspected location (for detail view)
   SuspectedLocation? get selectedLocation => _selectedLocation;
 
-  /// All suspected locations
-  List<SuspectedLocation> get locations => _service.locations;
+  /// Get suspected locations in bounds (this should be called by the map view)
+  List<SuspectedLocation> getLocationsInBounds({
+    required double north,
+    required double south,
+    required double east,
+    required double west,
+  }) {
+    return _service.getLocationsInBounds(
+      north: north,
+      south: south,
+      east: east,
+      west: west,
+    );
+  }
 
   /// Whether suspected locations are enabled
   bool get isEnabled => _service.isEnabled;
@@ -62,18 +74,5 @@ class SuspectedLocationState extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Get suspected locations within a bounding box
-  List<SuspectedLocation> getLocationsInBounds({
-    required double north,
-    required double south,
-    required double east,
-    required double west,
-  }) {
-    return _service.getLocationsInBounds(
-      north: north,
-      south: south,
-      east: east,
-      west: west,
-    );
-  }
+
 }

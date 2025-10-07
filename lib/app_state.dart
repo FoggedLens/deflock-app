@@ -145,7 +145,6 @@ class AppState extends ChangeNotifier {
   List<PendingUpload> get pendingUploads => _uploadQueueState.pendingUploads;
 
   // Suspected location state
-  List<SuspectedLocation> get suspectedLocations => _suspectedLocationState.locations;
   SuspectedLocation? get selectedSuspectedLocation => _suspectedLocationState.selectedLocation;
   bool get suspectedLocationsEnabled => _suspectedLocationState.isEnabled;
   bool get suspectedLocationsLoading => _suspectedLocationState.isLoading;

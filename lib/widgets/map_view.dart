@@ -355,12 +355,16 @@ class MapViewState extends State<MapView> {
         // Build suspected location markers
         final suspectedLocationMarkers = <Marker>[];
         if (appState.suspectedLocationsEnabled && mapBounds != null) {
+          debugPrint('[MapView] Suspected locations enabled, getting bounds: N${mapBounds.north.toStringAsFixed(4)}, S${mapBounds.south.toStringAsFixed(4)}, E${mapBounds.east.toStringAsFixed(4)}, W${mapBounds.west.toStringAsFixed(4)}');
+          
           final suspectedLocations = appState.getSuspectedLocationsInBounds(
             north: mapBounds.north,
             south: mapBounds.south,
             east: mapBounds.east,
             west: mapBounds.west,
           );
+          
+          debugPrint('[MapView] Found ${suspectedLocations.length} suspected locations in bounds');
           
           suspectedLocationMarkers.addAll(
             SuspectedLocationMarkersBuilder.buildSuspectedLocationMarkers(
@@ -370,6 +374,10 @@ class MapViewState extends State<MapView> {
               onLocationTap: widget.onSuspectedLocationTap,
             ),
           );
+          
+          debugPrint('[MapView] Created ${suspectedLocationMarkers.length} suspected location markers');
+        } else {
+          debugPrint('[MapView] Suspected locations not enabled (${appState.suspectedLocationsEnabled}) or no mapBounds ($mapBounds)');
         }
 
         // Get current zoom level for direction cones

@@ -1,11 +1,14 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
+import 'package:flutter_map/flutter_map.dart';
 import 'package:http/http.dart' as http;
+import 'package:latlong2/latlong.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:csv/csv.dart';
 
 import '../models/suspected_location.dart';
+import 'suspected_location_cache.dart';
 
 class SuspectedLocationService {
   static final SuspectedLocationService _instance = SuspectedLocationService._();
@@ -13,22 +16,16 @@ class SuspectedLocationService {
   SuspectedLocationService._();
 
   static const String _csvUrl = 'https://alprwatch.org/pub/flock_utilities_mini_2025-10-06.csv';
-  static const String _prefsKeyData = 'suspected_locations_data';
-  static const String _prefsKeyLastFetch = 'suspected_locations_last_fetch';
   static const String _prefsKeyEnabled = 'suspected_locations_enabled';
   static const Duration _maxAge = Duration(days: 7);
   static const Duration _timeout = Duration(seconds: 30);
   
-  List<SuspectedLocation> _locations = [];
-  DateTime? _lastFetchTime;
+  final SuspectedLocationCache _cache = SuspectedLocationCache();
   bool _isEnabled = false;
   bool _isLoading = false;
 
-  /// Get all suspected locations
-  List<SuspectedLocation> get locations => List.unmodifiable(_locations);
-
   /// Get last fetch time
-  DateTime? get lastFetchTime => _lastFetchTime;
+  DateTime? get lastFetchTime => _cache.lastFetchTime;
 
   /// Check if suspected locations are enabled
   bool get isEnabled => _isEnabled;
@@ -39,6 +36,9 @@ class SuspectedLocationService {
   /// Initialize the service - load from storage and check if refresh needed
   Future<void> init() async {
     await _loadFromStorage();
+    
+    // Load cache data
+    await _cache.loadFromStorage();
     
     // Only auto-fetch if enabled and data is stale or missing
     if (_isEnabled && _shouldRefresh()) {
@@ -53,13 +53,13 @@ class SuspectedLocationService {
     await prefs.setBool(_prefsKeyEnabled, enabled);
     
     // If enabling for the first time and no data, fetch it
-    if (enabled && _locations.isEmpty) {
+    if (enabled && !_cache.hasData) {
       await _fetchData();
     }
     
-    // If disabling, clear the data from memory (but keep in storage)
+    // If disabling, clear the cache
     if (!enabled) {
-      _locations.clear();
+      _cache.clear();
     }
   }
 
@@ -70,12 +70,12 @@ class SuspectedLocationService {
 
   /// Check if data should be refreshed
   bool _shouldRefresh() {
-    if (_locations.isEmpty) return true;
-    if (_lastFetchTime == null) return true;
-    return DateTime.now().difference(_lastFetchTime!) > _maxAge;
+    if (!_cache.hasData) return true;
+    if (_cache.lastFetchTime == null) return true;
+    return DateTime.now().difference(_cache.lastFetchTime!) > _maxAge;
   }
 
-  /// Load data from shared preferences
+  /// Load settings from shared preferences
   Future<void> _loadFromStorage() async {
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -83,50 +83,9 @@ class SuspectedLocationService {
       // Load enabled state
       _isEnabled = prefs.getBool(_prefsKeyEnabled) ?? false;
       
-      // Load last fetch time
-      final lastFetchMs = prefs.getInt(_prefsKeyLastFetch);
-      if (lastFetchMs != null) {
-        _lastFetchTime = DateTime.fromMillisecondsSinceEpoch(lastFetchMs);
-      }
-      
-      // Only load data if enabled
-      if (!_isEnabled) {
-        return;
-      }
-      
-      // Load data
-      final jsonString = prefs.getString(_prefsKeyData);
-      if (jsonString != null) {
-        final List<dynamic> jsonList = jsonDecode(jsonString);
-        _locations = jsonList
-            .map((json) => SuspectedLocation.fromJson(json as Map<String, dynamic>))
-            .toList();
-        debugPrint('[SuspectedLocationService] Loaded ${_locations.length} suspected locations from storage');
-      }
+      debugPrint('[SuspectedLocationService] Loaded settings - enabled: $_isEnabled');
     } catch (e) {
       debugPrint('[SuspectedLocationService] Error loading from storage: $e');
-      _locations.clear();
-      _lastFetchTime = null;
-    }
-  }
-
-  /// Save data to shared preferences
-  Future<void> _saveToStorage() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      
-      // Save data
-      final jsonString = jsonEncode(_locations.map((loc) => loc.toJson()).toList());
-      await prefs.setString(_prefsKeyData, jsonString);
-      
-      // Save last fetch time
-      if (_lastFetchTime != null) {
-        await prefs.setInt(_prefsKeyLastFetch, _lastFetchTime!.millisecondsSinceEpoch);
-      }
-      
-      debugPrint('[SuspectedLocationService] Saved ${_locations.length} suspected locations to storage');
-    } catch (e) {
-      debugPrint('[SuspectedLocationService] Error saving to storage: $e');
     }
   }
 
@@ -188,9 +147,10 @@ class SuspectedLocationService {
         return false;
       }
       
-      // Parse rows
-      final List<SuspectedLocation> newLocations = [];
+      // Parse rows and store as raw data (don't process GeoJSON yet)
+      final List<Map<String, dynamic>> rawDataList = [];
       int rowIndex = 0;
+      int validRows = 0;
       for (final row in dataRows) {
         rowIndex++;
         try {
@@ -213,28 +173,30 @@ class SuspectedLocationService {
           }
           if (locationIndex < row.length) rowData['location'] = row[locationIndex];
           
-          debugPrint('[SuspectedLocationService] Row $rowIndex data keys: ${rowData.keys.toList()}');
-          if (rowIndex <= 3) { // Log first few rows
-            debugPrint('[SuspectedLocationService] Row $rowIndex ticket_no: ${rowData['ticket_no']}, location length: ${rowData['location']?.toString().length}');
+          // Basic validation - must have ticket_no and location
+          if (rowData['ticket_no']?.toString().isNotEmpty == true && 
+              rowData['location']?.toString().isNotEmpty == true) {
+            rawDataList.add(rowData);
+            validRows++;
           }
           
-          final location = SuspectedLocation.fromCsvRow(rowData);
-          newLocations.add(location);
+          // Log progress every 1000 rows
+          if (rowIndex % 1000 == 0) {
+            debugPrint('[SuspectedLocationService] Processing row $rowIndex...');
+          }
         } catch (e, stackTrace) {
           // Skip rows that can't be parsed
           debugPrint('[SuspectedLocationService] Error parsing row $rowIndex: $e');
-          debugPrint('[SuspectedLocationService] Stack trace: $stackTrace');
           continue;
         }
       }
       
-      _locations = newLocations;
-      _lastFetchTime = DateTime.now();
+      final fetchTime = DateTime.now();
       
-      // Save to storage
-      await _saveToStorage();
+      // Process raw data and save (calculates centroids once)
+      await _cache.processAndSave(rawDataList, fetchTime);
       
-      debugPrint('[SuspectedLocationService] Successfully fetched and parsed ${_locations.length} suspected locations');
+      debugPrint('[SuspectedLocationService] Successfully fetched and stored $validRows valid raw entries (${rawDataList.length} total)');
       return true;
       
     } catch (e, stackTrace) {
@@ -253,13 +215,9 @@ class SuspectedLocationService {
     required double east,
     required double west,
   }) {
-    if (!_isEnabled || _locations.isEmpty) return [];
-    
-    return _locations.where((location) {
-      final lat = location.centroid.latitude;
-      final lng = location.centroid.longitude;
-      
-      return lat <= north && lat >= south && lng <= east && lng >= west;
-    }).toList();
+    return _cache.getLocationsForBounds(LatLngBounds(
+      LatLng(north, west),
+      LatLng(south, east),
+    ));
   }
 }
