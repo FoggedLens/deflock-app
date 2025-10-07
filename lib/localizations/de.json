@@ -341,5 +341,40 @@
     "imperial": "Britisch (mi, ft)",
     "meters": "Meter",
     "feet": "Fuß"
+  },
+  "suspectedLocations": {
+    "title": "Verdächtige Standorte",
+    "showSuspectedLocations": "Verdächtige Standorte anzeigen",
+    "showSuspectedLocationsSubtitle": "Fragezeichen-Marker für vermutete Überwachungsstandorte aus Versorgungsgenehmigungsdaten anzeigen",
+    "lastUpdated": "Zuletzt aktualisiert",
+    "refreshNow": "Jetzt aktualisieren",
+    "dataSource": "Datenquelle",
+    "dataSourceDescription": "Versorgungsgenehmigungsdaten, die auf potenzielle Installationsstandorte für Überwachungsinfrastruktur hinweisen",
+    "dataSourceCredit": "Datensammlung und -hosting bereitgestellt von alprwatch.org",
+    "minimumDistance": "Mindestabstand zu echten Geräten",
+    "minimumDistanceSubtitle": "Verdächtige Standorte innerhalb von {}m vorhandener Überwachungsgeräte ausblenden",
+    "updating": "Verdächtige Standorte werden aktualisiert",
+    "downloadingAndProcessing": "Daten werden heruntergeladen und verarbeitet...",
+    "updateSuccess": "Verdächtige Standorte erfolgreich aktualisiert",
+    "updateFailed": "Aktualisierung der verdächtigen Standorte fehlgeschlagen",
+    "neverFetched": "Nie abgerufen",
+    "daysAgo": "vor {} Tagen",
+    "hoursAgo": "vor {} Stunden", 
+    "minutesAgo": "vor {} Minuten",
+    "justNow": "Gerade eben"
+  },
+  "suspectedLocation": {
+    "title": "Verdächtiger Standort #{}",
+    "ticketNo": "Ticket-Nr.",
+    "address": "Adresse",
+    "street": "Straße", 
+    "city": "Stadt",
+    "state": "Bundesland",
+    "intersectingStreet": "Kreuzende Straße",
+    "workDoneFor": "Arbeit ausgeführt für",
+    "remarks": "Bemerkungen",
+    "url": "URL",
+    "coordinates": "Koordinaten",
+    "noAddressAvailable": "Keine Adresse verfügbar"
   }
 }

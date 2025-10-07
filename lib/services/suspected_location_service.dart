@@ -15,7 +15,7 @@ class SuspectedLocationService {
   factory SuspectedLocationService() => _instance;
   SuspectedLocationService._();
 
-  static const String _csvUrl = 'https://alprwatch.org/pub/flock_utilities_mini_2025-10-06.csv';
+  static const String _csvUrl = 'https://alprwatch.org/pub/flock_utilities_mini_latest.csv';
   static const String _prefsKeyEnabled = 'suspected_locations_enabled';
   static const Duration _maxAge = Duration(days: 7);
   static const Duration _timeout = Duration(seconds: 30);
@@ -187,9 +187,8 @@ class SuspectedLocationService {
             validRows++;
           }
           
-          // Log progress every 1000 rows and report to UI
+          // Report progress every 1000 rows 
           if (rowIndex % 1000 == 0) {
-            debugPrint('[SuspectedLocationService] Processing row $rowIndex...');
             final progress = 0.4 + (rowIndex / dataRows.length) * 0.4; // 40% to 80% of total
             onProgress?.call('Processing row $rowIndex...', progress);
           }

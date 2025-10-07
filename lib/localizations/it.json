@@ -341,5 +341,40 @@
     "imperial": "Imperiale (mi, ft)",
     "meters": "metri",
     "feet": "piedi"
+  },
+  "suspectedLocations": {
+    "title": "Posizioni Sospette",
+    "showSuspectedLocations": "Mostra Posizioni Sospette",
+    "showSuspectedLocationsSubtitle": "Mostra marcatori punto interrogativo per siti di sorveglianza sospetti dai dati dei permessi dei servizi pubblici",
+    "lastUpdated": "Ultimo Aggiornamento",
+    "refreshNow": "Aggiorna ora",
+    "dataSource": "Fonte Dati",
+    "dataSourceDescription": "Dati dei permessi dei servizi pubblici che indicano potenziali siti di installazione di infrastrutture di sorveglianza",
+    "dataSourceCredit": "Raccolta e hosting dei dati forniti da alprwatch.org",
+    "minimumDistance": "Distanza Minima dai Nodi Reali",
+    "minimumDistanceSubtitle": "Nascondi posizioni sospette entro {}m dai dispositivi di sorveglianza esistenti",
+    "updating": "Aggiornamento Posizioni Sospette",
+    "downloadingAndProcessing": "Scaricamento e elaborazione dati...",
+    "updateSuccess": "Posizioni sospette aggiornate con successo",
+    "updateFailed": "Aggiornamento posizioni sospette fallito",
+    "neverFetched": "Mai recuperato",
+    "daysAgo": "{} giorni fa",
+    "hoursAgo": "{} ore fa", 
+    "minutesAgo": "{} minuti fa",
+    "justNow": "Proprio ora"
+  },
+  "suspectedLocation": {
+    "title": "Posizione Sospetta #{}",
+    "ticketNo": "N. Ticket",
+    "address": "Indirizzo",
+    "street": "Via", 
+    "city": "Città",
+    "state": "Stato",
+    "intersectingStreet": "Via che Interseca",
+    "workDoneFor": "Lavoro Svolto Per",
+    "remarks": "Osservazioni",
+    "url": "URL",
+    "coordinates": "Coordinate",
+    "noAddressAvailable": "Nessun indirizzo disponibile"
   }
 }

@@ -341,5 +341,40 @@
     "imperial": "Impérial (mi, ft)",
     "meters": "mètres",
     "feet": "pieds"
+  },
+  "suspectedLocations": {
+    "title": "Emplacements Suspects",
+    "showSuspectedLocations": "Afficher les Emplacements Suspects",
+    "showSuspectedLocationsSubtitle": "Afficher des marqueurs en point d'interrogation pour les sites de surveillance suspectés à partir des données de permis de services publics",
+    "lastUpdated": "Dernière Mise à Jour",
+    "refreshNow": "Actualiser maintenant",
+    "dataSource": "Source de Données",
+    "dataSourceDescription": "Données de permis de services publics indiquant des sites d'installation potentiels d'infrastructure de surveillance",
+    "dataSourceCredit": "Collecte et hébergement des données fournis par alprwatch.org",
+    "minimumDistance": "Distance Minimale des Nœuds Réels",
+    "minimumDistanceSubtitle": "Masquer les emplacements suspects dans un rayon de {}m des dispositifs de surveillance existants",
+    "updating": "Mise à Jour des Emplacements Suspects",
+    "downloadingAndProcessing": "Téléchargement et traitement des données...",
+    "updateSuccess": "Emplacements suspects mis à jour avec succès",
+    "updateFailed": "Échec de la mise à jour des emplacements suspects",
+    "neverFetched": "Jamais récupéré",
+    "daysAgo": "il y a {} jours",
+    "hoursAgo": "il y a {} heures", 
+    "minutesAgo": "il y a {} minutes",
+    "justNow": "À l'instant"
+  },
+  "suspectedLocation": {
+    "title": "Emplacement Suspect #{}",
+    "ticketNo": "N° de Ticket",
+    "address": "Adresse",
+    "street": "Rue", 
+    "city": "Ville",
+    "state": "État",
+    "intersectingStreet": "Rue Transversale",
+    "workDoneFor": "Travail Effectué Pour",
+    "remarks": "Remarques",
+    "url": "URL",
+    "coordinates": "Coordonnées",
+    "noAddressAvailable": "Aucune adresse disponible"
   }
 }

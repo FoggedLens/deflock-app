@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../services/localization_service.dart';
 
 class SuspectedLocationProgressDialog extends StatelessWidget {
   final String title;
@@ -46,7 +47,7 @@ class SuspectedLocationProgressDialog extends StatelessWidget {
         if (onCancel != null)
           TextButton(
             onPressed: onCancel,
-            child: const Text('Cancel'),
+            child: Text(LocalizationService.instance.cancel),
           ),
       ],
     );

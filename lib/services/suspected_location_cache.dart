@@ -160,15 +160,9 @@ class SuspectedLocationCache extends ChangeNotifier {
             validCount++;
           } else {
             zeroCoordCount++;
-            if (i < 3) { // Log first few zero coord cases
-              debugPrint('[SuspectedLocationCache] Row $i has zero coordinates: ticket=${rowData['ticket_no']}, location=${rowData['location']?.toString().length} chars');
-            }
           }
         } catch (e) {
           errorCount++;
-          if (errorCount <= 5) { // Log first few errors
-            debugPrint('[SuspectedLocationCache] Row $i error: $e, ticket=${rowData['ticket_no']}');
-          }
           continue;
         }
       }

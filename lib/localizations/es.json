@@ -341,5 +341,40 @@
     "imperial": "Imperial (mi, ft)",
     "meters": "metros",
     "feet": "pies"
+  },
+  "suspectedLocations": {
+    "title": "Ubicaciones Sospechosas",
+    "showSuspectedLocations": "Mostrar Ubicaciones Sospechosas",
+    "showSuspectedLocationsSubtitle": "Mostrar marcadores de interrogación para sitios de vigilancia sospechosos de datos de permisos de servicios públicos",
+    "lastUpdated": "Última Actualización",
+    "refreshNow": "Actualizar ahora",
+    "dataSource": "Fuente de Datos",
+    "dataSourceDescription": "Datos de permisos de servicios públicos que indican posibles sitios de instalación de infraestructura de vigilancia",
+    "dataSourceCredit": "Recopilación y alojamiento de datos proporcionado por alprwatch.org",
+    "minimumDistance": "Distancia Mínima de Nodos Reales",
+    "minimumDistanceSubtitle": "Ocultar ubicaciones sospechosas dentro de {}m de dispositivos de vigilancia existentes",
+    "updating": "Actualizando Ubicaciones Sospechosas",
+    "downloadingAndProcessing": "Descargando y procesando datos...",
+    "updateSuccess": "Ubicaciones sospechosas actualizadas exitosamente",
+    "updateFailed": "Error al actualizar ubicaciones sospechosas",
+    "neverFetched": "Nunca obtenido",
+    "daysAgo": "hace {} días",
+    "hoursAgo": "hace {} horas", 
+    "minutesAgo": "hace {} minutos",
+    "justNow": "Ahora mismo"
+  },
+  "suspectedLocation": {
+    "title": "Ubicación Sospechosa #{}",
+    "ticketNo": "No. de Ticket",
+    "address": "Dirección",
+    "street": "Calle", 
+    "city": "Ciudad",
+    "state": "Estado",
+    "intersectingStreet": "Calle que Intersecta",
+    "workDoneFor": "Trabajo Realizado Para",
+    "remarks": "Observaciones",
+    "url": "URL",
+    "coordinates": "Coordenadas",
+    "noAddressAvailable": "No hay dirección disponible"
   }
 }

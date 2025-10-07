@@ -341,5 +341,40 @@
     "imperial": "英制（英里，英尺）",
     "meters": "米",
     "feet": "英尺"
+  },
+  "suspectedLocations": {
+    "title": "疑似位置",
+    "showSuspectedLocations": "显示疑似位置",
+    "showSuspectedLocationsSubtitle": "根据公用事业许可数据显示疑似监控站点的问号标记",
+    "lastUpdated": "最后更新",
+    "refreshNow": "立即刷新",
+    "dataSource": "数据源",
+    "dataSourceDescription": "公用事业许可数据，表明潜在的监控基础设施安装站点",
+    "dataSourceCredit": "数据收集和托管由 alprwatch.org 提供",
+    "minimumDistance": "与真实节点的最小距离",
+    "minimumDistanceSubtitle": "隐藏现有监控设备{}米范围内的疑似位置",
+    "updating": "正在更新疑似位置",
+    "downloadingAndProcessing": "正在下载和处理数据...",
+    "updateSuccess": "疑似位置更新成功",
+    "updateFailed": "疑似位置更新失败",
+    "neverFetched": "从未获取",
+    "daysAgo": "{}天前",
+    "hoursAgo": "{}小时前", 
+    "minutesAgo": "{}分钟前",
+    "justNow": "刚刚"
+  },
+  "suspectedLocation": {
+    "title": "疑似位置 #{}",
+    "ticketNo": "工单号",
+    "address": "地址",
+    "street": "街道", 
+    "city": "城市",
+    "state": "州/省",
+    "intersectingStreet": "交叉街道",
+    "workDoneFor": "工作完成方",
+    "remarks": "备注",
+    "url": "网址",
+    "coordinates": "坐标",
+    "noAddressAvailable": "无可用地址"
   }
 }

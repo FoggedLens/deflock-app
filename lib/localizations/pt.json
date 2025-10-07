@@ -341,5 +341,40 @@
     "imperial": "Imperial (mi, ft)",
     "meters": "metros",
     "feet": "pés"
+  },
+  "suspectedLocations": {
+    "title": "Localizações Suspeitas",
+    "showSuspectedLocations": "Mostrar Localizações Suspeitas",
+    "showSuspectedLocationsSubtitle": "Mostrar marcadores de ponto de interrogação para sites de vigilância suspeitos de dados de licenças de serviços públicos",
+    "lastUpdated": "Última Atualização",
+    "refreshNow": "Atualizar agora",
+    "dataSource": "Fonte de Dados",
+    "dataSourceDescription": "Dados de licenças de serviços públicos indicando possíveis locais de instalação de infraestrutura de vigilância",
+    "dataSourceCredit": "Coleta e hospedagem de dados fornecidas por alprwatch.org",
+    "minimumDistance": "Distância Mínima de Nós Reais",
+    "minimumDistanceSubtitle": "Ocultar localizações suspeitas dentro de {}m de dispositivos de vigilância existentes",
+    "updating": "Atualizando Localizações Suspeitas",
+    "downloadingAndProcessing": "Baixando e processando dados...",
+    "updateSuccess": "Localizações suspeitas atualizadas com sucesso",
+    "updateFailed": "Falha ao atualizar localizações suspeitas",
+    "neverFetched": "Nunca buscado",
+    "daysAgo": "{} dias atrás",
+    "hoursAgo": "{} horas atrás", 
+    "minutesAgo": "{} minutos atrás",
+    "justNow": "Agora mesmo"
+  },
+  "suspectedLocation": {
+    "title": "Localização Suspeita #{}",
+    "ticketNo": "N° do Ticket",
+    "address": "Endereço",
+    "street": "Rua", 
+    "city": "Cidade",
+    "state": "Estado",
+    "intersectingStreet": "Rua que Cruza",
+    "workDoneFor": "Trabalho Feito Para",
+    "remarks": "Observações",
+    "url": "URL",
+    "coordinates": "Coordenadas",
+    "noAddressAvailable": "Nenhum endereço disponível"
   }
 }

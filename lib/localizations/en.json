@@ -341,5 +341,40 @@
     "imperial": "Imperial (mi, ft)",
     "meters": "meters",
     "feet": "feet"
+  },
+  "suspectedLocations": {
+    "title": "Suspected Locations",
+    "showSuspectedLocations": "Show Suspected Locations",
+    "showSuspectedLocationsSubtitle": "Show question mark markers for suspected surveillance sites from utility permit data",
+    "lastUpdated": "Last Updated",
+    "refreshNow": "Refresh now",
+    "dataSource": "Data Source",
+    "dataSourceDescription": "Utility permit data indicating potential surveillance infrastructure installation sites",
+    "dataSourceCredit": "Data collection and hosting provided by alprwatch.org",
+    "minimumDistance": "Minimum Distance from Real Nodes",
+    "minimumDistanceSubtitle": "Hide suspected locations within {}m of existing surveillance devices",
+    "updating": "Updating Suspected Locations",
+    "downloadingAndProcessing": "Downloading and processing data...",
+    "updateSuccess": "Suspected locations updated successfully",
+    "updateFailed": "Failed to update suspected locations",
+    "neverFetched": "Never fetched",
+    "daysAgo": "{} days ago",
+    "hoursAgo": "{} hours ago", 
+    "minutesAgo": "{} minutes ago",
+    "justNow": "Just now"
+  },
+  "suspectedLocation": {
+    "title": "Suspected Location #{}",
+    "ticketNo": "Ticket No",
+    "address": "Address",
+    "street": "Street", 
+    "city": "City",
+    "state": "State",
+    "intersectingStreet": "Intersecting Street",
+    "workDoneFor": "Work Done For",
+    "remarks": "Remarks",
+    "url": "URL",
+    "coordinates": "Coordinates",
+    "noAddressAvailable": "No address available"
   }
 }

@@ -20,18 +20,18 @@ class SuspectedLocationsSection extends StatelessWidget {
         
         String getLastFetchText() {
           if (lastFetch == null) {
-            return 'Never fetched';
+            return locService.t('suspectedLocations.neverFetched');
           } else {
             final now = DateTime.now();
             final diff = now.difference(lastFetch);
             if (diff.inDays > 0) {
-              return '${diff.inDays} days ago';
+              return locService.t('suspectedLocations.daysAgo', params: [diff.inDays.toString()]);
             } else if (diff.inHours > 0) {
-              return '${diff.inHours} hours ago';
+              return locService.t('suspectedLocations.hoursAgo', params: [diff.inHours.toString()]);
             } else if (diff.inMinutes > 0) {
-              return '${diff.inMinutes} minutes ago';
+              return locService.t('suspectedLocations.minutesAgo', params: [diff.inMinutes.toString()]);
             } else {
-              return 'Just now';
+              return locService.t('suspectedLocations.justNow');
             }
           }
         }
@@ -43,9 +43,9 @@ class SuspectedLocationsSection extends StatelessWidget {
           showDialog(
             context: context,
             barrierDismissible: false,
-            builder: (progressContext) => const SuspectedLocationProgressDialog(
-              title: 'Updating Suspected Locations',
-              message: 'Downloading and processing data...',
+            builder: (progressContext) => SuspectedLocationProgressDialog(
+              title: locService.t('suspectedLocations.updating'),
+              message: locService.t('suspectedLocations.downloadingAndProcessing'),
             ),
           );
           
@@ -57,13 +57,13 @@ class SuspectedLocationsSection extends StatelessWidget {
             Navigator.of(context).pop();
             
             // Show result snackbar
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(success 
-                    ? 'Suspected locations updated successfully' 
-                    : 'Failed to update suspected locations'),
-              ),
-            );
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(success 
+                      ? locService.t('suspectedLocations.updateSuccess')
+                      : locService.t('suspectedLocations.updateFailed')),
+                ),
+              );
           }
         }
         
@@ -71,7 +71,7 @@ class SuspectedLocationsSection extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Suspected Locations',
+              locService.t('suspectedLocations.title'),
               style: Theme.of(context).textTheme.titleMedium,
             ),
             const SizedBox(height: 8),
@@ -79,8 +79,8 @@ class SuspectedLocationsSection extends StatelessWidget {
             // Enable/disable switch
             ListTile(
               leading: const Icon(Icons.help_outline),
-              title: const Text('Show Suspected Locations'),
-              subtitle: const Text('Show question mark markers for suspected surveillance sites from utility permit data'),
+              title: Text(locService.t('suspectedLocations.showSuspectedLocations')),
+              subtitle: Text(locService.t('suspectedLocations.showSuspectedLocationsSubtitle')),
               trailing: Switch(
                 value: isEnabled,
                 onChanged: (enabled) {
@@ -95,7 +95,7 @@ class SuspectedLocationsSection extends StatelessWidget {
               // Last update time
               ListTile(
                 leading: const Icon(Icons.schedule),
-                title: const Text('Last Updated'),
+                title: Text(locService.t('suspectedLocations.lastUpdated')),
                 subtitle: Text(getLastFetchText()),
                 trailing: isLoading
                     ? const SizedBox(
@@ -106,22 +106,35 @@ class SuspectedLocationsSection extends StatelessWidget {
                     : IconButton(
                         icon: const Icon(Icons.refresh),
                         onPressed: handleRefresh,
-                        tooltip: 'Refresh now',
+                        tooltip: locService.t('suspectedLocations.refreshNow'),
                       ),
               ),
               
-              // Data info
+              // Data info with credit
               ListTile(
                 leading: const Icon(Icons.info_outline),
-                title: const Text('Data Source'),
-                subtitle: const Text('Utility permit data indicating potential surveillance infrastructure installation sites'),
+                title: Text(locService.t('suspectedLocations.dataSource')),
+                subtitle: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(locService.t('suspectedLocations.dataSourceDescription')),
+                    const SizedBox(height: 4),
+                    Text(
+                      locService.t('suspectedLocations.dataSourceCredit'),
+                      style: TextStyle(
+                        fontWeight: FontWeight.w500,
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
+                    ),
+                  ],
+                ),
               ),
               
               // Minimum distance setting
               ListTile(
                 leading: const Icon(Icons.social_distance),
-                title: const Text('Minimum Distance from Real Nodes'),
-                subtitle: Text('Hide suspected locations within ${appState.suspectedLocationMinDistance}m of existing surveillance devices'),
+                title: Text(locService.t('suspectedLocations.minimumDistance')),
+                subtitle: Text(locService.t('suspectedLocations.minimumDistanceSubtitle', params: [appState.suspectedLocationMinDistance.toString()])),
                 trailing: SizedBox(
                   width: 80,
                   child: TextFormField(

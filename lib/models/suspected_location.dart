@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:math' as math;
 import 'package:latlong2/latlong.dart';
 
 /// A suspected surveillance location from the CSV data
@@ -42,36 +41,10 @@ class SuspectedLocation {
     // Parse GeoJSON if available
     if (locationString != null && locationString.isNotEmpty) {
       try {
-        // Only log first few entries to avoid spam
-        final ticketNo = row['ticket_no']?.toString() ?? 'unknown';
-        if (ticketNo.endsWith('0') || ticketNo.endsWith('1') || ticketNo.endsWith('2')) {
-          print('[SuspectedLocation] Raw location string for ticket $ticketNo: ${locationString.substring(0, math.min(100, locationString.length))}...');
-        }
-        if (ticketNo.endsWith('0') || ticketNo.endsWith('1') || ticketNo.endsWith('2')) {
-          if (centroid.latitude != 0 || centroid.longitude != 0) {
-            print('[SuspectedLocation] Successfully parsed centroid: $centroid');
-          } else {
-            print('[SuspectedLocation] Parsed but got zero coordinates');
-          }
-        }
         geoJson = jsonDecode(locationString) as Map<String, dynamic>;
         final coordinates = _extractCoordinatesFromGeoJson(geoJson);
         centroid = coordinates.centroid;
         bounds = coordinates.bounds;
-        if (ticketNo.endsWith('0') || ticketNo.endsWith('1') || ticketNo.endsWith('2')) {
-          if (centroid.latitude != 0 || centroid.longitude != 0) {
-            print('[SuspectedLocation] Successfully parsed centroid: $centroid');
-          } else {
-            print('[SuspectedLocation] Parsed but got zero coordinates');
-          }
-        }
-        if (ticketNo.endsWith('0') || ticketNo.endsWith('1') || ticketNo.endsWith('2')) {
-          if (centroid.latitude != 0 || centroid.longitude != 0) {
-            print('[SuspectedLocation] Successfully parsed centroid: $centroid');
-          } else {
-            print('[SuspectedLocation] Parsed but got zero coordinates');
-          }
-        }
       } catch (e) {
         // If GeoJSON parsing fails, use default coordinates
         print('[SuspectedLocation] Failed to parse GeoJSON for ticket ${row['ticket_no']}: $e');

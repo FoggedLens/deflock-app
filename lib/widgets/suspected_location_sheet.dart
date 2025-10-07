@@ -36,17 +36,17 @@ class SuspectedLocationSheet extends StatelessWidget {
           }
         }
 
-        // Create display data map
+        // Create display data map using localized labels
         final Map<String, String?> displayData = {
-          'Ticket No': location.ticketNo,
-          'Address': location.addr,
-          'Street': location.street,
-          'City': location.city,
-          'State': location.state,
-          'Intersecting Street': location.digSiteIntersectingStreet,
-          'Work Done For': location.digWorkDoneFor,
-          'Remarks': location.digSiteRemarks,
-          'URL': location.urlFull,
+          locService.t('suspectedLocation.ticketNo'): location.ticketNo,
+          locService.t('suspectedLocation.address'): location.addr,
+          locService.t('suspectedLocation.street'): location.street,
+          locService.t('suspectedLocation.city'): location.city,
+          locService.t('suspectedLocation.state'): location.state,
+          locService.t('suspectedLocation.intersectingStreet'): location.digSiteIntersectingStreet,
+          locService.t('suspectedLocation.workDoneFor'): location.digWorkDoneFor,
+          locService.t('suspectedLocation.remarks'): location.digSiteRemarks,
+          locService.t('suspectedLocation.url'): location.urlFull,
         };
 
         return SafeArea(
@@ -58,7 +58,7 @@ class SuspectedLocationSheet extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Suspected Location #${location.ticketNo}',
+                    locService.t('suspectedLocation.title', params: [location.ticketNo]),
                     style: Theme.of(context).textTheme.titleLarge,
                   ),
                   const SizedBox(height: 12),
@@ -113,7 +113,7 @@ class SuspectedLocationSheet extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Coordinates',
+                          locService.t('suspectedLocation.coordinates'),
                           style: TextStyle(
                             fontWeight: FontWeight.w500,
                             color: Theme.of(context).colorScheme.onSurface,
