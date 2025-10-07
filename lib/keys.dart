@@ -2,6 +2,32 @@
 //
 // NEVER commit real secrets to public repos. For open source, use keys.dart.example instead.
 
-const String kOsmProdClientId = 'U8p_n6IjZfQiL1KtdiwbB0-o9nto6CAKz7LC2GifJzk'; // example - replace with real
-const String kOsmSandboxClientId = 'SBHWpWTKf31EdSiTApnah3Fj2rLnk2pEwBORlX0NyZI'; // example - replace with real
+import 'dart:io';
+
+// Fallback client IDs for local development - replace with your own if building locally
+const String _kOsmProdClientIdFallback = ''; // Put your fallback production client ID here
+const String _kOsmSandboxClientIdFallback = ''; // Put your fallback sandbox client ID here
+
+// Get client IDs from environment variables first, then fallback to constants
+String get kOsmProdClientId {
+  final envValue = Platform.environment['OSM_PROD_CLIENTID'];
+  if (envValue != null && envValue.isNotEmpty) {
+    return envValue;
+  }
+  if (_kOsmProdClientIdFallback.isNotEmpty) {
+    return _kOsmProdClientIdFallback;
+  }
+  throw Exception('OSM Production Client ID not configured. Set OSM_PROD_CLIENTID environment variable or configure fallback in keys.dart');
+}
+
+String get kOsmSandboxClientId {
+  final envValue = Platform.environment['OSM_SANDBOX_CLIENTID'];
+  if (envValue != null && envValue.isNotEmpty) {
+    return envValue;
+  }
+  if (_kOsmSandboxClientIdFallback.isNotEmpty) {
+    return _kOsmSandboxClientIdFallback;
+  }
+  throw Exception('OSM Sandbox Client ID not configured. Set OSM_SANDBOX_CLIENTID environment variable or configure fallback in keys.dart');
+}
 

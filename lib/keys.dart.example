@@ -1,3 +1,0 @@
-// Example OSM OAuth key config
-const String kOsmProdClientId = 'YOUR_PROD_CLIENT_ID_HERE';
-const String kOsmSandboxClientId = 'YOUR_SANDBOX_CLIENT_ID_HERE';
