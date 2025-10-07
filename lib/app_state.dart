@@ -132,6 +132,7 @@ class AppState extends ChangeNotifier {
   bool get proximityAlertsEnabled => _settingsState.proximityAlertsEnabled;
   int get proximityAlertDistance => _settingsState.proximityAlertDistance;
   bool get networkStatusIndicatorEnabled => _settingsState.networkStatusIndicatorEnabled;
+  int get suspectedLocationMinDistance => _settingsState.suspectedLocationMinDistance;
   
   // Tile provider state
   List<TileProvider> get tileProviders => _settingsState.tileProviders;
@@ -420,6 +421,11 @@ class AppState extends ChangeNotifier {
     await _settingsState.setNetworkStatusIndicatorEnabled(enabled);
   }
 
+  /// Set suspected location minimum distance from real nodes
+  Future<void> setSuspectedLocationMinDistance(int distance) async {
+    await _settingsState.setSuspectedLocationMinDistance(distance);
+  }
+
   // ---------- Queue Methods ----------
   void clearQueue() {
     _uploadQueueState.clearQueue();
@@ -439,8 +445,10 @@ class AppState extends ChangeNotifier {
     await _suspectedLocationState.setEnabled(enabled);
   }
 
-  Future<bool> refreshSuspectedLocations() async {
-    return await _suspectedLocationState.refreshData();
+  Future<bool> refreshSuspectedLocations({
+    void Function(String message, double? progress)? onProgress,
+  }) async {
+    return await _suspectedLocationState.refreshData(onProgress: onProgress);
   }
 
   void selectSuspectedLocation(SuspectedLocation location) {

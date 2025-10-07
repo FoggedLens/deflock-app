@@ -52,7 +52,7 @@ class SuspectedLocationCache extends ChangeNotifier {
     
     final boundsKey = '${bounds.north.toStringAsFixed(4)},${bounds.south.toStringAsFixed(4)},${bounds.east.toStringAsFixed(4)},${bounds.west.toStringAsFixed(4)}';
     
-    debugPrint('[SuspectedLocationCache] Getting locations for bounds: $boundsKey, processed entries count: ${_processedEntries.length}');
+    // debugPrint('[SuspectedLocationCache] Getting locations for bounds: $boundsKey, processed entries count: ${_processedEntries.length}');
     
     // Check cache first
     if (_boundsCache.containsKey(boundsKey)) {
@@ -83,7 +83,7 @@ class SuspectedLocationCache extends ChangeNotifier {
       }
     }
     
-    debugPrint('[SuspectedLocationCache] Checked ${_processedEntries.length} entries, $inBoundsCount in bounds, result: ${locations.length} locations');
+    // debugPrint('[SuspectedLocationCache] Checked ${_processedEntries.length} entries, $inBoundsCount in bounds, result: ${locations.length} locations');
     
     // Cache the result
     _boundsCache[boundsKey] = locations;
@@ -125,7 +125,11 @@ class SuspectedLocationCache extends ChangeNotifier {
   }
   
   /// Process raw CSV data and save to storage (calculates centroids once)
-  Future<void> processAndSave(List<Map<String, dynamic>> rawData, DateTime fetchTime) async {
+  Future<void> processAndSave(
+    List<Map<String, dynamic>> rawData, 
+    DateTime fetchTime, {
+    void Function(String message, double? progress)? onProgress,
+  }) async {
     try {
       debugPrint('[SuspectedLocationCache] Processing ${rawData.length} raw entries...');
       
@@ -136,6 +140,13 @@ class SuspectedLocationCache extends ChangeNotifier {
       
       for (int i = 0; i < rawData.length; i++) {
         final rowData = rawData[i];
+        
+        // Report progress every 1000 entries
+        if (i % 1000 == 0) {
+          final progress = i / rawData.length;
+          onProgress?.call('Calculating coordinates: ${i + 1}/${rawData.length}', progress);
+        }
+        
         try {
           // Create a temporary SuspectedLocation to extract the centroid
           final tempLocation = SuspectedLocation.fromCsvRow(rowData);

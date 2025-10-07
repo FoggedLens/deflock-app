@@ -64,8 +64,10 @@ class SuspectedLocationService {
   }
 
   /// Manually refresh the data
-  Future<bool> refreshData() async {
-    return await _fetchData();
+  Future<bool> refreshData({
+    void Function(String message, double? progress)? onProgress,
+  }) async {
+    return await _fetchData(onProgress: onProgress);
   }
 
   /// Check if data should be refreshed
@@ -90,11 +92,14 @@ class SuspectedLocationService {
   }
 
   /// Fetch data from the CSV URL
-  Future<bool> _fetchData() async {
+  Future<bool> _fetchData({
+    void Function(String message, double? progress)? onProgress,
+  }) async {
     if (_isLoading) return false;
     
     _isLoading = true;
     try {
+      onProgress?.call('Downloading CSV data...', null);
       debugPrint('[SuspectedLocationService] Fetching CSV data from $_csvUrl');
       
       final response = await http.get(
@@ -108,6 +113,8 @@ class SuspectedLocationService {
         debugPrint('[SuspectedLocationService] HTTP error ${response.statusCode}');
         return false;
       }
+      
+      onProgress?.call('Parsing CSV data...', 0.2);
       
       // Parse CSV with proper field separator and quote handling
       final csvData = const CsvToListConverter(
@@ -180,9 +187,11 @@ class SuspectedLocationService {
             validRows++;
           }
           
-          // Log progress every 1000 rows
+          // Log progress every 1000 rows and report to UI
           if (rowIndex % 1000 == 0) {
             debugPrint('[SuspectedLocationService] Processing row $rowIndex...');
+            final progress = 0.4 + (rowIndex / dataRows.length) * 0.4; // 40% to 80% of total
+            onProgress?.call('Processing row $rowIndex...', progress);
           }
         } catch (e, stackTrace) {
           // Skip rows that can't be parsed
@@ -191,10 +200,18 @@ class SuspectedLocationService {
         }
       }
       
+      onProgress?.call('Calculating coordinates...', 0.8);
+      
       final fetchTime = DateTime.now();
       
       // Process raw data and save (calculates centroids once)
-      await _cache.processAndSave(rawDataList, fetchTime);
+      await _cache.processAndSave(rawDataList, fetchTime, onProgress: (message, progress) {
+        // Map cache progress to final 20% (0.8 to 1.0)
+        final finalProgress = 0.8 + (progress ?? 0) * 0.2;
+        onProgress?.call(message, finalProgress);
+      });
+      
+      onProgress?.call('Complete!', 1.0);
       
       debugPrint('[SuspectedLocationService] Successfully fetched and stored $validRows valid raw entries (${rawDataList.length} total)');
       return true;

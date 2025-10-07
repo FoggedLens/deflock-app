@@ -49,12 +49,14 @@ class SuspectedLocationState extends ChangeNotifier {
   }
 
   /// Manually refresh the data
-  Future<bool> refreshData() async {
+  Future<bool> refreshData({
+    void Function(String message, double? progress)? onProgress,
+  }) async {
     _isLoading = true;
     notifyListeners();
     
     try {
-      final success = await _service.refreshData();
+      final success = await _service.refreshData(onProgress: onProgress);
       return success;
     } finally {
       _isLoading = false;

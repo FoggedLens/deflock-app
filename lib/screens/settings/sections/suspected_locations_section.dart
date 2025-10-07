@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../app_state.dart';
 import '../../../services/localization_service.dart';
+import '../../../widgets/suspected_location_progress_dialog.dart';
 
 class SuspectedLocationsSection extends StatelessWidget {
   const SuspectedLocationsSection({super.key});
@@ -36,8 +37,26 @@ class SuspectedLocationsSection extends StatelessWidget {
         }
         
         Future<void> handleRefresh() async {
+          if (!context.mounted) return;
+          
+          // Show simple progress dialog
+          showDialog(
+            context: context,
+            barrierDismissible: false,
+            builder: (progressContext) => const SuspectedLocationProgressDialog(
+              title: 'Updating Suspected Locations',
+              message: 'Downloading and processing data...',
+            ),
+          );
+          
+          // Start the refresh
           final success = await appState.refreshSuspectedLocations();
+          
+          // Close progress dialog
           if (context.mounted) {
+            Navigator.of(context).pop();
+            
+            // Show result snackbar
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text(success 
@@ -96,6 +115,30 @@ class SuspectedLocationsSection extends StatelessWidget {
                 leading: const Icon(Icons.info_outline),
                 title: const Text('Data Source'),
                 subtitle: const Text('Utility permit data indicating potential surveillance infrastructure installation sites'),
+              ),
+              
+              // Minimum distance setting
+              ListTile(
+                leading: const Icon(Icons.social_distance),
+                title: const Text('Minimum Distance from Real Nodes'),
+                subtitle: Text('Hide suspected locations within ${appState.suspectedLocationMinDistance}m of existing surveillance devices'),
+                trailing: SizedBox(
+                  width: 80,
+                  child: TextFormField(
+                    initialValue: appState.suspectedLocationMinDistance.toString(),
+                    keyboardType: TextInputType.number,
+                    decoration: const InputDecoration(
+                      isDense: true,
+                      contentPadding: EdgeInsets.symmetric(vertical: 6, horizontal: 8),
+                      border: OutlineInputBorder(),
+                      suffixText: 'm',
+                    ),
+                    onFieldSubmitted: (value) {
+                      final distance = int.tryParse(value) ?? 100;
+                      appState.setSuspectedLocationMinDistance(distance.clamp(0, 1000));
+                    },
+                  ),
+                ),
               ),
             ],
           ],

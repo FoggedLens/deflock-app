@@ -355,8 +355,6 @@ class MapViewState extends State<MapView> {
         // Build suspected location markers
         final suspectedLocationMarkers = <Marker>[];
         if (appState.suspectedLocationsEnabled && mapBounds != null) {
-          debugPrint('[MapView] Suspected locations enabled, getting bounds: N${mapBounds.north.toStringAsFixed(4)}, S${mapBounds.south.toStringAsFixed(4)}, E${mapBounds.east.toStringAsFixed(4)}, W${mapBounds.west.toStringAsFixed(4)}');
-          
           final suspectedLocations = appState.getSuspectedLocationsInBounds(
             north: mapBounds.north,
             south: mapBounds.south,
@@ -364,20 +362,21 @@ class MapViewState extends State<MapView> {
             west: mapBounds.west,
           );
           
-          debugPrint('[MapView] Found ${suspectedLocations.length} suspected locations in bounds');
+          // Filter out suspected locations that are too close to real nodes
+          final filteredSuspectedLocations = _filterSuspectedLocationsByProximity(
+            suspectedLocations: suspectedLocations,
+            realNodes: cameras,
+            minDistance: appState.suspectedLocationMinDistance,
+          );
           
           suspectedLocationMarkers.addAll(
             SuspectedLocationMarkersBuilder.buildSuspectedLocationMarkers(
-              locations: suspectedLocations,
+              locations: filteredSuspectedLocations,
               mapController: _controller.mapController,
               selectedLocationId: appState.selectedSuspectedLocation?.ticketNo,
               onLocationTap: widget.onSuspectedLocationTap,
             ),
           );
-          
-          debugPrint('[MapView] Created ${suspectedLocationMarkers.length} suspected location markers');
-        } else {
-          debugPrint('[MapView] Suspected locations not enabled (${appState.suspectedLocationsEnabled}) or no mapBounds ($mapBounds)');
         }
 
         // Get current zoom level for direction cones
@@ -487,7 +486,7 @@ class MapViewState extends State<MapView> {
             PolygonLayer(polygons: overlays),
             if (editLines.isNotEmpty) PolylineLayer(polylines: editLines),
             if (routeLines.isNotEmpty) PolylineLayer(polylines: routeLines),
-            MarkerLayer(markers: [...markers, ...suspectedLocationMarkers, ...centerMarkers]),
+            MarkerLayer(markers: [...suspectedLocationMarkers, ...markers, ...centerMarkers]),
           ],
         );
       }
@@ -632,6 +631,41 @@ class MapViewState extends State<MapView> {
     }
     
     return lines;
+  }
+
+  /// Filter suspected locations that are too close to real nodes
+  List<SuspectedLocation> _filterSuspectedLocationsByProximity({
+    required List<SuspectedLocation> suspectedLocations,
+    required List<OsmNode> realNodes,
+    required int minDistance, // in meters
+  }) {
+    if (minDistance <= 0) return suspectedLocations;
+    
+    const distance = Distance();
+    final filteredLocations = <SuspectedLocation>[];
+    
+    for (final suspected in suspectedLocations) {
+      bool tooClose = false;
+      
+      for (final realNode in realNodes) {
+        final distanceMeters = distance.as(
+          LengthUnit.Meter,
+          suspected.centroid,
+          realNode.coord,
+        );
+        
+        if (distanceMeters < minDistance) {
+          tooClose = true;
+          break;
+        }
+      }
+      
+      if (!tooClose) {
+        filteredLocations.add(suspected);
+      }
+    }
+    
+    return filteredLocations;
   }
 }
 

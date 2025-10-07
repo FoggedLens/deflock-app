@@ -27,6 +27,7 @@ class SettingsState extends ChangeNotifier {
   static const String _proximityAlertsEnabledPrefsKey = 'proximity_alerts_enabled';
   static const String _proximityAlertDistancePrefsKey = 'proximity_alert_distance';
   static const String _networkStatusIndicatorEnabledPrefsKey = 'network_status_indicator_enabled';
+  static const String _suspectedLocationMinDistancePrefsKey = 'suspected_location_min_distance';
 
   bool _offlineMode = false;
   int _maxCameras = 250;
@@ -35,6 +36,7 @@ class SettingsState extends ChangeNotifier {
   bool _proximityAlertsEnabled = false;
   int _proximityAlertDistance = kProximityAlertDefaultDistance;
   bool _networkStatusIndicatorEnabled = false;
+  int _suspectedLocationMinDistance = 100; // meters
   List<TileProvider> _tileProviders = [];
   String _selectedTileTypeId = '';
 
@@ -46,6 +48,7 @@ class SettingsState extends ChangeNotifier {
   bool get proximityAlertsEnabled => _proximityAlertsEnabled;
   int get proximityAlertDistance => _proximityAlertDistance;
   bool get networkStatusIndicatorEnabled => _networkStatusIndicatorEnabled;
+  int get suspectedLocationMinDistance => _suspectedLocationMinDistance;
   List<TileProvider> get tileProviders => List.unmodifiable(_tileProviders);
   String get selectedTileTypeId => _selectedTileTypeId;
   
@@ -100,6 +103,9 @@ class SettingsState extends ChangeNotifier {
     
     // Load network status indicator setting
     _networkStatusIndicatorEnabled = prefs.getBool(_networkStatusIndicatorEnabledPrefsKey) ?? false;
+    
+    // Load suspected location minimum distance
+    _suspectedLocationMinDistance = prefs.getInt(_suspectedLocationMinDistancePrefsKey) ?? 100;
     
     // Load upload mode (including migration from old test_mode bool)
     if (prefs.containsKey(_uploadModePrefsKey)) {
@@ -319,6 +325,16 @@ class SettingsState extends ChangeNotifier {
       _networkStatusIndicatorEnabled = enabled;
       final prefs = await SharedPreferences.getInstance();
       await prefs.setBool(_networkStatusIndicatorEnabledPrefsKey, enabled);
+      notifyListeners();
+    }
+  }
+
+  /// Set suspected location minimum distance from real nodes
+  Future<void> setSuspectedLocationMinDistance(int distance) async {
+    if (_suspectedLocationMinDistance != distance) {
+      _suspectedLocationMinDistance = distance;
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setInt(_suspectedLocationMinDistancePrefsKey, distance);
       notifyListeners();
     }
   }
