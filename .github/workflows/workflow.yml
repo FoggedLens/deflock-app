@@ -20,7 +20,7 @@ jobs:
       - name: Get version from lib/dev_config.dart
         id: set-version
         run: |
-          echo version=$(grep "version:" pubspec.yaml | head -1 | cut -d ':' -f 2 | tr -d ' ') >> $GITHUB_OUTPUT
+          echo version=$(grep "version:" pubspec.yaml | head -1 | cut -d ':' -f 2 | tr -d ' ' | cut -d '+' -f 1) >> $GITHUB_OUTPUT
 
 #      - name: Extract version from pubspec.yaml
 #        id: extract_version

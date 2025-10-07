@@ -23,7 +23,7 @@ for arg in "$@"; do
   esac
 done
 
-appver=$(grep "version:" pubspec.yaml | head -1 | cut -d ':' -f 2 | tr -d ' ')
+appver=$(grep "version:" pubspec.yaml | head -1 | cut -d ':' -f 2 | tr -d ' ' | cut -d '+' -f 1)
 echo
 echo "Building app version ${appver}..."
 echo
