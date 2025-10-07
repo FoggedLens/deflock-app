@@ -352,31 +352,46 @@ class MapViewState extends State<MapView> {
           shouldDim: shouldDimCameras,
         );
 
-        // Build suspected location markers
+        // Build suspected location markers (respect same zoom and count limits as cameras)
         final suspectedLocationMarkers = <Marker>[];
         if (appState.suspectedLocationsEnabled && mapBounds != null) {
-          final suspectedLocations = appState.getSuspectedLocationsInBounds(
-            north: mapBounds.north,
-            south: mapBounds.south,
-            east: mapBounds.east,
-            west: mapBounds.west,
-          );
+          // Check zoom level (same logic as cameras)
+          double currentZoom = 15.0; // fallback
+          try {
+            currentZoom = _controller.mapController.camera.zoom;
+          } catch (_) {
+            // Controller not ready yet, use fallback
+          }
           
-          // Filter out suspected locations that are too close to real nodes
-          final filteredSuspectedLocations = _filterSuspectedLocationsByProximity(
-            suspectedLocations: suspectedLocations,
-            realNodes: cameras,
-            minDistance: appState.suspectedLocationMinDistance,
-          );
-          
-          suspectedLocationMarkers.addAll(
-            SuspectedLocationMarkersBuilder.buildSuspectedLocationMarkers(
-              locations: filteredSuspectedLocations,
-              mapController: _controller.mapController,
-              selectedLocationId: appState.selectedSuspectedLocation?.ticketNo,
-              onLocationTap: widget.onSuspectedLocationTap,
-            ),
-          );
+          final minZoom = _getMinZoomForCameras(context);
+          if (currentZoom >= minZoom) {
+            final suspectedLocations = appState.getSuspectedLocationsInBounds(
+              north: mapBounds.north,
+              south: mapBounds.south,
+              east: mapBounds.east,
+              west: mapBounds.west,
+            );
+            
+            // Apply same node count limit as cameras
+            final maxNodes = appState.maxCameras;
+            final limitedSuspectedLocations = suspectedLocations.take(maxNodes).toList();
+            
+            // Filter out suspected locations that are too close to real nodes
+            final filteredSuspectedLocations = _filterSuspectedLocationsByProximity(
+              suspectedLocations: limitedSuspectedLocations,
+              realNodes: cameras,
+              minDistance: appState.suspectedLocationMinDistance,
+            );
+            
+            suspectedLocationMarkers.addAll(
+              SuspectedLocationMarkersBuilder.buildSuspectedLocationMarkers(
+                locations: filteredSuspectedLocations,
+                mapController: _controller.mapController,
+                selectedLocationId: appState.selectedSuspectedLocation?.ticketNo,
+                onLocationTap: widget.onSuspectedLocationTap,
+              ),
+            );
+          }
         }
 
         // Get current zoom level for direction cones
