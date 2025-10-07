@@ -82,7 +82,7 @@ class MapViewState extends State<MapView> {
     _tileManager = TileLayerManager();
     _tileManager.initialize();
     _cameraController = CameraRefreshController();
-    _cameraController.initialize(onCamerasUpdated: _onCamerasUpdated);
+    _cameraController.initialize(onCamerasUpdated: _onNodesUpdated);
     _gpsController = GpsController();
     
     // Initialize proximity alert service
@@ -178,7 +178,7 @@ class MapViewState extends State<MapView> {
 
     // Fetch initial cameras
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _refreshCamerasFromProvider();
+      _refreshNodesFromProvider();
     });
   }
 
@@ -199,7 +199,7 @@ class MapViewState extends State<MapView> {
 
 
 
-  void _onCamerasUpdated() {
+  void _onNodesUpdated() {
     if (mounted) setState(() {});
   }
 
@@ -217,8 +217,8 @@ class MapViewState extends State<MapView> {
   static Future<void> clearStoredMapPosition() => 
       MapPositionManager.clearStoredMapPosition();
 
-  /// Get minimum zoom level for camera fetching based on upload mode
-  int _getMinZoomForCameras(BuildContext context) {
+  /// Get minimum zoom level for node fetching based on upload mode
+  int _getMinZoomForNodes(BuildContext context) {
     final appState = context.read<AppState>();
     final uploadMode = appState.uploadMode;
     
@@ -255,7 +255,7 @@ class MapViewState extends State<MapView> {
 
 
 
-  void _refreshCamerasFromProvider() {
+  void _refreshNodesFromProvider() {
     final appState = context.read<AppState>();
     _cameraController.refreshCamerasFromProvider(
       controller: _controller,
@@ -299,7 +299,7 @@ class MapViewState extends State<MapView> {
     // Check if enabled profiles changed and refresh cameras if needed
     _cameraController.checkAndHandleProfileChanges(
       currentEnabledProfiles: appState.enabledProfiles,
-      onProfilesChanged: _refreshCamerasFromProvider,
+      onProfilesChanged: _refreshNodesFromProvider,
     );
 
     // Check if tile type OR offline mode changed and clear cache if needed
@@ -330,72 +330,74 @@ class MapViewState extends State<MapView> {
     // Fetch cached cameras for current map bounds (using Consumer so overlays redraw instantly)
     Widget cameraLayers = Consumer<CameraProviderWithCache>(
       builder: (context, cameraProvider, child) {
+        // Get current zoom level and map bounds (shared by all logic)
+        double currentZoom = 15.0; // fallback
         LatLngBounds? mapBounds;
         try {
+          currentZoom = _controller.mapController.camera.zoom;
           mapBounds = _controller.mapController.camera.visibleBounds;
         } catch (_) {
+          // Controller not ready yet, use fallback values
           mapBounds = null;
         }
-        final cameras = (mapBounds != null)
-            ? cameraProvider.getCachedNodesForBounds(mapBounds)
-            : <OsmNode>[];
         
-        // Determine if we should dim camera markers (when suspected location is selected)
-        final shouldDimCameras = appState.selectedSuspectedLocation != null;
+        final minZoom = _getMinZoomForNodes(context);
+        List<OsmNode> nodes;
+        
+        if (currentZoom >= minZoom) {
+          // Above minimum zoom - get cached nodes
+          nodes = (mapBounds != null)
+              ? cameraProvider.getCachedNodesForBounds(mapBounds)
+              : <OsmNode>[];
+        } else {
+          // Below minimum zoom - don't render any nodes
+          nodes = <OsmNode>[];
+        }
+        
+        // Determine if we should dim node markers (when suspected location is selected)
+        final shouldDimNodes = appState.selectedSuspectedLocation != null;
         
         final markers = CameraMarkersBuilder.buildCameraMarkers(
-          cameras: cameras,
+          cameras: nodes,
           mapController: _controller.mapController,
           userLocation: _gpsController.currentLocation,
           selectedNodeId: widget.selectedNodeId,
           onNodeTap: widget.onNodeTap,
-          shouldDim: shouldDimCameras,
+          shouldDim: shouldDimNodes,
         );
 
-        // Build suspected location markers (respect same zoom and count limits as cameras)
+        // Build suspected location markers (respect same zoom and count limits as nodes)
         final suspectedLocationMarkers = <Marker>[];
-        if (appState.suspectedLocationsEnabled && mapBounds != null) {
-          // Check zoom level (same logic as cameras)
-          double currentZoom = 15.0; // fallback
-          try {
-            currentZoom = _controller.mapController.camera.zoom;
-          } catch (_) {
-            // Controller not ready yet, use fallback
-          }
+        if (appState.suspectedLocationsEnabled && mapBounds != null && currentZoom >= minZoom) {
+          final suspectedLocations = appState.getSuspectedLocationsInBounds(
+            north: mapBounds.north,
+            south: mapBounds.south,
+            east: mapBounds.east,
+            west: mapBounds.west,
+          );
           
-          final minZoom = _getMinZoomForCameras(context);
-          if (currentZoom >= minZoom) {
-            final suspectedLocations = appState.getSuspectedLocationsInBounds(
-              north: mapBounds.north,
-              south: mapBounds.south,
-              east: mapBounds.east,
-              west: mapBounds.west,
-            );
-            
-            // Apply same node count limit as cameras
-            final maxNodes = appState.maxCameras;
-            final limitedSuspectedLocations = suspectedLocations.take(maxNodes).toList();
-            
-            // Filter out suspected locations that are too close to real nodes
-            final filteredSuspectedLocations = _filterSuspectedLocationsByProximity(
-              suspectedLocations: limitedSuspectedLocations,
-              realNodes: cameras,
-              minDistance: appState.suspectedLocationMinDistance,
-            );
-            
-            suspectedLocationMarkers.addAll(
-              SuspectedLocationMarkersBuilder.buildSuspectedLocationMarkers(
-                locations: filteredSuspectedLocations,
-                mapController: _controller.mapController,
-                selectedLocationId: appState.selectedSuspectedLocation?.ticketNo,
-                onLocationTap: widget.onSuspectedLocationTap,
-              ),
-            );
-          }
+          // Apply same node count limit as surveillance nodes
+          final maxNodes = appState.maxCameras;
+          final limitedSuspectedLocations = suspectedLocations.take(maxNodes).toList();
+          
+          // Filter out suspected locations that are too close to real nodes
+          final filteredSuspectedLocations = _filterSuspectedLocationsByProximity(
+            suspectedLocations: limitedSuspectedLocations,
+            realNodes: nodes,
+            minDistance: appState.suspectedLocationMinDistance,
+          );
+          
+          suspectedLocationMarkers.addAll(
+            SuspectedLocationMarkersBuilder.buildSuspectedLocationMarkers(
+              locations: filteredSuspectedLocations,
+              mapController: _controller.mapController,
+              selectedLocationId: appState.selectedSuspectedLocation?.ticketNo,
+              onLocationTap: widget.onSuspectedLocationTap,
+            ),
+          );
         }
 
-        // Get current zoom level for direction cones
-        double currentZoom = 15.0; // fallback
+        // Get current zoom level for direction cones (already have currentZoom)
         try {
           currentZoom = _controller.mapController.camera.zoom;
         } catch (_) {
@@ -403,7 +405,7 @@ class MapViewState extends State<MapView> {
         }
 
         final overlays = DirectionConesBuilder.buildDirectionCones(
-          cameras: cameras,
+          cameras: nodes,
           zoom: currentZoom,
           session: session,
           editSession: editSession,
@@ -424,8 +426,8 @@ class MapViewState extends State<MapView> {
           }
         }
 
-        // Build edit lines connecting original cameras to their edited positions
-        final editLines = _buildEditLines(cameras);
+        // Build edit lines connecting original nodes to their edited positions
+        final editLines = _buildEditLines(nodes);
 
         // Build center marker for add/edit sessions
         final centerMarkers = <Marker>[];
@@ -554,10 +556,10 @@ class MapViewState extends State<MapView> {
                 _positionManager.saveMapPosition(pos.center, pos.zoom);
               });
               
-              // Request more cameras on any map movement/zoom at valid zoom level (slower debounce)
-              final minZoom = _getMinZoomForCameras(context);
+              // Request more nodes on any map movement/zoom at valid zoom level (slower debounce)
+              final minZoom = _getMinZoomForNodes(context);
               if (pos.zoom >= minZoom) {
-                _cameraDebounce(_refreshCamerasFromProvider);
+                _cameraDebounce(_refreshNodesFromProvider);
               } else {
                 // Skip nodes at low zoom - report immediate completion (brutalist approach)
                 NetworkStatus.instance.reportNodeComplete();
@@ -617,27 +619,27 @@ class MapViewState extends State<MapView> {
   }
 
   /// Build polylines connecting original cameras to their edited positions
-  List<Polyline> _buildEditLines(List<OsmNode> cameras) {
+  List<Polyline> _buildEditLines(List<OsmNode> nodes) {
     final lines = <Polyline>[];
     
     // Create a lookup map of original node IDs to their coordinates
     final originalNodes = <int, LatLng>{};
-    for (final camera in cameras) {
-      if (camera.tags['_pending_edit'] == 'true') {
-        originalNodes[camera.id] = camera.coord;
+    for (final node in nodes) {
+      if (node.tags['_pending_edit'] == 'true') {
+        originalNodes[node.id] = node.coord;
       }
     }
     
-    // Find edited cameras and draw lines to their originals
-    for (final camera in cameras) {
-      final originalIdStr = camera.tags['_original_node_id'];
-      if (originalIdStr != null && camera.tags['_pending_upload'] == 'true') {
+    // Find edited nodes and draw lines to their originals
+    for (final node in nodes) {
+      final originalIdStr = node.tags['_original_node_id'];
+      if (originalIdStr != null && node.tags['_pending_upload'] == 'true') {
         final originalId = int.tryParse(originalIdStr);
         final originalCoord = originalId != null ? originalNodes[originalId] : null;
         
         if (originalCoord != null) {
           lines.add(Polyline(
-            points: [originalCoord, camera.coord],
+            points: [originalCoord, node.coord],
             color: kNodeRingColorPending,
             strokeWidth: 3.0,
           ));
