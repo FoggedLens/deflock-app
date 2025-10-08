@@ -33,28 +33,32 @@ class AboutScreen extends StatelessWidget {
         body: SingleChildScrollView(
           padding: const EdgeInsets.all(16),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Text(
                 locService.t('about.title'),
                 style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                   fontWeight: FontWeight.bold,
                 ),
+                textAlign: TextAlign.start,
               ),
               const SizedBox(height: 16),
               Text(
                 locService.t('about.description'),
                 style: Theme.of(context).textTheme.bodyLarge,
+                textAlign: TextAlign.start,
               ),
               const SizedBox(height: 16),
               Text(
                 locService.t('about.features'),
                 style: Theme.of(context).textTheme.bodyLarge,
+                textAlign: TextAlign.start,
               ),
               const SizedBox(height: 16),
               Text(
                 locService.t('about.initiative'),
                 style: Theme.of(context).textTheme.bodyLarge,
+                textAlign: TextAlign.start,
               ),
               const SizedBox(height: 24),
               Text(
@@ -75,6 +79,8 @@ class AboutScreen extends StatelessWidget {
 
   Widget _buildHelpLinks(BuildContext context) {
     return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         _buildLinkText(context, 'About DeFlock', 'https://deflock.me/about'),
         const SizedBox(height: 8),
