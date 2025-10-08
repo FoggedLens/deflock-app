@@ -47,6 +47,9 @@ jobs:
         with:
           channel: 'stable'
 
+      - name: Create keys.dart from example
+        run: cp lib/keys.dart.example lib/keys.dart
+
       - name: Install dependencies
         run: flutter pub get
 
@@ -96,6 +99,9 @@ jobs:
         with:
           channel: 'stable'
 
+      - name: Create keys.dart from example
+        run: cp lib/keys.dart.example lib/keys.dart
+
       - name: Install dependencies
         run: flutter pub get
 
@@ -137,6 +143,9 @@ jobs:
         uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
+
+      - name: Create keys.dart from example
+        run: cp lib/keys.dart.example lib/keys.dart
 
       - name: Install dependencies
         run: flutter pub get

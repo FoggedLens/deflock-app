@@ -1,6 +1,6 @@
 // OpenStreetMap OAuth client IDs for this app.
 //
-// NEVER commit real secrets to public repos. For open source, use keys.dart.example instead.
+// NEVER commit keys.dart to public repos. For open source, use keys.dart.example instead.
 
 import 'dart:io';
 
