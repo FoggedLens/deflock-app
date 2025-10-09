@@ -40,7 +40,7 @@ class CameraIcon extends StatelessWidget {
       height: kNodeIconDiameter,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: Colors.black.withOpacity(kNodeDotOpacity),
+        color: _ringColor.withOpacity(kNodeDotOpacity),
         border: Border.all(
           color: _ringColor,
           width: kNodeRingThickness,

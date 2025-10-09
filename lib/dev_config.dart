@@ -12,9 +12,11 @@ const int kPreviewTileY = 101300;
 const int kPreviewTileX = 41904;
 
 // Direction cone for map view
-const double kDirectionConeHalfAngle = 30.0; // degrees
-const double kDirectionConeBaseLength = 0.001; // multiplier
-const Color kDirectionConeColor = Color(0xFF000000); // FOV cone color
+const double kDirectionConeHalfAngle = 35.0; // degrees
+const double kDirectionConeBaseLength = 5; // multiplier
+const Color kDirectionConeColor = Color(0xD0767474); // FOV cone color
+const double kDirectionConeOpacity = 0.6; // Fill opacity for FOV cones
+const double kDirectionConeBorderWidth = 1.6; // Border stroke width for FOV cones
 
 // Bottom button bar positioning
 const double kBottomButtonBarOffset = 4.0; // Distance from screen bottom (above safe area)
@@ -87,8 +89,8 @@ const int kAbsoluteMaxZoom = 23;
 
 // Node icon configuration
 const double kNodeIconDiameter = 18.0;
-const double kNodeRingThickness = 3.0;
-const double kNodeDotOpacity = 0.4; // Opacity for the grey dot interior
+const double kNodeRingThickness = 2.5;
+const double kNodeDotOpacity = 0.3; // Opacity for the grey dot interior
 const Color kNodeRingColorReal = Color(0xFF3036F0); // Real nodes from OSM - blue
 const Color kNodeRingColorMock = Color(0xD0FFFFFF); // Add node mock point - white
 const Color kNodeRingColorPending = Color(0xD09C27B0); // Submitted/pending nodes - purple

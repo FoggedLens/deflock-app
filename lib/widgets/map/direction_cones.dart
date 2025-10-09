@@ -73,36 +73,47 @@ class DirectionConesBuilder {
     bool isSession = false,
   }) {
     final halfAngle = kDirectionConeHalfAngle;
-    final length = kDirectionConeBaseLength * math.pow(2, 15 - zoom);
     
-    // Number of points to create the arc (more = smoother curve)
+    // Calculate pixel-based radii
+    final outerRadiusPx = kNodeIconDiameter + (kNodeIconDiameter * kDirectionConeBaseLength);
+    final innerRadiusPx = kNodeIconDiameter + (2 * kNodeRingThickness);
+    
+    // Convert pixels to coordinate distances with zoom scaling
+    final pixelToCoordinate = 0.00001 * math.pow(2, 15 - zoom);
+    final outerRadius = outerRadiusPx * pixelToCoordinate;
+    final innerRadius = innerRadiusPx * pixelToCoordinate;
+    
+    // Number of points for the outer arc (within our directional range)
     const int arcPoints = 12;
 
-    LatLng project(double deg) {
+    LatLng project(double deg, double distance) {
       final rad = deg * math.pi / 180;
-      final dLat = length * math.cos(rad);
+      final dLat = distance * math.cos(rad);
       final dLon =
-          length * math.sin(rad) / math.cos(origin.latitude * math.pi / 180);
+          distance * math.sin(rad) / math.cos(origin.latitude * math.pi / 180);
       return LatLng(origin.latitude + dLat, origin.longitude + dLon);
     }
 
-    // Build pizza slice with curved edge
-    final points = <LatLng>[origin];
+    // Build outer arc points only within our directional sector
+    final points = <LatLng>[];
     
-    // Add arc points from left to right
+    // Add outer arc points from left to right (counterclockwise for proper polygon winding)
     for (int i = 0; i <= arcPoints; i++) {
       final angle = bearingDeg - halfAngle + (i * 2 * halfAngle / arcPoints);
-      points.add(project(angle));
+      points.add(project(angle, outerRadius));
     }
     
-    // Close the shape back to origin
-    points.add(origin);
+    // Add inner arc points from right to left (to close the donut shape)
+    for (int i = arcPoints; i >= 0; i--) {
+      final angle = bearingDeg - halfAngle + (i * 2 * halfAngle / arcPoints);
+      points.add(project(angle, innerRadius));
+    }
 
     return Polygon(
       points: points,
-      color: kDirectionConeColor.withOpacity(0.25),
+      color: kDirectionConeColor.withOpacity(kDirectionConeOpacity),
       borderColor: kDirectionConeColor,
-      borderStrokeWidth: 1,
+      borderStrokeWidth: kDirectionConeBorderWidth,
     );
   }
 }
