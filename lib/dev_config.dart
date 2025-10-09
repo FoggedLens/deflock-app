@@ -86,12 +86,12 @@ const int kAbsoluteMaxTileCount = 50000;
 const int kAbsoluteMaxZoom = 23;
 
 // Node icon configuration
-const double kNodeIconDiameter = 20.0;
-const double kNodeRingThickness = 4.0;
+const double kNodeIconDiameter = 18.0;
+const double kNodeRingThickness = 3.0;
 const double kNodeDotOpacity = 0.4; // Opacity for the grey dot interior
-const Color kNodeRingColorReal = Color(0xC43F55F3); // Real nodes from OSM - blue
-const Color kNodeRingColorMock = Color(0xC4FFFFFF); // Add node mock point - white
-const Color kNodeRingColorPending = Color(0xC49C27B0); // Submitted/pending nodes - purple
-const Color kNodeRingColorEditing = Color(0xC4FF9800); // Node being edited - orange
-const Color kNodeRingColorPendingEdit = Color(0xC4757575); // Original node with pending edit - grey
-const Color kNodeRingColorPendingDeletion = Color(0xA4F44336); // Node pending deletion - red, slightly transparent
+const Color kNodeRingColorReal = Color(0xFF3036F0); // Real nodes from OSM - blue
+const Color kNodeRingColorMock = Color(0xD0FFFFFF); // Add node mock point - white
+const Color kNodeRingColorPending = Color(0xD09C27B0); // Submitted/pending nodes - purple
+const Color kNodeRingColorEditing = Color(0xD0FF9800); // Node being edited - orange
+const Color kNodeRingColorPendingEdit = Color(0xD0757575); // Original node with pending edit - grey
+const Color kNodeRingColorPendingDeletion = Color(0xC0F44336); // Node pending deletion - red, slightly transparent
