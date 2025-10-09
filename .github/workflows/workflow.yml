@@ -47,9 +47,6 @@ jobs:
         with:
           channel: 'stable'
 
-      - name: Create keys.dart from example
-        run: cp lib/keys.dart.example lib/keys.dart
-
       - name: Install dependencies
         run: flutter pub get
 
@@ -70,7 +67,7 @@ jobs:
           echo "storeFile=keystore.jks" >> android/key.properties
 
       - name: Build Android .apk
-        run: flutter build apk --release
+        run: flutter build apk --release --dart-define=OSM_PROD_CLIENTID='${{ secrets.OSM_PROD_CLIENTID }}' --dart-define=OSM_SANDBOX_CLIENTID='${{ secrets.OSM_SANDBOX_CLIENTID }}'
 
       - name: Upload .apk artifact
         uses: actions/upload-artifact@v4
@@ -99,9 +96,6 @@ jobs:
         with:
           channel: 'stable'
 
-      - name: Create keys.dart from example
-        run: cp lib/keys.dart.example lib/keys.dart
-
       - name: Install dependencies
         run: flutter pub get
 
@@ -122,7 +116,7 @@ jobs:
           echo "storeFile=keystore.jks" >> android/key.properties
 
       - name: Build Android appBundle
-        run: flutter build appbundle
+        run: flutter build appbundle --dart-define=OSM_PROD_CLIENTID='${{ secrets.OSM_PROD_CLIENTID }}' --dart-define=OSM_SANDBOX_CLIENTID='${{ secrets.OSM_SANDBOX_CLIENTID }}'
 
       - name: Upload .aab artifact
         uses: actions/upload-artifact@v4
@@ -144,9 +138,6 @@ jobs:
         with:
           channel: 'stable'
 
-      - name: Create keys.dart from example
-        run: cp lib/keys.dart.example lib/keys.dart
-
       - name: Install dependencies
         run: flutter pub get
 
@@ -160,7 +151,7 @@ jobs:
 
       - name: Build iOS .app
         run: |
-          flutter build ios --release --no-codesign
+          flutter build ios --release --no-codesign --dart-define=OSM_PROD_CLIENTID='${{ secrets.OSM_PROD_CLIENTID }}' --dart-define=OSM_SANDBOX_CLIENTID='${{ secrets.OSM_SANDBOX_CLIENTID }}'
           ./app2ipa.sh build/ios/iphoneos/Runner.app
 
       - name: Upload IPA artifact

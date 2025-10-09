@@ -92,7 +92,7 @@ Thumbs.db
 # Secrets or signing keys (add if used)
 *.keystore
 .env
-lib/keys.dart
+lib/keys.properties
 
 # ───────────────────────────────
 # For now - not targeting these
