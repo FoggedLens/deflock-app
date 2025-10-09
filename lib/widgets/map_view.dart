@@ -409,6 +409,7 @@ class MapViewState extends State<MapView> {
           zoom: currentZoom,
           session: session,
           editSession: editSession,
+          context: context,
         );
 
         // Add suspected location bounds if one is selected

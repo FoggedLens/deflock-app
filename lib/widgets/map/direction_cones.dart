@@ -14,6 +14,7 @@ class DirectionConesBuilder {
     required double zoom,
     AddNodeSession? session,
     EditNodeSession? editSession,
+    required BuildContext context,
   }) {
     final overlays = <Polygon>[];
     
@@ -23,6 +24,7 @@ class DirectionConesBuilder {
         session.target!, 
         session.directionDegrees, 
         zoom,
+        context: context,
         isSession: true,
       ));
     }
@@ -33,6 +35,7 @@ class DirectionConesBuilder {
         editSession.target, 
         editSession.directionDegrees, 
         zoom,
+        context: context,
         isSession: true,
       ));
     }
@@ -46,6 +49,7 @@ class DirectionConesBuilder {
           n.coord, 
           n.directionDeg!, 
           zoom,
+          context: context,
         ))
     );
     
@@ -69,6 +73,7 @@ class DirectionConesBuilder {
     LatLng origin, 
     double bearingDeg, 
     double zoom, {
+    required BuildContext context,
     bool isPending = false,
     bool isSession = false,
   }) {
@@ -76,7 +81,7 @@ class DirectionConesBuilder {
     
     // Calculate pixel-based radii
     final outerRadiusPx = kNodeIconDiameter + (kNodeIconDiameter * kDirectionConeBaseLength);
-    final innerRadiusPx = kNodeIconDiameter + (2 * kNodeRingThickness);
+    final innerRadiusPx = kNodeIconDiameter + (2 * getNodeRingThickness(context));
     
     // Convert pixels to coordinate distances with zoom scaling
     final pixelToCoordinate = 0.00001 * math.pow(2, 15 - zoom);
@@ -113,7 +118,7 @@ class DirectionConesBuilder {
       points: points,
       color: kDirectionConeColor.withOpacity(kDirectionConeOpacity),
       borderColor: kDirectionConeColor,
-      borderStrokeWidth: kDirectionConeBorderWidth,
+      borderStrokeWidth: getDirectionConeBorderWidth(context),
     );
   }
 }

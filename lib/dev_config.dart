@@ -16,7 +16,8 @@ const double kDirectionConeHalfAngle = 35.0; // degrees
 const double kDirectionConeBaseLength = 5; // multiplier
 const Color kDirectionConeColor = Color(0xD0767474); // FOV cone color
 const double kDirectionConeOpacity = 0.6; // Fill opacity for FOV cones
-const double kDirectionConeBorderWidth = 1.6 * MediaQuery.of(context).devicePixelRatio; // Border stroke width for FOV cones
+// Base values for thickness - use helper functions below for pixel-ratio scaling
+const double _kDirectionConeBorderWidthBase = 1.6;
 
 // Bottom button bar positioning
 const double kBottomButtonBarOffset = 4.0; // Distance from screen bottom (above safe area)
@@ -89,7 +90,7 @@ const int kAbsoluteMaxZoom = 23;
 
 // Node icon configuration
 const double kNodeIconDiameter = 18.0;
-const double kNodeRingThickness = 2.5 * MediaQuery.of(context).devicePixelRatio;
+const double _kNodeRingThicknessBase = 2.5;
 const double kNodeDotOpacity = 0.3; // Opacity for the grey dot interior
 const Color kNodeRingColorReal = Color(0xFF3036F0); // Real nodes from OSM - blue
 const Color kNodeRingColorMock = Color(0xD0FFFFFF); // Add node mock point - white
@@ -97,3 +98,12 @@ const Color kNodeRingColorPending = Color(0xD09C27B0); // Submitted/pending node
 const Color kNodeRingColorEditing = Color(0xD0FF9800); // Node being edited - orange
 const Color kNodeRingColorPendingEdit = Color(0xD0757575); // Original node with pending edit - grey
 const Color kNodeRingColorPendingDeletion = Color(0xC0F44336); // Node pending deletion - red, slightly transparent
+
+// Helper functions for pixel-ratio scaling
+double getDirectionConeBorderWidth(BuildContext context) {
+  return _kDirectionConeBorderWidthBase * MediaQuery.of(context).devicePixelRatio;
+}
+
+double getNodeRingThickness(BuildContext context) {
+  return _kNodeRingThicknessBase * MediaQuery.of(context).devicePixelRatio;
+}
