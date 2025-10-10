@@ -15,7 +15,7 @@ const int kPreviewTileX = 41904;
 const double kDirectionConeHalfAngle = 35.0; // degrees
 const double kDirectionConeBaseLength = 5; // multiplier
 const Color kDirectionConeColor = Color(0xD0767474); // FOV cone color
-const double kDirectionConeOpacity = 0.6; // Fill opacity for FOV cones
+const double kDirectionConeOpacity = 0.5; // Fill opacity for FOV cones
 // Base values for thickness - use helper functions below for pixel-ratio scaling
 const double _kDirectionConeBorderWidthBase = 1.6;
 
@@ -101,9 +101,11 @@ const Color kNodeRingColorPendingDeletion = Color(0xC0F44336); // Node pending d
 
 // Helper functions for pixel-ratio scaling
 double getDirectionConeBorderWidth(BuildContext context) {
-  return _kDirectionConeBorderWidthBase * MediaQuery.of(context).devicePixelRatio;
+//  return _kDirectionConeBorderWidthBase * MediaQuery.of(context).devicePixelRatio;
+  return _kDirectionConeBorderWidthBase;
 }
 
 double getNodeRingThickness(BuildContext context) {
-  return _kNodeRingThicknessBase * MediaQuery.of(context).devicePixelRatio;
+//  return _kNodeRingThicknessBase * MediaQuery.of(context).devicePixelRatio;
+  return _kNodeRingThicknessBase;
 }
