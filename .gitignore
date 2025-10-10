@@ -92,7 +92,9 @@ Thumbs.db
 # Secrets or signing keys (add if used)
 *.keystore
 .env
-lib/keys.properties
+
+# Local OSM client ID configuration (contains secrets)
+build_keys.conf
 
 # ───────────────────────────────
 # For now - not targeting these

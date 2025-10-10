@@ -1,0 +1,10 @@
+# Local OSM client ID configuration for builds
+# Copy this file to build_keys.conf and fill in your values
+# This file is gitignored to keep your keys secret
+#
+# Get your client IDs from:
+# Production: https://www.openstreetmap.org/oauth2/applications  
+# Sandbox: https://master.apis.dev.openstreetmap.org/oauth2/applications
+
+OSM_PROD_CLIENTID=your_production_client_id_here
+OSM_SANDBOX_CLIENTID=your_sandbox_client_id_here
