@@ -79,7 +79,8 @@ cp lib/keys.dart.example lib/keys.dart
 ## Roadmap
 
 ### Needed Bugfixes
-- Are offline areas really working? Are they preferred for fast loading even when online? Check working.
+- Are offline areas preferred for fast loading even when online? Check working.
+- Ease up on overpass by pre-caching a larger area. Maybe we could grab the full latest database just like for suspected locations?
 
 ### Current Development
 - Swap in alprwatch.org/directions avoidance routing API
