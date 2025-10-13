@@ -81,6 +81,7 @@ cp lib/keys.dart.example lib/keys.dart
 ### Needed Bugfixes
 - Are offline areas preferred for fast loading even when online? Check working.
 - Ease up on overpass by pre-caching a larger area. Maybe we could grab the full latest database just like for suspected locations?
+- Stop failing to fetch tiles; keep retrying after 3. Fix network indicator - only done when fetch queue is empty!
 
 ### Current Development
 - Swap in alprwatch.org/directions avoidance routing API
