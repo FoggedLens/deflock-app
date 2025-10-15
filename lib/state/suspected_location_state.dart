@@ -37,8 +37,8 @@ class SuspectedLocationState extends ChangeNotifier {
   DateTime? get lastFetchTime => _service.lastFetchTime;
 
   /// Initialize the state
-  Future<void> init() async {
-    await _service.init();
+  Future<void> init({bool offlineMode = false}) async {
+    await _service.init(offlineMode: offlineMode);
     notifyListeners();
   }
 

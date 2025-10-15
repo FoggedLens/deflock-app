@@ -7,6 +7,7 @@ import 'package:latlong2/latlong.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:csv/csv.dart';
 
+import '../dev_config.dart';
 import '../models/suspected_location.dart';
 import 'suspected_location_cache.dart';
 
@@ -15,7 +16,6 @@ class SuspectedLocationService {
   factory SuspectedLocationService() => _instance;
   SuspectedLocationService._();
 
-  static const String _csvUrl = 'https://alprwatch.org/pub/flock_utilities_mini_latest.csv';
   static const String _prefsKeyEnabled = 'suspected_locations_enabled';
   static const Duration _maxAge = Duration(days: 7);
   static const Duration _timeout = Duration(seconds: 30);
@@ -34,15 +34,18 @@ class SuspectedLocationService {
   bool get isLoading => _isLoading;
 
   /// Initialize the service - load from storage and check if refresh needed
-  Future<void> init() async {
+  Future<void> init({bool offlineMode = false}) async {
     await _loadFromStorage();
     
     // Load cache data
     await _cache.loadFromStorage();
     
-    // Only auto-fetch if enabled and data is stale or missing
-    if (_isEnabled && _shouldRefresh()) {
+    // Only auto-fetch if enabled, data is stale or missing, and we are not offline
+    if (_isEnabled && _shouldRefresh() && !offlineMode) {
+      debugPrint('[SuspectedLocationService] Auto-refreshing CSV data on startup (older than $_maxAge or missing)');
       await _fetchData();
+    } else if (_isEnabled && _shouldRefresh() && offlineMode) {
+      debugPrint('[SuspectedLocationService] Skipping auto-refresh due to offline mode - data is ${_cache.lastFetchTime != null ? 'outdated' : 'missing'}');
     }
   }
 
@@ -100,10 +103,10 @@ class SuspectedLocationService {
     _isLoading = true;
     try {
       onProgress?.call('Downloading CSV data...', null);
-      debugPrint('[SuspectedLocationService] Fetching CSV data from $_csvUrl');
+      debugPrint('[SuspectedLocationService] Fetching CSV data from $kSuspectedLocationsCsvUrl');
       
       final response = await http.get(
-        Uri.parse(_csvUrl),
+        Uri.parse(kSuspectedLocationsCsvUrl),
         headers: {
           'User-Agent': 'DeFlock/1.0 (OSM surveillance mapping app)',
         },

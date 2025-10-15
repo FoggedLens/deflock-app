@@ -79,8 +79,6 @@ cp lib/keys.dart.example lib/keys.dart
 ## Roadmap
 
 ### Needed Bugfixes
-- Automatically refresh suspected csv on startup if it's enabled, current file is older than a week, and we are not offline
-- Suspected locations URL in dev_config
 - Are offline areas preferred for fast loading even when online? Check working.
 - Ease up on overpass by pre-caching a larger area. Maybe we could grab the full latest database just like for suspected locations?
 - Stop failing to fetch tiles; keep retrying after 3. Remove kTileFetchInitialDelayMs, kTileFetchJitter1Ms, etc from dev_config. Fix network indicator - only done when fetch queue is empty!

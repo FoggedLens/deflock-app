@@ -165,7 +165,7 @@ class AppState extends ChangeNotifier {
     
     await _operatorProfileState.init();
     await _profileState.init();
-    await _suspectedLocationState.init();
+    await _suspectedLocationState.init(offlineMode: _settingsState.offlineMode);
     await _uploadQueueState.init();
     await _authState.init(_settingsState.uploadMode);
     
