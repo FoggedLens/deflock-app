@@ -223,7 +223,7 @@ jobs:
             --export-options-plist=ios/exportOptions.plist \
             --dart-define=OSM_PROD_CLIENTID='${{ secrets.OSM_PROD_CLIENTID }}' \
             --dart-define=OSM_SANDBOX_CLIENTID='${{ secrets.OSM_SANDBOX_CLIENTID }}'
-          cp build/ios/iphoneos/Runner.ipa Runner.ipa
+          cp build/ios/ipa/*.ipa Runner.ipa
 
       - name: Clean up keychain and provisioning profile
         if: always()
