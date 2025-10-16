@@ -171,6 +171,10 @@ jobs:
           # import certificate to keychain
           security import $CERTIFICATE_PATH -P "$P12_PASSWORD" -A -t cert -f pkcs12 -k $KEYCHAIN_PATH
           security set-key-partition-list -S apple-tool:,apple: -k "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+          
+          # Make the certificate trusted
+          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+          
           security list-keychain -d user -s $KEYCHAIN_PATH
           security default-keychain -s $KEYCHAIN_PATH
 
@@ -187,6 +191,8 @@ jobs:
           security default-keychain
 
       - name: Build iOS .ipa
+        env:
+          FLUTTER_XCODE_CODE_SIGN_IDENTITY: "iPhone Distribution: Tech BS LLC (7XG8T28436)"
         run: |
           flutter build ipa --release \
             --dart-define=OSM_PROD_CLIENTID='${{ secrets.OSM_PROD_CLIENTID }}' \
