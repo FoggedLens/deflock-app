@@ -226,7 +226,6 @@ jobs:
           cp build/ios/ipa/*.ipa Runner.ipa
 
       - name: Clean up keychain and provisioning profile
-        if: always()
         run: |
           security delete-keychain $RUNNER_TEMP/app-signing.keychain-db
           rm ~/Library/MobileDevice/Provisioning\ Profiles/61f9fdb9-bf2d-4d94-b249-63155ee71e74.mobileprovision
