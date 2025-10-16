@@ -26,6 +26,8 @@
 		<true/>
 		<key>NSLocationWhenInUseUsageDescription</key>
 		<string>This app needs your location to show nearby cameras.</string>
+		<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+		<string>This app optionally uses your location to center the map on your current position and provide proximity alerts for nearby surveillance devices. These features are entirely optional.</string>
 		<key>UILaunchStoryboardName</key>
 		<string>LaunchScreen</string>
 		<key>UIMainStoryboardFile</key>
