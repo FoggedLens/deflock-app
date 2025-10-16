@@ -238,6 +238,15 @@ jobs:
           path: Runner.ipa
           if-no-files-found: 'error'
 
+      - name: Upload to App Store Connect
+        if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
+        uses: apple-actions/upload-testflight-build@v1
+        with:
+          app-path: Runner.ipa
+          issuer-id: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+          api-key-id: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
+          api-private-key: ${{ secrets.APP_STORE_CONNECT_API_KEY_BASE64 }}
+
   attach-to-release:
     name: Attach Assets to Release
     needs: [get-version, build-android-apk, build-android-aab, build-ios]
