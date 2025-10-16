@@ -173,17 +173,17 @@ jobs:
           security set-key-partition-list -S apple-tool:,apple: -k "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
           security list-keychain -d user -s $KEYCHAIN_PATH
 
-          # apply provisioning profile
+          # apply provisioning profile with UUID as filename
           mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
-          cp $PP_PATH ~/Library/MobileDevice/Provisioning\ Profiles
+          cp $PP_PATH ~/Library/MobileDevice/Provisioning\ Profiles/61f9fdb9-bf2d-4d94-b249-63155ee71e74.mobileprovision
 
           # Debug: Check what we actually have
           echo "=== Certificates in keychain ==="
           security find-identity -v -p codesigning $KEYCHAIN_PATH
           echo "=== Provisioning profiles ==="
           ls -la ~/Library/MobileDevice/Provisioning\ Profiles/
-          echo "=== Provisioning profile details ==="
-          security cms -D -i $PP_PATH | grep -A1 -E "(TeamIdentifier|TeamName|Name|UUID|ApplicationIdentifierPrefix)"
+          echo "=== Default keychain ==="
+          security default-keychain
 
       - name: Build iOS .ipa
         run: |
@@ -196,7 +196,7 @@ jobs:
         if: always()
         run: |
           security delete-keychain $RUNNER_TEMP/app-signing.keychain-db
-          rm ~/Library/MobileDevice/Provisioning\ Profiles/build_pp.mobileprovision
+          rm ~/Library/MobileDevice/Provisioning\ Profiles/61f9fdb9-bf2d-4d94-b249-63155ee71e74.mobileprovision
 
       - name: Upload IPA artifact
         uses: actions/upload-artifact@v4
