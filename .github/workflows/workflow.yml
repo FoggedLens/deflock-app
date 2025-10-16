@@ -179,16 +179,48 @@ jobs:
           # install provisioning profile
           mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
           cp $PP_PATH ~/Library/MobileDevice/Provisioning\ Profiles/61f9fdb9-bf2d-4d94-b249-63155ee71e74.mobileprovision
+          
+          # Also install using the profile's internal UUID for better compatibility
+          UUID=$(security cms -D -i $PP_PATH | plutil -extract UUID xml1 -o - - | xmllint --xpath "//string/text()" -)
+          cp $PP_PATH ~/Library/MobileDevice/Provisioning\ Profiles/$UUID.mobileprovision
 
           # Debug: Check what we actually have
           echo "=== Certificates in keychain ==="
           security find-identity -v -p codesigning $KEYCHAIN_PATH
           echo "=== Provisioning profiles ==="
           ls -la ~/Library/MobileDevice/Provisioning\ Profiles/
+          echo "=== Profile UUID extracted: $UUID ==="
+
+      - name: Create export options
+        run: |
+          cat > ios/exportOptions.plist << EOF
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+            <key>destination</key>
+            <string>export</string>
+            <key>method</key>
+            <string>app-store</string>
+            <key>teamID</key>
+            <string>7XG8T28436</string>
+            <key>provisioningProfiles</key>
+            <dict>
+              <key>me.deflock.deflockapp</key>
+              <string>61f9fdb9-bf2d-4d94-b249-63155ee71e74</string>
+            </dict>
+            <key>signingStyle</key>
+            <string>manual</string>
+            <key>stripSwiftSymbols</key>
+            <true/>
+          </dict>
+          </plist>
+          EOF
 
       - name: Build iOS .ipa
         run: |
           flutter build ipa --release \
+            --export-options-plist=ios/exportOptions.plist \
             --dart-define=OSM_PROD_CLIENTID='${{ secrets.OSM_PROD_CLIENTID }}' \
             --dart-define=OSM_SANDBOX_CLIENTID='${{ secrets.OSM_SANDBOX_CLIENTID }}'
           cp build/ios/iphoneos/Runner.ipa Runner.ipa
