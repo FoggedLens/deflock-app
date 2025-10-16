@@ -245,28 +245,18 @@ jobs:
           APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
           APP_STORE_CONNECT_API_KEY_BASE64: ${{ secrets.APP_STORE_CONNECT_API_KEY_BASE64 }}
         run: |
-          # Create the private keys directory
+          # Create the private keys directory and decode API key
           mkdir -p ~/private_keys
-          
-          # Decode and save the API key
           echo -n "$APP_STORE_CONNECT_API_KEY_BASE64" | base64 --decode > ~/private_keys/AuthKey_${APP_STORE_CONNECT_API_KEY_ID}.p8
           
-          # Debug: Check if file was created and has content
-          echo "=== API Key File Debug ==="
-          ls -la ~/private_keys/
-          file ~/private_keys/AuthKey_${APP_STORE_CONNECT_API_KEY_ID}.p8
-          echo "First few lines of key file:"
-          head -3 ~/private_keys/AuthKey_${APP_STORE_CONNECT_API_KEY_ID}.p8
-          echo "=========================="
-          
-          # Upload using xcrun altool
+          # Upload to App Store Connect / TestFlight
           xcrun altool --upload-app \
             --type ios \
             --file Runner.ipa \
             --apiKey $APP_STORE_CONNECT_API_KEY_ID \
             --apiIssuer $APP_STORE_CONNECT_ISSUER_ID
           
-          # Clean up
+          # Clean up sensitive files
           rm -rf ~/private_keys
 
   attach-to-release:
