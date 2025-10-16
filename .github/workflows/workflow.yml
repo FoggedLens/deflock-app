@@ -159,9 +159,17 @@ jobs:
           security import certificate.p12 -k build.keychain -P "" -T /usr/bin/codesign
           security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "${{ secrets.IOS_KEYCHAIN_PASSWORD }}" build.keychain
 
+          # Debug: List what certificates we have
+          security find-identity -v -p codesigning build.keychain
+
           # Install provisioning profile
           mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
           echo "${{ secrets.IOS_APPSTORE_PROVISIONING_PROFILE_BASE64 }}" | base64 --decode > ~/Library/MobileDevice/Provisioning\ Profiles/${{ vars.IOS_PROVISIONING_PROFILE_UUID }}.mobileprovision
+
+          # Configure Xcode project for manual signing with team ID
+          sed -i '' 's/CODE_SIGN_STYLE = Automatic;/CODE_SIGN_STYLE = Manual;/g' ios/Runner.xcodeproj/project.pbxproj
+          sed -i '' 's/DEVELOPMENT_TEAM = "";/DEVELOPMENT_TEAM = "${{ vars.IOS_TEAM_ID }}";/g' ios/Runner.xcodeproj/project.pbxproj
+          sed -i '' 's/DEVELOPMENT_TEAM = ;/DEVELOPMENT_TEAM = "${{ vars.IOS_TEAM_ID }}";/g' ios/Runner.xcodeproj/project.pbxproj
 
           # Create ExportOptions.plist with our values
           cat > ios/ExportOptions.plist << EOF
