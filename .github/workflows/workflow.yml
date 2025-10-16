@@ -170,15 +170,13 @@ jobs:
 
           # import certificate to keychain
           security import $CERTIFICATE_PATH -P "$P12_PASSWORD" -A -t cert -f pkcs12 -k $KEYCHAIN_PATH
-          security set-key-partition-list -S apple-tool:,apple: -k "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
-          
-          # Make the certificate trusted
           security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
           
+          # Set this keychain as the default
           security list-keychain -d user -s $KEYCHAIN_PATH
           security default-keychain -s $KEYCHAIN_PATH
 
-          # apply provisioning profile with UUID as filename
+          # install provisioning profile
           mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
           cp $PP_PATH ~/Library/MobileDevice/Provisioning\ Profiles/61f9fdb9-bf2d-4d94-b249-63155ee71e74.mobileprovision
 
@@ -187,12 +185,8 @@ jobs:
           security find-identity -v -p codesigning $KEYCHAIN_PATH
           echo "=== Provisioning profiles ==="
           ls -la ~/Library/MobileDevice/Provisioning\ Profiles/
-          echo "=== Default keychain ==="
-          security default-keychain
 
       - name: Build iOS .ipa
-        env:
-          FLUTTER_XCODE_CODE_SIGN_IDENTITY: "iPhone Distribution: Tech BS LLC (7XG8T28436)"
         run: |
           flutter build ipa --release \
             --dart-define=OSM_PROD_CLIENTID='${{ secrets.OSM_PROD_CLIENTID }}' \
