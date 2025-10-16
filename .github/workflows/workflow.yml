@@ -161,11 +161,41 @@ jobs:
 
           # Install provisioning profile
           mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
-          echo "${{ secrets.IOS_APPSTORE_PROVISIONING_PROFILE_BASE64 }}" | base64 --decode > ~/Library/MobileDevice/Provisioning\ Profiles/appstore.mobileprovision
+          echo "${{ secrets.IOS_APPSTORE_PROVISIONING_PROFILE_BASE64 }}" | base64 --decode > ~/Library/MobileDevice/Provisioning\ Profiles/${{ vars.IOS_PROVISIONING_PROFILE_UUID }}.mobileprovision
+
+          # Create ExportOptions.plist with our values
+          cat > ios/ExportOptions.plist << EOF
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+              <key>method</key>
+              <string>app-store</string>
+              <key>teamID</key>
+              <string>${{ vars.IOS_TEAM_ID }}</string>
+              <key>provisioningProfiles</key>
+              <dict>
+                  <key>me.deflock.deflockapp</key>
+                  <string>${{ vars.IOS_PROVISIONING_PROFILE_UUID }}</string>
+              </dict>
+              <key>signingStyle</key>
+              <string>manual</string>
+              <key>uploadBitcode</key>
+              <false/>
+              <key>uploadSymbols</key>
+              <true/>
+              <key>compileBitcode</key>
+              <false/>
+          </dict>
+          </plist>
+          EOF
 
       - name: Build iOS .ipa
         run: |
-          flutter build ipa --release --dart-define=OSM_PROD_CLIENTID='${{ secrets.OSM_PROD_CLIENTID }}' --dart-define=OSM_SANDBOX_CLIENTID='${{ secrets.OSM_SANDBOX_CLIENTID }}'
+          flutter build ipa --release \
+            --dart-define=OSM_PROD_CLIENTID='${{ secrets.OSM_PROD_CLIENTID }}' \
+            --dart-define=OSM_SANDBOX_CLIENTID='${{ secrets.OSM_SANDBOX_CLIENTID }}' \
+            --export-options-plist=ios/ExportOptions.plist
           cp build/ios/iphoneos/Runner.ipa Runner.ipa
           
       - name: Clean up keychain
