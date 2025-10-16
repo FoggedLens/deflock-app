@@ -176,6 +176,14 @@ jobs:
           mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
           cp $PP_PATH ~/Library/MobileDevice/Provisioning\ Profiles
 
+          # Debug: Check what we actually have
+          echo "=== Certificates in keychain ==="
+          security find-identity -v -p codesigning $KEYCHAIN_PATH
+          echo "=== Provisioning profiles ==="
+          ls -la ~/Library/MobileDevice/Provisioning\ Profiles/
+          echo "=== Provisioning profile details ==="
+          security cms -D -i $PP_PATH | grep -A1 -E "(TeamIdentifier|TeamName|Name|UUID|ApplicationIdentifierPrefix)"
+
       - name: Build iOS .ipa
         run: |
           flutter build ipa --release \
