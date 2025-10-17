@@ -33,6 +33,11 @@ A comprehensive Flutter app for mapping public surveillance infrastructure with 
 - **Direction visualization**: Interactive field-of-view cones showing camera viewing angles
 - **Bulk operations**: Tag multiple devices efficiently with profile-based workflow
 
+### Surveillance Intelligence
+- **Suspected locations**: Display potential surveillance sites from utility permit data (select locations, more added regularly)
+- **Proximity alerts**: Get notified when approaching mapped surveillance devices, with configurable distance and background notifications
+- **Location search**: Find addresses and points of interest to aid in mapping missions
+
 ### Professional Upload & Sync
 - **OpenStreetMap integration**: Direct upload with full OAuth2 authentication
 - **Upload modes**: Production OSM, testing sandbox, or simulate-only mode
@@ -84,6 +89,7 @@ cp lib/keys.dart.example lib/keys.dart
 - Stop failing to fetch tiles; keep retrying after 3. Remove kTileFetchInitialDelayMs, kTileFetchJitter1Ms, etc from dev_config. Fix network indicator - only done when fetch queue is empty!
 
 ### Current Development
+- Import/Export map providers
 - Swap in alprwatch.org/directions avoidance routing API
 - Help button with links to email, discord, and website
 - Clean cache when nodes have disappeared / been deleted by others / queue item was deleted
@@ -92,8 +98,8 @@ cp lib/keys.dart.example lib/keys.dart
 
 ### Future Features & Wishlist
 - Update offline area nodes while browsing?
-- Suspected locations toggle (alprwatch.com/flock/utilities)
-- Offline navigation 
+- Offline navigation (pending vector map tiles)
+- Suspected locations expansion to more regions
 
 ### Maybes
 - Yellow ring for devices missing specific tag details?

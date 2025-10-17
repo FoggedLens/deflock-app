@@ -33,7 +33,10 @@ AppState (main coordinator)
 ├── ProfileState (node profiles & toggles)
 ├── SessionState (add/edit sessions)
 ├── SettingsState (preferences & tile providers)
-└── UploadQueueState (pending operations)
+├── UploadQueueState (pending operations)
+├── SuspectedLocationState (permit data & display)
+├── NavigationState (routing & search)
+└── SearchState (location search results)
 ```
 
 **Why this approach:**
@@ -164,6 +167,56 @@ Sandbox + Offline    → No nodes (cache is production data)
 
 **Why sandbox + offline = no nodes:**
 Local cache contains production data. Showing production nodes in sandbox mode would be confusing and could lead to users trying to edit production nodes with sandbox credentials.
+
+### 7. Proximity Alerts & Background Monitoring
+
+**Design approach:**
+- **Simple cooldown system**: In-memory tracking to prevent notification spam
+- **Dual alert types**: Push notifications (background) and visual banners (foreground)
+- **Configurable distance**: 25-200 meter alert radius
+- **Battery awareness**: Users explicitly opt into background location monitoring
+
+**Implementation notes:**
+- Uses Flutter Local Notifications for cross-platform background alerts
+- Simple RecentAlert tracking prevents duplicate notifications
+- Visual callback system for in-app alerts when app is active
+
+### 8. Suspected Locations
+
+**Data pipeline:**
+- **CSV ingestion**: Downloads utility permit data from alprwatch.org
+- **GeoJSON processing**: Handles Point, Polygon, and MultiPolygon geometries
+- **Proximity filtering**: Hides suspected locations near confirmed devices
+- **Regional availability**: Currently select locations, expanding regularly
+
+**Why utility permits:**
+Utility companies often must file permits when installing surveillance infrastructure. This creates a paper trail that can indicate potential surveillance sites before devices are confirmed through direct observation.
+
+### 9. Upload Mode Simplification
+
+**Release vs Debug builds:**
+- **Release builds**: Production OSM only (simplified UX)
+- **Debug builds**: Full sandbox/simulate options available
+Most users should contribute to production; testing modes add complexity
+
+**Implementation:**
+```dart
+// Upload mode selection disabled in release builds
+bool get showUploadModeSelector => kDebugMode;
+```
+
+### 10. Navigation & Routing (Implemented, Awaiting Integration)
+
+**Current state:**
+- **Search functionality**: Fully implemented and active
+- **Basic routing**: Complete but disabled pending API integration
+- **Avoidance routing**: Awaiting alprwatch.org/directions API
+- **Offline routing**: Requires vector map tiles
+
+**Architecture:**
+- NavigationState manages routing computation and turn-by-turn instructions
+- RoutingService handles API communication and route calculation
+- SearchService provides location lookup and geocoding
 
 ---
 
