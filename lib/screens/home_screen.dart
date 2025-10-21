@@ -130,6 +130,13 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       setState(() {
         _addSheetHeight = 0.0;
       });
+      
+      // Handle dismissal by canceling session if still active
+      final appState = context.read<AppState>();
+      if (appState.session != null) {
+        debugPrint('[HomeScreen] AddNodeSheet dismissed - canceling session');
+        appState.cancelSession();
+      }
     });
   }
 
@@ -180,6 +187,13 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           _editSheetHeight = 0.0;
           _transitioningToEdit = false;
         });
+        
+        // Handle dismissal by canceling edit session if still active
+        final appState = context.read<AppState>();
+        if (appState.editSession != null) {
+          debugPrint('[HomeScreen] EditNodeSheet dismissed - canceling edit session');
+          appState.cancelEditSession();
+        }
       });
     });
   }
