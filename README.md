@@ -87,8 +87,7 @@ cp lib/keys.dart.example lib/keys.dart
 
 ### Needed Bugfixes
 - Are offline areas preferred for fast loading even when online? Check working.
-- Ease up on overpass by pre-caching a larger area. Maybe we could grab the full latest database just like for suspected locations?
-- Stop failing to fetch tiles; keep retrying after 3. Remove kTileFetchInitialDelayMs, kTileFetchJitter1Ms, etc from dev_config. Fix network indicator - only done when fetch queue is empty!
+- Fix network indicator - only done when fetch queue is empty!
 
 ### Current Development
 - Import/Export map providers
@@ -108,6 +107,7 @@ cp lib/keys.dart.example lib/keys.dart
 - Yellow ring for devices missing specific tag details?
 - "Cache accumulating" offline area?
 - "Offline areas" as tile provider?
+- Maybe we could grab the full latest database for each profile just like for suspected locations? (Instead of overpass)
 - Optional custom icons for camera profiles?
 - Upgrade device marker design? (considering nullplate's svg)
 - Custom device providers and OSM/Overpass alternatives?
