@@ -12,6 +12,16 @@
     "initiative": "DeFlock 更广泛倡议的一部分，旨在促进监控透明化。",
     "footer": "访问：deflock.me\n使用 Flutter 构建 • 开源"
   },
+  "welcome": {
+    "title": "欢迎使用 DeFlock",
+    "description": "DeFlock 的创立基于公共监控工具应该透明的理念。在这个移动应用程序中，就像在网站上一样，您将能够查看您当地和国外的车牌识别系统和其他监控基础设施的位置。",
+    "mission": "然而，这个项目不是自动化的；需要我们所有人来改善这个项目。在查看地图时，您可以点击\"新建节点\"来添加一个之前未知的装置。在您的帮助下，我们可以实现增强监控基础设施透明度和公众意识的目标。",
+    "privacy": "隐私说明：此应用程序完全在您的设备上本地运行，仅使用第三方 OpenStreetMap API 进行数据存储和提交。DeFlock 不收集或存储任何类型的用户数据，也不负责账户管理。",
+    "tileNote": "注意：来自 OpenStreetMap 的免费地图图块可能加载很慢。可以在设置 > 高级中配置替代图块提供商。",
+    "moreInfo": "您可以在设置 > 关于中找到更多链接。",
+    "dontShowAgain": "不再显示此欢迎消息",
+    "getStarted": "开始使用 DeFlock！"
+  },
   "actions": {
     "tagNode": "新建节点",
     "download": "下载",
@@ -131,7 +141,12 @@
     "testConnection": "测试连接",
     "testConnectionSubtitle": "验证 OSM 凭据是否有效",
     "connectionOK": "连接正常 - 凭据有效",
-    "connectionFailed": "连接失败 - 请重新登录"
+    "connectionFailed": "连接失败 - 请重新登录",
+    "deleteAccount": "删除 OSM 账户",
+    "deleteAccountSubtitle": "管理您的 OpenStreetMap 账户",
+    "deleteAccountExplanation": "要删除您的 OpenStreetMap 账户，您需要访问 OpenStreetMap 网站。这将永久删除您的 OSM 账户和所有相关数据。",
+    "deleteAccountWarning": "警告：此操作无法撤销，将永久删除您的 OSM 账户。",
+    "goToOSM": "前往 OpenStreetMap"
   },
   "queue": {
     "pendingUploads": "待上传：{}",

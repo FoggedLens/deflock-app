@@ -19,9 +19,12 @@ import '../widgets/measured_sheet.dart';
 import '../widgets/navigation_sheet.dart';
 import '../widgets/search_bar.dart';
 import '../widgets/suspected_location_sheet.dart';
+import '../widgets/welcome_dialog.dart';
+import '../widgets/changelog_dialog.dart';
 import '../models/osm_node.dart';
 import '../models/suspected_location.dart';
 import '../models/search_result.dart';
+import '../services/changelog_service.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -48,6 +51,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   
   // Track selected node for highlighting
   int? _selectedNodeId;
+  
+  // Track popup display to avoid showing multiple times
+  bool _hasCheckedForPopup = false;
 
   @override
   void initState() {
@@ -217,6 +223,52 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         appState.hideRouteOverview();
       }
     });
+  }
+
+  // Check for and display welcome/changelog popup
+  Future<void> _checkForPopup() async {
+    if (!mounted) return;
+    
+    try {
+      final popupType = await ChangelogService().getPopupType();
+      
+      if (!mounted) return; // Check again after async operation
+      
+      switch (popupType) {
+        case PopupType.welcome:
+          await showDialog(
+            context: context,
+            barrierDismissible: false,
+            builder: (context) => const WelcomeDialog(),
+          );
+          break;
+        
+        case PopupType.changelog:
+          final changelogContent = ChangelogService().getChangelogForCurrentVersion();
+          if (changelogContent != null) {
+            await showDialog(
+              context: context,
+              barrierDismissible: false,
+              builder: (context) => ChangelogDialog(changelogContent: changelogContent),
+            );
+          }
+          break;
+        
+        case PopupType.none:
+          // No popup needed, but still update version tracking for future launches
+          await ChangelogService().updateLastSeenVersion();
+          break;
+      }
+    } catch (e) {
+      // Silently handle errors to avoid breaking the app launch
+      debugPrint('[HomeScreen] Error checking for popup: $e');
+      // Still update version tracking in case of error
+      try {
+        await ChangelogService().updateLastSeenVersion();
+      } catch (e2) {
+        debugPrint('[HomeScreen] Error updating version: $e2');
+      }
+    }
   }
 
   void _onStartRoute() {
@@ -524,6 +576,12 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       } else if (!shouldShowNavSheet) {
         _navigationSheetShown = false;
       }
+    }
+
+    // Check for welcome/changelog popup after app is fully initialized
+    if (appState.isInitialized && !_hasCheckedForPopup) {
+      _hasCheckedForPopup = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) => _checkForPopup());
     }
 
     // Pass the active sheet height directly to the map

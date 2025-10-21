@@ -65,6 +65,49 @@ External APIs (OSM, Overpass, Tile providers)
 
 ---
 
+## Changelog & First Launch System
+
+The app includes a comprehensive system for welcoming new users and notifying existing users of updates.
+
+### Components
+- **ChangelogService**: Manages version tracking and changelog loading
+- **WelcomeDialog**: First launch popup with privacy information and quick links
+- **ChangelogDialog**: Update notification popup for version changes  
+- **ReleaseNotesScreen**: Settings page for viewing all changelog history
+
+### Content Management
+Changelog content is stored in `assets/changelog.json`:
+```json
+{
+  "1.2.4": {
+    "content": "• New feature description\n• Bug fixes\n• Other improvements"
+  },
+  "1.2.3": {
+    "content": ""  // Empty string = skip popup for this version
+  }
+}
+```
+
+### Developer Workflow
+1. **For each release**: Add entry to `changelog.json` with version from `pubspec.yaml`
+2. **Content required**: Every version must have an entry (can be empty string to skip)
+3. **Localization**: Welcome dialog supports i18n, changelog content is English-only
+4. **Testing**: Clear app data to test first launch, change version to test updates
+
+### User Experience Flow
+- **First Launch**: Welcome popup with "don't show again" option
+- **Version Updates**: Changelog popup (only if content exists, no "don't show again")  
+- **Settings Access**: Complete changelog history available in Settings > About > Release Notes
+
+### Privacy Integration
+The welcome popup explains that the app:
+- Runs entirely locally on device
+- Uses OpenStreetMap API for data storage only
+- DeFlock collects no user data
+- DeFlock is not responsible for OSM account management
+
+---
+
 ## Core Components
 
 ### 1. MapDataProvider

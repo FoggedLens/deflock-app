@@ -124,7 +124,12 @@
     "testConnection": "Verbindung Testen",
     "testConnectionSubtitle": "OSM-Anmeldedaten überprüfen",
     "connectionOK": "Verbindung OK - Anmeldedaten sind gültig",
-    "connectionFailed": "Verbindung fehlgeschlagen - bitte erneut anmelden"
+    "connectionFailed": "Verbindung fehlgeschlagen - bitte erneut anmelden",
+    "deleteAccount": "OSM-Konto Löschen",
+    "deleteAccountSubtitle": "Ihr OpenStreetMap-Konto verwalten",
+    "deleteAccountExplanation": "Um Ihr OpenStreetMap-Konto zu löschen, müssen Sie die OpenStreetMap-Website besuchen. Dies entfernt dauerhaft Ihr OSM-Konto und alle zugehörigen Daten.",
+    "deleteAccountWarning": "Warnung: Diese Aktion kann nicht rückgängig gemacht werden und löscht Ihr OSM-Konto dauerhaft.",
+    "goToOSM": "Zu OpenStreetMap gehen"
   },
   "queue": {
     "pendingUploads": "Ausstehende Uploads: {}",
@@ -305,6 +310,16 @@
     "features": "• Offline-fähige Kartierung mit herunterladbaren Bereichen\n• Direkter Upload zu OpenStreetMap mit OAuth2\n• Integrierte Profile für große Hersteller\n• Datenschutzfreundlich - keine Nutzerdaten gesammelt\n• Multiple Kartenanbieter (OSM, Satellitenbilder)",
     "initiative": "Teil der breiteren DeFlock-Initiative zur Förderung von Überwachungstransparenz.",
     "footer": "Besuchen Sie: deflock.me\nGebaut mit Flutter • Open Source"
+  },
+  "welcome": {
+    "title": "Willkommen bei DeFlock",
+    "description": "DeFlock wurde auf der Idee gegründet, dass öffentliche Überwachungsinstrumente transparent sein sollten. In dieser mobilen App, wie auch auf der Website, können Sie die Standorte von ALPRs und anderer Überwachungsinfrastruktur in Ihrer Umgebung und weltweit einsehen.",
+    "mission": "Dieses Projekt ist jedoch nicht automatisiert; es braucht uns alle, um dieses Projekt zu verbessern. Bei der Kartenansicht können Sie auf \"Neuer Knoten\" tippen, um eine bisher unbekannte Installation hinzuzufügen. Mit Ihrer Hilfe können wir unser Ziel erreichen: mehr Transparenz und öffentliches Bewusstsein für Überwachungsinfrastruktur.",
+    "privacy": "Datenschutzhinweis: Diese App läuft vollständig lokal auf Ihrem Gerät und nutzt die OpenStreetMap-API von Drittanbietern nur für Datenspeicherung und Übermittlungen. DeFlock sammelt oder speichert keinerlei Nutzerdaten und ist nicht für die Kontoverwaltung verantwortlich.",
+    "tileNote": "HINWEIS: Die kostenlosen Kartenkacheln von OpenStreetMap können sehr langsam laden. Alternative Kartenanbieter können unter Einstellungen > Erweitert konfiguriert werden.",
+    "moreInfo": "Weitere Links finden Sie unter Einstellungen > Über.",
+    "dontShowAgain": "Diese Willkommensnachricht nicht mehr anzeigen",
+    "getStarted": "Los geht's mit DeFlocking!"
   },
   "navigation": {
     "searchLocation": "Ort suchen",

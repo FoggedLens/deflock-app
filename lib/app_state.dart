@@ -12,6 +12,7 @@ import 'models/search_result.dart';
 import 'services/offline_area_service.dart';
 import 'services/node_cache.dart';
 import 'services/tile_preview_service.dart';
+import 'services/changelog_service.dart';
 import 'widgets/camera_provider_with_cache.dart';
 import 'state/auth_state.dart';
 import 'state/navigation_state.dart';
@@ -159,6 +160,9 @@ class AppState extends ChangeNotifier {
   Future<void> _init() async {
     // Initialize all state modules
     await _settingsState.init();
+    
+    // Initialize changelog service
+    await ChangelogService().init();
     
     // Attempt to fetch missing tile type preview tiles (fails silently)
     _fetchMissingTilePreviews();

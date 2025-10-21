@@ -1,0 +1,17 @@
+{
+  "1.2.4": {
+    "content": "• New welcome popup for first-time users with essential privacy information\n• Automatic changelog display when app updates (like this one!)\n• Added Release Notes viewer in Settings > About\n• Enhanced user onboarding and transparency about data handling\n• Improved documentation for contributors"
+  },
+  "1.2.3": {
+    "content": "• Enhanced map performance and stability\n• Improved offline sync reliability\n• Added better error handling for uploads\n• Various bug fixes and improvements"
+  },
+  "1.2.2": {
+    "content": "• New surveillance device profiles added\n• Improved tile loading performance\n• Fixed issue with GPS accuracy\n• Updated translations"
+  },
+  "1.2.1": {
+    "content": ""
+  },
+  "1.2.0": {
+    "content": "• Major UI improvements\n• Added proximity alerts\n• Enhanced offline capabilities\n• New suspected locations feature"
+  }
+}

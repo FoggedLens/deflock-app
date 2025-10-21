@@ -68,7 +68,18 @@ class AboutScreen extends StatelessWidget {
                 ),
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 32),
+              const SizedBox(height: 24),
+              // Release Notes button
+              Center(
+                child: OutlinedButton.icon(
+                  onPressed: () {
+                    Navigator.pushNamed(context, '/settings/release-notes');
+                  },
+                  icon: const Icon(Icons.article_outlined),
+                  label: const Text('View Release Notes'),
+                ),
+              ),
+              const SizedBox(height: 24),
               _buildHelpLinks(context),
             ],
           ),
@@ -93,7 +104,73 @@ class AboutScreen extends StatelessWidget {
         _buildLinkText(context, 'Contact', 'https://deflock.me/contact'),
         const SizedBox(height: 8),
         _buildLinkText(context, 'Donate', 'https://deflock.me/donate'),
+        const SizedBox(height: 24),
+        
+        // Divider for account management section
+        Divider(
+          color: Theme.of(context).dividerColor.withOpacity(0.3),
+        ),
+        const SizedBox(height: 16),
+        
+        // Account deletion link (less prominent)
+        _buildAccountDeletionLink(context),
       ],
+    );
+  }
+
+  Widget _buildAccountDeletionLink(BuildContext context) {
+    final locService = LocalizationService.instance;
+    
+    return GestureDetector(
+      onTap: () => _showDeleteAccountDialog(context, locService),
+      child: Text(
+        locService.t('auth.deleteAccount'),
+        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+          color: Theme.of(context).colorScheme.error.withOpacity(0.7),
+          decoration: TextDecoration.underline,
+        ),
+        textAlign: TextAlign.center,
+      ),
+    );
+  }
+
+  void _showDeleteAccountDialog(BuildContext context, LocalizationService locService) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(locService.t('auth.deleteAccount')),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(locService.t('auth.deleteAccountExplanation')),
+            const SizedBox(height: 12),
+            Text(
+              locService.t('auth.deleteAccountWarning'),
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                color: Theme.of(context).colorScheme.error,
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text(locService.t('actions.cancel')),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+              _launchUrl('https://www.openstreetmap.org/account/deletion', context);
+            },
+            style: TextButton.styleFrom(
+              foregroundColor: Theme.of(context).colorScheme.error,
+            ),
+            child: Text(locService.t('auth.goToOSM')),
+          ),
+        ],
+      ),
     );
   }
 

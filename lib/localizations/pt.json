@@ -12,6 +12,16 @@
     "initiative": "Parte da iniciativa mais ampla DeFlock para promover transparência na vigilância.",
     "footer": "Visite: deflock.me\nConstruído com Flutter • Código Aberto"
   },
+  "welcome": {
+    "title": "Bem-vindo ao DeFlock",
+    "description": "DeFlock foi fundado na ideia de que ferramentas de vigilância pública devem ser transparentes. Dentro deste aplicativo móvel, como no site, você poderá ver a localização de ALPRs e outras infraestruturas de vigilância em sua área local e no exterior.",
+    "mission": "No entanto, este projeto não é automatizado; precisamos de todos nós para tornar este projeto melhor. Ao visualizar o mapa, você pode tocar em \"Novo Nó\" para adicionar uma instalação anteriormente desconhecida. Com sua ajuda, podemos alcançar nosso objetivo de maior transparência e conscientização pública sobre infraestrutura de vigilância.",
+    "privacy": "Nota de Privacidade: Este aplicativo funciona inteiramente localmente em seu dispositivo e usa a API de terceiros OpenStreetMap apenas para armazenamento e envio de dados. DeFlock não coleta nem armazena qualquer tipo de dados do usuário e não é responsável pelo gerenciamento de contas.",
+    "tileNote": "NOTA: Os tiles gratuitos de mapa do OpenStreetMap podem ser muito lentos para carregar. Provedores alternativos de tiles podem ser configurados em Configurações > Avançado.",
+    "moreInfo": "Você pode encontrar mais links em Configurações > Sobre.",
+    "dontShowAgain": "Não mostrar esta mensagem de boas-vindas novamente",
+    "getStarted": "Vamos começar com o DeFlock!"
+  },
   "actions": {
     "tagNode": "Novo Nó",
     "download": "Baixar",
@@ -131,7 +141,12 @@
     "testConnection": "Testar Conexão",
     "testConnectionSubtitle": "Verificar se as credenciais OSM estão funcionando",
     "connectionOK": "Conexão OK - credenciais são válidas",
-    "connectionFailed": "Conexão falhou - por favor, faça login novamente"
+    "connectionFailed": "Conexão falhou - por favor, faça login novamente",
+    "deleteAccount": "Excluir Conta OSM",
+    "deleteAccountSubtitle": "Gerencie sua conta OpenStreetMap",
+    "deleteAccountExplanation": "Para excluir sua conta OpenStreetMap, você precisará visitar o site do OpenStreetMap. Isso removerá permanentemente sua conta OSM e todos os dados associados.",
+    "deleteAccountWarning": "Aviso: Esta ação não pode ser desfeita e excluirá permanentemente sua conta OSM.",
+    "goToOSM": "Ir para OpenStreetMap"
   },
   "queue": {
     "pendingUploads": "Uploads pendentes: {}",
