@@ -102,8 +102,6 @@ class AboutScreen extends StatelessWidget {
         _buildLinkText(context, 'Source Code', 'https://github.com/FoggedLens/deflock-app'),
         const SizedBox(height: 8),
         _buildLinkText(context, 'Contact', 'https://deflock.me/contact'),
-        const SizedBox(height: 8),
-        _buildLinkText(context, 'Donate', 'https://deflock.me/donate'),
         const SizedBox(height: 24),
         
         // Divider for account management section

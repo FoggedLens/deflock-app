@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:latlong2/latlong.dart';
 
 import '../../models/tile_provider.dart' as models;
 import '../../services/simple_tile_service.dart';
@@ -63,6 +64,11 @@ class TileLayerManager {
   /// Clear tile queue immediately (for zoom changes, etc.)
   void clearTileQueueImmediate() {
     _tileHttpClient.clearTileQueue();
+  }
+  
+  /// Clear only tiles that are no longer visible in the current bounds
+  void clearStaleRequests({required LatLngBounds currentBounds}) {
+    _tileHttpClient.clearStaleRequests(currentBounds);
   }
 
   /// Build tile layer widget with current provider and type.

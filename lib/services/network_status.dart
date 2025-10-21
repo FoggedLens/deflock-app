@@ -4,7 +4,7 @@ import 'dart:async';
 import '../app_state.dart';
 
 enum NetworkIssueType { osmTiles, overpassApi, both }
-enum NetworkStatusType { waiting, issues, timedOut, noData, ready, success }
+enum NetworkStatusType { waiting, issues, timedOut, noData, ready, success, nodeLimitReached }
 
 /// Simple loading state for dual-source async operations (brutalist approach)
 enum LoadingState { ready, waiting, success, timeout }
@@ -25,6 +25,8 @@ class NetworkStatus extends ChangeNotifier {
   Timer? _waitingTimer;
   Timer? _noDataResetTimer;
   Timer? _successResetTimer;
+  bool _nodeLimitReached = false;
+  Timer? _nodeLimitResetTimer;
 
   // New dual-source loading state (brutalist approach)
   LoadingState _tileLoadingState = LoadingState.ready;
@@ -41,6 +43,7 @@ class NetworkStatus extends ChangeNotifier {
   bool get isTimedOut => _isTimedOut;
   bool get hasNoData => _hasNoData;
   bool get hasSuccess => _hasSuccess;
+  bool get nodeLimitReached => _nodeLimitReached;
   
   // New dual-source getters (brutalist approach)
   LoadingState get tileLoadingState => _tileLoadingState;
@@ -63,6 +66,7 @@ class NetworkStatus extends ChangeNotifier {
     if (_isTimedOut) return NetworkStatusType.timedOut;
     if (_hasNoData) return NetworkStatusType.noData;
     if (_hasSuccess) return NetworkStatusType.success;
+    if (_nodeLimitReached) return NetworkStatusType.nodeLimitReached;
     return NetworkStatusType.ready;
   }
 
@@ -206,6 +210,22 @@ class NetworkStatus extends ChangeNotifier {
       notifyListeners();
     }
   }
+  
+  /// Show notification that node display limit was reached
+  void reportNodeLimitReached(int totalNodes, int maxNodes) {
+    _nodeLimitReached = true;
+    notifyListeners();
+    debugPrint('[NetworkStatus] Node display limit reached: $totalNodes found, showing $maxNodes');
+    
+    // Auto-clear after 8 seconds
+    _nodeLimitResetTimer?.cancel();
+    _nodeLimitResetTimer = Timer(const Duration(seconds: 8), () {
+      if (_nodeLimitReached) {
+        _nodeLimitReached = false;
+        notifyListeners();
+      }
+    });
+  }
 
 
   
@@ -316,6 +336,7 @@ class NetworkStatus extends ChangeNotifier {
     _tileTimeoutTimer?.cancel();
     _nodeTimeoutTimer?.cancel();
     _successDisplayTimer?.cancel();
+    _nodeLimitResetTimer?.cancel();
     super.dispose();
   }
 }

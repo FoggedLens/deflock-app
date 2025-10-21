@@ -79,14 +79,12 @@ const int kProximityAlertMinDistance = 50; // meters
 const int kProximityAlertMaxDistance = 1000; // meters
 const Duration kProximityAlertCooldown = Duration(minutes: 10); // Cooldown between alerts for same node
 
-// Tile/OSM fetch retry parameters (for tunable backoff)
-const int kTileFetchMaxAttempts = 3;
-const int kTileFetchInitialDelayMs = 4000;
-const int kTileFetchJitter1Ms = 1000;
-const int kTileFetchSecondDelayMs = 15000;
-const int kTileFetchJitter2Ms = 4000;
-const int kTileFetchThirdDelayMs = 60000;
-const int kTileFetchJitter3Ms = 5000;
+// Tile fetch retry parameters (configurable backoff system)
+const int kTileFetchMaxAttempts = 6;              // Number of retry attempts before giving up
+const int kTileFetchInitialDelayMs = 1000;        // Base delay for first retry (1 second)
+const double kTileFetchBackoffMultiplier = 1.5;   // Multiply delay by this each attempt
+const int kTileFetchMaxDelayMs = 8000;            // Cap delays at this value (8 seconds max)
+const int kTileFetchRandomJitterMs = 500;         // Random fuzz to add (0 to 500ms)
 
 // User download max zoom span (user can download up to kMaxUserDownloadZoomSpan zooms above min)
 const int kMaxUserDownloadZoomSpan = 7;

@@ -1,5 +1,7 @@
 import 'package:http/http.dart' as http;
 import 'package:flutter/foundation.dart';
+import 'package:latlong2/latlong.dart';
+import 'package:flutter_map/flutter_map.dart';
 
 import '../app_state.dart';
 import 'map_data_provider.dart';
@@ -92,6 +94,11 @@ class SimpleTileHttpClient extends http.BaseClient {
   /// Clear any queued tile requests when map view changes
   void clearTileQueue() {
     _mapDataProvider.clearTileQueue();
+  }
+  
+  /// Clear only tile requests that are no longer visible in the current bounds
+  void clearStaleRequests(LatLngBounds currentBounds) {
+    _mapDataProvider.clearTileQueueSelective(currentBounds);
   }
 
   /// Format date for HTTP headers (RFC 7231)

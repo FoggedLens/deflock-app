@@ -40,6 +40,12 @@ class NetworkStatusIndicator extends StatelessWidget {
               color = Colors.green;
               break;
               
+            case NetworkStatusType.nodeLimitReached:
+              message = 'Showing limit - increase in settings';
+              icon = Icons.visibility_off;
+              color = Colors.amber;
+              break;
+              
             case NetworkStatusType.issues:
               switch (networkStatus.currentIssueType) {
                 case NetworkIssueType.osmTiles:

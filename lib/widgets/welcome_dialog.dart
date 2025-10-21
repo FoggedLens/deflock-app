@@ -78,7 +78,6 @@ class _WelcomeDialogState extends State<WelcomeDialog> {
                 _buildLinkButton('Website', 'https://deflock.me'),
                 _buildLinkButton('GitHub', 'https://github.com/FoggedLens/deflock-app'),
                 _buildLinkButton('Discord', 'https://discord.gg/aV7v4R3sKT'),
-                _buildLinkButton('Donate', 'https://deflock.me/donate'),
               ],
             ),
             const SizedBox(height: 16),

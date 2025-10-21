@@ -97,6 +97,7 @@ cp lib/keys.dart.example lib/keys.dart
 - Clean cache when nodes have disappeared / been deleted by others / queue item was deleted
 - Improve offline area node refresh live display
 - Add default operator profiles (Lowe’s etc)
+- Add Rekor, generic PTZ profiles
 
 ### Future Features & Wishlist
 - Update offline area nodes while browsing?

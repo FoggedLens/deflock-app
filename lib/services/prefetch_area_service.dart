@@ -100,17 +100,17 @@ class PrefetchAreaService {
       
       debugPrint('[PrefetchAreaService] Starting pre-fetch for area: ${preFetchArea.south},${preFetchArea.west} to ${preFetchArea.north},${preFetchArea.east}');
       
-      // Fetch nodes for the expanded area (no maxResults limit for pre-fetch)
+      // Fetch nodes for the expanded area (unlimited - let splitting handle 50k limit)
       final nodes = await fetchOverpassNodes(
         bounds: preFetchArea,
         profiles: profiles,
         uploadMode: uploadMode,
-        maxResults: 0, // Unlimited - let Overpass splitting handle large areas
+        maxResults: 0, // Unlimited - our splitting system handles the 50k limit gracefully
       );
       
       debugPrint('[PrefetchAreaService] Pre-fetch completed: ${nodes.length} nodes retrieved');
       
-      // Update cache with new nodes
+      // Update cache with new nodes (fresh data overwrites stale, but preserves underscore tags)
       if (nodes.isNotEmpty) {
         NodeCache.instance.addOrUpdate(nodes);
       }

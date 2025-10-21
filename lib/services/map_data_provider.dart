@@ -93,62 +93,33 @@ class MapDataProvider {
       // Production mode: use pre-fetch service for efficient area loading
       final preFetchService = PrefetchAreaService();
       
-      final List<Future<List<OsmNode>>> futures = [];
-      
-      // Always try to get local nodes (fast, cached)
-      futures.add(fetchLocalNodes(
+      // Always get local nodes first (fast, from cache)
+      final localNodes = await fetchLocalNodes(
         bounds: bounds,
         profiles: profiles,
         maxNodes: AppState.instance.maxCameras,
-      ));
+      );
       
-      // Check if we need to fetch remote data or if pre-fetch covers this area
-      if (preFetchService.isWithinPreFetchedArea(bounds, profiles, uploadMode)) {
-        // Current view is within pre-fetched area, just use local cache
-        debugPrint('[MapDataProvider] Using pre-fetched data from cache');
-        final localNodes = await futures[0];
-        return localNodes.take(AppState.instance.maxCameras).toList();
-      } else {
-        // Not within pre-fetched area, request pre-fetch and also get immediate data
+      // Check if we need to trigger a new pre-fetch
+      if (!preFetchService.isWithinPreFetchedArea(bounds, profiles, uploadMode)) {
+        // Outside pre-fetched area - trigger new pre-fetch but don't wait for it
+        debugPrint('[MapDataProvider] Outside pre-fetched area, triggering new pre-fetch');
         preFetchService.requestPreFetchIfNeeded(
           viewBounds: bounds,
           profiles: profiles,
           uploadMode: uploadMode,
         );
-        
-        // For immediate response, still try to get some remote data for current view
-        futures.add(_fetchRemoteNodes(
-          bounds: bounds,
-          profiles: profiles,
-          uploadMode: uploadMode,
-          maxResults: AppState.instance.maxCameras,
-        ).catchError((e) {
-          debugPrint('[MapDataProvider] Remote node fetch failed, error: $e. Continuing with local only.');
-          return <OsmNode>[]; // Return empty list on remote failure
-        }));
-        
-        // Wait for both, then merge with deduplication by node ID
-        final results = await Future.wait(futures);
-        final localNodes = results[0];
-        final remoteNodes = results[1];
-        
-        // Merge with deduplication - prefer remote data over local for same node ID
-        final Map<int, OsmNode> mergedNodes = {};
-        
-        // Add local nodes first
-        for (final node in localNodes) {
-          mergedNodes[node.id] = node;
-        }
-        
-        // Add remote nodes, overwriting any local duplicates
-        for (final node in remoteNodes) {
-          mergedNodes[node.id] = node;
-        }
-        
-        // Apply maxCameras limit to the merged result
-        final finalNodes = mergedNodes.values.take(AppState.instance.maxCameras).toList();
-        return finalNodes;
+      } else {
+        debugPrint('[MapDataProvider] Using existing pre-fetched area cache');
       }
+      
+      // Apply rendering limit and warn if nodes are being excluded
+      final maxNodes = AppState.instance.maxCameras;
+      if (localNodes.length > maxNodes) {
+        NetworkStatus.instance.reportNodeLimitReached(localNodes.length, maxNodes);
+      }
+      
+      return localNodes.take(maxNodes).toList();
     }
     } finally {
       // Always report node completion, regardless of success or failure
@@ -229,6 +200,11 @@ class MapDataProvider {
   /// Clear any queued tile requests (call when map view changes significantly)
   void clearTileQueue() {
     clearRemoteTileQueue();
+  }
+  
+  /// Clear only tile requests that are no longer visible in the current bounds
+  void clearTileQueueSelective(LatLngBounds currentBounds) {
+    clearRemoteTileQueueSelective(currentBounds);
   }
 
   /// Fetch remote nodes with Overpass first, OSM API fallback

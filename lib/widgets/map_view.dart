@@ -71,6 +71,9 @@ class MapViewState extends State<MapView> {
   // Track zoom to clear queue on zoom changes
   double? _lastZoom;
   
+  // Track map center to clear queue on significant panning
+  LatLng? _lastCenter;
+  
   // State for proximity alert banner
   bool _showProximityBanner = false;
 
@@ -230,6 +233,22 @@ class MapViewState extends State<MapView> {
     } else {
       return kNodeMinZoomLevel;
     }
+  }
+
+  /// Check if the map has moved significantly enough to cancel stale tile requests.
+  /// Uses a simple distance threshold - roughly equivalent to 1/4 screen width at zoom 15.
+  bool _mapMovedSignificantly(LatLng? newCenter, LatLng? oldCenter) {
+    if (newCenter == null || oldCenter == null) return false;
+    
+    // Calculate approximate distance in meters (rough calculation for performance)
+    final latDiff = (newCenter.latitude - oldCenter.latitude).abs();
+    final lngDiff = (newCenter.longitude - oldCenter.longitude).abs();
+    
+    // Threshold: ~500 meters (roughly 1/4 screen at zoom 15)
+    // This prevents excessive cancellations on small movements while catching real pans
+    const double significantMovementThreshold = 0.005; // degrees (~500m at equator)
+    
+    return latDiff > significantMovementThreshold || lngDiff > significantMovementThreshold;
   }
 
   /// Show zoom warning if user is below minimum zoom level
@@ -542,17 +561,29 @@ class MapViewState extends State<MapView> {
               // Start dual-source waiting when map moves (user is expecting new tiles AND nodes)
               NetworkStatus.instance.setDualSourceWaiting();
               
-              // Only clear tile queue on significant ZOOM changes (not panning)
+              // Clear tile queue on tile level changes OR significant panning
               final currentZoom = pos.zoom;
-              final zoomChanged = _lastZoom != null && (currentZoom - _lastZoom!).abs() > 0.5;
+              final currentCenter = pos.center;
+              final currentTileLevel = currentZoom.round();
+              final lastTileLevel = _lastZoom?.round();
+              final tileLevelChanged = lastTileLevel != null && currentTileLevel != lastTileLevel;
+              final centerMoved = _mapMovedSignificantly(currentCenter, _lastCenter);
               
-              if (zoomChanged) {
+              if (tileLevelChanged || centerMoved) {
                 _tileDebounce(() {
-                  // Clear stale tile requests on zoom change (quietly)
-                  _tileManager.clearTileQueueImmediate();
+                  // Use selective clearing to only cancel tiles that are no longer visible
+                  try {
+                    final currentBounds = _controller.mapController.camera.visibleBounds;
+                    _tileManager.clearStaleRequests(currentBounds: currentBounds);
+                  } catch (e) {
+                    // Fallback to clearing all if bounds calculation fails
+                    debugPrint('[MapView] Could not get current bounds for selective clearing: $e');
+                    _tileManager.clearTileQueueImmediate();
+                  }
                 });
               }
               _lastZoom = currentZoom;
+              _lastCenter = currentCenter;
               
               // Save map position (debounced to avoid excessive writes)
               _mapPositionDebounce(() {

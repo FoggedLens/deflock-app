@@ -47,6 +47,13 @@ Future<List<OsmNode>> _fetchOverpassNodesWithSplitting({
       profiles: profiles,
       maxResults: maxResults,
     );
+  } on OverpassRateLimitException catch (e) {
+    // Rate limits should NOT be split - just fail with extended backoff
+    debugPrint('[fetchOverpassNodes] Rate limited - using extended backoff, not splitting');
+    
+    // Wait longer for rate limits before giving up entirely  
+    await Future.delayed(const Duration(seconds: 30));
+    rethrow; // Let caller handle as a regular failure
   } on OverpassNodeLimitException {
     // If we've hit max split depth, give up to avoid infinite recursion
     if (splitDepth >= maxSplitDepth) {
@@ -99,14 +106,29 @@ Future<List<OsmNode>> _fetchSingleOverpassQuery({
       final errorBody = response.body;
       debugPrint('[fetchOverpassNodes] Overpass API error: $errorBody');
       
-      // Check if it's a node limit exceeded error
-      if (errorBody.contains('too many') || 
-          errorBody.contains('50000') || 
-          errorBody.contains('50,000') ||
-          errorBody.contains('limit') ||
-          errorBody.contains('runtime error')) {
-        debugPrint('[fetchOverpassNodes] Detected node limit error, will attempt splitting');
+      // Check if it's specifically the 50k node limit error (HTTP 400)
+      // Exact message: "You requested too many nodes (limit is 50000)"
+      if (errorBody.contains('too many nodes') && 
+          errorBody.contains('50000')) {
+        debugPrint('[fetchOverpassNodes] Detected 50k node limit error, will attempt splitting');
         throw OverpassNodeLimitException('Query exceeded node limit', serverResponse: errorBody);
+      }
+      
+      // Check for timeout errors that indicate query complexity (should split)
+      // Common timeout messages from Overpass
+      if (errorBody.contains('timeout') || 
+          errorBody.contains('runtime limit exceeded') ||
+          errorBody.contains('Query timed out')) {
+        debugPrint('[fetchOverpassNodes] Detected timeout error, will attempt splitting to reduce complexity');
+        throw OverpassNodeLimitException('Query timed out', serverResponse: errorBody);
+      }
+      
+      // Check for rate limiting (should NOT split - needs longer backoff)
+      if (errorBody.contains('rate limited') || 
+          errorBody.contains('too many requests') ||
+          response.statusCode == 429) {
+        debugPrint('[fetchOverpassNodes] Rate limited by Overpass API - needs extended backoff');
+        throw OverpassRateLimitException('Rate limited by server', serverResponse: errorBody);
       }
       
       NetworkStatus.instance.reportOverpassIssue();

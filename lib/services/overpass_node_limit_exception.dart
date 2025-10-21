@@ -9,3 +9,15 @@ class OverpassNodeLimitException implements Exception {
   @override
   String toString() => 'OverpassNodeLimitException: $message';
 }
+
+/// Exception thrown when Overpass API rate limits the request.
+/// Should trigger longer backoff delays, not area splitting.
+class OverpassRateLimitException implements Exception {
+  final String message;
+  final String? serverResponse;
+
+  OverpassRateLimitException(this.message, {this.serverResponse});
+
+  @override
+  String toString() => 'OverpassRateLimitException: $message';
+}
