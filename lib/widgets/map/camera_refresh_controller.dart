@@ -5,6 +5,7 @@ import 'package:latlong2/latlong.dart';
 
 import '../../models/node_profile.dart';
 import '../../app_state.dart' show UploadMode;
+import '../../services/prefetch_area_service.dart';
 import '../camera_provider_with_cache.dart';
 import '../../dev_config.dart';
 
@@ -43,6 +44,8 @@ class CameraRefreshController {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         // Clear camera cache to ensure fresh data for new profile combination
         _cameraProvider.clearCache();
+        // Clear pre-fetch area since profiles changed
+        PrefetchAreaService().clearPreFetchedArea();
         // Force display refresh first (for immediate UI update)
         _cameraProvider.refreshDisplay();
         // Notify that profiles changed (triggers camera refresh)

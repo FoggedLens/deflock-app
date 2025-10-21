@@ -64,6 +64,11 @@ const int kOsmApiMinZoomLevel = 13; // Minimum zoom for OSM API bbox queries (sa
 const Duration kMarkerTapTimeout = Duration(milliseconds: 250);
 const Duration kDebounceCameraRefresh = Duration(milliseconds: 500);
 
+// Pre-fetch area configuration
+const double kPreFetchAreaExpansionMultiplier = 3.0; // Expand visible bounds by this factor for pre-fetching
+const int kPreFetchZoomLevel = 10; // Always pre-fetch at this zoom level for consistent area sizes
+const int kMaxPreFetchSplitDepth = 3; // Maximum recursive splits when hitting Overpass node limit
+
 // Follow-me mode smooth transitions
 const Duration kFollowMeAnimationDuration = Duration(milliseconds: 600);
 const double kMinSpeedForRotationMps = 1.0; // Minimum speed (m/s) to apply rotation

@@ -11,6 +11,7 @@ import 'map_data_submodules/tiles_from_remote.dart';
 import 'map_data_submodules/nodes_from_local.dart';
 import 'map_data_submodules/tiles_from_local.dart';
 import 'network_status.dart';
+import 'prefetch_area_service.dart';
 
 enum MapSource { local, remote, auto } // For future use
 
@@ -89,7 +90,9 @@ class MapDataProvider {
         maxResults: AppState.instance.maxCameras,
       );
     } else {
-      // Production mode: fetch both remote and local, then merge with deduplication
+      // Production mode: use pre-fetch service for efficient area loading
+      final preFetchService = PrefetchAreaService();
+      
       final List<Future<List<OsmNode>>> futures = [];
       
       // Always try to get local nodes (fast, cached)
@@ -99,38 +102,53 @@ class MapDataProvider {
         maxNodes: AppState.instance.maxCameras,
       ));
       
-      // Always try to get remote nodes (slower, fresh data)
-      futures.add(_fetchRemoteNodes(
-        bounds: bounds,
-        profiles: profiles,
-        uploadMode: uploadMode,
-        maxResults: AppState.instance.maxCameras,
-      ).catchError((e) {
-        debugPrint('[MapDataProvider] Remote node fetch failed, error: $e. Continuing with local only.');
-        return <OsmNode>[]; // Return empty list on remote failure
-      }));
-      
-      // Wait for both, then merge with deduplication by node ID
-      final results = await Future.wait(futures);
-      final localNodes = results[0];
-      final remoteNodes = results[1];
-      
-      // Merge with deduplication - prefer remote data over local for same node ID
-      final Map<int, OsmNode> mergedNodes = {};
-      
-      // Add local nodes first
-      for (final node in localNodes) {
-        mergedNodes[node.id] = node;
+      // Check if we need to fetch remote data or if pre-fetch covers this area
+      if (preFetchService.isWithinPreFetchedArea(bounds, profiles, uploadMode)) {
+        // Current view is within pre-fetched area, just use local cache
+        debugPrint('[MapDataProvider] Using pre-fetched data from cache');
+        final localNodes = await futures[0];
+        return localNodes.take(AppState.instance.maxCameras).toList();
+      } else {
+        // Not within pre-fetched area, request pre-fetch and also get immediate data
+        preFetchService.requestPreFetchIfNeeded(
+          viewBounds: bounds,
+          profiles: profiles,
+          uploadMode: uploadMode,
+        );
+        
+        // For immediate response, still try to get some remote data for current view
+        futures.add(_fetchRemoteNodes(
+          bounds: bounds,
+          profiles: profiles,
+          uploadMode: uploadMode,
+          maxResults: AppState.instance.maxCameras,
+        ).catchError((e) {
+          debugPrint('[MapDataProvider] Remote node fetch failed, error: $e. Continuing with local only.');
+          return <OsmNode>[]; // Return empty list on remote failure
+        }));
+        
+        // Wait for both, then merge with deduplication by node ID
+        final results = await Future.wait(futures);
+        final localNodes = results[0];
+        final remoteNodes = results[1];
+        
+        // Merge with deduplication - prefer remote data over local for same node ID
+        final Map<int, OsmNode> mergedNodes = {};
+        
+        // Add local nodes first
+        for (final node in localNodes) {
+          mergedNodes[node.id] = node;
+        }
+        
+        // Add remote nodes, overwriting any local duplicates
+        for (final node in remoteNodes) {
+          mergedNodes[node.id] = node;
+        }
+        
+        // Apply maxCameras limit to the merged result
+        final finalNodes = mergedNodes.values.take(AppState.instance.maxCameras).toList();
+        return finalNodes;
       }
-      
-      // Add remote nodes, overwriting any local duplicates
-      for (final node in remoteNodes) {
-        mergedNodes[node.id] = node;
-      }
-      
-      // Apply maxCameras limit to the merged result
-      final finalNodes = mergedNodes.values.take(AppState.instance.maxCameras).toList();
-      return finalNodes;
     }
     } finally {
       // Always report node completion, regardless of success or failure
