@@ -46,6 +46,7 @@ class GpsController {
     required FollowMeMode newMode,
     required FollowMeMode oldMode,
     required AnimatedMapController controller,
+    VoidCallback? onMapMovedProgrammatically,
   }) {
     debugPrint('[GpsController] Follow-me mode changed: $oldMode → $newMode');
     
@@ -62,6 +63,7 @@ class GpsController {
             duration: kFollowMeAnimationDuration,
             curve: Curves.easeOut,
           );
+          onMapMovedProgrammatically?.call();
         } else if (newMode == FollowMeMode.rotating) {
           // When switching to rotating mode, reset to north-up first
           controller.animateTo(
@@ -71,6 +73,7 @@ class GpsController {
             duration: kFollowMeAnimationDuration,
             curve: Curves.easeOut,
           );
+          onMapMovedProgrammatically?.call();
         }
       } catch (e) {
         debugPrint('[GpsController] MapController not ready for follow-me change: $e');
@@ -89,6 +92,8 @@ class GpsController {
     int proximityAlertDistance = 200,
     List<OsmNode> nearbyNodes = const [],
     List<NodeProfile> enabledProfiles = const [],
+    // Optional callback when map is moved programmatically
+    VoidCallback? onMapMovedProgrammatically,
 
   }) {
     final latLng = LatLng(position.latitude, position.longitude);
@@ -121,6 +126,9 @@ class GpsController {
               duration: kFollowMeAnimationDuration,
               curve: Curves.easeOut,
             );
+            
+            // Notify that we moved the map programmatically (for node refresh)
+            onMapMovedProgrammatically?.call();
           } else if (followMeMode == FollowMeMode.rotating) {
             // Follow position and rotation based on heading
             final heading = position.heading;
@@ -137,6 +145,9 @@ class GpsController {
               duration: kFollowMeAnimationDuration,
               curve: Curves.easeOut,
             );
+            
+            // Notify that we moved the map programmatically (for node refresh)
+            onMapMovedProgrammatically?.call();
           }
         } catch (e) {
           debugPrint('[GpsController] MapController not ready for position animation: $e');
@@ -155,6 +166,7 @@ class GpsController {
     required int Function() getProximityAlertDistance,
     required List<OsmNode> Function() getNearbyNodes,
     required List<NodeProfile> Function() getEnabledProfiles,
+    VoidCallback? onMapMovedProgrammatically,
 
   }) async {
     final perm = await Geolocator.requestPermission();
@@ -180,6 +192,7 @@ class GpsController {
         proximityAlertDistance: proximityAlertDistance,
         nearbyNodes: nearbyNodes,
         enabledProfiles: enabledProfiles,
+        onMapMovedProgrammatically: onMapMovedProgrammatically,
       );
     });
   }

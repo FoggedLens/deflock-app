@@ -18,7 +18,6 @@ class MapOverlays extends StatelessWidget {
   final EditNodeSession? editSession;
   final String? attribution; // Attribution for current tile provider
   final VoidCallback? onSearchPressed; // Callback for search button
-
   const MapOverlays({
     super.key,
     required this.mapController,

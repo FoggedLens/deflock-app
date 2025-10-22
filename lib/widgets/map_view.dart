@@ -78,6 +78,8 @@ class MapViewState extends State<MapView> {
   
   // State for proximity alert banner
   bool _showProximityBanner = false;
+  
+
 
   @override
   void initState() {
@@ -179,6 +181,10 @@ class MapViewState extends State<MapView> {
           }
         }
         return [];
+      },
+      onMapMovedProgrammatically: () {
+        // Refresh nodes when GPS controller moves the map
+        _refreshNodesFromProvider();
       },
 
     );
@@ -302,6 +308,9 @@ class MapViewState extends State<MapView> {
         newMode: widget.followMeMode,
         oldMode: oldWidget.followMeMode,
         controller: _controller,
+        onMapMovedProgrammatically: () {
+          _refreshNodesFromProvider();
+        },
       );
     }
   }

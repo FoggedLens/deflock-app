@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
@@ -21,10 +22,16 @@ class CompassIndicator extends StatefulWidget {
 }
 
 class _CompassIndicatorState extends State<CompassIndicator> {
+  Timer? _animationTimer;
+
+  @override
+  void dispose() {
+    _animationTimer?.cancel();
+    super.dispose();
+  }
   @override
   Widget build(BuildContext context) {
-    return Consumer<AppState>(
-      builder: (context, appState, child) {
+    final appState = context.watch<AppState>();
         // Get current map rotation in degrees
         double rotationDegrees = 0.0;
         try {
@@ -46,6 +53,10 @@ class _CompassIndicatorState extends State<CompassIndicator> {
             onTap: isDisabled ? null : () {
               // Animate to north-up orientation
               try {
+                // Cancel any existing animation timer
+                _animationTimer?.cancel();
+                
+                // Start animation
                 widget.mapController.animateTo(
                   dest: widget.mapController.mapController.camera.center,
                   zoom: widget.mapController.mapController.camera.zoom,
@@ -53,6 +64,23 @@ class _CompassIndicatorState extends State<CompassIndicator> {
                   duration: const Duration(milliseconds: 500),
                   curve: Curves.easeOut,
                 );
+                
+                // Start timer to force compass updates during animation
+                // Update every 16ms (~60fps) for smooth visual rotation
+                _animationTimer = Timer.periodic(const Duration(milliseconds: 16), (timer) {
+                  if (mounted) {
+                    setState(() {});
+                  }
+                });
+                
+                // Stop the timer after animation completes (with small buffer)
+                Timer(const Duration(milliseconds: 550), () {
+                  _animationTimer?.cancel();
+                  _animationTimer = null;
+                  if (mounted) {
+                    setState(() {}); // Final update to ensure correct end state
+                  }
+                });
               } catch (_) {
                 // Controller not ready, ignore
               }
@@ -132,7 +160,5 @@ class _CompassIndicatorState extends State<CompassIndicator> {
             ),
           ),
         );
-      },
-    );
   }
 }
