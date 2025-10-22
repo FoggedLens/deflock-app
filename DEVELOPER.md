@@ -110,23 +110,30 @@ The welcome popup explains that the app:
 
 ## Core Components
 
-### 1. MapDataProvider
+### 1. MapDataProvider & Smart Area Caching
 
-**Purpose**: Unified interface for fetching map tiles and surveillance nodes
+**Purpose**: Unified interface for fetching map tiles and surveillance nodes with intelligent area caching
 
 **Design decisions:**
-- **Pluggable sources**: Local (cached) vs Remote (live API)
-- **Offline-first**: Always try local first, graceful degradation
+- **Single fetch strategy**: Uses PrefetchAreaService for smart 3x area caching instead of dual immediate/background fetching
+- **Spatial + temporal refresh**: Fetches larger areas (3x visible bounds) and refreshes stale data (>60s old)
+- **Offline-first**: Always try local cache first, graceful degradation
 - **Mode-aware**: Different behavior for production vs sandbox
 - **Failure handling**: Never crash the UI, always provide fallbacks
 
 **Key methods:**
-- `getNodes()`: Smart fetching with local/remote merging
-- `getTile()`: Tile fetching with caching
+- `getNodes()`: Returns cache immediately, triggers pre-fetch if needed (spatial or temporal)
+- `getTile()`: Tile fetching with enhanced retry strategy (6 attempts, 1-8s delays)
 - `_fetchRemoteNodes()`: Handles Overpass → OSM API fallback
 
-**Why unified interface:**
-The app needs to seamlessly switch between multiple data sources (local cache, Overpass API, OSM API, offline areas) based on network status, upload mode, and zoom level. A single interface prevents the UI from needing to know about these complexities.
+**Smart caching flow:**
+1. Check if current view within cached area AND data <60s old
+2. If not: trigger pre-fetch of 3x larger area, show loading state
+3. Return cache immediately for responsive UI
+4. When pre-fetch completes: update cache, refresh UI, report success
+
+**Why this approach:**
+Reduces API load by 3-4x while ensuring data freshness. User sees instant responses from cache while background fetching keeps data current. Eliminates complex dual-path logic in favor of simple spatial/temporal triggers.
 
 ### 2. Node Operations (Create/Edit/Delete)
 
@@ -186,7 +193,7 @@ Users expect instant response to their actions. By immediately updating the cach
 **Why underscore prefix:**
 These are internal app tags, not OSM tags. The underscore prefix makes this explicit and prevents accidental upload to OSM.
 
-### 5. Multi-API Data Sources
+### 5. Enhanced Overpass Integration & Error Handling
 
 **Production mode:** Overpass API → OSM API fallback
 **Sandbox mode:** OSM API only (Overpass doesn't have sandbox data)
@@ -195,8 +202,19 @@ These are internal app tags, not OSM tags. The underscore prefix makes this expl
 - **Production (Overpass)**: Zoom ≥ 10 (established limit)
 - **Sandbox (OSM API)**: Zoom ≥ 13 (stricter due to bbox limits)
 
-**Why different zoom limits:**
-The OSM API returns ALL data types (nodes, ways, relations) in a bounding box and has stricter size limits. Overpass is more efficient for large areas. The zoom restrictions prevent API errors and excessive data transfer.
+**Smart error handling & splitting:**
+- **50k node limit**: Automatically splits query into 4 quadrants, recursively up to 3 levels deep
+- **Timeout errors**: Also triggers splitting (dense areas with many profiles)  
+- **Rate limiting**: Extended backoff (30s), no splitting (would make it worse)
+- **Surgical detection**: Only splits on actual limit errors, not network issues
+
+**Query optimization:**
+- **Pre-fetch limit**: 4x user's display limit (e.g., 1000 nodes for 250 display limit)
+- **User-initiated detection**: Only reports loading status for user-facing operations  
+- **Background operations**: Pre-fetch runs silently, doesn't trigger loading states
+
+**Why this approach:**
+Dense urban areas (SF, NYC) with many profiles enabled can easily exceed both 50k node limits and 25s timeouts. Splitting reduces query complexity while surgical error detection avoids unnecessary API load from network issues.
 
 ### 6. Offline vs Online Mode Behavior
 
