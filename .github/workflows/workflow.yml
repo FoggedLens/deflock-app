@@ -51,6 +51,9 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
+      - name: Validate localizations
+        run: dart run scripts/validate_localizations.dart
+
       - name: Generate icons and splash screens
         run: |
           dart run flutter_launcher_icons
@@ -100,6 +103,9 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
+      - name: Validate localizations
+        run: dart run scripts/validate_localizations.dart
+
       - name: Generate icons and splash screens
         run: |
           dart run flutter_launcher_icons
@@ -141,6 +147,9 @@ jobs:
 
       - name: Install dependencies
         run: flutter pub get
+
+      - name: Validate localizations
+        run: dart run scripts/validate_localizations.dart
 
       - name: Generate icons and splash screens
         run: |

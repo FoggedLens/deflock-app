@@ -80,6 +80,11 @@ fi
 # Build the dart-define arguments
 DART_DEFINE_ARGS="--dart-define=OSM_PROD_CLIENTID=$OSM_PROD_CLIENTID --dart-define=OSM_SANDBOX_CLIENTID=$OSM_SANDBOX_CLIENTID"
 
+# Validate localizations before building
+echo "Validating localizations..."
+dart run scripts/validate_localizations.dart || exit 1
+echo
+
 appver=$(grep "version:" pubspec.yaml | head -1 | cut -d ':' -f 2 | tr -d ' ' | cut -d '+' -f 1)
 echo
 echo "Building app version ${appver}..."
