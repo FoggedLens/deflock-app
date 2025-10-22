@@ -41,47 +41,57 @@ class _WelcomeDialogState extends State<WelcomeDialog> {
       animation: LocalizationService.instance,
       builder: (context, child) => AlertDialog(
         title: Text(locService.t('welcome.title')),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                locService.t('welcome.description'),
-                style: const TextStyle(fontSize: 14),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Scrollable content
+            Flexible(
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      locService.t('welcome.description'),
+                      style: const TextStyle(fontSize: 14),
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      locService.t('welcome.mission'),
+                      style: const TextStyle(fontSize: 14),
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      locService.t('welcome.privacy'),
+                      style: const TextStyle(fontSize: 13, fontStyle: FontStyle.italic),
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      locService.t('welcome.tileNote'),
+                      style: const TextStyle(fontSize: 13, color: Colors.orange),
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      locService.t('welcome.moreInfo'),
+                      style: const TextStyle(fontSize: 13),
+                    ),
+                    const SizedBox(height: 16),
+                    // Quick links row
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        _buildLinkButton('Website', 'https://deflock.me'),
+                        _buildLinkButton('GitHub', 'https://github.com/FoggedLens/deflock-app'),
+                        _buildLinkButton('Discord', 'https://discord.gg/aV7v4R3sKT'),
+                      ],
+                    ),
+                  ],
+                ),
               ),
-              const SizedBox(height: 12),
-              Text(
-                locService.t('welcome.mission'),
-                style: const TextStyle(fontSize: 14),
-              ),
-              const SizedBox(height: 12),
-              Text(
-                locService.t('welcome.privacy'),
-                style: const TextStyle(fontSize: 13, fontStyle: FontStyle.italic),
-              ),
-              const SizedBox(height: 12),
-              Text(
-                locService.t('welcome.tileNote'),
-                style: const TextStyle(fontSize: 13, color: Colors.orange),
-              ),
-              const SizedBox(height: 16),
-              Text(
-                locService.t('welcome.moreInfo'),
-                style: const TextStyle(fontSize: 13),
-              ),
-            const SizedBox(height: 16),
-            // Quick links row
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                _buildLinkButton('Website', 'https://deflock.me'),
-                _buildLinkButton('GitHub', 'https://github.com/FoggedLens/deflock-app'),
-                _buildLinkButton('Discord', 'https://discord.gg/aV7v4R3sKT'),
-              ],
             ),
             const SizedBox(height: 16),
-            // Don't show again checkbox
+            // Always visible checkbox at the bottom
             Row(
               children: [
                 Checkbox(
@@ -102,7 +112,6 @@ class _WelcomeDialogState extends State<WelcomeDialog> {
             ),
           ],
         ),
-      ),
         actions: [
           TextButton(
             onPressed: _onClose,
