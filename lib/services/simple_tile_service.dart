@@ -86,7 +86,10 @@ class SimpleTileHttpClient extends http.BaseClient {
       // Decrement pending counter and report completion when all done
       _pendingTileRequests--;
       if (_pendingTileRequests == 0) {
-        NetworkStatus.instance.reportTileComplete();
+        // Only report tile completion if we were in loading state (user-initiated)
+        if (NetworkStatus.instance.currentStatus == NetworkStatusType.waiting) {
+          NetworkStatus.instance.setSuccess();
+        }
       }
     }
   }

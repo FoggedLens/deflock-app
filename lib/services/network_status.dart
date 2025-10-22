@@ -6,8 +6,7 @@ import '../app_state.dart';
 enum NetworkIssueType { osmTiles, overpassApi, both }
 enum NetworkStatusType { waiting, issues, timedOut, noData, ready, success, nodeLimitReached }
 
-/// Simple loading state for dual-source async operations (brutalist approach)
-enum LoadingState { ready, waiting, success, timeout }
+
 
 class NetworkStatus extends ChangeNotifier {
   static final NetworkStatus instance = NetworkStatus._();
@@ -28,13 +27,6 @@ class NetworkStatus extends ChangeNotifier {
   bool _nodeLimitReached = false;
   Timer? _nodeLimitResetTimer;
 
-  // New dual-source loading state (brutalist approach)
-  LoadingState _tileLoadingState = LoadingState.ready;
-  LoadingState _nodeLoadingState = LoadingState.ready;
-  Timer? _tileTimeoutTimer;
-  Timer? _nodeTimeoutTimer;
-  Timer? _successDisplayTimer;
-
   // Getters
   bool get hasAnyIssues => _osmTilesHaveIssues || _overpassHasIssues;
   bool get osmTilesHaveIssues => _osmTilesHaveIssues;
@@ -45,22 +37,8 @@ class NetworkStatus extends ChangeNotifier {
   bool get hasSuccess => _hasSuccess;
   bool get nodeLimitReached => _nodeLimitReached;
   
-  // New dual-source getters (brutalist approach)
-  LoadingState get tileLoadingState => _tileLoadingState;
-  LoadingState get nodeLoadingState => _nodeLoadingState;
-  
-  /// Derive overall loading status from dual sources
-  bool get isDualSourceLoading => _tileLoadingState == LoadingState.waiting || _nodeLoadingState == LoadingState.waiting;
-  bool get isDualSourceTimeout => _tileLoadingState == LoadingState.timeout || _nodeLoadingState == LoadingState.timeout;
-  bool get isDualSourceSuccess => _tileLoadingState == LoadingState.success && _nodeLoadingState == LoadingState.success;
-  
   NetworkStatusType get currentStatus {
-    // Check new dual-source states first
-    if (isDualSourceTimeout) return NetworkStatusType.timedOut;
-    if (isDualSourceLoading) return NetworkStatusType.waiting;
-    if (isDualSourceSuccess) return NetworkStatusType.success;
-    
-    // Fall back to legacy states for compatibility
+    // Simple single-path status logic
     if (hasAnyIssues) return NetworkStatusType.issues;
     if (_isWaitingForData) return NetworkStatusType.waiting;
     if (_isTimedOut) return NetworkStatusType.timedOut;
@@ -198,17 +176,55 @@ class NetworkStatus extends ChangeNotifier {
 
   /// Clear waiting/timeout/no-data status (legacy method for compatibility)
   void clearWaiting() {
-    if (_isWaitingForData || _isTimedOut || _hasNoData || _hasSuccess) {
+    if (_isWaitingForData || _isTimedOut || _hasNoData || _hasSuccess || _nodeLimitReached) {
       _isWaitingForData = false;
       _isTimedOut = false;
       _hasNoData = false;
       _hasSuccess = false;
+      _nodeLimitReached = false;
       _recentOfflineMisses = 0;
       _waitingTimer?.cancel();
       _noDataResetTimer?.cancel();
       _successResetTimer?.cancel();
+      _nodeLimitResetTimer?.cancel();
       notifyListeners();
     }
+  }
+  
+  /// Set timeout error state
+  void setTimeoutError() {
+    _isWaitingForData = false;
+    _isTimedOut = true;
+    _hasNoData = false;
+    _hasSuccess = false;
+    _waitingTimer?.cancel();
+    _noDataResetTimer?.cancel();
+    _successResetTimer?.cancel();
+    notifyListeners();
+    debugPrint('[NetworkStatus] Request timed out');
+    
+    // Auto-clear timeout after 5 seconds
+    Timer(const Duration(seconds: 5), () {
+      if (_isTimedOut) {
+        _isTimedOut = false;
+        notifyListeners();
+      }
+    });
+  }
+  
+  /// Set network error state (rate limits, connection issues, etc.)
+  void setNetworkError() {
+    _isWaitingForData = false;
+    _isTimedOut = false;
+    _hasNoData = false; 
+    _hasSuccess = false;
+    _waitingTimer?.cancel();
+    _noDataResetTimer?.cancel();
+    _successResetTimer?.cancel();
+    
+    // Use existing issue reporting system
+    reportOverpassIssue();
+    debugPrint('[NetworkStatus] Network error occurred');
   }
   
   /// Show notification that node display limit was reached
@@ -251,81 +267,7 @@ class NetworkStatus extends ChangeNotifier {
     });
   }
 
-  // New dual-source loading methods (brutalist approach)
-  
-  /// Start waiting for both tiles and nodes
-  void setDualSourceWaiting() {
-    _tileLoadingState = LoadingState.waiting;
-    _nodeLoadingState = LoadingState.waiting;
-    
-    // Set timeout timers for both
-    _tileTimeoutTimer?.cancel();
-    _tileTimeoutTimer = Timer(const Duration(seconds: 8), () {
-      if (_tileLoadingState == LoadingState.waiting) {
-        _tileLoadingState = LoadingState.timeout;
-        debugPrint('[NetworkStatus] Tile loading timed out');
-        notifyListeners();
-      }
-    });
-    
-    _nodeTimeoutTimer?.cancel();
-    _nodeTimeoutTimer = Timer(const Duration(seconds: 8), () {
-      if (_nodeLoadingState == LoadingState.waiting) {
-        _nodeLoadingState = LoadingState.timeout;
-        debugPrint('[NetworkStatus] Node loading timed out');
-        notifyListeners();
-      }
-    });
-    
-    notifyListeners();
-  }
-  
-  /// Report tile loading completion
-  void reportTileComplete() {
-    if (_tileLoadingState == LoadingState.waiting) {
-      _tileLoadingState = LoadingState.success;
-      _tileTimeoutTimer?.cancel();
-      _checkDualSourceComplete();
-    }
-  }
-  
-  /// Report node loading completion
-  void reportNodeComplete() {
-    if (_nodeLoadingState == LoadingState.waiting) {
-      _nodeLoadingState = LoadingState.success;
-      _nodeTimeoutTimer?.cancel();
-      _checkDualSourceComplete();
-    }
-  }
-  
-  /// Check if both sources are complete and show success briefly
-  void _checkDualSourceComplete() {
-    if (_tileLoadingState == LoadingState.success && _nodeLoadingState == LoadingState.success) {
-      debugPrint('[NetworkStatus] Both tiles and nodes loaded successfully');
-      notifyListeners();
-      
-      // Auto-reset to ready after showing success briefly
-      _successDisplayTimer?.cancel();
-      _successDisplayTimer = Timer(const Duration(seconds: 2), () {
-        _tileLoadingState = LoadingState.ready;
-        _nodeLoadingState = LoadingState.ready;
-        notifyListeners();
-      });
-    } else {
-      // Just notify if one completed but not both yet
-      notifyListeners();
-    }
-  }
-  
-  /// Reset dual-source state to ready
-  void resetDualSourceState() {
-    _tileLoadingState = LoadingState.ready;
-    _nodeLoadingState = LoadingState.ready;
-    _tileTimeoutTimer?.cancel();
-    _nodeTimeoutTimer?.cancel();
-    _successDisplayTimer?.cancel();
-    notifyListeners();
-  }
+
 
   @override
   void dispose() {
@@ -333,9 +275,7 @@ class NetworkStatus extends ChangeNotifier {
     _overpassRecoveryTimer?.cancel();
     _waitingTimer?.cancel();
     _noDataResetTimer?.cancel();
-    _tileTimeoutTimer?.cancel();
-    _nodeTimeoutTimer?.cancel();
-    _successDisplayTimer?.cancel();
+    _successResetTimer?.cancel();
     _nodeLimitResetTimer?.cancel();
     super.dispose();
   }

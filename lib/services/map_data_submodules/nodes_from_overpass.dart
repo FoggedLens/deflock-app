@@ -20,12 +20,16 @@ Future<List<OsmNode>> fetchOverpassNodes({
   UploadMode uploadMode = UploadMode.production,
   required int maxResults,
 }) async {
+  // Check if this is a user-initiated fetch (indicated by loading state)
+  final wasUserInitiated = NetworkStatus.instance.currentStatus == NetworkStatusType.waiting;
+  
   return _fetchOverpassNodesWithSplitting(
     bounds: bounds,
     profiles: profiles,
     uploadMode: uploadMode,
     maxResults: maxResults,
     splitDepth: 0,
+    wasUserInitiated: wasUserInitiated,
   );
 }
 
@@ -36,6 +40,7 @@ Future<List<OsmNode>> _fetchOverpassNodesWithSplitting({
   UploadMode uploadMode = UploadMode.production,
   required int maxResults,
   required int splitDepth,
+  required bool wasUserInitiated,
 }) async {
   if (profiles.isEmpty) return [];
   
@@ -51,13 +56,22 @@ Future<List<OsmNode>> _fetchOverpassNodesWithSplitting({
     // Rate limits should NOT be split - just fail with extended backoff
     debugPrint('[fetchOverpassNodes] Rate limited - using extended backoff, not splitting');
     
+    // Report error if user was waiting
+    if (wasUserInitiated) {
+      NetworkStatus.instance.setNetworkError();
+    }
+    
     // Wait longer for rate limits before giving up entirely  
     await Future.delayed(const Duration(seconds: 30));
-    rethrow; // Let caller handle as a regular failure
+    return []; // Return empty rather than rethrowing
   } on OverpassNodeLimitException {
     // If we've hit max split depth, give up to avoid infinite recursion
     if (splitDepth >= maxSplitDepth) {
       debugPrint('[fetchOverpassNodes] Max split depth reached, giving up on area: $bounds');
+      // Report timeout if this was user-initiated (can't split further)
+      if (wasUserInitiated) {
+        NetworkStatus.instance.setTimeoutError();
+      }
       return [];
     }
     
@@ -73,6 +87,7 @@ Future<List<OsmNode>> _fetchOverpassNodesWithSplitting({
         uploadMode: uploadMode,
         maxResults: 0, // No limit on individual quadrants to avoid double-limiting
         splitDepth: splitDepth + 1,
+        wasUserInitiated: wasUserInitiated,
       );
       allNodes.addAll(nodes);
     }

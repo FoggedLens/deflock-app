@@ -68,6 +68,7 @@ const Duration kDebounceCameraRefresh = Duration(milliseconds: 500);
 const double kPreFetchAreaExpansionMultiplier = 3.0; // Expand visible bounds by this factor for pre-fetching
 const int kPreFetchZoomLevel = 10; // Always pre-fetch at this zoom level for consistent area sizes
 const int kMaxPreFetchSplitDepth = 3; // Maximum recursive splits when hitting Overpass node limit
+const int kDataRefreshIntervalSeconds = 60; // Refresh cached data after this many seconds
 
 // Follow-me mode smooth transitions
 const Duration kFollowMeAnimationDuration = Duration(milliseconds: 600);
@@ -80,11 +81,11 @@ const int kProximityAlertMaxDistance = 1000; // meters
 const Duration kProximityAlertCooldown = Duration(minutes: 10); // Cooldown between alerts for same node
 
 // Tile fetch retry parameters (configurable backoff system)
-const int kTileFetchMaxAttempts = 6;              // Number of retry attempts before giving up
-const int kTileFetchInitialDelayMs = 1000;        // Base delay for first retry (1 second)
+const int kTileFetchMaxAttempts = 16;              // Number of retry attempts before giving up
+const int kTileFetchInitialDelayMs = 500;        // Base delay for first retry (1 second)
 const double kTileFetchBackoffMultiplier = 1.5;   // Multiply delay by this each attempt
-const int kTileFetchMaxDelayMs = 8000;            // Cap delays at this value (8 seconds max)
-const int kTileFetchRandomJitterMs = 500;         // Random fuzz to add (0 to 500ms)
+const int kTileFetchMaxDelayMs = 10000;            // Cap delays at this value (8 seconds max)
+const int kTileFetchRandomJitterMs = 250;         // Random fuzz to add (0 to 500ms)
 
 // User download max zoom span (user can download up to kMaxUserDownloadZoomSpan zooms above min)
 const int kMaxUserDownloadZoomSpan = 7;

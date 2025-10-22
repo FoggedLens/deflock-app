@@ -42,7 +42,6 @@ class MapDataProvider {
     UploadMode uploadMode = UploadMode.production,
     MapSource source = MapSource.auto,
   }) async {
-    try {
     final offline = AppState.instance.offlineMode;
 
     // Explicit remote request: error if offline, else always remote
@@ -100,17 +99,21 @@ class MapDataProvider {
         maxNodes: AppState.instance.maxCameras,
       );
       
-      // Check if we need to trigger a new pre-fetch
-      if (!preFetchService.isWithinPreFetchedArea(bounds, profiles, uploadMode)) {
-        // Outside pre-fetched area - trigger new pre-fetch but don't wait for it
-        debugPrint('[MapDataProvider] Outside pre-fetched area, triggering new pre-fetch');
+      // Check if we need to trigger a new pre-fetch (spatial or temporal)
+      final needsFetch = !preFetchService.isWithinPreFetchedArea(bounds, profiles, uploadMode) || 
+                        preFetchService.isDataStale();
+      
+      if (needsFetch) {
+        // Outside area OR data stale - start pre-fetch with loading state  
+        debugPrint('[MapDataProvider] Starting pre-fetch with loading state');
+        NetworkStatus.instance.setWaiting();
         preFetchService.requestPreFetchIfNeeded(
           viewBounds: bounds,
           profiles: profiles,
           uploadMode: uploadMode,
         );
       } else {
-        debugPrint('[MapDataProvider] Using existing pre-fetched area cache');
+        debugPrint('[MapDataProvider] Using existing fresh pre-fetched area cache');
       }
       
       // Apply rendering limit and warn if nodes are being excluded
@@ -120,10 +123,6 @@ class MapDataProvider {
       }
       
       return localNodes.take(maxNodes).toList();
-    }
-    } finally {
-      // Always report node completion, regardless of success or failure
-      NetworkStatus.instance.reportNodeComplete();
     }
   }
 

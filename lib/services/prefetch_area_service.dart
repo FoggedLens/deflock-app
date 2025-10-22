@@ -9,6 +9,8 @@ import '../app_state.dart';
 import '../dev_config.dart';
 import 'map_data_submodules/nodes_from_overpass.dart';
 import 'node_cache.dart';
+import 'network_status.dart';
+import '../widgets/camera_provider_with_cache.dart';
 
 /// Manages pre-fetching larger areas to reduce Overpass API calls.
 /// Uses zoom level 10 areas and automatically splits if hitting node limits.
@@ -21,6 +23,7 @@ class PrefetchAreaService {
   LatLngBounds? _preFetchedArea;
   List<NodeProfile>? _preFetchedProfiles;
   UploadMode? _preFetchedUploadMode;
+  DateTime? _lastFetchTime;
   bool _preFetchInProgress = false;
   
   // Debounce timer to avoid rapid requests while user is panning
@@ -52,7 +55,13 @@ class PrefetchAreaService {
            bounds.west >= _preFetchedArea!.west;
   }
   
-  /// Request pre-fetch for the given view bounds if not already covered.
+  /// Check if cached data is stale (older than configured refresh interval).
+  bool isDataStale() {
+    if (_lastFetchTime == null) return true;
+    return DateTime.now().difference(_lastFetchTime!).inSeconds > kDataRefreshIntervalSeconds;
+  }
+  
+  /// Request pre-fetch for the given view bounds if not already covered or if data is stale.
   /// Uses debouncing to avoid rapid requests while user is panning.
   void requestPreFetchIfNeeded({
     required LatLngBounds viewBounds,
@@ -65,10 +74,19 @@ class PrefetchAreaService {
       return;
     }
     
-    // Skip if current view is within pre-fetched area
-    if (isWithinPreFetchedArea(viewBounds, profiles, uploadMode)) {
-      debugPrint('[PrefetchAreaService] Current view within pre-fetched area, no fetch needed');
+    // Check both spatial and temporal conditions
+    final isWithinArea = isWithinPreFetchedArea(viewBounds, profiles, uploadMode);
+    final isStale = isDataStale();
+    
+    if (isWithinArea && !isStale) {
+      debugPrint('[PrefetchAreaService] Current view within fresh pre-fetched area, no fetch needed');
       return;
+    }
+    
+    if (isStale) {
+      debugPrint('[PrefetchAreaService] Data is stale (>${kDataRefreshIntervalSeconds}s), refreshing');
+    } else {
+      debugPrint('[PrefetchAreaService] Current view outside pre-fetched area, fetching larger area');
     }
     
     // Cancel any pending debounced request
@@ -115,13 +133,26 @@ class PrefetchAreaService {
         NodeCache.instance.addOrUpdate(nodes);
       }
       
-      // Store the pre-fetched area info
+      // Store the pre-fetched area info and timestamp
       _preFetchedArea = preFetchArea;
       _preFetchedProfiles = List.from(profiles);
       _preFetchedUploadMode = uploadMode;
+      _lastFetchTime = DateTime.now();
+      
+      // Report completion to network status (only if user was waiting)
+      NetworkStatus.instance.setSuccess();
+      
+      // Notify UI that cache has been updated with fresh data
+      CameraProviderWithCache.instance.refreshDisplay();
       
     } catch (e) {
       debugPrint('[PrefetchAreaService] Pre-fetch failed: $e');
+      // Report failure to network status (only if user was waiting)
+      if (e.toString().contains('timeout') || e.toString().contains('timed out')) {
+        NetworkStatus.instance.setTimeoutError();
+      } else {
+        NetworkStatus.instance.setNetworkError();
+      }
       // Don't update pre-fetched area info on failure
     } finally {
       _preFetchInProgress = false;
@@ -155,6 +186,7 @@ class PrefetchAreaService {
     _preFetchedArea = null;
     _preFetchedProfiles = null;
     _preFetchedUploadMode = null;
+    _lastFetchTime = null;
     debugPrint('[PrefetchAreaService] Pre-fetched area cleared');
   }
   

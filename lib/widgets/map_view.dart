@@ -558,9 +558,6 @@ class MapViewState extends State<MapView> {
                 appState.updateProvisionalPinLocation(pos.center);
               }
               
-              // Start dual-source waiting when map moves (user is expecting new tiles AND nodes)
-              NetworkStatus.instance.setDualSourceWaiting();
-              
               // Clear tile queue on tile level changes OR significant panning
               final currentZoom = pos.zoom;
               final currentCenter = pos.center;
@@ -595,9 +592,7 @@ class MapViewState extends State<MapView> {
               if (pos.zoom >= minZoom) {
                 _cameraDebounce(_refreshNodesFromProvider);
               } else {
-                // Skip nodes at low zoom - report immediate completion (brutalist approach)
-                NetworkStatus.instance.reportNodeComplete();
-                
+                // Skip nodes at low zoom - no loading state needed
                 // Show zoom warning if needed
                 _showZoomWarningIfNeeded(context, pos.zoom, minZoom);
               }
