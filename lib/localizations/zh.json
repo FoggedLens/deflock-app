@@ -36,8 +36,8 @@
     "clear": "清空"
   },
   "followMe": {
-    "off": "启用跟随模式（北向上）",
-    "northUp": "启用跟随模式（旋转）",
+    "off": "启用跟随模式",
+    "follow": "启用跟随模式（旋转）",
     "rotating": "禁用跟随模式"
   },
   "settings": {

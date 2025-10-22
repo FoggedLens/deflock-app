@@ -24,7 +24,7 @@ A comprehensive Flutter app for mapping public surveillance infrastructure with 
 ### Map & Navigation
 - **Multi-source tiles**: Switch between OpenStreetMap, USGS imagery, Esri imagery, Mapbox, OpenTopoMap, and any custom providers
 - **Offline-first design**: Download a region for complete offline operation
-- **Smooth UX**: Intuitive controls, follow-me mode with GPS rotation, and gesture-friendly interactions
+- **Smooth UX**: Intuitive controls, follow-me mode with GPS rotation, compass indicator with north-lock, and gesture-friendly interactions
 - **Device visualization**: Color-coded markers showing real devices (blue), pending uploads (purple), pending edits (grey), devices being edited (orange), and pending deletions (red)
 
 ### Device Management

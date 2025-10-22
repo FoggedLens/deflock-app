@@ -12,8 +12,8 @@ enum UploadMode { production, sandbox, simulate }
 // Enum for follow-me mode (moved from HomeScreen to centralized state)
 enum FollowMeMode {
   off,      // No following
-  northUp,  // Follow position, keep north up
-  rotating, // Follow position and rotation
+  follow,   // Follow position, preserve current rotation
+  rotating, // Follow position and rotation based on heading
 }
 
 class SettingsState extends ChangeNotifier {
@@ -24,6 +24,7 @@ class SettingsState extends ChangeNotifier {
   static const String _selectedTileTypePrefsKey = 'selected_tile_type';
   static const String _legacyTestModePrefsKey = 'test_mode';
   static const String _followMeModePrefsKey = 'follow_me_mode';
+  static const String _northLockEnabledPrefsKey = 'north_lock_enabled';
   static const String _proximityAlertsEnabledPrefsKey = 'proximity_alerts_enabled';
   static const String _proximityAlertDistancePrefsKey = 'proximity_alert_distance';
   static const String _networkStatusIndicatorEnabledPrefsKey = 'network_status_indicator_enabled';
@@ -32,7 +33,8 @@ class SettingsState extends ChangeNotifier {
   bool _offlineMode = false;
   int _maxCameras = 250;
   UploadMode _uploadMode = kEnableDevelopmentModes ? UploadMode.simulate : UploadMode.production;
-  FollowMeMode _followMeMode = FollowMeMode.northUp;
+  FollowMeMode _followMeMode = FollowMeMode.follow;
+  bool _northLockEnabled = false;
   bool _proximityAlertsEnabled = false;
   int _proximityAlertDistance = kProximityAlertDefaultDistance;
   bool _networkStatusIndicatorEnabled = false;
@@ -45,6 +47,7 @@ class SettingsState extends ChangeNotifier {
   int get maxCameras => _maxCameras;
   UploadMode get uploadMode => _uploadMode;
   FollowMeMode get followMeMode => _followMeMode;
+  bool get northLockEnabled => _northLockEnabled;
   bool get proximityAlertsEnabled => _proximityAlertsEnabled;
   int get proximityAlertDistance => _proximityAlertDistance;
   bool get networkStatusIndicatorEnabled => _networkStatusIndicatorEnabled;
@@ -96,6 +99,9 @@ class SettingsState extends ChangeNotifier {
     if (prefs.containsKey(_maxCamerasPrefsKey)) {
       _maxCameras = prefs.getInt(_maxCamerasPrefsKey) ?? 250;
     }
+    
+    // Load north lock enabled setting
+    _northLockEnabled = prefs.getBool(_northLockEnabledPrefsKey) ?? false;
     
     // Load proximity alerts settings
     _proximityAlertsEnabled = prefs.getBool(_proximityAlertsEnabledPrefsKey) ?? false;
@@ -291,8 +297,26 @@ class SettingsState extends ChangeNotifier {
   Future<void> setFollowMeMode(FollowMeMode mode) async {
     if (_followMeMode != mode) {
       _followMeMode = mode;
+      
+      // Disable north lock when switching to rotating mode (incompatible)
+      if (mode == FollowMeMode.rotating && _northLockEnabled) {
+        _northLockEnabled = false;
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setBool(_northLockEnabledPrefsKey, false);
+      }
+      
       final prefs = await SharedPreferences.getInstance();
       await prefs.setInt(_followMeModePrefsKey, mode.index);
+      notifyListeners();
+    }
+  }
+  
+  /// Set north lock enabled/disabled
+  Future<void> setNorthLockEnabled(bool enabled) async {
+    if (_northLockEnabled != enabled) {
+      _northLockEnabled = enabled;
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool(_northLockEnabledPrefsKey, enabled);
       notifyListeners();
     }
   }

@@ -19,8 +19,8 @@
     "clear": "Löschen"
   },
   "followMe": {
-    "off": "Verfolgung aktivieren (Norden oben)",
-    "northUp": "Verfolgung aktivieren (Rotation)",
+    "off": "Verfolgung aktivieren",
+    "follow": "Verfolgung aktivieren (Rotation)",
     "rotating": "Verfolgung deaktivieren"
   },
   "settings": {

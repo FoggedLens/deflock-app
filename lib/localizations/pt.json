@@ -36,8 +36,8 @@
     "clear": "Limpar"
   },
   "followMe": {
-    "off": "Ativar seguir-me (norte para cima)",
-    "northUp": "Ativar seguir-me (rotação)",
+    "off": "Ativar seguir-me",
+    "follow": "Ativar seguir-me (rotação)",
     "rotating": "Desativar seguir-me"
   },
   "settings": {

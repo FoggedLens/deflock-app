@@ -36,8 +36,8 @@
     "clear": "Pulisci"
   },
   "followMe": {
-    "off": "Attiva seguimi (nord in alto)",
-    "northUp": "Attiva seguimi (rotazione)",
+    "off": "Attiva seguimi",
+    "follow": "Attiva seguimi (rotazione)",
     "rotating": "Disattiva seguimi"
   },
   "settings": {

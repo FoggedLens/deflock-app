@@ -242,7 +242,31 @@ Local cache contains production data. Showing production nodes in sandbox mode w
 - Simple RecentAlert tracking prevents duplicate notifications
 - Visual callback system for in-app alerts when app is active
 
-### 8. Suspected Locations
+### 8. Compass Indicator & North Lock
+
+**Purpose**: Visual compass showing map orientation with optional north-lock functionality
+
+**Design decisions:**
+- **Separate from follow mode**: North lock is independent of GPS following behavior  
+- **Smart rotation detection**: Distinguishes intentional rotation (>5°) from zoom gestures
+- **Visual feedback**: Clear skeumorphic compass design with red north indicator
+- **Mode awareness**: Disabled during follow+rotate mode (incompatible)
+
+**Key behaviors:**
+- **North indicator**: Red arrow always points toward true north regardless of map rotation
+- **Tap to toggle**: Enable/disable north lock with visual animation to north
+- **Auto-disable**: North lock turns off when switching to follow+rotate mode
+- **Gesture intelligence**: Only disables on significant rotation changes, ignores zoom artifacts
+
+**Visual states:**
+- **Normal**: White background, grey border, red north arrow
+- **North locked**: White background, blue border, bright red north arrow
+- **Disabled**: Grey background, muted colors (during follow+rotate mode)
+
+**Why separate from follow mode:**
+Users often want to follow their location while keeping the map oriented north. Previous "north up" follow mode was confusing because it didn't actually keep north up. This separation provides clear, predictable behavior.
+
+### 9. Suspected Locations
 
 **Data pipeline:**
 - **CSV ingestion**: Downloads utility permit data from alprwatch.org
@@ -253,7 +277,7 @@ Local cache contains production data. Showing production nodes in sandbox mode w
 **Why utility permits:**
 Utility companies often must file permits when installing surveillance infrastructure. This creates a paper trail that can indicate potential surveillance sites before devices are confirmed through direct observation.
 
-### 9. Upload Mode Simplification
+### 10. Upload Mode Simplification
 
 **Release vs Debug builds:**
 - **Release builds**: Production OSM only (simplified UX)
@@ -266,7 +290,7 @@ Most users should contribute to production; testing modes add complexity
 bool get showUploadModeSelector => kDebugMode;
 ```
 
-### 10. Navigation & Routing (Implemented, Awaiting Integration)
+### 11. Navigation & Routing (Implemented, Awaiting Integration)
 
 **Current state:**
 - **Search functionality**: Fully implemented and active
@@ -340,6 +364,22 @@ bool get showUploadModeSelector => kDebugMode;
 - **User experience**: Fetching 10,000 nodes causes UI lag
 - **Battery life**: Excessive network requests drain battery
 - **Clear feedback**: Users understand why nodes aren't showing
+
+### 6. Why Separate Compass Indicator from Follow Mode?
+
+**Alternative**: Combined "follow with north up" mode
+
+**Why separate controls:**
+- **Clear user mental model**: "Follow me" vs "lock to north" are distinct concepts
+- **Flexible combinations**: Users can follow without north lock, or vice versa
+- **Avoid mode conflicts**: Follow+rotate is incompatible with north lock
+- **Reduced confusion**: Previous "north up" mode didn't actually keep north up
+
+**Design benefits:**
+- **Brutalist approach**: Two simple, independent features instead of complex mode combinations
+- **Visual feedback**: Compass shows exact map orientation regardless of follow state
+- **Smart gesture detection**: Differentiates intentional rotation from zoom artifacts
+- **Predictable behavior**: Each control does exactly what it says
 
 ---
 

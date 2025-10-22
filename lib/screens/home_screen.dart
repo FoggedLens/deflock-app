@@ -72,8 +72,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     switch (mode) {
       case FollowMeMode.off:
         return locService.t('followMe.off');
-      case FollowMeMode.northUp:
-        return locService.t('followMe.northUp');
+      case FollowMeMode.follow:
+        return locService.t('followMe.follow');
       case FollowMeMode.rotating:
         return locService.t('followMe.rotating');
     }
@@ -83,7 +83,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     switch (mode) {
       case FollowMeMode.off:
         return Icons.gps_off;
-      case FollowMeMode.northUp:
+      case FollowMeMode.follow:
         return Icons.gps_fixed;
       case FollowMeMode.rotating:
         return Icons.navigation;
@@ -93,8 +93,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   FollowMeMode _getNextFollowMeMode(FollowMeMode mode) {
     switch (mode) {
       case FollowMeMode.off:
-        return FollowMeMode.northUp;
-      case FollowMeMode.northUp:
+        return FollowMeMode.follow;
+      case FollowMeMode.follow:
         return FollowMeMode.rotating;
       case FollowMeMode.rotating:
         return FollowMeMode.off;
@@ -296,7 +296,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       userLocation = _mapViewKey.currentState?.getUserLocation();
       if (userLocation != null && appState.shouldAutoEnableFollowMe(userLocation)) {
         debugPrint('[HomeScreen] Auto-enabling follow-me mode - user within 1km of start');
-        appState.setFollowMeMode(FollowMeMode.northUp);
+        appState.setFollowMeMode(FollowMeMode.follow);
         enableFollowMe = true;
       }
     } catch (e) {

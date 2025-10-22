@@ -68,6 +68,9 @@ const Duration kDebounceCameraRefresh = Duration(milliseconds: 500);
 const double kPreFetchAreaExpansionMultiplier = 3.0; // Expand visible bounds by this factor for pre-fetching
 const int kPreFetchZoomLevel = 10; // Always pre-fetch at this zoom level for consistent area sizes
 const int kMaxPreFetchSplitDepth = 3; // Maximum recursive splits when hitting Overpass node limit
+
+// North lock configuration
+const double kNorthLockDisableThresholdDegrees = 10.0; // Rotation threshold to disable north lock (degrees)
 const int kDataRefreshIntervalSeconds = 60; // Refresh cached data after this many seconds
 
 // Follow-me mode smooth transitions

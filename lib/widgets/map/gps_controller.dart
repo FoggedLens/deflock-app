@@ -55,7 +55,7 @@ class GpsController {
         _currentLatLng != null) {
       
       try {
-        if (newMode == FollowMeMode.northUp) {
+        if (newMode == FollowMeMode.follow) {
           controller.animateTo(
             dest: _currentLatLng!,
             zoom: controller.mapController.camera.zoom,
@@ -89,6 +89,8 @@ class GpsController {
     int proximityAlertDistance = 200,
     List<OsmNode> nearbyNodes = const [],
     List<NodeProfile> enabledProfiles = const [],
+    // Optional parameter for north lock functionality
+    bool northLockEnabled = false,
   }) {
     final latLng = LatLng(position.latitude, position.longitude);
     _currentLatLng = latLng;
@@ -111,11 +113,13 @@ class GpsController {
       debugPrint('[GpsController] GPS position update: ${latLng.latitude}, ${latLng.longitude}, follow-me: $followMeMode');
       WidgetsBinding.instance.addPostFrameCallback((_) {
         try {
-          if (followMeMode == FollowMeMode.northUp) {
-            // Follow position only, keep current rotation
+          if (followMeMode == FollowMeMode.follow) {
+            // Follow position only, keep current rotation (unless north lock is enabled)
+            final rotation = northLockEnabled ? 0.0 : controller.mapController.camera.rotation;
             controller.animateTo(
               dest: latLng,
               zoom: controller.mapController.camera.zoom,
+              rotation: rotation,
               duration: kFollowMeAnimationDuration,
               curve: Curves.easeOut,
             );
@@ -153,6 +157,7 @@ class GpsController {
     required int Function() getProximityAlertDistance,
     required List<OsmNode> Function() getNearbyNodes,
     required List<NodeProfile> Function() getEnabledProfiles,
+    required bool Function() getNorthLockEnabled,
   }) async {
     final perm = await Geolocator.requestPermission();
     if (perm == LocationPermission.denied ||
@@ -168,6 +173,7 @@ class GpsController {
       final proximityAlertDistance = getProximityAlertDistance();
       final nearbyNodes = getNearbyNodes();
       final enabledProfiles = getEnabledProfiles();
+      final northLockEnabled = getNorthLockEnabled();
       
       processPositionUpdate(
         position: position,
@@ -178,6 +184,7 @@ class GpsController {
         proximityAlertDistance: proximityAlertDistance,
         nearbyNodes: nearbyNodes,
         enabledProfiles: enabledProfiles,
+        northLockEnabled: northLockEnabled,
       );
     });
   }

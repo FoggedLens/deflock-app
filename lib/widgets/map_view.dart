@@ -74,6 +74,9 @@ class MapViewState extends State<MapView> {
   // Track map center to clear queue on significant panning
   LatLng? _lastCenter;
   
+  // Track rotation to detect intentional vs accidental rotation
+  double? _lastRotation;
+  
   // State for proximity alert banner
   bool _showProximityBanner = false;
 
@@ -177,6 +180,17 @@ class MapViewState extends State<MapView> {
           }
         }
         return [];
+      },
+      getNorthLockEnabled: () {
+        if (mounted) {
+          try {
+            return context.read<AppState>().northLockEnabled;
+          } catch (e) {
+            debugPrint('[MapView] Could not read north lock enabled: $e');
+            return false;
+          }
+        }
+        return false;
       },
     );
 
@@ -544,7 +558,45 @@ class MapViewState extends State<MapView> {
             maxZoom: (appState.selectedTileType?.maxZoom ?? 18).toDouble(),
             onPositionChanged: (pos, gesture) {
               setState(() {}); // Instant UI update for zoom, etc.
-              if (gesture) widget.onUserGesture();
+              if (gesture) {
+                widget.onUserGesture();
+                
+                // Handle north lock: prevent rotation or disable lock if user rotates significantly
+                if (appState.northLockEnabled) {
+                  try {
+                    final currentRotation = pos.rotation;
+                    if (_lastRotation != null) {
+                      // Calculate rotation change since last gesture
+                      final rotationChange = (currentRotation - _lastRotation!).abs();
+                      // If user tries to rotate significantly, disable north lock and allow it
+                      if (rotationChange > kNorthLockDisableThresholdDegrees) {
+                        appState.setNorthLockEnabled(false);
+                        // Allow this rotation to proceed
+                      } else {
+                        // Small rotation or zoom gesture - force map back to north (0°)
+                        if (currentRotation.abs() > 0.1) { // Only correct if actually rotated
+                          WidgetsBinding.instance.addPostFrameCallback((_) {
+                            try {
+                              _controller.animateTo(
+                                dest: pos.center,
+                                zoom: pos.zoom,
+                                rotation: 0.0,
+                                duration: const Duration(milliseconds: 100), // Quick snap back
+                                curve: Curves.easeOut,
+                              );
+                            } catch (_) {
+                              // Controller not ready, ignore
+                            }
+                          });
+                        }
+                      }
+                    }
+                    _lastRotation = currentRotation;
+                  } catch (_) {
+                    // Controller not ready, ignore
+                  }
+                }
+              }
               
               if (session != null) {
                 appState.updateSession(target: pos.center);
@@ -622,7 +674,7 @@ class MapViewState extends State<MapView> {
 
         // All map overlays (mode indicator, zoom, attribution, add pin)
         MapOverlays(
-          mapController: _controller.mapController,
+          mapController: _controller,
           uploadMode: appState.uploadMode,
           session: session,
           editSession: editSession,

@@ -1,16 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:flutter_map_animations/flutter_map_animations.dart';
 import 'package:provider/provider.dart';
 
 import '../../app_state.dart';
 import '../../dev_config.dart';
 import '../../services/localization_service.dart';
 import '../camera_icon.dart';
+import '../compass_indicator.dart';
 import 'layer_selector_button.dart';
 
 /// Widget that renders all map overlay UI elements
 class MapOverlays extends StatelessWidget {
-  final MapController mapController;
+  final AnimatedMapController mapController;
   final UploadMode uploadMode;
   final AddNodeSession? session;
   final EditNodeSession? editSession;
@@ -82,6 +84,11 @@ class MapOverlays extends StatelessWidget {
             ),
           ),
 
+        // Compass indicator (top-right, below mode indicator)
+        CompassIndicator(
+          mapController: mapController,
+        ),
+
         // Zoom indicator, positioned relative to button bar
         Positioned(
           left: 10,
@@ -96,7 +103,7 @@ class MapOverlays extends StatelessWidget {
               builder: (context) {
                 double zoom = 15.0; // fallback
                 try {
-                  zoom = mapController.camera.zoom;
+                  zoom = mapController.mapController.camera.zoom;
                 } catch (_) {
                   // Map controller not ready yet
                 }
@@ -173,8 +180,8 @@ class MapOverlays extends StatelessWidget {
                     heroTag: "zoom_in",
                     onPressed: () {
                       try {
-                        final zoom = mapController.camera.zoom;
-                        mapController.move(mapController.camera.center, zoom + 1);
+                        final zoom = mapController.mapController.camera.zoom;
+                        mapController.mapController.move(mapController.mapController.camera.center, zoom + 1);
                       } catch (_) {
                         // Map controller not ready yet
                       }
@@ -188,8 +195,8 @@ class MapOverlays extends StatelessWidget {
                     heroTag: "zoom_out",
                     onPressed: () {
                       try {
-                        final zoom = mapController.camera.zoom;
-                        mapController.move(mapController.camera.center, zoom - 1);
+                        final zoom = mapController.mapController.camera.zoom;
+                        mapController.mapController.move(mapController.mapController.camera.center, zoom - 1);
                       } catch (_) {
                         // Map controller not ready yet
                       }
