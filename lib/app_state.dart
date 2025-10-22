@@ -130,7 +130,7 @@ class AppState extends ChangeNotifier {
   int get maxCameras => _settingsState.maxCameras;
   UploadMode get uploadMode => _settingsState.uploadMode;
   FollowMeMode get followMeMode => _settingsState.followMeMode;
-  bool get northLockEnabled => _settingsState.northLockEnabled;
+
   bool get proximityAlertsEnabled => _settingsState.proximityAlertsEnabled;
   int get proximityAlertDistance => _settingsState.proximityAlertDistance;
   bool get networkStatusIndicatorEnabled => _settingsState.networkStatusIndicatorEnabled;
@@ -411,10 +411,6 @@ class AppState extends ChangeNotifier {
     await _settingsState.setFollowMeMode(mode);
   }
   
-  Future<void> setNorthLockEnabled(bool enabled) async {
-    await _settingsState.setNorthLockEnabled(enabled);
-  }
-
   /// Set proximity alerts enabled/disabled
   Future<void> setProximityAlertsEnabled(bool enabled) async {
     await _settingsState.setProximityAlertsEnabled(enabled);

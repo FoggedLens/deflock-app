@@ -6,7 +6,7 @@ import 'package:provider/provider.dart';
 
 import '../app_state.dart';
 
-/// A compass indicator widget that shows the current map rotation and allows tapping to enable/disable north lock.
+/// A compass indicator widget that shows the current map rotation and allows tapping to animate to north.
 /// The compass appears in the top-right corner of the map and is disabled (non-interactive) when in follow+rotate mode.
 class CompassIndicator extends StatefulWidget {
   final AnimatedMapController mapController;
@@ -21,8 +21,6 @@ class CompassIndicator extends StatefulWidget {
 }
 
 class _CompassIndicatorState extends State<CompassIndicator> {
-  double _lastRotation = 0.0;
-
   @override
   Widget build(BuildContext context) {
     return Consumer<AppState>(
@@ -40,38 +38,23 @@ class _CompassIndicatorState extends State<CompassIndicator> {
 
         // Check if we're in follow+rotate mode (compass should be disabled)
         final isDisabled = appState.followMeMode == FollowMeMode.rotating;
-        final northLockEnabled = appState.northLockEnabled;
-
-        // Force rebuild when north lock changes by comparing rotation
-        if (northLockEnabled && rotationDegrees != _lastRotation) {
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            if (mounted) setState(() {});
-          });
-        }
-        _lastRotation = rotationDegrees;
 
         return Positioned(
           top: (appState.uploadMode == UploadMode.sandbox || appState.uploadMode == UploadMode.simulate) ? 60 : 18,
           right: 16,
           child: GestureDetector(
             onTap: isDisabled ? null : () {
-              // Toggle north lock (but not when in follow+rotate mode)
-              final newNorthLockEnabled = !northLockEnabled;
-              appState.setNorthLockEnabled(newNorthLockEnabled);
-              
-              // If enabling north lock, animate to north-up orientation
-              if (newNorthLockEnabled) {
-                try {
-                  widget.mapController.animateTo(
-                    dest: widget.mapController.mapController.camera.center,
-                    zoom: widget.mapController.mapController.camera.zoom,
-                    rotation: 0.0,
-                    duration: const Duration(milliseconds: 500),
-                    curve: Curves.easeOut,
-                  );
-                } catch (_) {
-                  // Controller not ready, ignore
-                }
+              // Animate to north-up orientation
+              try {
+                widget.mapController.animateTo(
+                  dest: widget.mapController.mapController.camera.center,
+                  zoom: widget.mapController.mapController.camera.zoom,
+                  rotation: 0.0,
+                  duration: const Duration(milliseconds: 500),
+                  curve: Curves.easeOut,
+                );
+              } catch (_) {
+                // Controller not ready, ignore
               }
             },
             child: Container(
@@ -85,10 +68,8 @@ class _CompassIndicatorState extends State<CompassIndicator> {
                 border: Border.all(
                   color: isDisabled 
                       ? Colors.grey.shade400
-                      : (northLockEnabled 
-                          ? Theme.of(context).colorScheme.primary
-                          : Colors.grey.shade300),
-                  width: northLockEnabled ? 3.0 : 2.0,
+                      : Colors.grey.shade300,
+                  width: 2.0,
                 ),
                 boxShadow: [
                   BoxShadow(
@@ -128,9 +109,7 @@ class _CompassIndicatorState extends State<CompassIndicator> {
                               size: 20,
                               color: isDisabled 
                                   ? Colors.grey.shade600
-                                  : (northLockEnabled 
-                                      ? Colors.red.shade700
-                                      : Colors.red.shade600),
+                                  : Colors.red.shade600,
                             ),
                           ),
                           // Small 'N' label
@@ -141,9 +120,7 @@ class _CompassIndicatorState extends State<CompassIndicator> {
                               fontWeight: FontWeight.bold,
                               color: isDisabled 
                                   ? Colors.grey.shade600
-                                  : (northLockEnabled 
-                                      ? Colors.red.shade700
-                                      : Colors.red.shade600),
+                                  : Colors.red.shade600,
                             ),
                           ),
                         ],

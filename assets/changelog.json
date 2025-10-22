@@ -1,5 +1,5 @@
 {
-  "1.2.6": {
+  "1.2.7": {
     "content": "• NEW: Compass indicator shows map orientation and enables north-lock mode\n• Smart area caching: Loads 3x larger areas and refreshes data every 60 seconds for much faster browsing\n• Enhanced tile loading: Increased retry attempts with faster delays - tiles load much more reliably\n• Better network status: Simplified loading indicator logic\n• Instant node display: Surveillance devices now appear immediately when data finishes loading\n• Node limit alerts: Get notified when some nodes are not drawn"
 },
   "1.2.4": {
