@@ -20,7 +20,6 @@ class ProfileService {
     // MUST convert to List before jsonEncode; the previous MappedIterable
     // caused "Converting object to an encodable object failed".
     final encodable = profiles
-        .where((p) => !p.builtin)
         .map((p) => p.toJson())
         .toList(); // <- crucial
 

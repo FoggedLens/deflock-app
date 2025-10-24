@@ -13,6 +13,28 @@ class OperatorProfile {
     required this.tags,
   });
 
+  /// Built-in default: Lowe's operator profile
+  factory OperatorProfile.lowes() => OperatorProfile(
+        id: 'builtin-lowes',
+        name: "Lowe's",
+        tags: const {
+          'operator': "Lowe's",
+          'operator:wikidata': 'Q1373493',
+          'operator:type': 'private',
+        },
+      );
+
+  /// Built-in default: The Home Depot operator profile  
+  factory OperatorProfile.homeDepot() => OperatorProfile(
+        id: 'builtin-home-depot',
+        name: 'The Home Depot',
+        tags: const {
+          'operator': 'The Home Depot',
+          'operator:wikidata': 'Q864407',
+          'operator:type': 'private',
+        },
+      );
+
   OperatorProfile copyWith({
     String? id,
     String? name,

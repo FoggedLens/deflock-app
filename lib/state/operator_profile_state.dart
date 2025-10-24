@@ -8,8 +8,19 @@ class OperatorProfileState extends ChangeNotifier {
 
   List<OperatorProfile> get profiles => List.unmodifiable(_profiles);
 
-  Future<void> init() async {
+  Future<void> init({bool addDefaults = false}) async {
     _profiles.addAll(await OperatorProfileService().load());
+    
+    // Add default operator profiles if this is first launch
+    if (addDefaults) {
+      final defaults = [
+        OperatorProfile.lowes(),
+        OperatorProfile.homeDepot(),
+      ];
+      
+      _profiles.addAll(defaults);
+      await OperatorProfileService().save(_profiles);
+    }
   }
 
   void addOrUpdateProfile(OperatorProfile p) {

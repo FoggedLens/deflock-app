@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'models/node_profile.dart';
 import 'models/operator_profile.dart';
@@ -13,6 +14,8 @@ import 'services/offline_area_service.dart';
 import 'services/node_cache.dart';
 import 'services/tile_preview_service.dart';
 import 'services/changelog_service.dart';
+import 'services/operator_profile_service.dart';
+import 'services/profile_service.dart';
 import 'widgets/camera_provider_with_cache.dart';
 import 'state/auth_state.dart';
 import 'state/navigation_state.dart';
@@ -168,8 +171,26 @@ class AppState extends ChangeNotifier {
     // Attempt to fetch missing tile type preview tiles (fails silently)
     _fetchMissingTilePreviews();
     
-    await _operatorProfileState.init();
-    await _profileState.init();
+    // Check if we should add default profiles (first launch OR no profiles of each type exist)
+    final prefs = await SharedPreferences.getInstance();
+    const firstLaunchKey = 'profiles_defaults_initialized';
+    final isFirstLaunch = !(prefs.getBool(firstLaunchKey) ?? false);
+    
+    // Load existing profiles to check each type independently
+    final existingOperatorProfiles = await OperatorProfileService().load();
+    final existingNodeProfiles = await ProfileService().load();
+    
+    final shouldAddOperatorDefaults = isFirstLaunch || existingOperatorProfiles.isEmpty;
+    final shouldAddNodeDefaults = isFirstLaunch || existingNodeProfiles.isEmpty;
+    
+    await _operatorProfileState.init(addDefaults: shouldAddOperatorDefaults);
+    await _profileState.init(addDefaults: shouldAddNodeDefaults);
+    
+    // Mark defaults as initialized if this was first launch
+    if (isFirstLaunch) {
+      await prefs.setBool(firstLaunchKey, true);
+    }
+    
     await _suspectedLocationState.init(offlineMode: _settingsState.offlineMode);
     await _uploadQueueState.init();
     await _authState.init(_settingsState.uploadMode);

@@ -17,18 +17,27 @@ class ProfileState extends ChangeNotifier {
       _profiles.where(isEnabled).toList(growable: false);
 
   // Initialize profiles from built-in and custom sources
-  Future<void> init() async {
-    // Initialize profiles: built-in + custom
-    _profiles.add(NodeProfile.genericAlpr());
-    _profiles.add(NodeProfile.flock());
-    _profiles.add(NodeProfile.motorola());
-    _profiles.add(NodeProfile.genetec());
-    _profiles.add(NodeProfile.leonardo());
-    _profiles.add(NodeProfile.neology());
-    _profiles.add(NodeProfile.genericGunshotDetector());
-    _profiles.add(NodeProfile.shotspotter());
-    _profiles.add(NodeProfile.flockRaven());
+  Future<void> init({bool addDefaults = false}) async {
+    // Load custom profiles from storage
     _profiles.addAll(await ProfileService().load());
+
+    // Add built-in profiles if this is first launch
+    if (addDefaults) {
+      final builtinProfiles = [
+        NodeProfile.genericAlpr(),
+        NodeProfile.flock(),
+        NodeProfile.motorola(),
+        NodeProfile.genetec(),
+        NodeProfile.leonardo(),
+        NodeProfile.neology(),
+        NodeProfile.genericGunshotDetector(),
+        NodeProfile.shotspotter(),
+        NodeProfile.flockRaven(),
+      ];
+      
+      _profiles.addAll(builtinProfiles);
+      await ProfileService().save(_profiles);
+    }
 
     // Load enabled profile IDs from prefs
     final prefs = await SharedPreferences.getInstance();
