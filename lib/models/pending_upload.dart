@@ -8,7 +8,7 @@ enum UploadOperation { create, modify, delete }
 class PendingUpload {
   final LatLng coord;
   final double direction;
-  final NodeProfile profile;
+  final NodeProfile? profile;
   final OperatorProfile? operatorProfile;
   final UploadMode uploadMode; // Capture upload destination when queued
   final UploadOperation operation; // Type of operation: create, modify, or delete
@@ -21,7 +21,7 @@ class PendingUpload {
   PendingUpload({
     required this.coord,
     required this.direction,
-    required this.profile,
+    this.profile,
     this.operatorProfile,
     required this.uploadMode,
     required this.operation,
@@ -34,6 +34,10 @@ class PendingUpload {
          (operation == UploadOperation.create && originalNodeId == null) ||
          (operation != UploadOperation.create && originalNodeId != null),
          'originalNodeId must be null for create operations and non-null for modify/delete operations'
+       ),
+       assert(
+         (operation == UploadOperation.delete) || (profile != null),
+         'profile is required for create and modify operations'
        );
 
   // True if this is an edit of an existing node, false if it's a new node
@@ -56,7 +60,12 @@ class PendingUpload {
 
   // Get combined tags from node profile and operator profile
   Map<String, String> getCombinedTags() {
-    final tags = Map<String, String>.from(profile.tags);
+    // Deletions don't need tags
+    if (operation == UploadOperation.delete || profile == null) {
+      return {};
+    }
+    
+    final tags = Map<String, String>.from(profile!.tags);
     
     // Add operator profile tags (they override node profile tags if there are conflicts)
     if (operatorProfile != null) {
@@ -64,7 +73,7 @@ class PendingUpload {
     }
     
     // Add direction if required
-    if (profile.requiresDirection) {
+    if (profile!.requiresDirection) {
       tags['direction'] = direction.toStringAsFixed(0);
     }
     
@@ -75,7 +84,7 @@ class PendingUpload {
         'lat': coord.latitude,
         'lon': coord.longitude,
         'dir': direction,
-        'profile': profile.toJson(),
+        'profile': profile?.toJson(),
         'operatorProfile': operatorProfile?.toJson(),
         'uploadMode': uploadMode.index,
         'operation': operation.index,
@@ -91,7 +100,7 @@ class PendingUpload {
         direction: j['dir'],
         profile: j['profile'] is Map<String, dynamic>
             ? NodeProfile.fromJson(j['profile'])
-            : throw Exception('PendingUpload missing required profile data - this should never happen'),
+            : null, // Profile is optional for deletions
         operatorProfile: j['operatorProfile'] != null
             ? OperatorProfile.fromJson(j['operatorProfile'])
             : null,

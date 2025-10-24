@@ -109,8 +109,8 @@ class UploadQueueState extends ChangeNotifier {
   void addFromNodeDeletion(OsmNode node, {required UploadMode uploadMode}) {
     final upload = PendingUpload(
       coord: node.coord,
-      direction: node.directionDeg ?? 0, // Use existing direction or default to 0
-      profile: NodeProfile.genericAlpr(), // Dummy profile - not used for deletions
+      direction: node.directionDeg ?? 0, // Direction not used for deletions but required for API
+      profile: null, // No profile needed for deletions - just delete by node ID
       uploadMode: uploadMode,
       operation: UploadOperation.delete,
       originalNodeId: node.id,

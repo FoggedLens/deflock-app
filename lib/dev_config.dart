@@ -44,7 +44,7 @@ const String kClientName = 'DeFlock';
 const String kSuspectedLocationsCsvUrl = 'https://alprwatch.org/pub/flock_utilities_mini_latest.csv';
 
 // Development/testing features - set to false for production builds
-const bool kEnableDevelopmentModes = false; // Set to false to hide sandbox/simulate modes and force production mode
+const bool kEnableDevelopmentModes = true; // Set to false to hide sandbox/simulate modes and force production mode
 
 // Navigation features - set to false to hide navigation UI elements while in development
 const bool kEnableNavigationFeatures = kEnableDevelopmentModes; // Hide navigation until fully implemented

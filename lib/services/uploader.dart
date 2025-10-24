@@ -17,6 +17,12 @@ class Uploader {
     try {
       print('Uploader: Starting upload for node at ${p.coord.latitude}, ${p.coord.longitude}');
       
+      // Safety check: create and modify operations MUST have profiles
+      if ((p.operation == UploadOperation.create || p.operation == UploadOperation.modify) && p.profile == null) {
+        print('Uploader: ERROR - ${p.operation.name} operation attempted without profile data');
+        return false;
+      }
+      
       // 1. open changeset
       String action;
       switch (p.operation) {
@@ -30,11 +36,13 @@ class Uploader {
           action = 'Delete';
           break;
       }
+      // Generate appropriate comment based on operation type
+      final profileName = p.profile?.name ?? 'surveillance';
       final csXml = '''
         <osm>
           <changeset>
             <tag k="created_by" v="$kClientName ${VersionService().version}"/>
-            <tag k="comment" v="$action ${p.profile.name} surveillance node"/>
+            <tag k="comment" v="$action $profileName surveillance node"/>
           </changeset>
         </osm>''';
       print('Uploader: Creating changeset...');
