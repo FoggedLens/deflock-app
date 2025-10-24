@@ -20,161 +20,149 @@ class NodeProfile {
     this.editable = true,
   });
 
-  /// Built‑in default: Generic ALPR camera (customizable template, not submittable)
-  factory NodeProfile.genericAlpr() => NodeProfile(
-        id: 'builtin-generic-alpr',
-        name: 'Generic ALPR',
-        tags: const {
-          'man_made': 'surveillance',
-          'surveillance:type': 'ALPR',
-        },
-        builtin: true,
-        requiresDirection: true,
-        submittable: false,
-        editable: false,
-      );
+  /// Get all built-in default node profiles
+  static List<NodeProfile> getDefaults() => [
+        NodeProfile(
+          id: 'builtin-generic-alpr',
+          name: 'Generic ALPR',
+          tags: const {
+            'man_made': 'surveillance',
+            'surveillance:type': 'ALPR',
+          },
+          builtin: true,
+          requiresDirection: true,
+          submittable: false,
+          editable: false,
+        ),
+        NodeProfile(
+          id: 'builtin-flock',
+          name: 'Flock',
+          tags: const {
+            'man_made': 'surveillance',
+            'surveillance': 'public',
+            'surveillance:type': 'ALPR',
+            'surveillance:zone': 'traffic',
+            'camera:type': 'fixed',
+            'manufacturer': 'Flock Safety',
+            'manufacturer:wikidata': 'Q108485435',
+          },
+          builtin: true,
+          requiresDirection: true,
+          submittable: true,
+          editable: true,
+        ),
+        NodeProfile(
+          id: 'builtin-motorola',
+          name: 'Motorola/Vigilant',
+          tags: const {
+            'man_made': 'surveillance',
+            'surveillance': 'public',
+            'surveillance:type': 'ALPR',
+            'surveillance:zone': 'traffic',
+            'camera:type': 'fixed',
+            'manufacturer': 'Motorola Solutions',
+            'manufacturer:wikidata': 'Q634815',
+          },
+          builtin: true,
+          requiresDirection: true,
+          submittable: true,
+          editable: true,
+        ),
+        NodeProfile(
+          id: 'builtin-genetec',
+          name: 'Genetec',
+          tags: const {
+            'man_made': 'surveillance',
+            'surveillance': 'public',
+            'surveillance:type': 'ALPR',
+            'surveillance:zone': 'traffic',
+            'camera:type': 'fixed',
+            'manufacturer': 'Genetec',
+            'manufacturer:wikidata': 'Q30295174',
+          },
+          builtin: true,
+          requiresDirection: true,
+          submittable: true,
+          editable: true,
+        ),
+        NodeProfile(
+          id: 'builtin-leonardo',
+          name: 'Leonardo/ELSAG',
+          tags: const {
+            'man_made': 'surveillance',
+            'surveillance': 'public',
+            'surveillance:type': 'ALPR',
+            'surveillance:zone': 'traffic',
+            'camera:type': 'fixed',
+            'manufacturer': 'Leonardo',
+            'manufacturer:wikidata': 'Q910379',
+          },
+          builtin: true,
+          requiresDirection: true,
+          submittable: true,
+          editable: true,
+        ),
+        NodeProfile(
+          id: 'builtin-neology',
+          name: 'Neology',
+          tags: const {
+            'man_made': 'surveillance',
+            'surveillance': 'public',
+            'surveillance:type': 'ALPR',
+            'surveillance:zone': 'traffic',
+            'camera:type': 'fixed',
+            'manufacturer': 'Neology, Inc.',
+          },
+          builtin: true,
+          requiresDirection: true,
+          submittable: true,
+          editable: true,
+        ),
+        NodeProfile(
+          id: 'builtin-generic-gunshot',
+          name: 'Generic Gunshot Detector',
+          tags: const {
+            'man_made': 'surveillance',
+            'surveillance:type': 'gunshot_detector',
+          },
+          builtin: true,
+          requiresDirection: false,
+          submittable: false,
+          editable: false,
+        ),
+        NodeProfile(
+          id: 'builtin-shotspotter',
+          name: 'ShotSpotter',
+          tags: const {
+            'man_made': 'surveillance',
+            'surveillance': 'public',
+            'surveillance:type': 'gunshot_detector',
+            'surveillance:brand': 'ShotSpotter',
+            'surveillance:brand:wikidata': 'Q107740188',
+          },
+          builtin: true,
+          requiresDirection: false,
+          submittable: true,
+          editable: true,
+        ),
+        NodeProfile(
+          id: 'builtin-flock-raven',
+          name: 'Flock Raven',
+          tags: const {
+            'man_made': 'surveillance',
+            'surveillance': 'public',
+            'surveillance:type': 'gunshot_detector',
+            'brand': 'Flock Safety',
+            'brand:wikidata': 'Q108485435',
+          },
+          builtin: true,
+          requiresDirection: false,
+          submittable: true,
+          editable: true,
+        ),
+      ];
 
-  /// Built‑in: Flock Safety ALPR camera
-  factory NodeProfile.flock() => NodeProfile(
-        id: 'builtin-flock',
-        name: 'Flock',
-        tags: const {
-          'man_made': 'surveillance',
-          'surveillance': 'public',
-          'surveillance:type': 'ALPR',
-          'surveillance:zone': 'traffic',
-          'camera:type': 'fixed',
-          'manufacturer': 'Flock Safety',
-          'manufacturer:wikidata': 'Q108485435',
-        },
-        builtin: true,
-        requiresDirection: true,
-        submittable: true,
-        editable: true,
-      );
 
-  /// Built‑in: Motorola Solutions/Vigilant ALPR camera
-  factory NodeProfile.motorola() => NodeProfile(
-        id: 'builtin-motorola',
-        name: 'Motorola/Vigilant',
-        tags: const {
-          'man_made': 'surveillance',
-          'surveillance': 'public',
-          'surveillance:type': 'ALPR',
-          'surveillance:zone': 'traffic',
-          'camera:type': 'fixed',
-          'manufacturer': 'Motorola Solutions',
-          'manufacturer:wikidata': 'Q634815',
-        },
-        builtin: true,
-        requiresDirection: true,
-        submittable: true,
-        editable: true,
-      );
-
-  /// Built‑in: Genetec ALPR camera
-  factory NodeProfile.genetec() => NodeProfile(
-        id: 'builtin-genetec',
-        name: 'Genetec',
-        tags: const {
-          'man_made': 'surveillance',
-          'surveillance': 'public',
-          'surveillance:type': 'ALPR',
-          'surveillance:zone': 'traffic',
-          'camera:type': 'fixed',
-          'manufacturer': 'Genetec',
-          'manufacturer:wikidata': 'Q30295174',
-        },
-        builtin: true,
-        requiresDirection: true,
-        submittable: true,
-        editable: true,
-      );
-
-  /// Built‑in: Leonardo/ELSAG ALPR camera
-  factory NodeProfile.leonardo() => NodeProfile(
-        id: 'builtin-leonardo',
-        name: 'Leonardo/ELSAG',
-        tags: const {
-          'man_made': 'surveillance',
-          'surveillance': 'public',
-          'surveillance:type': 'ALPR',
-          'surveillance:zone': 'traffic',
-          'camera:type': 'fixed',
-          'manufacturer': 'Leonardo',
-          'manufacturer:wikidata': 'Q910379',
-        },
-        builtin: true,
-        requiresDirection: true,
-        submittable: true,
-        editable: true,
-      );
-
-  /// Built‑in: Neology ALPR camera
-  factory NodeProfile.neology() => NodeProfile(
-        id: 'builtin-neology',
-        name: 'Neology',
-        tags: const {
-          'man_made': 'surveillance',
-          'surveillance': 'public',
-          'surveillance:type': 'ALPR',
-          'surveillance:zone': 'traffic',
-          'camera:type': 'fixed',
-          'manufacturer': 'Neology, Inc.',
-        },
-        builtin: true,
-        requiresDirection: true,
-        submittable: true,
-        editable: true,
-      );
-
-  /// Built‑in: Generic gunshot detector (customizable template, not submittable)
-  factory NodeProfile.genericGunshotDetector() => NodeProfile(
-        id: 'builtin-generic-gunshot',
-        name: 'Generic Gunshot Detector',
-        tags: const {
-          'man_made': 'surveillance',
-          'surveillance:type': 'gunshot_detector',
-        },
-        builtin: true,
-        requiresDirection: false,
-        submittable: false,
-        editable: false,
-      );
-
-  /// Built‑in: ShotSpotter gunshot detector
-  factory NodeProfile.shotspotter() => NodeProfile(
-        id: 'builtin-shotspotter',
-        name: 'ShotSpotter',
-        tags: const {
-          'man_made': 'surveillance',
-          'surveillance': 'public',
-          'surveillance:type': 'gunshot_detector',
-          'surveillance:brand': 'ShotSpotter',
-          'surveillance:brand:wikidata': 'Q107740188',
-        },
-        builtin: true,
-        requiresDirection: false,
-        submittable: true,
-        editable: true,
-      );
-
-  /// Built‑in: Flock Raven gunshot detector
-  factory NodeProfile.flockRaven() => NodeProfile(
-        id: 'builtin-flock-raven',
-        name: 'Flock Raven',
-        tags: const {
-          'man_made': 'surveillance',
-          'surveillance': 'public',
-          'surveillance:type': 'gunshot_detector',
-          'brand': 'Flock Safety',
-          'brand:wikidata': 'Q108485435',
-        },
-        builtin: true,
-        requiresDirection: false,
-        submittable: true,
-        editable: true,
-      );
 
   /// Returns true if this profile can be used for submissions
   bool get isSubmittable => submittable;

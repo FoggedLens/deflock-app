@@ -44,15 +44,6 @@ class OperatorProfile {
         ),
       ];
 
-  /// Built-in default: Lowe's operator profile
-  factory OperatorProfile.lowes() => getDefaults()[0];
-
-  /// Built-in default: The Home Depot operator profile  
-  factory OperatorProfile.homeDepot() => getDefaults()[1];
-
-  /// Built-in default: Simon Property Group operator profile
-  factory OperatorProfile.simonPropertyGroup() => getDefaults()[2];
-
   OperatorProfile copyWith({
     String? id,
     String? name,

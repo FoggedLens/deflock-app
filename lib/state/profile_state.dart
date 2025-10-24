@@ -23,19 +23,7 @@ class ProfileState extends ChangeNotifier {
 
     // Add built-in profiles if this is first launch
     if (addDefaults) {
-      final builtinProfiles = [
-        NodeProfile.genericAlpr(),
-        NodeProfile.flock(),
-        NodeProfile.motorola(),
-        NodeProfile.genetec(),
-        NodeProfile.leonardo(),
-        NodeProfile.neology(),
-        NodeProfile.genericGunshotDetector(),
-        NodeProfile.shotspotter(),
-        NodeProfile.flockRaven(),
-      ];
-      
-      _profiles.addAll(builtinProfiles);
+      _profiles.addAll(NodeProfile.getDefaults());
       await ProfileService().save(_profiles);
     }
 

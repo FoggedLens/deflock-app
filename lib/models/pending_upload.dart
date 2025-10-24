@@ -91,7 +91,7 @@ class PendingUpload {
         direction: j['dir'],
         profile: j['profile'] is Map<String, dynamic>
             ? NodeProfile.fromJson(j['profile'])
-            : NodeProfile.genericAlpr(),
+            : throw Exception('PendingUpload missing required profile data - this should never happen'),
         operatorProfile: j['operatorProfile'] != null
             ? OperatorProfile.fromJson(j['operatorProfile'])
             : null,
