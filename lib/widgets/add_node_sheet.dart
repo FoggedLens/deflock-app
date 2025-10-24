@@ -34,7 +34,10 @@ class AddNodeSheet extends StatelessWidget {
         }
 
         final submittableProfiles = appState.enabledProfiles.where((p) => p.isSubmittable).toList();
-        final allowSubmit = appState.isLoggedIn && submittableProfiles.isNotEmpty && session.profile.isSubmittable;
+        final allowSubmit = appState.isLoggedIn && 
+            submittableProfiles.isNotEmpty && 
+            session.profile != null && 
+            session.profile!.isSubmittable;
         
         void _openRefineTags() async {
           final result = await Navigator.push<OperatorProfile?>(
@@ -66,13 +69,13 @@ class AddNodeSheet extends StatelessWidget {
               const SizedBox(height: 16),
               ListTile(
                 title: Text(locService.t('addNode.profile')),
-                trailing: DropdownButton<NodeProfile>(
+                trailing: DropdownButton<NodeProfile?>(
                   value: session.profile,
+                  hint: Text(locService.t('addNode.selectProfile')),
                   items: submittableProfiles
                       .map((p) => DropdownMenuItem(value: p, child: Text(p.name)))
                       .toList(),
-                  onChanged: (p) =>
-                      appState.updateSession(profile: p ?? session.profile),
+                  onChanged: (p) => appState.updateSession(profile: p),
                 ),
               ),
               ListTile(
@@ -83,12 +86,12 @@ class AddNodeSheet extends StatelessWidget {
                   divisions: 359,
                   value: session.directionDegrees,
                   label: session.directionDegrees.round().toString(),
-                  onChanged: session.profile.requiresDirection 
+                  onChanged: (session.profile != null && session.profile!.requiresDirection) 
                       ? (v) => appState.updateSession(directionDeg: v)
-                      : null, // Disables slider when requiresDirection is false
+                      : null, // Disabled when no profile selected or profile doesn't require direction
                 ),
               ),
-              if (!session.profile.requiresDirection)
+              if (session.profile != null && !session.profile!.requiresDirection)
                 Padding(
                   padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
                   child: Row(
@@ -136,7 +139,23 @@ class AddNodeSheet extends StatelessWidget {
                     ],
                   ),
                 )
-              else if (!session.profile.isSubmittable)
+              else if (session.profile == null)
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.info_outline, color: Colors.orange, size: 20),
+                      const SizedBox(width: 6),
+                      Expanded(
+                        child: Text(
+                          locService.t('addNode.profileRequired'),
+                          style: const TextStyle(color: Colors.orange, fontSize: 13),
+                        ),
+                      ),
+                    ],
+                  ),
+                )
+              else if (!session.profile!.isSubmittable)
                 Padding(
                   padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
                   child: Row(
@@ -158,7 +177,7 @@ class AddNodeSheet extends StatelessWidget {
                 child: SizedBox(
                   width: double.infinity,
                   child: OutlinedButton.icon(
-                    onPressed: _openRefineTags,
+                    onPressed: session.profile != null ? _openRefineTags : null, // Disabled when no profile selected
                     icon: const Icon(Icons.tune),
                     label: Text(session.operatorProfile != null
                         ? locService.t('addNode.refineTagsWithProfile', params: [session.operatorProfile!.name])

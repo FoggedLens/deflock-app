@@ -19,7 +19,7 @@ class DirectionConesBuilder {
     final overlays = <Polygon>[];
     
     // Add session cone if in add-camera mode and profile requires direction
-    if (session != null && session.target != null && session.profile.requiresDirection) {
+    if (session != null && session.target != null && session.profile?.requiresDirection == true) {
       overlays.add(_buildCone(
         session.target!, 
         session.directionDegrees, 
@@ -30,7 +30,7 @@ class DirectionConesBuilder {
     }
     
     // Add edit session cone if in edit-camera mode and profile requires direction
-    if (editSession != null && editSession.profile.requiresDirection) {
+    if (editSession != null && editSession.profile?.requiresDirection == true) {
       overlays.add(_buildCone(
         editSession.target, 
         editSession.directionDegrees, 

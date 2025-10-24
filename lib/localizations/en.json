@@ -89,6 +89,8 @@
   },
   "addNode": {
     "profile": "Profile",
+    "selectProfile": "Select a profile...",
+    "profileRequired": "Please select a profile to continue.",
     "direction": "Direction  {}°",
     "profileNoDirectionInfo": "This profile does not require a direction.",
     "mustBeLoggedIn": "You must be logged in to submit new nodes. Please log in via Settings.",
@@ -100,6 +102,8 @@
   "editNode": {
     "title": "Edit Node #{}",
     "profile": "Profile",
+    "selectProfile": "Select a profile...",
+    "profileRequired": "Please select a profile to continue.",
     "direction": "Direction  {}°",
     "profileNoDirectionInfo": "This profile does not require a direction.",
     "mustBeLoggedIn": "You must be logged in to edit nodes. Please log in via Settings.",

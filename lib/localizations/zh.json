@@ -89,6 +89,8 @@
   },
   "addNode": {
     "profile": "配置文件",
+    "selectProfile": "选择配置文件...",
+    "profileRequired": "请选择配置文件以继续。",
     "direction": "方向  {}°",
     "profileNoDirectionInfo": "此配置文件不需要方向。",
     "mustBeLoggedIn": "您必须登录才能提交新节点。请通过设置登录。",
@@ -100,6 +102,8 @@
   "editNode": {
     "title": "编辑节点 #{}",
     "profile": "配置文件",
+    "selectProfile": "选择配置文件...",
+    "profileRequired": "请选择配置文件以继续。",
     "direction": "方向  {}°",
     "profileNoDirectionInfo": "此配置文件不需要方向。",
     "mustBeLoggedIn": "您必须登录才能编辑节点。请通过设置登录。",

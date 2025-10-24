@@ -7,8 +7,8 @@ import '../models/osm_node.dart';
 
 // ------------------ AddNodeSession ------------------
 class AddNodeSession {
-  AddNodeSession({required this.profile, this.directionDegrees = 0});
-  NodeProfile profile;
+  AddNodeSession({this.profile, this.directionDegrees = 0});
+  NodeProfile? profile;
   OperatorProfile? operatorProfile;
   double directionDegrees;
   LatLng? target;
@@ -18,13 +18,13 @@ class AddNodeSession {
 class EditNodeSession {
   EditNodeSession({
     required this.originalNode,
-    required this.profile,
+    this.profile,
     required this.directionDegrees,
     required this.target,
   });
   
   final OsmNode originalNode; // The original node being edited
-  NodeProfile profile;
+  NodeProfile? profile;
   OperatorProfile? operatorProfile;
   double directionDegrees;
   LatLng target; // Current position (can be dragged)
@@ -39,11 +39,8 @@ class SessionState extends ChangeNotifier {
   EditNodeSession? get editSession => _editSession;
 
   void startAddSession(List<NodeProfile> enabledProfiles) {
-    final submittableProfiles = enabledProfiles.where((p) => p.isSubmittable).toList();
-    final defaultProfile = submittableProfiles.isNotEmpty 
-        ? submittableProfiles.first 
-        : enabledProfiles.first; // Fallback to any enabled profile
-    _session = AddNodeSession(profile: defaultProfile);
+    // Start with no profile selected - force user to choose
+    _session = AddNodeSession();
     _editSession = null; // Clear any edit session
     notifyListeners();
   }
@@ -52,11 +49,9 @@ class SessionState extends ChangeNotifier {
     final submittableProfiles = enabledProfiles.where((p) => p.isSubmittable).toList();
     
     // Try to find a matching profile based on the node's tags
-    NodeProfile matchingProfile = submittableProfiles.isNotEmpty 
-        ? submittableProfiles.first 
-        : enabledProfiles.first;
+    NodeProfile? matchingProfile;
     
-    // Attempt to find a better match by comparing tags
+    // Attempt to find a match by comparing tags
     for (final profile in submittableProfiles) {
       if (_profileMatchesTags(profile, node.tags)) {
         matchingProfile = profile;
@@ -64,6 +59,7 @@ class SessionState extends ChangeNotifier {
       }
     }
     
+    // Start with no profile selected if no match found - force user to choose
     _editSession = EditNodeSession(
       originalNode: node,
       profile: matchingProfile,
@@ -151,7 +147,7 @@ class SessionState extends ChangeNotifier {
   }
 
   AddNodeSession? commitSession() {
-    if (_session?.target == null) return null;
+    if (_session?.target == null || _session?.profile == null) return null;
     
     final session = _session!;
     _session = null;
@@ -160,7 +156,7 @@ class SessionState extends ChangeNotifier {
   }
 
   EditNodeSession? commitEditSession() {
-    if (_editSession == null) return null;
+    if (_editSession?.profile == null) return null;
     
     final session = _editSession!;
     _editSession = null;

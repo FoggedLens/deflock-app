@@ -89,6 +89,8 @@
   },
   "addNode": {
     "profile": "Perfil",
+    "selectProfile": "Selecionar um perfil...",
+    "profileRequired": "Por favor, selecione um perfil para continuar.",
     "direction": "Direção  {}°",
     "profileNoDirectionInfo": "Este perfil não requer uma direção.",
     "mustBeLoggedIn": "Você deve estar logado para enviar novos nós. Por favor, faça login via Configurações.",
@@ -100,6 +102,8 @@
   "editNode": {
     "title": "Editar Nó #{}",
     "profile": "Perfil",
+    "selectProfile": "Selecionar um perfil...",
+    "profileRequired": "Por favor, selecione um perfil para continuar.",
     "direction": "Direção  {}°",
     "profileNoDirectionInfo": "Este perfil não requer uma direção.",
     "mustBeLoggedIn": "Você deve estar logado para editar nós. Por favor, faça login via Configurações.",

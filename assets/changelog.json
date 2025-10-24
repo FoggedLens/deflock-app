@@ -1,7 +1,10 @@
 {
+  "1.2.8": {
+    "content": "• UX: Profile selection is now a required step to prevent accidental submission of default profile.\n• NEW: Note in welcome message about not submitting data you cannot vouch for personally (no street view etc)\n• NEW: Added default operator profiles for the most common private operators nationwide (Lowe's, Home Depot, et al)"
+  },
   "1.2.7": {
     "content": "• NEW: Compass indicator shows map orientation; tap to spin north-up\n• Smart area caching: Loads 3x larger areas and refreshes data every 60 seconds for much faster browsing\n• Enhanced tile loading: Increased retry attempts with faster delays - tiles load much more reliably\n• Better network status: Simplified loading indicator logic\n• Instant node display: Surveillance devices now appear immediately when data finishes loading\n• Node limit alerts: Get notified when some nodes are not drawn"
-},
+  },
   "1.2.4": {
     "content": "• New welcome popup for first-time users with essential privacy information\n• Automatic changelog display when app updates (like this one!)\n• Added Release Notes viewer in Settings > About\n• Enhanced user onboarding and transparency about data handling\n• Improved documentation for contributors"
   },
@@ -10,9 +13,6 @@
   },
   "1.2.2": {
     "content": "• New surveillance device profiles added\n• Improved tile loading performance\n• Fixed issue with GPS accuracy\n• Updated translations"
-  },
-  "1.2.1": {
-    "content": ""
   },
   "1.2.0": {
     "content": "• Major UI improvements\n• Added proximity alerts\n• Enhanced offline capabilities\n• New suspected locations feature"

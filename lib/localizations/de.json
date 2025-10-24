@@ -72,6 +72,8 @@
   },
   "addNode": {
     "profile": "Profil",
+    "selectProfile": "Profil auswählen...",
+    "profileRequired": "Bitte wählen Sie ein Profil aus, um fortzufahren.",
     "direction": "Richtung  {}°",
     "profileNoDirectionInfo": "Dieses Profil benötigt keine Richtung.",
     "mustBeLoggedIn": "Sie müssen angemeldet sein, um neue Knoten zu übertragen. Bitte melden Sie sich über die Einstellungen an.",
@@ -83,6 +85,8 @@
   "editNode": {
     "title": "Knoten #{} Bearbeiten",
     "profile": "Profil",
+    "selectProfile": "Profil auswählen...",
+    "profileRequired": "Bitte wählen Sie ein Profil aus, um fortzufahren.",
     "direction": "Richtung  {}°",
     "profileNoDirectionInfo": "Dieses Profil benötigt keine Richtung.",
     "mustBeLoggedIn": "Sie müssen angemeldet sein, um Knoten zu bearbeiten. Bitte melden Sie sich über die Einstellungen an.",

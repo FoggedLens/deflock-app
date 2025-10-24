@@ -89,6 +89,8 @@
   },
   "addNode": {
     "profile": "Profil",
+    "selectProfile": "Sélectionner un profil...",
+    "profileRequired": "Veuillez sélectionner un profil pour continuer.",
     "direction": "Direction  {}°",
     "profileNoDirectionInfo": "Ce profil ne nécessite pas de direction.",
     "mustBeLoggedIn": "Vous devez être connecté pour soumettre de nouveaux nœuds. Veuillez vous connecter via les Paramètres.",
@@ -100,6 +102,8 @@
   "editNode": {
     "title": "Modifier Nœud #{}",
     "profile": "Profil",
+    "selectProfile": "Sélectionner un profil...",
+    "profileRequired": "Veuillez sélectionner un profil pour continuer.",
     "direction": "Direction  {}°",
     "profileNoDirectionInfo": "Ce profil ne nécessite pas de direction.",
     "mustBeLoggedIn": "Vous devez être connecté pour modifier les nœuds. Veuillez vous connecter via les Paramètres.",

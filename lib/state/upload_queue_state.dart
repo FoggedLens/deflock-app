@@ -30,7 +30,7 @@ class UploadQueueState extends ChangeNotifier {
     final upload = PendingUpload(
       coord: session.target!,
       direction: session.directionDegrees,
-      profile: session.profile,
+      profile: session.profile!,  // Safe to use ! because commitSession() checks for null
       operatorProfile: session.operatorProfile,
       uploadMode: uploadMode,
       operation: UploadOperation.create,
@@ -64,7 +64,7 @@ class UploadQueueState extends ChangeNotifier {
     final upload = PendingUpload(
       coord: session.target,
       direction: session.directionDegrees,
-      profile: session.profile,
+      profile: session.profile!,  // Safe to use ! because commitEditSession() checks for null
       operatorProfile: session.operatorProfile,
       uploadMode: uploadMode,
       operation: UploadOperation.modify,
