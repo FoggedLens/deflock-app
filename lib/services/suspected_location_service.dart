@@ -55,9 +55,9 @@ class SuspectedLocationService {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(_prefsKeyEnabled, enabled);
     
-    // If enabling for the first time and no data, fetch it
+    // If enabling for the first time and no data, fetch it in background
     if (enabled && !_cache.hasData) {
-      await _fetchData();
+      _fetchData(); // Don't await - let it run in background so UI updates immediately
     }
     
     // If disabling, clear the cache
