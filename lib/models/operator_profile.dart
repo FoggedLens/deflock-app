@@ -13,27 +13,45 @@ class OperatorProfile {
     required this.tags,
   });
 
+  /// Get all built-in default operator profiles
+  static List<OperatorProfile> getDefaults() => [
+        OperatorProfile(
+          id: 'builtin-lowes',
+          name: "Lowe's",
+          tags: const {
+            'operator': "Lowe's",
+            'operator:wikidata': 'Q1373493',
+            'operator:type': 'private',
+          },
+        ),
+        OperatorProfile(
+          id: 'builtin-home-depot',
+          name: 'The Home Depot',
+          tags: const {
+            'operator': 'The Home Depot',
+            'operator:wikidata': 'Q864407',
+            'operator:type': 'private',
+          },
+        ),
+        OperatorProfile(
+          id: 'builtin-simon-property-group',
+          name: 'Simon Property Group',
+          tags: const {
+            'operator': 'Simon Property Group',
+            'operator:wikidata': 'Q2287759',
+            'operator:type': 'private',
+          },
+        ),
+      ];
+
   /// Built-in default: Lowe's operator profile
-  factory OperatorProfile.lowes() => OperatorProfile(
-        id: 'builtin-lowes',
-        name: "Lowe's",
-        tags: const {
-          'operator': "Lowe's",
-          'operator:wikidata': 'Q1373493',
-          'operator:type': 'private',
-        },
-      );
+  factory OperatorProfile.lowes() => getDefaults()[0];
 
   /// Built-in default: The Home Depot operator profile  
-  factory OperatorProfile.homeDepot() => OperatorProfile(
-        id: 'builtin-home-depot',
-        name: 'The Home Depot',
-        tags: const {
-          'operator': 'The Home Depot',
-          'operator:wikidata': 'Q864407',
-          'operator:type': 'private',
-        },
-      );
+  factory OperatorProfile.homeDepot() => getDefaults()[1];
+
+  /// Built-in default: Simon Property Group operator profile
+  factory OperatorProfile.simonPropertyGroup() => getDefaults()[2];
 
   OperatorProfile copyWith({
     String? id,

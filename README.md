@@ -92,11 +92,9 @@ cp lib/keys.dart.example lib/keys.dart
 ### Current Development
 - Import/Export map providers
 - Swap in alprwatch.org/directions avoidance routing API
-- Help button with links to email, discord, and website
 - Clean cache when nodes have disappeared / been deleted by others / queue item was deleted
 - Improve offline area node refresh live display
-- Add default operator profiles (Lowe’s etc)
-- Add Rekor, generic PTZ profiles
+- Add Rekor profile
 
 ### Future Features & Wishlist
 - Update offline area nodes while browsing?
@@ -104,21 +102,12 @@ cp lib/keys.dart.example lib/keys.dart
 - Suspected locations expansion to more regions
 
 ### Maybes
-- Yellow ring for devices missing specific tag details?
-- "Cache accumulating" offline area?
-- "Offline areas" as tile provider?
-- Maybe we could grab the full latest database for each profile just like for suspected locations? (Instead of overpass)
-- Optional custom icons for camera profiles?
-- Upgrade device marker design? (considering nullplate's svg)
-- Custom device providers and OSM/Overpass alternatives?
-- More map data providers:
-https://gis.sanramon.ca.gov/arcgis_js_api/sdk/jsapi/esri.basemaps-amd.html#osm
-https://www.icgc.cat/en/Geoinformation-and-Maps/Base-Map-Service
-https://github.com/CartoDB/basemap-styles
-https://forum.inductiveautomation.com/t/perspective-map-theming-internet-tile-server-options/40164
-https://github.com/roblabs/xyz-raster-sources
-https://github.com/geopandas/xyzservices/blob/main/provider_sources/xyzservices-providers.json
-https://medium.com/@go2garret/free-basemap-tiles-for-maplibre-18374fab60cb
+- Yellow ring for devices missing specific tag details
+- "Cache accumulating" offline area
+- "Offline areas" as tile provider
+- Grab the full latest database for each profile just like for suspected locations (instead of overpass)
+- Optional custom icons for profiles to aid identification
+- Custom device providers and OSM/Overpass alternatives
 
 ---
 

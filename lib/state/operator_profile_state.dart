@@ -13,12 +13,7 @@ class OperatorProfileState extends ChangeNotifier {
     
     // Add default operator profiles if this is first launch
     if (addDefaults) {
-      final defaults = [
-        OperatorProfile.lowes(),
-        OperatorProfile.homeDepot(),
-      ];
-      
-      _profiles.addAll(defaults);
+      _profiles.addAll(OperatorProfile.getDefaults());
       await OperatorProfileService().save(_profiles);
     }
   }
