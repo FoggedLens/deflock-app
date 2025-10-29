@@ -148,9 +148,28 @@ enum UploadOperation { create, modify, delete }
 - **Clear intent**: `operation == UploadOperation.delete` is unambiguous
 
 **Session Pattern:**
-- `AddNodeSession`: For creating new nodes
-- `EditNodeSession`: For modifying existing nodes
+- `AddNodeSession`: For creating new nodes with single or multiple directions
+- `EditNodeSession`: For modifying existing nodes, preserving all existing directions
 - No "DeleteSession": Deletions are immediate (simpler)
+
+**Multi-Direction Support:**
+Sessions use a simple model for handling multiple directions:
+```dart
+class AddNodeSession {
+  List<double> directions;          // [90, 180, 270] - all directions
+  int currentDirectionIndex;        // Which direction is being edited
+  
+  // Slider always shows the current direction
+  double get directionDegrees => directions[currentDirectionIndex];
+  set directionDegrees(value) => directions[currentDirectionIndex] = value;
+}
+```
+
+**Direction Interaction:**
+- **Add**: New directions start at 0° and are automatically selected for editing
+- **Remove**: Current direction removed from list (minimum 1 direction)
+- **Cycle**: Switch between existing directions in the list
+- **Submit**: All directions combined as semicolon-separated string (e.g., "90;180;270")
 
 **Why no delete session:**
 Deletions don't need position dragging or tag editing - they just need confirmation and queuing. A session would add complexity without benefit.
@@ -182,12 +201,28 @@ Users expect instant response to their actions. By immediately updating the cach
 - **Orange ring**: Node currently being edited
 - **Red ring**: Nodes pending deletion
 
+**Direction cone visual states:**
+- **Full opacity**: Active session direction (currently being edited)
+- **Reduced opacity (40%)**: Inactive session directions
+- **Standard opacity**: Existing node directions (when not in edit mode)
+
 **Cache tags for state tracking:**
 ```dart
 '_pending_upload'    // New node waiting to upload
 '_pending_edit'      // Original node has pending edits
 '_pending_deletion'  // Node queued for deletion
 '_original_node_id'  // For drawing connection lines
+```
+
+**Multi-direction parsing:**
+The app supports nodes with multiple directions specified as semicolon-separated values:
+```dart
+// OSM tag: direction="90;180;270"
+List<double> get directionDeg {
+  final raw = tags['direction'] ?? tags['camera:direction'];
+  // Splits on semicolons, parses each direction, normalizes to 0-359°
+  return [90.0, 180.0, 270.0]; // Results in multiple FOV cones
+}
 ```
 
 **Why underscore prefix:**
@@ -270,9 +305,16 @@ Users often want to follow their location while keeping the map oriented north. 
 
 **Data pipeline:**
 - **CSV ingestion**: Downloads utility permit data from alprwatch.org
+- **Dynamic field parsing**: Stores all CSV columns (except `location` and `ticket_no`) for flexible display
 - **GeoJSON processing**: Handles Point, Polygon, and MultiPolygon geometries
 - **Proximity filtering**: Hides suspected locations near confirmed devices
 - **Regional availability**: Currently select locations, expanding regularly
+
+**Display approach:**
+- **Required fields**: `ticket_no` (for heading) and `location` (for map positioning)
+- **Dynamic display**: All other CSV fields shown automatically, no hardcoded field list
+- **Server control**: Field names and content controlled server-side via CSV headers
+- **Brutalist rendering**: Fields displayed as-is from CSV, empty fields hidden
 
 **Why utility permits:**
 Utility companies often must file permits when installing surveillance infrastructure. This creates a paper trail that can indicate potential surveillance sites before devices are confirmed through direct observation.

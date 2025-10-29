@@ -30,11 +30,12 @@ A comprehensive Flutter app for mapping public surveillance infrastructure with 
 ### Device Management
 - **Comprehensive profiles**: Built-in profiles for major manufacturers (Flock Safety, Motorola/Vigilant, Genetec, Leonardo/ELSAG, Neology) plus custom profile creation
 - **Full CRUD operations**: Create, edit, and delete surveillance devices
-- **Direction visualization**: Interactive field-of-view cones showing camera viewing angles
+- **Multi-direction support**: Devices can have multiple viewing directions (e.g. "90;180") with individual field-of-view cones
+- **Direction visualization**: Interactive field-of-view cones showing camera viewing angles with opacity-based selection
 - **Bulk operations**: Tag multiple devices efficiently with profile-based workflow
 
 ### Surveillance Intelligence
-- **Suspected locations**: Display potential surveillance sites from utility permit data (select locations, more added regularly)
+- **Suspected locations**: Display potential surveillance sites from utility permit data with dynamic field display (select locations, more added regularly)
 - **Proximity alerts**: Get notified when approaching mapped surveillance devices, with configurable distance and background notifications
 - **Location search**: Find addresses and points of interest to aid in mapping missions
 
@@ -57,7 +58,7 @@ A comprehensive Flutter app for mapping public surveillance infrastructure with 
 1. **Install** the app on iOS or Android - a welcome popup will guide you through key information
 2. **Enable location** permissions  
 3. **Log into OpenStreetMap**: Choose upload mode and get OAuth2 credentials
-4. **Add your first device**: Tap the "New Node" button, position the pin, set direction, select a profile, and tap submit
+4. **Add your first device**: Tap the "New Node" button, position the pin, set direction(s), select a profile, and tap submit
 5. **Edit or delete devices**: Tap any device marker to view details, then use Edit or Delete buttons
 
 **New to OpenStreetMap?** Visit [deflock.me](https://deflock.me) for complete setup instructions and community guidelines.
@@ -88,6 +89,10 @@ cp lib/keys.dart.example lib/keys.dart
 ### Needed Bugfixes
 - Are offline areas preferred for fast loading even when online? Check working.
 - Fix network indicator - only done when fetch queue is empty!
+
+### Recently Completed
+- **Multi-direction support**: Devices can now have multiple viewing directions (e.g., "90;180") with individual FOV cones
+- **Dynamic suspected location fields**: Server-controlled field display for suspected locations data
 
 ### Current Development
 - Import/Export map providers
