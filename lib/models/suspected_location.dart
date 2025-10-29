@@ -4,36 +4,24 @@ import 'package:latlong2/latlong.dart';
 /// A suspected surveillance location from the CSV data
 class SuspectedLocation {
   final String ticketNo;
-  final String? urlFull;
-  final String? addr;
-  final String? street;
-  final String? city;
-  final String? state;
-  final String? digSiteIntersectingStreet;
-  final String? digWorkDoneFor;
-  final String? digSiteRemarks;
-  final Map<String, dynamic>? geoJson;
   final LatLng centroid;
   final List<LatLng> bounds;
+  final Map<String, dynamic>? geoJson;
+  final Map<String, dynamic> allFields; // All CSV fields except location and ticket_no
 
   SuspectedLocation({
     required this.ticketNo,
-    this.urlFull,
-    this.addr,
-    this.street,
-    this.city,
-    this.state,
-    this.digSiteIntersectingStreet,
-    this.digWorkDoneFor,
-    this.digSiteRemarks,
-    this.geoJson,
     required this.centroid,
     required this.bounds,
+    this.geoJson,
+    required this.allFields,
   });
 
   /// Create from CSV row data
   factory SuspectedLocation.fromCsvRow(Map<String, dynamic> row) {
     final locationString = row['location'] as String?;
+    final ticketNo = row['ticket_no']?.toString() ?? '';
+    
     LatLng centroid = const LatLng(0, 0);
     List<LatLng> bounds = [];
     Map<String, dynamic>? geoJson;
@@ -47,24 +35,22 @@ class SuspectedLocation {
         bounds = coordinates.bounds;
       } catch (e) {
         // If GeoJSON parsing fails, use default coordinates
-        print('[SuspectedLocation] Failed to parse GeoJSON for ticket ${row['ticket_no']}: $e');
+        print('[SuspectedLocation] Failed to parse GeoJSON for ticket $ticketNo: $e');
         print('[SuspectedLocation] Location string: $locationString');
       }
     }
 
+    // Store all fields except location and ticket_no
+    final allFields = Map<String, dynamic>.from(row);
+    allFields.remove('location');
+    allFields.remove('ticket_no');
+
     return SuspectedLocation(
-      ticketNo: row['ticket_no']?.toString() ?? '',
-      urlFull: row['url_full']?.toString(),
-      addr: row['addr']?.toString(),
-      street: row['street']?.toString(),
-      city: row['city']?.toString(),
-      state: row['state']?.toString(),
-      digSiteIntersectingStreet: row['dig_site_intersecting_street']?.toString(),
-      digWorkDoneFor: row['dig_work_done_for']?.toString(),
-      digSiteRemarks: row['dig_site_remarks']?.toString(),
-      geoJson: geoJson,
+      ticketNo: ticketNo,
       centroid: centroid,
       bounds: bounds,
+      geoJson: geoJson,
+      allFields: allFields,
     );
   }
 
@@ -149,18 +135,11 @@ class SuspectedLocation {
   /// Convert to JSON for storage
   Map<String, dynamic> toJson() => {
     'ticket_no': ticketNo,
-    'url_full': urlFull,
-    'addr': addr,
-    'street': street,
-    'city': city,
-    'state': state,
-    'dig_site_intersecting_street': digSiteIntersectingStreet,
-    'dig_work_done_for': digWorkDoneFor,
-    'dig_site_remarks': digSiteRemarks,
     'geo_json': geoJson,
     'centroid_lat': centroid.latitude,
     'centroid_lng': centroid.longitude,
     'bounds': bounds.map((p) => [p.latitude, p.longitude]).toList(),
+    'all_fields': allFields,
   };
 
   /// Create from stored JSON
@@ -173,26 +152,24 @@ class SuspectedLocation {
 
     return SuspectedLocation(
       ticketNo: json['ticket_no'] ?? '',
-      urlFull: json['url_full'],
-      addr: json['addr'],
-      street: json['street'],
-      city: json['city'],
-      state: json['state'],
-      digSiteIntersectingStreet: json['dig_site_intersecting_street'],
-      digWorkDoneFor: json['dig_work_done_for'],
-      digSiteRemarks: json['dig_site_remarks'],
       geoJson: json['geo_json'],
       centroid: LatLng(
         (json['centroid_lat'] as num).toDouble(),
         (json['centroid_lng'] as num).toDouble(),
       ),
       bounds: bounds,
+      allFields: Map<String, dynamic>.from(json['all_fields'] ?? {}),
     );
   }
 
   /// Get a formatted display address
   String get displayAddress {
     final parts = <String>[];
+    final addr = allFields['addr']?.toString();
+    final street = allFields['street']?.toString();
+    final city = allFields['city']?.toString();
+    final state = allFields['state']?.toString();
+    
     if (addr?.isNotEmpty == true) parts.add(addr!);
     if (street?.isNotEmpty == true) parts.add(street!);
     if (city?.isNotEmpty == true) parts.add(city!);

@@ -19,35 +19,16 @@ class SuspectedLocationSheet extends StatelessWidget {
         final appState = context.watch<AppState>();
         final locService = LocalizationService.instance;
 
-        Future<void> _launchUrl() async {
-          if (location.urlFull?.isNotEmpty == true) {
-            final uri = Uri.parse(location.urlFull!);
-            if (await canLaunchUrl(uri)) {
-              await launchUrl(uri, mode: LaunchMode.externalApplication);
-            } else {
-              if (context.mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('Could not open URL: ${location.urlFull}'),
-                  ),
-                );
-              }
-            }
+
+
+        // Get all fields except location and ticket_no
+        final displayData = <String, String>{};
+        for (final entry in location.allFields.entries) {
+          final value = entry.value?.toString();
+          if (value != null && value.isNotEmpty) {
+            displayData[entry.key] = value;
           }
         }
-
-        // Create display data map using localized labels
-        final Map<String, String?> displayData = {
-          locService.t('suspectedLocation.ticketNo'): location.ticketNo,
-          locService.t('suspectedLocation.address'): location.addr,
-          locService.t('suspectedLocation.street'): location.street,
-          locService.t('suspectedLocation.city'): location.city,
-          locService.t('suspectedLocation.state'): location.state,
-          locService.t('suspectedLocation.intersectingStreet'): location.digSiteIntersectingStreet,
-          locService.t('suspectedLocation.workDoneFor'): location.digWorkDoneFor,
-          locService.t('suspectedLocation.remarks'): location.digSiteRemarks,
-          locService.t('suspectedLocation.url'): location.urlFull,
-        };
 
         return SafeArea(
           child: Padding(
@@ -64,7 +45,7 @@ class SuspectedLocationSheet extends StatelessWidget {
                   const SizedBox(height: 12),
                   
                   // Display all fields
-                  ...displayData.entries.where((e) => e.value?.isNotEmpty == true).map(
+                  ...displayData.entries.map(
                     (e) => Padding(
                       padding: const EdgeInsets.symmetric(vertical: 2),
                       child: Row(
@@ -79,11 +60,24 @@ class SuspectedLocationSheet extends StatelessWidget {
                           ),
                           const SizedBox(width: 8),
                           Expanded(
-                            child: e.key == 'URL' && e.value?.isNotEmpty == true
+                            child: e.key.toLowerCase().contains('url') && e.value.isNotEmpty
                                 ? GestureDetector(
-                                    onTap: _launchUrl,
+                                    onTap: () async {
+                                      final uri = Uri.parse(e.value);
+                                      if (await canLaunchUrl(uri)) {
+                                        await launchUrl(uri, mode: LaunchMode.externalApplication);
+                                      } else {
+                                        if (context.mounted) {
+                                          ScaffoldMessenger.of(context).showSnackBar(
+                                            SnackBar(
+                                              content: Text('Could not open URL: ${e.value}'),
+                                            ),
+                                          );
+                                        }
+                                      }
+                                    },
                                     child: Text(
-                                      e.value!,
+                                      e.value,
                                       style: TextStyle(
                                         color: Theme.of(context).colorScheme.primary,
                                         decoration: TextDecoration.underline,
@@ -92,7 +86,7 @@ class SuspectedLocationSheet extends StatelessWidget {
                                     ),
                                   )
                                 : Text(
-                                    e.value ?? '',
+                                    e.value,
                                     style: TextStyle(
                                       color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
                                     ),

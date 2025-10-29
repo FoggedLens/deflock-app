@@ -138,16 +138,8 @@ class SuspectedLocationService {
       final dataRows = csvData.skip(1);
       debugPrint('[SuspectedLocationService] Data rows count: ${dataRows.length}');
       
-      // Find required column indices
+      // Find required column indices - we only need ticket_no and location
       final ticketNoIndex = headers.indexOf('ticket_no');
-      final urlFullIndex = headers.indexOf('url_full');
-      final addrIndex = headers.indexOf('addr');
-      final streetIndex = headers.indexOf('street');
-      final cityIndex = headers.indexOf('city');
-      final stateIndex = headers.indexOf('state');
-      final digSiteIntersectingStreetIndex = headers.indexOf('dig_site_intersecting_street');
-      final digWorkDoneForIndex = headers.indexOf('dig_work_done_for');
-      final digSiteRemarksIndex = headers.indexOf('dig_site_remarks');
       final locationIndex = headers.indexOf('location');
       
       debugPrint('[SuspectedLocationService] Column indices - ticket_no: $ticketNoIndex, location: $locationIndex');
@@ -157,7 +149,7 @@ class SuspectedLocationService {
         return false;
       }
       
-      // Parse rows and store as raw data (don't process GeoJSON yet)
+      // Parse rows and store all data dynamically
       final List<Map<String, dynamic>> rawDataList = [];
       int rowIndex = 0;
       int validRows = 0;
@@ -166,22 +158,14 @@ class SuspectedLocationService {
         try {
           final Map<String, dynamic> rowData = {};
           
-          if (ticketNoIndex < row.length) rowData['ticket_no'] = row[ticketNoIndex];
-          if (urlFullIndex != -1 && urlFullIndex < row.length) rowData['url_full'] = row[urlFullIndex];
-          if (addrIndex != -1 && addrIndex < row.length) rowData['addr'] = row[addrIndex];
-          if (streetIndex != -1 && streetIndex < row.length) rowData['street'] = row[streetIndex];
-          if (cityIndex != -1 && cityIndex < row.length) rowData['city'] = row[cityIndex];
-          if (stateIndex != -1 && stateIndex < row.length) rowData['state'] = row[stateIndex];
-          if (digSiteIntersectingStreetIndex != -1 && digSiteIntersectingStreetIndex < row.length) {
-            rowData['dig_site_intersecting_street'] = row[digSiteIntersectingStreetIndex];
+          // Store all columns dynamically
+          for (int i = 0; i < headers.length && i < row.length; i++) {
+            final headerName = headers[i];
+            final cellValue = row[i];
+            if (cellValue != null) {
+              rowData[headerName] = cellValue;
+            }
           }
-          if (digWorkDoneForIndex != -1 && digWorkDoneForIndex < row.length) {
-            rowData['dig_work_done_for'] = row[digWorkDoneForIndex];
-          }
-          if (digSiteRemarksIndex != -1 && digSiteRemarksIndex < row.length) {
-            rowData['dig_site_remarks'] = row[digSiteRemarksIndex];
-          }
-          if (locationIndex < row.length) rowData['location'] = row[locationIndex];
           
           // Basic validation - must have ticket_no and location
           if (rowData['ticket_no']?.toString().isNotEmpty == true && 
