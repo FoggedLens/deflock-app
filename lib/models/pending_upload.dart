@@ -7,7 +7,7 @@ enum UploadOperation { create, modify, delete }
 
 class PendingUpload {
   final LatLng coord;
-  final double direction;
+  final dynamic direction; // Can be double or String for multiple directions
   final NodeProfile? profile;
   final OperatorProfile? operatorProfile;
   final UploadMode uploadMode; // Capture upload destination when queued
@@ -74,7 +74,13 @@ class PendingUpload {
     
     // Add direction if required
     if (profile!.requiresDirection) {
-      tags['direction'] = direction.toStringAsFixed(0);
+      if (direction is String) {
+        tags['direction'] = direction;
+      } else if (direction is double) {
+        tags['direction'] = direction.toStringAsFixed(0);
+      } else {
+        tags['direction'] = '0';
+      }
     }
     
     return tags;

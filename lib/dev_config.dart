@@ -41,7 +41,7 @@ const String kClientName = 'DeFlock';
 // Note: Version is now dynamically retrieved from VersionService
 
 // Suspected locations CSV URL
-const String kSuspectedLocationsCsvUrl = 'https://alprwatch.org/pub/flock_utilities_mini_latest.csv';
+const String kSuspectedLocationsCsvUrl = 'http://10.42.53.112:8888/flock_utilities_mini_latest.csv';
 
 // Development/testing features - set to false for production builds
 const bool kEnableDevelopmentModes = true; // Set to false to hide sandbox/simulate modes and force production mode

@@ -32,23 +32,33 @@ class OsmNode {
     );
   }
 
-  bool get hasDirection =>
-      tags.containsKey('direction') || tags.containsKey('camera:direction');
+  bool get hasDirection => directionDeg.isNotEmpty;
 
-  double? get directionDeg {
+  List<double> get directionDeg {
     final raw = tags['direction'] ?? tags['camera:direction'];
-    if (raw == null) return null;
+    if (raw == null) return [];
 
-    // Keep digits, optional dot, optional leading sign.
-    final match = RegExp(r'[-+]?\d*\.?\d+').firstMatch(raw);
-    if (match == null) return null;
+    // Split on semicolons and parse each direction
+    final directions = <double>[];
+    final parts = raw.split(';');
+    
+    for (final part in parts) {
+      final trimmed = part.trim();
+      if (trimmed.isEmpty) continue;
+      
+      // Keep digits, optional dot, optional leading sign
+      final match = RegExp(r'[-+]?\d*\.?\d+').firstMatch(trimmed);
+      if (match == null) continue;
 
-    final numStr = match.group(0);
-    final val = double.tryParse(numStr ?? '');
-    if (val == null) return null;
+      final numStr = match.group(0);
+      final val = double.tryParse(numStr ?? '');
+      if (val == null) continue;
 
-    // Normalize: wrap negative or >360 into 0‑359 range.
-    final normalized = ((val % 360) + 360) % 360;
-    return normalized;
+      // Normalize: wrap negative or >360 into 0‑359 range
+      final normalized = ((val % 360) + 360) % 360;
+      directions.add(normalized);
+    }
+    
+    return directions;
   }
 }

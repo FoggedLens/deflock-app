@@ -18,47 +18,81 @@ class DirectionConesBuilder {
   }) {
     final overlays = <Polygon>[];
     
-    // Add session cone if in add-camera mode and profile requires direction
+    // Add session cones if in add-camera mode and profile requires direction
     if (session != null && session.target != null && session.profile?.requiresDirection == true) {
+      // Add current working direction (full opacity)
       overlays.add(_buildCone(
         session.target!, 
         session.directionDegrees, 
         zoom,
         context: context,
         isSession: true,
+        isActiveDirection: true,
       ));
+      
+      // Add other directions (reduced opacity)
+      for (int i = 0; i < session.directions.length; i++) {
+        if (i != session.currentDirectionIndex) {
+          overlays.add(_buildCone(
+            session.target!,
+            session.directions[i],
+            zoom,
+            context: context,
+            isSession: true,
+            isActiveDirection: false,
+          ));
+        }
+      }
     }
     
-    // Add edit session cone if in edit-camera mode and profile requires direction
+    // Add edit session cones if in edit-camera mode and profile requires direction
     if (editSession != null && editSession.profile?.requiresDirection == true) {
+      // Add current working direction (full opacity)
       overlays.add(_buildCone(
         editSession.target, 
         editSession.directionDegrees, 
         zoom,
         context: context,
         isSession: true,
+        isActiveDirection: true,
       ));
+      
+      // Add other directions (reduced opacity)
+      for (int i = 0; i < editSession.directions.length; i++) {
+        if (i != editSession.currentDirectionIndex) {
+          overlays.add(_buildCone(
+            editSession.target,
+            editSession.directions[i],
+            zoom,
+            context: context,
+            isSession: true,
+            isActiveDirection: false,
+          ));
+        }
+      }
     }
     
     // Add cones for cameras with direction (but exclude camera being edited)
-    overlays.addAll(
-      cameras
-        .where((n) => _isValidCameraWithDirection(n) && 
-                     (editSession == null || n.id != editSession.originalNode.id))
-        .map((n) => _buildCone(
-          n.coord, 
-          n.directionDeg!, 
-          zoom,
-          context: context,
-        ))
-    );
+    for (final node in cameras) {
+      if (_isValidCameraWithDirection(node) && 
+          (editSession == null || node.id != editSession.originalNode.id)) {
+        // Build a cone for each direction
+        for (final direction in node.directionDeg) {
+          overlays.add(_buildCone(
+            node.coord, 
+            direction, 
+            zoom,
+            context: context,
+          ));
+        }
+      }
+    }
     
     return overlays;
   }
 
   static bool _isValidCameraWithDirection(OsmNode node) {
     return node.hasDirection && 
-           node.directionDeg != null &&
            (node.coord.latitude != 0 || node.coord.longitude != 0) &&
            node.coord.latitude.abs() <= 90 && 
            node.coord.longitude.abs() <= 180;
@@ -76,6 +110,7 @@ class DirectionConesBuilder {
     required BuildContext context,
     bool isPending = false,
     bool isSession = false,
+    bool isActiveDirection = true,
   }) {
     final halfAngle = kDirectionConeHalfAngle;
     
@@ -114,9 +149,15 @@ class DirectionConesBuilder {
       points.add(project(angle, innerRadius));
     }
 
+    // Adjust opacity based on direction state
+    double opacity = kDirectionConeOpacity;
+    if (isSession && !isActiveDirection) {
+      opacity = kDirectionConeOpacity * 0.4; // Reduced opacity for inactive session directions
+    }
+
     return Polygon(
       points: points,
-      color: kDirectionConeColor.withOpacity(kDirectionConeOpacity),
+      color: kDirectionConeColor.withOpacity(opacity),
       borderColor: kDirectionConeColor,
       borderStrokeWidth: getDirectionConeBorderWidth(context),
     );

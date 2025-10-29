@@ -12,6 +12,112 @@ class AddNodeSheet extends StatelessWidget {
 
   final AddNodeSession session;
 
+  Widget _buildDirectionControls(BuildContext context, AppState appState, AddNodeSession session, LocalizationService locService) {
+    final requiresDirection = session.profile != null && session.profile!.requiresDirection;
+    
+    // Format direction display text with bold for current direction
+    String directionsText = '';
+    if (requiresDirection) {
+      final directionsWithBold = <String>[];
+      for (int i = 0; i < session.directions.length; i++) {
+        final dirStr = session.directions[i].round().toString();
+        if (i == session.currentDirectionIndex) {
+          directionsWithBold.add('**$dirStr**'); // Mark for bold formatting
+        } else {
+          directionsWithBold.add(dirStr);
+        }
+      }
+      directionsText = directionsWithBold.join(', ');
+    }
+
+    return Column(
+      children: [
+        ListTile(
+          title: requiresDirection 
+            ? RichText(
+                text: TextSpan(
+                  style: Theme.of(context).textTheme.titleMedium,
+                  children: [
+                    const TextSpan(text: 'Directions: '),
+                    if (directionsText.isNotEmpty)
+                      ...directionsText.split('**').asMap().entries.map((entry) {
+                        final isEven = entry.key % 2 == 0;
+                        return TextSpan(
+                          text: entry.value,
+                          style: TextStyle(
+                            fontWeight: isEven ? FontWeight.normal : FontWeight.bold,
+                          ),
+                        );
+                      }),
+                  ],
+                ),
+              )
+            : Text(locService.t('addNode.direction', params: [session.directionDegrees.round().toString()])),
+          subtitle: Row(
+            children: [
+              // Slider takes most of the space
+              Expanded(
+                child: Slider(
+                  min: 0,
+                  max: 359,
+                  divisions: 359,
+                  value: session.directionDegrees,
+                  label: session.directionDegrees.round().toString(),
+                  onChanged: requiresDirection ? (v) => appState.updateSession(directionDeg: v) : null,
+                ),
+              ),
+              // Buttons on the right (only show if direction is required)
+              if (requiresDirection) ...[
+                const SizedBox(width: 8),
+                // Remove button
+                IconButton(
+                  icon: const Icon(Icons.remove, size: 20),
+                  onPressed: session.directions.length > 1 ? () => appState.removeDirection() : null,
+                  tooltip: 'Remove current direction',
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+                ),
+                // Add button
+                IconButton(
+                  icon: const Icon(Icons.add, size: 20),
+                  onPressed: () => appState.addDirection(),
+                  tooltip: 'Add new direction',
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+                ),
+                // Cycle button
+                IconButton(
+                  icon: const Icon(Icons.repeat, size: 20),
+                  onPressed: session.directions.length > 1 ? () => appState.cycleDirection() : null,
+                  tooltip: 'Cycle through directions',
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+                ),
+              ],
+            ],
+          ),
+        ),
+        // Show info text when profile doesn't require direction
+        if (!requiresDirection)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+            child: Row(
+              children: [
+                const Icon(Icons.info_outline, color: Colors.grey, size: 16),
+                const SizedBox(width: 6),
+                Expanded(
+                  child: Text(
+                    locService.t('addNode.profileNoDirectionInfo'),
+                    style: const TextStyle(color: Colors.grey, fontSize: 12),
+                  ),
+                ),
+              ],
+            ),
+          ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return AnimatedBuilder(
@@ -78,35 +184,9 @@ class AddNodeSheet extends StatelessWidget {
                   onChanged: (p) => appState.updateSession(profile: p),
                 ),
               ),
-              ListTile(
-                title: Text(locService.t('addNode.direction', params: [session.directionDegrees.round().toString()])),
-                subtitle: Slider(
-                  min: 0,
-                  max: 359,
-                  divisions: 359,
-                  value: session.directionDegrees,
-                  label: session.directionDegrees.round().toString(),
-                  onChanged: (session.profile != null && session.profile!.requiresDirection) 
-                      ? (v) => appState.updateSession(directionDeg: v)
-                      : null, // Disabled when no profile selected or profile doesn't require direction
-                ),
-              ),
-              if (session.profile != null && !session.profile!.requiresDirection)
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.info_outline, color: Colors.grey, size: 16),
-                      const SizedBox(width: 6),
-                      Expanded(
-                        child: Text(
-                          locService.t('addNode.profileNoDirectionInfo'),
-                          style: const TextStyle(color: Colors.grey, fontSize: 12),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+              // Direction controls
+              _buildDirectionControls(context, appState, session, locService),
+
               if (!appState.isLoggedIn)
                 Padding(
                   padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),

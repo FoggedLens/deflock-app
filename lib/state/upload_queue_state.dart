@@ -29,7 +29,7 @@ class UploadQueueState extends ChangeNotifier {
   void addFromSession(AddNodeSession session, {required UploadMode uploadMode}) {
     final upload = PendingUpload(
       coord: session.target!,
-      direction: session.directionDegrees,
+      direction: _formatDirectionsAsString(session.directions),
       profile: session.profile!,  // Safe to use ! because commitSession() checks for null
       operatorProfile: session.operatorProfile,
       uploadMode: uploadMode,
@@ -63,7 +63,7 @@ class UploadQueueState extends ChangeNotifier {
   void addFromEditSession(EditNodeSession session, {required UploadMode uploadMode}) {
     final upload = PendingUpload(
       coord: session.target,
-      direction: session.directionDegrees,
+      direction: _formatDirectionsAsString(session.directions),
       profile: session.profile!,  // Safe to use ! because commitEditSession() checks for null
       operatorProfile: session.operatorProfile,
       uploadMode: uploadMode,
@@ -109,7 +109,7 @@ class UploadQueueState extends ChangeNotifier {
   void addFromNodeDeletion(OsmNode node, {required UploadMode uploadMode}) {
     final upload = PendingUpload(
       coord: node.coord,
-      direction: node.directionDeg ?? 0, // Direction not used for deletions but required for API
+      direction: node.directionDeg.isNotEmpty ? node.directionDeg.first : 0, // Direction not used for deletions but required for API
       profile: null, // No profile needed for deletions - just delete by node ID
       uploadMode: uploadMode,
       operation: UploadOperation.delete,
@@ -291,6 +291,13 @@ class UploadQueueState extends ChangeNotifier {
       // Notify node provider to update the map
       CameraProviderWithCache.instance.notifyListeners();
     }
+  }
+
+  // Helper method to format multiple directions as a string or number
+  dynamic _formatDirectionsAsString(List<double> directions) {
+    if (directions.isEmpty) return 0.0;
+    if (directions.length == 1) return directions.first;
+    return directions.map((d) => d.round().toString()).join(';');
   }
 
   // ---------- Queue persistence ----------

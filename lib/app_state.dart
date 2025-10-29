@@ -285,6 +285,20 @@ class AppState extends ChangeNotifier {
     );
   }
 
+  void addDirection() {
+    _sessionState.addDirection();
+  }
+
+  void removeDirection() {
+    _sessionState.removeDirection();
+  }
+
+  void cycleDirection() {
+    _sessionState.cycleDirection();
+  }
+
+
+
   void cancelSession() {
     _sessionState.cancelSession();
   }
