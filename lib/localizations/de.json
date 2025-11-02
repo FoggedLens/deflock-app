@@ -319,6 +319,7 @@
     "title": "Willkommen bei DeFlock",
     "description": "DeFlock wurde auf der Idee gegründet, dass öffentliche Überwachungsinstrumente transparent sein sollten. In dieser mobilen App, wie auch auf der Website, können Sie die Standorte von ALPRs und anderer Überwachungsinfrastruktur in Ihrer Umgebung und weltweit einsehen.",
     "mission": "Dieses Projekt ist jedoch nicht automatisiert; es braucht uns alle, um dieses Projekt zu verbessern. Bei der Kartenansicht können Sie auf \"Neuer Knoten\" tippen, um eine bisher unbekannte Installation hinzuzufügen. Mit Ihrer Hilfe können wir unser Ziel erreichen: mehr Transparenz und öffentliches Bewusstsein für Überwachungsinfrastruktur.",
+    "firsthandKnowledge": "WICHTIG: Tragen Sie nur Überwachungsgeräte bei, die Sie persönlich aus erster Hand beobachtet haben. OpenStreetMap- und Google-Richtlinien verbieten die Nutzung von Quellen wie Street View-Bildern für Beiträge. Ihre Beiträge sollten auf Ihren eigenen direkten, persönlichen Beobachtungen basieren.",
     "privacy": "Datenschutzhinweis: Diese App läuft vollständig lokal auf Ihrem Gerät und nutzt die OpenStreetMap-API von Drittanbietern nur für Datenspeicherung und Übermittlungen. DeFlock sammelt oder speichert keinerlei Nutzerdaten und ist nicht für die Kontoverwaltung verantwortlich.",
     "tileNote": "HINWEIS: Die kostenlosen Kartenkacheln von OpenStreetMap können sehr langsam laden. Alternative Kartenanbieter können unter Einstellungen > Erweitert konfiguriert werden.",
     "moreInfo": "Weitere Links finden Sie unter Einstellungen > Über.",

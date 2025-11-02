@@ -62,6 +62,19 @@ class _WelcomeDialogState extends State<WelcomeDialog> {
                       style: const TextStyle(fontSize: 14),
                     ),
                     const SizedBox(height: 12),
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.orange.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: Colors.orange.withOpacity(0.3)),
+                      ),
+                      child: Text(
+                        locService.t('welcome.firsthandKnowledge'),
+                        style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: Colors.deepOrange),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
                     Text(
                       locService.t('welcome.privacy'),
                       style: const TextStyle(fontSize: 13, fontStyle: FontStyle.italic),

@@ -16,6 +16,7 @@
     "title": "Welcome to DeFlock",
     "description": "DeFlock was founded on the idea that public surveillance tools should be transparent. Within this mobile app, as on the website, you will be able to view the location of ALPRs and other surveillance infrastructure in your local area and abroad.",
     "mission": "However, this project isn't automated; it takes all of us to make this project better. When viewing the map, you can tap \"New Node\" to add a previously unknown installation. With your help, we can achieve our goal of increased transparency and public awareness of surveillance infrastructure.",
+    "firsthandKnowledge": "IMPORTANT: Only contribute surveillance devices that you have personally observed firsthand. OpenStreetMap and Google policies prohibit using sources like Street View imagery for submissions. Your contributions should be based on your own direct observations.",
     "privacy": "Privacy Note: This app runs entirely locally on your device and uses the third-party OpenStreetMap API for data storage and submissions. DeFlock does not collect or store any user data of any kind, and is not responsible for account management.",
     "tileNote": "NOTE: The free map tiles from OpenStreetMap can be very slow to load. Alternate tile providers can be configured in Settings > Advanced.",
     "moreInfo": "You can find more links under Settings > About.",
