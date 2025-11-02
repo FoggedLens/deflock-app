@@ -41,10 +41,10 @@ const String kClientName = 'DeFlock';
 // Note: Version is now dynamically retrieved from VersionService
 
 // Suspected locations CSV URL
-const String kSuspectedLocationsCsvUrl = 'http://10.42.53.112:8888/flock_utilities_mini_latest.csv';
+const String kSuspectedLocationsCsvUrl = 'https://stopflock.com/app/flock_utilities_mini_latest.csv';
 
 // Development/testing features - set to false for production builds
-const bool kEnableDevelopmentModes = true; // Set to false to hide sandbox/simulate modes and force production mode
+const bool kEnableDevelopmentModes = false; // Set to false to hide sandbox/simulate modes and force production mode
 
 // Navigation features - set to false to hide navigation UI elements while in development
 const bool kEnableNavigationFeatures = kEnableDevelopmentModes; // Hide navigation until fully implemented
