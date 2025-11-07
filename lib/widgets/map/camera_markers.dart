@@ -49,7 +49,7 @@ class _CameraMapMarkerState extends State<CameraMapMarker> {
 
   void _onDoubleTap() {
     _tapTimer?.cancel();
-    widget.mapController.move(widget.node.coord, widget.mapController.camera.zoom + 1);
+    widget.mapController.move(widget.node.coord, widget.mapController.camera.zoom + kNodeDoubleTapZoomDelta);
   }
 
   @override

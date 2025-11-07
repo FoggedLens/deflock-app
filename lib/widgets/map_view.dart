@@ -554,6 +554,14 @@ class MapViewState extends State<MapView> {
               initialCenter: _gpsController.currentLocation ?? _positionManager.initialLocation ?? LatLng(37.7749, -122.4194),
             initialZoom: _positionManager.initialZoom ?? 15,
             maxZoom: (appState.selectedTileType?.maxZoom ?? 18).toDouble(),
+            interactionOptions: InteractionOptions(
+              doubleTapDragZoomChangeCalculator: (verticalOffset, camera) {
+                return verticalOffset * kDoubleTapDragZoomSensitivity;
+              },
+              scrollWheelVelocity: kScrollWheelVelocity,
+              pinchZoomThreshold: kPinchZoomThreshold,
+              pinchMoveThreshold: kPinchMoveThreshold,
+            ),
             onPositionChanged: (pos, gesture) {
               setState(() {}); // Instant UI update for zoom, etc.
               if (gesture) {

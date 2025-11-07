@@ -47,7 +47,7 @@ class _SuspectedLocationMapMarkerState extends State<SuspectedLocationMapMarker>
 
   void _onDoubleTap() {
     _tapTimer?.cancel();
-    widget.mapController.move(widget.location.centroid, widget.mapController.camera.zoom + 1);
+    widget.mapController.move(widget.location.centroid, widget.mapController.camera.zoom + kNodeDoubleTapZoomDelta);
   }
 
   @override
