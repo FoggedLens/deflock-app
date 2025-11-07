@@ -140,6 +140,7 @@ class SuspectedLocationsSection extends StatelessWidget {
                   child: TextFormField(
                     initialValue: appState.suspectedLocationMinDistance.toString(),
                     keyboardType: TextInputType.number,
+                    textInputAction: TextInputAction.done,
                     decoration: const InputDecoration(
                       isDense: true,
                       contentPadding: EdgeInsets.symmetric(vertical: 6, horizontal: 8),

@@ -182,6 +182,7 @@ class _ProximityAlertsSectionState extends State<ProximityAlertsSection> {
                     child: TextField(
                       controller: _distanceController,
                       keyboardType: TextInputType.number,
+                      textInputAction: TextInputAction.done,
                       inputFormatters: [
                         FilteringTextInputFormatter.digitsOnly,
                       ],

@@ -71,6 +71,7 @@ class _MaxNodesSectionState extends State<MaxNodesSection> {
                 child: TextFormField(
                   controller: _controller,
                   keyboardType: TextInputType.number,
+                  textInputAction: TextInputAction.done,
                   decoration: const InputDecoration(
                     isDense: true,
                     contentPadding: EdgeInsets.symmetric(vertical: 6, horizontal: 8),
