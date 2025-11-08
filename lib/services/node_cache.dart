@@ -11,6 +11,7 @@ class NodeCache {
   final Map<int, OsmNode> _nodes = {};
 
   /// Add or update a batch of nodes in the cache.
+  /// TODO: Consider moving to compute() if cache operations cause ANR
   void addOrUpdate(List<OsmNode> nodes) {
     for (var node in nodes) {
       final existing = _nodes[node.id];

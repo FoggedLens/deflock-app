@@ -120,11 +120,7 @@ class SuspectedLocationService {
       onProgress?.call('Parsing CSV data...', 0.2);
       
       // Parse CSV with proper field separator and quote handling
-      final csvData = const CsvToListConverter(
-        fieldDelimiter: ',',
-        textDelimiter: '"',
-        eol: '\n',
-      ).convert(response.body);
+      final csvData = await compute(_parseCSV, response.body);
       debugPrint('[SuspectedLocationService] Parsed ${csvData.length} rows from CSV');
       
       if (csvData.isEmpty) {
@@ -223,4 +219,13 @@ class SuspectedLocationService {
       LatLng(south, east),
     ));
   }
+}
+
+/// Simple CSV parser for compute() - must be top-level function
+List<List<dynamic>> _parseCSV(String csvBody) {
+  return const CsvToListConverter(
+    fieldDelimiter: ',',
+    textDelimiter: '"',
+    eol: '\n',
+  ).convert(csvBody);
 }

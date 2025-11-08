@@ -150,7 +150,7 @@ Future<List<OsmNode>> _fetchSingleOverpassQuery({
       return [];
     }
     
-    final data = jsonDecode(response.body) as Map<String, dynamic>;
+    final data = await compute(jsonDecode, response.body) as Map<String, dynamic>;
     final elements = data['elements'] as List<dynamic>;
     
     if (elements.length > 20) {
