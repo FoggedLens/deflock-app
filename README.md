@@ -6,9 +6,11 @@ A comprehensive Flutter app for mapping public surveillance infrastructure with 
 
 **For complete documentation, tutorials, and community info, visit [deflock.me](https://deflock.me)**
 
-[![Alt text for the image](https://github.com/user-attachments/assets/7f67d449-2130-4cb3-8ced-e2bea8b7a879/>)](https://apps.apple.com/us/app/deflock-me/id6752760780)
+<a href="https://apps.apple.com/us/app/deflock-me/id6752760780">
+  <img src="https://github.com/user-attachments/assets/7f67d449-2130-4cb3-8ced-e2bea8b7a879" alt="Description" width="270" height="80">
+</a>   
 
-**Also available on the [Google Play Store](https://play.google.com/store/apps/details?id=me.deflock.deflockapp).**
+[![Alt text for the image](https://github.com/user-attachments/assets/7f67d449-2130-4cb3-8ced-e2bea8b7a879)](https://apps.apple.com/us/app/deflock-me/id6752760780) [![Alt text for the image](assets/GetItOnGooglePlay_Badge_Web_color_English.png)](https://play.google.com/store/apps/details?id=me.deflock.deflockapp){:width=44%}
 ---
 
 ## What This App Does
