@@ -119,7 +119,11 @@ class QueueSection extends StatelessWidget {
                           locService.t('queue.destination', params: [_getUploadModeDisplayName(upload.uploadMode)]) + '\n' +
                           locService.t('queue.latitude', params: [upload.coord.latitude.toStringAsFixed(6)]) + '\n' +
                           locService.t('queue.longitude', params: [upload.coord.longitude.toStringAsFixed(6)]) + '\n' +
-                          locService.t('queue.direction', params: [upload.direction.round().toString()]) + '\n' +
+                          locService.t('queue.direction', params: [
+                            upload.direction is String 
+                                ? upload.direction.toString()
+                                : upload.direction.round().toString()
+                          ]) + '\n' +
                           locService.t('queue.attempts', params: [upload.attempts.toString()]) +
                           (upload.error ? "\n${locService.t('queue.uploadFailedRetry')}" : "")
                         ),
