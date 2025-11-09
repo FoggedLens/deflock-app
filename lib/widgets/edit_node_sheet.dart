@@ -76,7 +76,7 @@ class EditNodeSheet extends StatelessWidget {
                   onPressed: session.directions.length > 1 ? () => appState.removeDirection() : null,
                   tooltip: 'Remove current direction',
                   padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+                  constraints: const BoxConstraints(minWidth: 28, minHeight: 32),
                 ),
                 // Add button
                 IconButton(
@@ -84,7 +84,7 @@ class EditNodeSheet extends StatelessWidget {
                   onPressed: () => appState.addDirection(),
                   tooltip: 'Add new direction',
                   padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+                  constraints: const BoxConstraints(minWidth: 28, minHeight: 32),
                 ),
                 // Cycle button
                 IconButton(
@@ -92,7 +92,7 @@ class EditNodeSheet extends StatelessWidget {
                   onPressed: session.directions.length > 1 ? () => appState.cycleDirection() : null,
                   tooltip: 'Cycle through directions',
                   padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+                  constraints: const BoxConstraints(minWidth: 28, minHeight: 32),
                 ),
               ],
             ],
