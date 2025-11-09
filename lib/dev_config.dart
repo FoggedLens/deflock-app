@@ -84,7 +84,6 @@ const Duration kProximityAlertCooldown = Duration(minutes: 10); // Cooldown betw
 
 // Map interaction configuration
 const double kNodeDoubleTapZoomDelta = 1.0; // How much to zoom in when double-tapping nodes (was 1.0)
-const double kDoubleTapDragZoomSensitivity = 0.01; // Sensitivity for double-tap-drag zoom (reduced from ~0.002 to make less sensitive)
 const double kScrollWheelVelocity = 0.005; // Mouse scroll wheel zoom speed (default 0.005)
 const double kPinchZoomThreshold = 0.5; // How much pinch required to start zoom (default 0.5)
 const double kPinchMoveThreshold = 40.0; // How much drag required for two-finger pan (default 40.0)
