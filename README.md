@@ -6,11 +6,14 @@ A comprehensive Flutter app for mapping public surveillance infrastructure with 
 
 **For complete documentation, tutorials, and community info, visit [deflock.me](https://deflock.me)**
 
-<a href="https://apps.apple.com/us/app/deflock-me/id6752760780">
-  <img src="https://github.com/user-attachments/assets/7f67d449-2130-4cb3-8ced-e2bea8b7a879" alt="Description" width="270" height="80">
-</a>   
-
-[![Alt text for the image](https://github.com/user-attachments/assets/7f67d449-2130-4cb3-8ced-e2bea8b7a879)](https://apps.apple.com/us/app/deflock-me/id6752760780) [![Alt text for the image](assets/GetItOnGooglePlay_Badge_Web_color_English.png)](https://play.google.com/store/apps/details?id=me.deflock.deflockapp){:width=44%}
+<a href="https://apps.apple.com/us/app/deflock-me/id6752760780" style="display: inline-block;">
+<img src="https://toolbox.marketingtools.apple.com/api/v2/badges/download-on-the-app-store/black/en-us?releaseDate=1695859200" alt="Download on the App Store" style="width: 246px; height: 82px; vertical-align: middle; object-fit: contain;" />
+    </a>
+      
+<a href="https://play.google.com/store/apps/details?id=me.deflock.deflockapp" style="display: inline-block;">
+<img src="assets/GetItOnGooglePlay_Badge_Web_color_English.png" alt="Download on the Google Play Store" style="width: 246px; height: 82px; vertical-align: middle; object-fit: contain;" />
+    </a>
+    
 ---
 
 ## What This App Does
