@@ -35,7 +35,7 @@ class SettingsState extends ChangeNotifier {
   FollowMeMode _followMeMode = FollowMeMode.follow;
   bool _proximityAlertsEnabled = false;
   int _proximityAlertDistance = kProximityAlertDefaultDistance;
-  bool _networkStatusIndicatorEnabled = false;
+  bool _networkStatusIndicatorEnabled = true;
   int _suspectedLocationMinDistance = 100; // meters
   List<TileProvider> _tileProviders = [];
   String _selectedTileTypeId = '';
@@ -102,7 +102,7 @@ class SettingsState extends ChangeNotifier {
     _proximityAlertDistance = prefs.getInt(_proximityAlertDistancePrefsKey) ?? kProximityAlertDefaultDistance;
     
     // Load network status indicator setting
-    _networkStatusIndicatorEnabled = prefs.getBool(_networkStatusIndicatorEnabledPrefsKey) ?? false;
+    _networkStatusIndicatorEnabled = prefs.getBool(_networkStatusIndicatorEnabledPrefsKey) ?? true;
     
     // Load suspected location minimum distance
     _suspectedLocationMinDistance = prefs.getInt(_suspectedLocationMinDistancePrefsKey) ?? 100;

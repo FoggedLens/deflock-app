@@ -244,6 +244,15 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     if (!mounted) return;
     
     try {
+      final appState = context.read<AppState>();
+      
+      // Run any needed migrations first
+      final versionsNeedingMigration = await ChangelogService().getVersionsNeedingMigration();
+      for (final version in versionsNeedingMigration) {
+        await ChangelogService().runMigration(version, appState);
+      }
+      
+      // Determine what popup to show
       final popupType = await ChangelogService().getPopupType();
       
       if (!mounted) return; // Check again after async operation
@@ -258,7 +267,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           break;
         
         case PopupType.changelog:
-          final changelogContent = ChangelogService().getChangelogForCurrentVersion();
+          final changelogContent = await ChangelogService().getChangelogContentForDisplay();
           if (changelogContent != null) {
             await showDialog(
               context: context,
@@ -269,18 +278,22 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           break;
         
         case PopupType.none:
-          // No popup needed, but still update version tracking for future launches
-          await ChangelogService().updateLastSeenVersion();
+          // No popup needed
           break;
       }
+      
+      // Complete the version change workflow (updates last seen version)
+      await ChangelogService().completeVersionChange();
+      
     } catch (e) {
       // Silently handle errors to avoid breaking the app launch
       debugPrint('[HomeScreen] Error checking for popup: $e');
-      // Still update version tracking in case of error
+      
+      // Still complete version change to avoid getting stuck
       try {
-        await ChangelogService().updateLastSeenVersion();
+        await ChangelogService().completeVersionChange();
       } catch (e2) {
-        debugPrint('[HomeScreen] Error updating version: $e2');
+        debugPrint('[HomeScreen] Error completing version change: $e2');
       }
     }
   }

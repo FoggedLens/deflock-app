@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'version_service.dart';
+import '../app_state.dart';
 
 /// Service for managing changelog data and first launch detection
 class ChangelogService {
@@ -67,6 +68,12 @@ class ChangelogService {
     debugPrint('[ChangelogService] Updated last seen version to: $currentVersion');
   }
 
+  /// Get the last seen version (for migration purposes)
+  Future<String?> getLastSeenVersion() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(_lastSeenVersionKey);
+  }
+
   /// Get changelog content for the current version
   String? getChangelogForCurrentVersion() {
     if (!_initialized || _changelogData == null) {
@@ -84,6 +91,18 @@ class ChangelogService {
 
     final content = versionData['content'] as String?;
     return (content?.isEmpty == true) ? null : content;
+  }
+
+  /// Get the changelog content that should be displayed (may be combined from multiple versions)
+  /// This is the method home_screen should use to get content for the changelog popup
+  Future<String?> getChangelogContentForDisplay() async {
+    return await getCombinedChangelogContent();
+  }
+
+  /// Complete the version change workflow - call this after showing popups
+  /// This updates the last seen version so migrations don't run again
+  Future<void> completeVersionChange() async {
+    await updateLastSeenVersion();
   }
 
   /// Get changelog content for a specific version
@@ -133,7 +152,7 @@ class ChangelogService {
 
     // Version changed and there's changelog content
     if (hasVersionChanged) {
-      final changelogContent = getChangelogForCurrentVersion();
+      final changelogContent = await getCombinedChangelogContent();
       if (changelogContent != null) {
         return PopupType.changelog;
       }
@@ -142,8 +161,139 @@ class ChangelogService {
     return PopupType.none;
   }
 
+  /// Check if version-change migrations need to be run
+  /// Returns list of version strings that need migrations
+  Future<List<String>> getVersionsNeedingMigration() async {
+    final lastSeenVersion = await getLastSeenVersion();
+    final currentVersion = VersionService().version;
+    
+    if (lastSeenVersion == null) return []; // First launch, no migrations needed
+    
+    final versionsNeedingMigration = <String>[];
+    
+    // Check each version that could need migration
+    if (needsMigration(lastSeenVersion, currentVersion, '1.3.1')) {
+      versionsNeedingMigration.add('1.3.1');
+    }
+    
+    // Future versions can be added here
+    // if (needsMigration(lastSeenVersion, currentVersion, '2.0.0')) {
+    //   versionsNeedingMigration.add('2.0.0');
+    // }
+    
+    return versionsNeedingMigration;
+  }
+
+  /// Get combined changelog content for all versions between last seen and current
+  /// Returns null if no changelog content exists for any intermediate version
+  Future<String?> getCombinedChangelogContent() async {
+    if (!_initialized || _changelogData == null) return null;
+    
+    final lastSeenVersion = await getLastSeenVersion();
+    final currentVersion = VersionService().version;
+    
+    if (lastSeenVersion == null) {
+      // First launch - just return current version changelog
+      return getChangelogForCurrentVersion();
+    }
+    
+    final intermediateVersions = <String>[];
+    
+    // Collect all relevant versions between lastSeen and current (exclusive of lastSeen, inclusive of current)
+    for (final entry in _changelogData!.entries) {
+      final version = entry.key;
+      final versionData = entry.value as Map<String, dynamic>?;
+      final content = versionData?['content'] as String?;
+      
+      // Skip versions with empty content
+      if (content == null || content.isEmpty) continue;
+      
+      // Include versions where: lastSeenVersion < version <= currentVersion
+      if (needsMigration(lastSeenVersion, currentVersion, version)) {
+        intermediateVersions.add(version);
+      }
+    }
+    
+    // Sort versions in descending order (newest first)
+    intermediateVersions.sort((a, b) => compareVersions(b, a));
+    
+    // Build changelog content
+    final intermediateChangelogs = intermediateVersions.map((version) {
+      final versionData = _changelogData![version] as Map<String, dynamic>;
+      final content = versionData['content'] as String;
+      return '**Version $version:**\n$content';
+    }).toList();
+    
+    return intermediateChangelogs.isNotEmpty ? intermediateChangelogs.join('\n\n---\n\n') : null;
+  }
+
   /// Check if the service is properly initialized
   bool get isInitialized => _initialized;
+
+  /// Run a specific migration by version number
+  Future<void> runMigration(String version, AppState appState) async {
+    debugPrint('[ChangelogService] Running $version migration');
+    
+    switch (version) {
+      case '1.3.1':
+        // Enable network status indicator for all existing users
+        await appState.setNetworkStatusIndicatorEnabled(true);
+        debugPrint('[ChangelogService] 1.3.1 migration completed: enabled network status indicator');
+        break;
+        
+      // Future migrations can be added here
+      // case '2.0.0':
+      //   await appState.doSomethingNew();
+      //   debugPrint('[ChangelogService] 2.0.0 migration completed');
+      //   break;
+      
+      default:
+        debugPrint('[ChangelogService] Unknown migration version: $version');
+    }
+  }
+
+  /// Check if a migration should run
+  /// Migration runs if: lastSeenVersion < migrationVersion <= currentVersion
+  bool needsMigration(String lastSeenVersion, String currentVersion, String migrationVersion) {
+    final lastVsMigration = compareVersions(lastSeenVersion, migrationVersion);
+    final migrationVsCurrent = compareVersions(migrationVersion, currentVersion);
+    
+    return lastVsMigration < 0 && migrationVsCurrent <= 0;
+  }
+
+  /// Compare two version strings
+  /// Returns -1 if v1 < v2, 0 if v1 == v2, 1 if v1 > v2
+  /// Versions are expected in format "major.minor.patch" (e.g., "1.3.1")
+  int compareVersions(String v1, String v2) {
+    try {
+      final v1Parts = v1.split('.').map(int.parse).toList();
+      final v2Parts = v2.split('.').map(int.parse).toList();
+      
+      // Ensure we have at least 3 parts (major.minor.patch)
+      while (v1Parts.length < 3) v1Parts.add(0);
+      while (v2Parts.length < 3) v2Parts.add(0);
+      
+      // Compare major version first
+      if (v1Parts[0] < v2Parts[0]) return -1;
+      if (v1Parts[0] > v2Parts[0]) return 1;
+      
+      // Major versions equal, compare minor version
+      if (v1Parts[1] < v2Parts[1]) return -1;
+      if (v1Parts[1] > v2Parts[1]) return 1;
+      
+      // Major and minor equal, compare patch version
+      if (v1Parts[2] < v2Parts[2]) return -1;
+      if (v1Parts[2] > v2Parts[2]) return 1;
+      
+      // All parts equal
+      return 0;
+      
+    } catch (e) {
+      debugPrint('[ChangelogService] Error comparing versions "$v1" vs "$v2": $e');
+      // Safe fallback: assume they're different so we run migrations
+      return v1 == v2 ? 0 : -1;
+    }
+  }
 }
 
 /// Types of popups that can be shown

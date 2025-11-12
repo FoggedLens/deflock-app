@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../app_state.dart';
+import '../dev_config.dart';
 import '../models/node_profile.dart';
 import '../models/operator_profile.dart';
 import '../services/localization_service.dart';
@@ -76,7 +77,7 @@ class EditNodeSheet extends StatelessWidget {
                   onPressed: session.directions.length > 1 ? () => appState.removeDirection() : null,
                   tooltip: 'Remove current direction',
                   padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(minWidth: 28, minHeight: 32),
+                  constraints: const BoxConstraints(minWidth: kDirectionButtonMinWidth, minHeight: kDirectionButtonMinHeight),
                 ),
                 // Add button
                 IconButton(
@@ -84,7 +85,7 @@ class EditNodeSheet extends StatelessWidget {
                   onPressed: () => appState.addDirection(),
                   tooltip: 'Add new direction',
                   padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(minWidth: 28, minHeight: 32),
+                  constraints: const BoxConstraints(minWidth: kDirectionButtonMinWidth, minHeight: kDirectionButtonMinHeight),
                 ),
                 // Cycle button
                 IconButton(
@@ -92,7 +93,7 @@ class EditNodeSheet extends StatelessWidget {
                   onPressed: session.directions.length > 1 ? () => appState.cycleDirection() : null,
                   tooltip: 'Cycle through directions',
                   padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(minWidth: 28, minHeight: 32),
+                  constraints: const BoxConstraints(minWidth: kDirectionButtonMinWidth, minHeight: kDirectionButtonMinHeight),
                 ),
               ],
             ],

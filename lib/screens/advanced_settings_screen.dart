@@ -28,8 +28,8 @@ class AdvancedSettingsScreen extends StatelessWidget {
             Divider(),
             SuspectedLocationsSection(),
             Divider(),
-            NetworkStatusSection(),
-            Divider(),
+            // NetworkStatusSection(), // Commented out - network status indicator now defaults to enabled
+            // Divider(),
             TileProviderSection(),
           ],
         ),

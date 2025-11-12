@@ -44,7 +44,7 @@ const String kClientName = 'DeFlock';
 const String kSuspectedLocationsCsvUrl = 'https://stopflock.com/app/flock_utilities_mini_latest.csv';
 
 // Development/testing features - set to false for production builds
-const bool kEnableDevelopmentModes = false; // Set to false to hide sandbox/simulate modes and force production mode
+const bool kEnableDevelopmentModes = true; // Set to false to hide sandbox/simulate modes and force production mode
 
 // Navigation features - set to false to hide navigation UI elements while in development
 const bool kEnableNavigationFeatures = kEnableDevelopmentModes; // Hide navigation until fully implemented
@@ -113,6 +113,10 @@ const Color kNodeRingColorPending = Color(0xD09C27B0); // Submitted/pending node
 const Color kNodeRingColorEditing = Color(0xD0FF9800); // Node being edited - orange
 const Color kNodeRingColorPendingEdit = Color(0xD0757575); // Original node with pending edit - grey
 const Color kNodeRingColorPendingDeletion = Color(0xC0F44336); // Node pending deletion - red, slightly transparent
+
+// Direction slider control buttons configuration  
+const double kDirectionButtonMinWidth = 22.0;
+const double kDirectionButtonMinHeight = 32.0;
 
 // Helper functions for pixel-ratio scaling
 double getDirectionConeBorderWidth(BuildContext context) {
