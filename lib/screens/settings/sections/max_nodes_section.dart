@@ -70,7 +70,7 @@ class _MaxNodesSectionState extends State<MaxNodesSection> {
                 width: 80,
                 child: TextFormField(
                   controller: _controller,
-                  keyboardType: TextInputType.number,
+                  keyboardType: const TextInputType.numberWithOptions(signed: true, decimal: true),
                   textInputAction: TextInputAction.done,
                   decoration: const InputDecoration(
                     isDense: true,

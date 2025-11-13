@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../app_state.dart';
 import '../../../services/localization_service.dart';
-import '../../../widgets/suspected_location_progress_dialog.dart';
 
 class SuspectedLocationsSection extends StatelessWidget {
   const SuspectedLocationsSection({super.key});
@@ -39,31 +38,19 @@ class SuspectedLocationsSection extends StatelessWidget {
         Future<void> handleRefresh() async {
           if (!context.mounted) return;
           
-          // Show simple progress dialog
-          showDialog(
-            context: context,
-            barrierDismissible: false,
-            builder: (progressContext) => SuspectedLocationProgressDialog(
-              title: locService.t('suspectedLocations.updating'),
-              message: locService.t('suspectedLocations.downloadingAndProcessing'),
-            ),
-          );
-          
-          // Start the refresh
+          // Use the inline loading indicator by calling refreshSuspectedLocations
+          // The loading state will be managed by suspected location state
           final success = await appState.refreshSuspectedLocations();
           
-          // Close progress dialog
+          // Show result snackbar
           if (context.mounted) {
-            Navigator.of(context).pop();
-            
-            // Show result snackbar
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(success 
-                      ? locService.t('suspectedLocations.updateSuccess')
-                      : locService.t('suspectedLocations.updateFailed')),
-                ),
-              );
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(success 
+                    ? locService.t('suspectedLocations.updateSuccess')
+                    : locService.t('suspectedLocations.updateFailed')),
+              ),
+            );
           }
         }
         
@@ -139,7 +126,7 @@ class SuspectedLocationsSection extends StatelessWidget {
                   width: 80,
                   child: TextFormField(
                     initialValue: appState.suspectedLocationMinDistance.toString(),
-                    keyboardType: TextInputType.number,
+                    keyboardType: const TextInputType.numberWithOptions(signed: true, decimal: true),
                     textInputAction: TextInputAction.done,
                     decoration: const InputDecoration(
                       isDense: true,

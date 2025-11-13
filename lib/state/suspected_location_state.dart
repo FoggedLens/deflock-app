@@ -31,7 +31,7 @@ class SuspectedLocationState extends ChangeNotifier {
   bool get isEnabled => _service.isEnabled;
 
   /// Whether currently loading data
-  bool get isLoading => _isLoading || _service.isLoading;
+  bool get isLoading => _isLoading;
 
   /// Last time data was fetched
   DateTime? get lastFetchTime => _service.lastFetchTime;
@@ -45,18 +45,36 @@ class SuspectedLocationState extends ChangeNotifier {
   /// Enable or disable suspected locations
   Future<void> setEnabled(bool enabled) async {
     await _service.setEnabled(enabled);
+    
+    // If enabling and no data exists, fetch it now
+    if (enabled && !_service.hasData) {
+      await _fetchData();
+    }
+    
     notifyListeners();
   }
 
-  /// Manually refresh the data
-  Future<bool> refreshData({
-    void Function(String message, double? progress)? onProgress,
-  }) async {
+  /// Manually refresh the data (force refresh)
+  Future<bool> refreshData() async {
     _isLoading = true;
     notifyListeners();
     
     try {
-      final success = await _service.refreshData(onProgress: onProgress);
+      final success = await _service.forceRefresh();
+      return success;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  /// Internal method to fetch data if needed with loading state management
+  Future<bool> _fetchData() async {
+    _isLoading = true;
+    notifyListeners();
+    
+    try {
+      final success = await _service.fetchDataIfNeeded();
       return success;
     } finally {
       _isLoading = false;

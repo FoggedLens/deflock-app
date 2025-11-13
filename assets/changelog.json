@@ -1,6 +1,6 @@
 {
   "1.3.1": {
-    "content": "• UX: Network status indicator is now always enabled by default\n• UX: Direction control buttons now use configurable dimensions\n• INTERNAL: Cleaned up advanced settings - removed redundant network status toggle"
+    "content": "• UX: Network status indicator is now always enabled by default\n• UX: Direction control buttons now use configurable dimensions\n• UX: Fixed iOS keyboard missing 'Done' button on integer input fields\n• UX: Direction control buttons now always visible but greyed out when not needed\n• UX: Fixed multi-direction nodes showing all directions in upload queue\n• UX: Improved suspected locations loading indicator - removed popup, fixed stuck spinner\n• INTERNAL: Cleaned up advanced settings - removed redundant network status toggle"
   },
   "1.2.8": {
     "content": "• UX: Profile selection is now a required step to prevent accidental submission of default profile.\n• NEW: Note in welcome message about not submitting data you cannot vouch for personally (no street view etc)\n• NEW: Added default operator profiles for the most common private operators nationwide (Lowe's, Home Depot, et al)\n• NEW: Support for cardinal directions in OSM data, multiple directions on a node."

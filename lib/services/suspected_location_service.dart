@@ -22,16 +22,12 @@ class SuspectedLocationService {
   
   final SuspectedLocationCache _cache = SuspectedLocationCache();
   bool _isEnabled = false;
-  bool _isLoading = false;
 
   /// Get last fetch time
   DateTime? get lastFetchTime => _cache.lastFetchTime;
 
   /// Check if suspected locations are enabled
   bool get isEnabled => _isEnabled;
-
-  /// Check if currently loading
-  bool get isLoading => _isLoading;
 
   /// Initialize the service - load from storage and check if refresh needed
   Future<void> init({bool offlineMode = false}) async {
@@ -55,22 +51,31 @@ class SuspectedLocationService {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(_prefsKeyEnabled, enabled);
     
-    // If enabling for the first time and no data, fetch it in background
-    if (enabled && !_cache.hasData) {
-      _fetchData(); // Don't await - let it run in background so UI updates immediately
-    }
-    
     // If disabling, clear the cache
     if (!enabled) {
       _cache.clear();
     }
+    // Note: If enabling and no data, the state layer will call fetchDataIfNeeded()
   }
 
-  /// Manually refresh the data
-  Future<bool> refreshData({
-    void Function(String message, double? progress)? onProgress,
-  }) async {
-    return await _fetchData(onProgress: onProgress);
+  /// Check if cache has any data
+  bool get hasData => _cache.hasData;
+
+  /// Get last fetch time  
+  DateTime? get lastFetch => _cache.lastFetchTime;
+
+  /// Fetch data if needed (for enabling suspected locations when no data exists)
+  Future<bool> fetchDataIfNeeded() async {
+    if (!_shouldRefresh()) {
+      debugPrint('[SuspectedLocationService] Data is fresh, skipping fetch');
+      return true; // Already have fresh data
+    }
+    return await _fetchData();
+  }
+
+  /// Force refresh the data (for manual refresh button)
+  Future<bool> forceRefresh() async {
+    return await _fetchData();
   }
 
   /// Check if data should be refreshed
@@ -95,14 +100,8 @@ class SuspectedLocationService {
   }
 
   /// Fetch data from the CSV URL
-  Future<bool> _fetchData({
-    void Function(String message, double? progress)? onProgress,
-  }) async {
-    if (_isLoading) return false;
-    
-    _isLoading = true;
+  Future<bool> _fetchData() async {
     try {
-      onProgress?.call('Downloading CSV data...', null);
       debugPrint('[SuspectedLocationService] Fetching CSV data from $kSuspectedLocationsCsvUrl');
       
       final response = await http.get(
@@ -116,8 +115,6 @@ class SuspectedLocationService {
         debugPrint('[SuspectedLocationService] HTTP error ${response.statusCode}');
         return false;
       }
-      
-      onProgress?.call('Parsing CSV data...', 0.2);
       
       // Parse CSV with proper field separator and quote handling
       final csvData = await compute(_parseCSV, response.body);
@@ -170,11 +167,6 @@ class SuspectedLocationService {
             validRows++;
           }
           
-          // Report progress every 1000 rows 
-          if (rowIndex % 1000 == 0) {
-            final progress = 0.4 + (rowIndex / dataRows.length) * 0.4; // 40% to 80% of total
-            onProgress?.call('Processing row $rowIndex...', progress);
-          }
         } catch (e, stackTrace) {
           // Skip rows that can't be parsed
           debugPrint('[SuspectedLocationService] Error parsing row $rowIndex: $e');
@@ -182,18 +174,12 @@ class SuspectedLocationService {
         }
       }
       
-      onProgress?.call('Calculating coordinates...', 0.8);
+      debugPrint('[SuspectedLocationService] Parsed $validRows valid rows from ${dataRows.length} total rows');
       
       final fetchTime = DateTime.now();
       
       // Process raw data and save (calculates centroids once)
-      await _cache.processAndSave(rawDataList, fetchTime, onProgress: (message, progress) {
-        // Map cache progress to final 20% (0.8 to 1.0)
-        final finalProgress = 0.8 + (progress ?? 0) * 0.2;
-        onProgress?.call(message, finalProgress);
-      });
-      
-      onProgress?.call('Complete!', 1.0);
+      await _cache.processAndSave(rawDataList, fetchTime);
       
       debugPrint('[SuspectedLocationService] Successfully fetched and stored $validRows valid raw entries (${rawDataList.length} total)');
       return true;
@@ -202,8 +188,6 @@ class SuspectedLocationService {
       debugPrint('[SuspectedLocationService] Error fetching data: $e');
       debugPrint('[SuspectedLocationService] Stack trace: $stackTrace');
       return false;
-    } finally {
-      _isLoading = false;
     }
   }
 

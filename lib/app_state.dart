@@ -485,10 +485,8 @@ class AppState extends ChangeNotifier {
     await _suspectedLocationState.setEnabled(enabled);
   }
 
-  Future<bool> refreshSuspectedLocations({
-    void Function(String message, double? progress)? onProgress,
-  }) async {
-    return await _suspectedLocationState.refreshData(onProgress: onProgress);
+  Future<bool> refreshSuspectedLocations() async {
+    return await _suspectedLocationState.refreshData();
   }
 
   void selectSuspectedLocation(SuspectedLocation location) {

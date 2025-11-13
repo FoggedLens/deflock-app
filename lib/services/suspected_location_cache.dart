@@ -127,9 +127,8 @@ class SuspectedLocationCache extends ChangeNotifier {
   /// Process raw CSV data and save to storage (calculates centroids once)
   Future<void> processAndSave(
     List<Map<String, dynamic>> rawData, 
-    DateTime fetchTime, {
-    void Function(String message, double? progress)? onProgress,
-  }) async {
+    DateTime fetchTime,
+  ) async {
     try {
       debugPrint('[SuspectedLocationCache] Processing ${rawData.length} raw entries...');
       
@@ -141,10 +140,9 @@ class SuspectedLocationCache extends ChangeNotifier {
       for (int i = 0; i < rawData.length; i++) {
         final rowData = rawData[i];
         
-        // Report progress every 1000 entries
+        // Log progress every 1000 entries for debugging
         if (i % 1000 == 0) {
-          final progress = i / rawData.length;
-          onProgress?.call('Calculating coordinates: ${i + 1}/${rawData.length}', progress);
+          debugPrint('[SuspectedLocationCache] Processed ${i + 1}/${rawData.length} entries...');
         }
         
         try {
