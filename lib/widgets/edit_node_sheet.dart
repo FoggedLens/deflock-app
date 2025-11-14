@@ -68,34 +68,48 @@ class EditNodeSheet extends StatelessWidget {
                   onChanged: requiresDirection ? (v) => appState.updateEditSession(directionDeg: v) : null,
                 ),
               ),
-              // Buttons on the right (only show if direction is required)
-              if (requiresDirection) ...[
-                const SizedBox(width: 8),
-                // Remove button
-                IconButton(
-                  icon: const Icon(Icons.remove, size: 20),
-                  onPressed: session.directions.length > 1 ? () => appState.removeDirection() : null,
-                  tooltip: 'Remove current direction',
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(minWidth: kDirectionButtonMinWidth, minHeight: kDirectionButtonMinHeight),
+              // Direction control buttons - always show but grey out when direction not required
+              const SizedBox(width: 8),
+              // Remove button
+              IconButton(
+                icon: Icon(
+                  Icons.remove, 
+                  size: 20,
+                  color: requiresDirection ? null : Theme.of(context).disabledColor,
                 ),
-                // Add button
-                IconButton(
-                  icon: const Icon(Icons.add, size: 20),
-                  onPressed: () => appState.addDirection(),
-                  tooltip: 'Add new direction',
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(minWidth: kDirectionButtonMinWidth, minHeight: kDirectionButtonMinHeight),
+                onPressed: requiresDirection && session.directions.length > 1 
+                    ? () => appState.removeDirection() 
+                    : null,
+                tooltip: requiresDirection ? 'Remove current direction' : 'Direction not required for this profile',
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(minWidth: kDirectionButtonMinWidth, minHeight: kDirectionButtonMinHeight),
+              ),
+              // Add button
+              IconButton(
+                icon: Icon(
+                  Icons.add, 
+                  size: 20,
+                  color: requiresDirection ? null : Theme.of(context).disabledColor,
                 ),
-                // Cycle button
-                IconButton(
-                  icon: const Icon(Icons.repeat, size: 20),
-                  onPressed: session.directions.length > 1 ? () => appState.cycleDirection() : null,
-                  tooltip: 'Cycle through directions',
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(minWidth: kDirectionButtonMinWidth, minHeight: kDirectionButtonMinHeight),
+                onPressed: requiresDirection ? () => appState.addDirection() : null,
+                tooltip: requiresDirection ? 'Add new direction' : 'Direction not required for this profile',
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(minWidth: kDirectionButtonMinWidth, minHeight: kDirectionButtonMinHeight),
+              ),
+              // Cycle button
+              IconButton(
+                icon: Icon(
+                  Icons.repeat, 
+                  size: 20,
+                  color: requiresDirection ? null : Theme.of(context).disabledColor,
                 ),
-              ],
+                onPressed: requiresDirection && session.directions.length > 1 
+                    ? () => appState.cycleDirection() 
+                    : null,
+                tooltip: requiresDirection ? 'Cycle through directions' : 'Direction not required for this profile',
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(minWidth: kDirectionButtonMinWidth, minHeight: kDirectionButtonMinHeight),
+              ),
             ],
           ),
         ),
