@@ -98,11 +98,8 @@ cp lib/keys.dart.example lib/keys.dart
 - Are offline areas preferred for fast loading even when online? Check working.
 - Fix network indicator - only done when fetch queue is empty!
 
-### Recently Completed
-- **Multi-direction support**: Devices can now have multiple viewing directions (e.g., "90;180") with individual FOV cones
-- **Dynamic suspected location fields**: Server-controlled field display for suspected locations data
-
 ### Current Development
+- Suspected locations expansion to more regions
 - Import/Export map providers
 - Swap in alprwatch.org/directions avoidance routing API
 - Clean cache when nodes have disappeared / been deleted by others / queue item was deleted
@@ -112,7 +109,6 @@ cp lib/keys.dart.example lib/keys.dart
 ### Future Features & Wishlist
 - Update offline area nodes while browsing?
 - Offline navigation (pending vector map tiles)
-- Suspected locations expansion to more regions
 
 ### Maybes
 - Yellow ring for devices missing specific tag details
