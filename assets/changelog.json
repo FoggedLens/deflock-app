@@ -1,4 +1,7 @@
 {
+  "1.3.2": {
+    "content": "• INFRA: Complete release workflow redesign - now triggered by GitHub release creation\n• INFRA: Added automatic Google Play Store uploads (Internal Testing track)\n• INFRA: GitHub pre-release checkbox controls whether builds go to app stores\n• INFRA: Brutalist approach - always rebuilds from scratch for maximum reliability"
+  },
   "1.3.1": {
     "content": "• UX: Network status indicator always enabled\n• UX: Direction slider wider on small screens\n• UX: Fixed iOS keyboard missing 'Done' in settings\n• UX: Fixed multi-direction nodes in upload queue\n• UX: Improved suspected locations loading indicator; removed popup, fixed stuck spinner"
   },

@@ -494,6 +494,84 @@ void updateMultipleThings() {
 
 ---
 
+## Release Process & GitHub Actions
+
+The app uses a **clean, release-triggered workflow** that rebuilds from scratch for maximum reliability:
+
+### How It Works
+
+**Trigger: GitHub Release Creation**
+- Create a GitHub release → Workflow automatically builds, attaches assets, and optionally uploads to stores
+- **Pre-release checkbox** controls store uploads:
+  - ✅ **Checked** → Build + attach assets (no store uploads)
+  - ✅ **Unchecked** → Build + attach assets + upload to App/Play stores
+
+### Release Types
+
+**Development/Beta Releases**
+1. Create GitHub release from any tag/branch
+2. ✅ **Check "pre-release"** checkbox
+3. Publish → Assets built and attached, no store uploads
+
+**Production Releases**  
+1. Create GitHub release from main/stable branch
+2. ❌ **Leave "pre-release" unchecked**
+3. Publish → Assets built and attached + uploaded to stores
+
+### Store Upload Destinations
+
+**Google Play Store:**
+- Uploads to **Internal Testing** track
+- Requires manual promotion to Beta/Production
+- You maintain full control over public release
+
+**App Store Connect:**
+- Uploads to **TestFlight**  
+- Requires manual App Store submission
+- You maintain full control over public release
+
+### Required Secrets
+
+**For Google Play Store Upload:**
+- `GOOGLE_PLAY_SERVICE_ACCOUNT_JSON` - Complete JSON service account key (plain text)
+
+**For iOS App Store Upload:**
+- `APP_STORE_CONNECT_API_KEY_ID` - App Store Connect API key ID
+- `APP_STORE_CONNECT_ISSUER_ID` - App Store Connect issuer ID  
+- `APP_STORE_CONNECT_API_KEY_BASE64` - Base64-encoded .p8 API key file
+
+**For Building:**
+- `OSM_PROD_CLIENTID` - OpenStreetMap production OAuth2 client ID
+- `OSM_SANDBOX_CLIENTID` - OpenStreetMap sandbox OAuth2 client ID
+- Android signing secrets (keystore, passwords, etc.)
+- iOS signing certificates and provisioning profiles
+
+### Google Play Store Setup
+
+1. **Google Cloud Console:**
+   - Create Service Account with "Project Editor" role
+   - Enable Google Play Android Developer API
+   - Download JSON key file
+
+2. **Google Play Console:**
+   - Add service account email to Users & Permissions
+   - Grant "Release Manager" permissions for your app
+   - Complete first manual release to activate app listing
+
+3. **GitHub Secrets:**
+   - Store entire JSON key as `GOOGLE_PLAY_SERVICE_ACCOUNT_JSON` (plain text)
+
+### Workflow Benefits
+
+✅ **Brutalist simplicity** - One trigger, clear behavior  
+✅ **No external dependencies** - Only uses trusted `r0adkll/upload-google-play@v1`  
+✅ **Explicit control** - GitHub's UI checkbox controls store uploads  
+✅ **Always rebuilds** - No stale artifacts or cross-workflow complexity  
+✅ **Safe defaults** - Pre-release prevents accidental production uploads  
+✅ **No tag coordination** - Works with any commit, tag, or branch
+
+---
+
 ## Build & Development Setup
 
 ### Prerequisites

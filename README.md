@@ -80,6 +80,7 @@ A comprehensive Flutter app for mapping public surveillance infrastructure with 
 **See [DEVELOPER.md](DEVELOPER.md)** for comprehensive technical documentation including:
 - Architecture overview and design decisions
 - Development setup and build instructions  
+- Release process and GitHub Actions automation
 - Code organization and contribution guidelines
 - Debugging tips and troubleshooting
 
@@ -89,6 +90,8 @@ flutter pub get
 cp lib/keys.dart.example lib/keys.dart
 # Add OAuth2 client IDs, then: flutter run
 ```
+
+**Releases**: The app uses GitHub's release system for automated building and store uploads. Simply create a GitHub release and use the "pre-release" checkbox to control whether builds go to app stores - checked for beta releases, unchecked for production releases.
 
 ---
 

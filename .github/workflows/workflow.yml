@@ -1,33 +1,40 @@
-name: Build Release
+name: Build and Release
 on:
-  push:
-    tags:
-      - '*'
-  workflow_dispatch:
+  release:
+    types: [published]
 
 permissions:
   contents: write
 
 jobs:
   get-version:
-    name: Get Version
+    name: Get Version and Release Info
     runs-on: ubuntu-latest
     outputs:
       version: ${{ steps.set-version.outputs.version }}
+      is_prerelease: ${{ steps.set-info.outputs.is_prerelease }}
+      should_upload_to_stores: ${{ steps.set-info.outputs.should_upload_to_stores }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v5
 
-      - name: Get version from lib/dev_config.dart
+      - name: Get version from pubspec.yaml
         id: set-version
         run: |
           echo version=$(grep "version:" pubspec.yaml | head -1 | cut -d ':' -f 2 | tr -d ' ' | cut -d '+' -f 1) >> $GITHUB_OUTPUT
 
-#      - name: Extract version from pubspec.yaml
-#        id: extract_version
-#        run: |
-#          version=$(grep '^version: ' pubspec.yaml | cut -d ' ' -f 2 | tr -d '\r')
-#          echo "VERSION=$version" >> $GITHUB_ENV
+      - name: Determine release actions
+        id: set-info
+        run: |
+          echo "is_prerelease=${{ github.event.release.prerelease }}" >> $GITHUB_OUTPUT
+          
+          if [ "${{ github.event.release.prerelease }}" = "true" ]; then
+            echo "should_upload_to_stores=false" >> $GITHUB_OUTPUT
+            echo "✅ Pre-release - will build and attach assets, no store uploads"
+          else
+            echo "should_upload_to_stores=true" >> $GITHUB_OUTPUT
+            echo "✅ Full release - will build, attach assets, and upload to stores"
+          fi
 
   build-android-apk:
     name: Build Android APK
@@ -246,27 +253,6 @@ jobs:
           path: Runner.ipa
           if-no-files-found: 'error'
 
-      - name: Upload to App Store Connect
-        if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
-        env:
-          APP_STORE_CONNECT_API_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
-          APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
-          APP_STORE_CONNECT_API_KEY_BASE64: ${{ secrets.APP_STORE_CONNECT_API_KEY_BASE64 }}
-        run: |
-          # Create the private keys directory and decode API key
-          mkdir -p ~/private_keys
-          echo -n "$APP_STORE_CONNECT_API_KEY_BASE64" | base64 --decode > ~/private_keys/AuthKey_${APP_STORE_CONNECT_API_KEY_ID}.p8
-          
-          # Upload to App Store Connect / TestFlight
-          xcrun altool --upload-app \
-            --type ios \
-            --file Runner.ipa \
-            --apiKey $APP_STORE_CONNECT_API_KEY_ID \
-            --apiIssuer $APP_STORE_CONNECT_ISSUER_ID
-          
-          # Clean up sensitive files
-          rm -rf ~/private_keys
-
   attach-to-release:
     name: Attach Assets to Release
     needs: [get-version, build-android-apk, build-android-aab, build-ios]
@@ -300,3 +286,54 @@ jobs:
             deflock_v${{ needs.get-version.outputs.version }}.apk
             deflock_v${{ needs.get-version.outputs.version }}.aab
             deflock_v${{ needs.get-version.outputs.version }}.ipa
+
+  upload-to-stores:
+    name: Upload to App Stores
+    needs: [get-version, build-android-aab, build-ios]
+    runs-on: macos-latest  # Need macOS for iOS uploads
+    if: needs.get-version.outputs.should_upload_to_stores == 'true'
+    steps:
+      - name: Download AAB artifact for Google Play
+        uses: actions/download-artifact@v4
+        with:
+          name: deflock_v${{ needs.get-version.outputs.version }}.aab
+
+      - name: Download IPA artifact for App Store
+        uses: actions/download-artifact@v4
+        with:
+          name: deflock_v${{ needs.get-version.outputs.version }}.ipa
+
+      # Temporarily disabled - uncomment when Google Play service account is ready
+      # - name: Upload to Google Play Store
+      #   uses: r0adkll/upload-google-play@v1
+      #   with:
+      #     serviceAccountJsonPlainText: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
+      #     packageName: me.deflock.deflockapp
+      #     releaseFiles: app-release.aab
+      #     track: internal  # Uploads to Internal Testing track for review before production
+      #     status: completed
+      #     inAppUpdatePriority: 0
+
+      - name: Upload to App Store Connect
+        env:
+          APP_STORE_CONNECT_API_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
+          APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+          APP_STORE_CONNECT_API_KEY_BASE64: ${{ secrets.APP_STORE_CONNECT_API_KEY_BASE64 }}
+        run: |
+          # Create the private keys directory and decode API key
+          mkdir -p ~/private_keys
+          echo -n "$APP_STORE_CONNECT_API_KEY_BASE64" | base64 --decode > ~/private_keys/AuthKey_${APP_STORE_CONNECT_API_KEY_ID}.p8
+          
+          # Upload to App Store Connect / TestFlight
+          xcrun altool --upload-app \
+            --type ios \
+            --file Runner.ipa \
+            --apiKey $APP_STORE_CONNECT_API_KEY_ID \
+            --apiIssuer $APP_STORE_CONNECT_ISSUER_ID
+          
+          # Clean up sensitive files
+          rm -rf ~/private_keys
+
+      - name: Clean up artifacts
+        run: |
+          rm -f app-release.aab Runner.ipa
