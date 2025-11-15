@@ -67,7 +67,12 @@ class _ProfileEditorState extends State<ProfileEditor> {
                 : (widget.profile.name.isEmpty ? locService.t('profileEditor.newProfile') : locService.t('profileEditor.editProfile'))),
           ),
           body: ListView(
-            padding: const EdgeInsets.all(16),
+            padding: EdgeInsets.fromLTRB(
+              16, 
+              16, 
+              16, 
+              16 + MediaQuery.of(context).padding.bottom,
+            ),
             children: [
               TextField(
                 controller: _nameCtrl,

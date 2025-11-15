@@ -15,9 +15,14 @@ class LanguageSettingsScreen extends StatelessWidget {
         appBar: AppBar(
           title: Text(locService.t('settings.language')),
         ),
-        body: const Padding(
-          padding: EdgeInsets.all(16),
-          child: LanguageSection(),
+        body: Padding(
+          padding: EdgeInsets.fromLTRB(
+            16, 
+            16, 
+            16, 
+            16 + MediaQuery.of(context).padding.bottom,
+          ),
+          child: const LanguageSection(),
         ),
       ),
     );

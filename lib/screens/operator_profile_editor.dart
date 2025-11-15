@@ -56,7 +56,12 @@ class _OperatorProfileEditorState extends State<OperatorProfileEditor> {
             title: Text(widget.profile.name.isEmpty ? locService.t('operatorProfileEditor.newOperatorProfile') : locService.t('operatorProfileEditor.editOperatorProfile')),
           ),
           body: ListView(
-            padding: const EdgeInsets.all(16),
+            padding: EdgeInsets.fromLTRB(
+              16, 
+              16, 
+              16, 
+              16 + MediaQuery.of(context).padding.bottom,
+            ),
             children: [
               TextField(
                 controller: _nameCtrl,

@@ -17,7 +17,12 @@ class OfflineSettingsScreen extends StatelessWidget {
           title: Text(locService.t('settings.offlineSettings')),
         ),
         body: ListView(
-          padding: const EdgeInsets.all(16),
+          padding: EdgeInsets.fromLTRB(
+            16, 
+            16, 
+            16, 
+            16 + MediaQuery.of(context).padding.bottom,
+          ),
           children: const [
             OfflineModeSection(),
             Divider(),

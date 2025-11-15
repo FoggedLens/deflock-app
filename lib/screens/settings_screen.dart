@@ -18,7 +18,12 @@ class SettingsScreen extends StatelessWidget {
       builder: (context, child) => Scaffold(
         appBar: AppBar(title: Text(locService.t('settings.title'))),
         body: ListView(
-          padding: const EdgeInsets.all(16),
+          padding: EdgeInsets.fromLTRB(
+            16, 
+            16, 
+            16, 
+            16 + MediaQuery.of(context).padding.bottom,
+          ),
           children: [
             // Only show upload mode section in development builds
             if (kEnableDevelopmentModes) ...[
