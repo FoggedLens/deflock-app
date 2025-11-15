@@ -107,6 +107,7 @@
     "profileRequired": "请选择配置文件以继续。",
     "direction": "方向  {}°",
     "profileNoDirectionInfo": "此配置文件不需要方向。",
+    "temporarilyDisabled": "编辑功能已暂时禁用，我们正在修复一个错误 - 抱歉 - 请稍后再试。",
     "mustBeLoggedIn": "您必须登录才能编辑节点。请通过设置登录。",
     "sandboxModeWarning": "无法将生产节点的编辑提交到沙盒。在设置中切换到生产模式以编辑节点。",
     "enableSubmittableProfile": "在设置中启用可提交的配置文件以编辑节点。",

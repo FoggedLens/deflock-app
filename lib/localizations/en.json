@@ -107,6 +107,7 @@
     "profileRequired": "Please select a profile to continue.",
     "direction": "Direction  {}°",
     "profileNoDirectionInfo": "This profile does not require a direction.",
+    "temporarilyDisabled": "Edits have been temporarily disabled while we sort out a bug - apologies - check back soon.",
     "mustBeLoggedIn": "You must be logged in to edit nodes. Please log in via Settings.",
     "sandboxModeWarning": "Cannot submit edits on production nodes to sandbox. Switch to Production mode in Settings to edit nodes.",
     "enableSubmittableProfile": "Enable a submittable profile in Settings to edit nodes.",

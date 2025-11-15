@@ -107,6 +107,7 @@
     "profileRequired": "Por favor, selecione um perfil para continuar.",
     "direction": "Direção  {}°",
     "profileNoDirectionInfo": "Este perfil não requer uma direção.",
+    "temporarilyDisabled": "As edições foram temporariamente desabilitadas enquanto resolvemos um bug - desculpe - volte em breve.",
     "mustBeLoggedIn": "Você deve estar logado para editar nós. Por favor, faça login via Configurações.",
     "sandboxModeWarning": "Não é possível enviar edições de nós de produção para o sandbox. Mude para o modo Produção nas Configurações para editar nós.",
     "enableSubmittableProfile": "Ative um perfil enviável nas Configurações para editar nós.",

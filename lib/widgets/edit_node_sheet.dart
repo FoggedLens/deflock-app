@@ -157,7 +157,8 @@ class EditNodeSheet extends StatelessWidget {
 
         final submittableProfiles = appState.enabledProfiles.where((p) => p.isSubmittable).toList();
         final isSandboxMode = appState.uploadMode == UploadMode.sandbox;
-        final allowSubmit = appState.isLoggedIn && 
+        final allowSubmit = kEnableNodeEdits && 
+            appState.isLoggedIn && 
             submittableProfiles.isNotEmpty && 
             session.profile != null && 
             session.profile!.isSubmittable;
@@ -209,7 +210,23 @@ class EditNodeSheet extends StatelessWidget {
               // Direction controls
               _buildDirectionControls(context, appState, session, locService),
 
-              if (!appState.isLoggedIn)
+              if (!kEnableNodeEdits)
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.construction, color: Colors.orange, size: 20),
+                      const SizedBox(width: 6),
+                      Expanded(
+                        child: Text(
+                          locService.t('editNode.temporarilyDisabled'),
+                          style: const TextStyle(color: Colors.orange, fontSize: 13),
+                        ),
+                      ),
+                    ],
+                  ),
+                )
+              else if (!appState.isLoggedIn)
                 Padding(
                   padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
                   child: Row(

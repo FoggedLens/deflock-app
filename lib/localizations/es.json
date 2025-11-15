@@ -107,6 +107,7 @@
     "profileRequired": "Por favor, seleccione un perfil para continuar.",
     "direction": "Dirección  {}°",
     "profileNoDirectionInfo": "Este perfil no requiere una dirección.",
+    "temporarilyDisabled": "Las ediciones han sido temporalmente deshabilitadas mientras solucionamos un error - disculpas - regrese pronto.",
     "mustBeLoggedIn": "Debe estar conectado para editar nodos. Por favor, inicie sesión a través de Configuración.",
     "sandboxModeWarning": "No se pueden enviar ediciones de nodos de producción al sandbox. Cambie al modo Producción en Configuración para editar nodos.",
     "enableSubmittableProfile": "Habilite un perfil envíable en Configuración para editar nodos.",

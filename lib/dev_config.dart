@@ -49,6 +49,9 @@ const bool kEnableDevelopmentModes = false; // Set to false to hide sandbox/simu
 // Navigation features - set to false to hide navigation UI elements while in development
 const bool kEnableNavigationFeatures = kEnableDevelopmentModes; // Hide navigation until fully implemented
 
+// Node editing features - set to false to temporarily disable editing
+const bool kEnableNodeEdits = false; // Set to false to temporarily disable node editing
+
 /// Navigation availability: only dev builds, and only when online
 bool enableNavigationFeatures({required bool offlineMode}) {
   if (!kEnableDevelopmentModes) {

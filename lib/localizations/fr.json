@@ -107,6 +107,7 @@
     "profileRequired": "Veuillez sélectionner un profil pour continuer.",
     "direction": "Direction  {}°",
     "profileNoDirectionInfo": "Ce profil ne nécessite pas de direction.",
+    "temporarilyDisabled": "Les modifications ont été temporairement désactivées pendant que nous résolvons un bug - désolés - revenez bientôt.",
     "mustBeLoggedIn": "Vous devez être connecté pour modifier les nœuds. Veuillez vous connecter via les Paramètres.",
     "sandboxModeWarning": "Impossible de soumettre des modifications de nœuds de production au sandbox. Passez au mode Production dans les Paramètres pour modifier les nœuds.",
     "enableSubmittableProfile": "Activez un profil soumissible dans les Paramètres pour modifier les nœuds.",

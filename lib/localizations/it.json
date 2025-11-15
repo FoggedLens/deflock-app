@@ -107,6 +107,7 @@
     "profileRequired": "Per favore seleziona un profilo per continuare.",
     "direction": "Direzione  {}°",
     "profileNoDirectionInfo": "Questo profilo non richiede una direzione.",
+    "temporarilyDisabled": "Le modifiche sono state temporaneamente disabilitate mentre risolviamo un bug - scuse - torna presto.",
     "mustBeLoggedIn": "Devi essere loggato per modificare i nodi. Per favore accedi tramite Impostazioni.",
     "sandboxModeWarning": "Impossibile inviare modifiche di nodi di produzione alla sandbox. Passa alla modalità Produzione nelle Impostazioni per modificare i nodi.",
     "enableSubmittableProfile": "Abilita un profilo inviabile nelle Impostazioni per modificare i nodi.",

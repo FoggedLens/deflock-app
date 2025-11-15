@@ -89,6 +89,7 @@
     "profileRequired": "Bitte wählen Sie ein Profil aus, um fortzufahren.",
     "direction": "Richtung  {}°",
     "profileNoDirectionInfo": "Dieses Profil benötigt keine Richtung.",
+    "temporarilyDisabled": "Bearbeitungen wurden vorübergehend deaktiviert, während wir einen Fehler beheben - Entschuldigung - schauen Sie bald wieder vorbei.",
     "mustBeLoggedIn": "Sie müssen angemeldet sein, um Knoten zu bearbeiten. Bitte melden Sie sich über die Einstellungen an.",
     "sandboxModeWarning": "Bearbeitungen von Produktionsknoten können nicht an die Sandbox übertragen werden. Wechseln Sie in den Produktionsmodus in den Einstellungen, um Knoten zu bearbeiten.",
     "enableSubmittableProfile": "Aktivieren Sie ein übertragbares Profil in den Einstellungen, um Knoten zu bearbeiten.",
