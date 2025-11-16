@@ -154,18 +154,13 @@ Future<List<OsmNode>> _fetchSingleOverpassQuery({
     final elements = data['elements'] as List<dynamic>;
     
     if (elements.length > 20) {
-      debugPrint('[fetchOverpassNodes] Retrieved ${elements.length} surveillance nodes');
+      debugPrint('[fetchOverpassNodes] Retrieved ${elements.length} elements (nodes + ways/relations)');
     }
     
     NetworkStatus.instance.reportOverpassSuccess();
     
-    final nodes = elements.whereType<Map<String, dynamic>>().map((element) {
-      return OsmNode(
-        id: element['id'],
-        coord: LatLng(element['lat'], element['lon']),
-        tags: Map<String, String>.from(element['tags'] ?? {}),
-      );
-    }).toList();
+    // Parse response to determine which nodes are constrained
+    final nodes = _parseOverpassResponseWithConstraints(elements);
     
     // Clean up any pending uploads that now appear in Overpass results
     _cleanupCompletedUploads(nodes);
@@ -190,6 +185,7 @@ Future<List<OsmNode>> _fetchSingleOverpassQuery({
 }
 
 /// Builds an Overpass API query for surveillance nodes matching the given profiles within bounds.
+/// Also fetches ways and relations that reference these nodes to determine constraint status.
 String _buildOverpassQuery(LatLngBounds bounds, List<NodeProfile> profiles, int maxResults) {
   // Build node clauses for each profile
   final nodeClauses = profiles.map((profile) {
@@ -200,17 +196,19 @@ String _buildOverpassQuery(LatLngBounds bounds, List<NodeProfile> profiles, int 
     
     // Build the node query with tag filters and bounding box
     return 'node$tagFilters(${bounds.southWest.latitude},${bounds.southWest.longitude},${bounds.northEast.latitude},${bounds.northEast.longitude});';
-  }).join('\n      ');
+  }).join('\n  ');
 
-  // Use unlimited output if maxResults is 0
-  final outputClause = maxResults > 0 ? 'out body $maxResults;' : 'out body;';
-  
   return '''
 [out:json][timeout:25];
 (
   $nodeClauses
 );
-$outputClause
+out body ${maxResults > 0 ? maxResults : ''};
+(
+  way(bn);
+  rel(bn);  
+);
+out meta;
 ''';
 }
 
@@ -241,6 +239,56 @@ List<LatLngBounds> _splitBounds(LatLngBounds bounds) {
       LatLng(bounds.north, bounds.east),
     ),
   ];
+}
+
+/// Parse Overpass response elements to create OsmNode objects with constraint information.
+List<OsmNode> _parseOverpassResponseWithConstraints(List<dynamic> elements) {
+  final nodeElements = <Map<String, dynamic>>[];
+  final constrainedNodeIds = <int>{};
+  
+  // First pass: collect surveillance nodes and identify constrained nodes
+  for (final element in elements.whereType<Map<String, dynamic>>()) {
+    final type = element['type'] as String?;
+    
+    if (type == 'node') {
+      // This is a surveillance node - collect it
+      nodeElements.add(element);
+    } else if (type == 'way' || type == 'relation') {
+      // This is a way/relation that references some of our nodes
+      final refs = element['nodes'] as List<dynamic>? ?? 
+                   element['members']?.where((m) => m['type'] == 'node').map((m) => m['ref']) ?? [];
+      
+      // Mark all referenced nodes as constrained
+      for (final ref in refs) {
+        if (ref is int) {
+          constrainedNodeIds.add(ref);
+        } else if (ref is String) {
+          final nodeId = int.tryParse(ref);
+          if (nodeId != null) constrainedNodeIds.add(nodeId);
+        }
+      }
+    }
+  }
+  
+  // Second pass: create OsmNode objects with constraint info
+  final nodes = nodeElements.map((element) {
+    final nodeId = element['id'] as int;
+    final isConstrained = constrainedNodeIds.contains(nodeId);
+    
+    return OsmNode(
+      id: nodeId,
+      coord: LatLng(element['lat'], element['lon']),
+      tags: Map<String, String>.from(element['tags'] ?? {}),
+      isConstrained: isConstrained,
+    );
+  }).toList();
+  
+  final constrainedCount = nodes.where((n) => n.isConstrained).length;
+  if (constrainedCount > 0) {
+    debugPrint('[fetchOverpassNodes] Found $constrainedCount constrained nodes out of ${nodes.length} total');
+  }
+  
+  return nodes;
 }
 
 /// Clean up pending uploads that now appear in Overpass results

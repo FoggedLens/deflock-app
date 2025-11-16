@@ -112,6 +112,7 @@
     "sandboxModeWarning": "Não é possível enviar edições de nós de produção para o sandbox. Mude para o modo Produção nas Configurações para editar nós.",
     "enableSubmittableProfile": "Ative um perfil enviável nas Configurações para editar nós.",
     "profileViewOnlyWarning": "Este perfil é apenas para visualização do mapa. Por favor, selecione um perfil enviável para editar nós.",
+    "cannotMoveConstrainedNode": "Não é possível mover esta câmera - ela está conectada a uma rua ou área (OSM way/relation). Você ainda pode editar suas tags e direção.",
     "refineTags": "Refinar Tags",
     "refineTagsWithProfile": "Refinar Tags ({})"
   },
@@ -325,7 +326,15 @@
   },
   "networkStatus": {
     "showIndicator": "Exibir indicador de status de rede",
-    "showIndicatorSubtitle": "Mostrar status de carregamento e erro de rede no mapa"
+    "showIndicatorSubtitle": "Mostrar status de carregamento e erro de rede no mapa",
+    "loading": "Carregando...",
+    "timedOut": "Tempo esgotado",
+    "noData": "Nenhum tile aqui",
+    "success": "Concluído",
+    "nodeLimitReached": "Limite exibido - aumentar nas configurações",
+    "tileProviderSlow": "Provedor de tiles lento",
+    "nodeDataSlow": "Dados do nó lentos",
+    "networkIssues": "Problemas de rede"
   },
   "navigation": {
     "searchLocation": "Buscar localização",

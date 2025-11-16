@@ -112,6 +112,7 @@
     "sandboxModeWarning": "No se pueden enviar ediciones de nodos de producción al sandbox. Cambie al modo Producción en Configuración para editar nodos.",
     "enableSubmittableProfile": "Habilite un perfil envíable en Configuración para editar nodos.",
     "profileViewOnlyWarning": "Este perfil es solo para visualización del mapa. Por favor, seleccione un perfil envíable para editar nodos.",
+    "cannotMoveConstrainedNode": "No se puede mover esta cámara - está conectada a una calle o área (OSM way/relation). Aún puede editar sus etiquetas y dirección.",
     "refineTags": "Refinar Etiquetas",
     "refineTagsWithProfile": "Refinar Etiquetas ({})"
   },
@@ -325,7 +326,15 @@
   },
   "networkStatus": {
     "showIndicator": "Mostrar indicador de estado de red",
-    "showIndicatorSubtitle": "Mostrar estado de carga y errores de red en el mapa"
+    "showIndicatorSubtitle": "Mostrar estado de carga y errores de red en el mapa",
+    "loading": "Cargando...",
+    "timedOut": "Tiempo agotado",
+    "noData": "Sin mosaicos aquí",
+    "success": "Hecho",
+    "nodeLimitReached": "Mostrando límite - aumentar en ajustes",
+    "tileProviderSlow": "Proveedor de mosaicos lento",
+    "nodeDataSlow": "Datos de nodo lentos",
+    "networkIssues": "Problemas de red"
   },
   "navigation": {
     "searchLocation": "Buscar ubicación",

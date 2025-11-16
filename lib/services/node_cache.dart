@@ -27,6 +27,7 @@ class NodeCache {
           id: node.id,
           coord: node.coord,
           tags: mergedTags,
+          isConstrained: node.isConstrained, // Preserve constraint information
         );
       } else {
         _nodes[node.id] = node;
@@ -58,6 +59,7 @@ class NodeCache {
         id: node.id,
         coord: node.coord,
         tags: cleanTags,
+        isConstrained: node.isConstrained, // Preserve constraint information
       );
     }
   }

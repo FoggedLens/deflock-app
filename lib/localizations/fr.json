@@ -112,6 +112,7 @@
     "sandboxModeWarning": "Impossible de soumettre des modifications de nœuds de production au sandbox. Passez au mode Production dans les Paramètres pour modifier les nœuds.",
     "enableSubmittableProfile": "Activez un profil soumissible dans les Paramètres pour modifier les nœuds.",
     "profileViewOnlyWarning": "Ce profil est uniquement pour la visualisation de la carte. Veuillez sélectionner un profil soumissible pour modifier les nœuds.",
+    "cannotMoveConstrainedNode": "Impossible de déplacer cette caméra - elle est connectée à une rue ou une zone (OSM way/relation). Vous pouvez toujours modifier ses balises et sa direction.",
     "refineTags": "Affiner Balises",
     "refineTagsWithProfile": "Affiner Balises ({})"
   },
@@ -325,7 +326,15 @@
   },
   "networkStatus": {
     "showIndicator": "Afficher l'indicateur de statut réseau",
-    "showIndicatorSubtitle": "Afficher l'état de chargement et d'erreur réseau sur la carte"
+    "showIndicatorSubtitle": "Afficher l'état de chargement et d'erreur réseau sur la carte",
+    "loading": "Chargement...",
+    "timedOut": "Temps dépassé",
+    "noData": "Aucune tuile ici",
+    "success": "Terminé",
+    "nodeLimitReached": "Limite affichée - augmenter dans les paramètres",
+    "tileProviderSlow": "Fournisseur de tuiles lent",
+    "nodeDataSlow": "Données de nœud lentes",
+    "networkIssues": "Problèmes réseau"
   },
   "navigation": {
     "searchLocation": "Rechercher lieu",

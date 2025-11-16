@@ -94,6 +94,7 @@
     "sandboxModeWarning": "Bearbeitungen von Produktionsknoten können nicht an die Sandbox übertragen werden. Wechseln Sie in den Produktionsmodus in den Einstellungen, um Knoten zu bearbeiten.",
     "enableSubmittableProfile": "Aktivieren Sie ein übertragbares Profil in den Einstellungen, um Knoten zu bearbeiten.",
     "profileViewOnlyWarning": "Dieses Profil ist nur zum Anzeigen der Karte gedacht. Bitte wählen Sie ein übertragbares Profil aus, um Knoten zu bearbeiten.",
+    "cannotMoveConstrainedNode": "Kann diese Kamera nicht verschieben - sie ist mit einer Straße oder einem Bereich verbunden (OSM-Weg/Relation). Sie können trotzdem ihre Tags und Richtung bearbeiten.",
     "refineTags": "Tags Verfeinern",
     "refineTagsWithProfile": "Tags Verfeinern ({})"
   },
@@ -307,7 +308,15 @@
   },
   "networkStatus": {
     "showIndicator": "Netzwerkstatus-Anzeige anzeigen",
-    "showIndicatorSubtitle": "Netzwerk-Ladestatus und Fehlerstatus auf der Karte anzeigen"
+    "showIndicatorSubtitle": "Netzwerk-Ladestatus und Fehlerstatus auf der Karte anzeigen",
+    "loading": "Lädt...",
+    "timedOut": "Zeitüberschreitung",
+    "noData": "Keine Kacheln hier",
+    "success": "Fertig",
+    "nodeLimitReached": "Limit erreicht - in Einstellungen erhöhen",
+    "tileProviderSlow": "Kartenanbieter langsam",
+    "nodeDataSlow": "Knotendaten langsam",
+    "networkIssues": "Netzwerkprobleme"
   },
   "about": {
     "title": "DeFlock - Überwachungs-Transparenz",

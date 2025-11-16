@@ -25,8 +25,7 @@ class _WelcomeDialogState extends State<WelcomeDialog> {
       await ChangelogService().markWelcomeSeen();
     }
     
-    // Always update version tracking when closing welcome dialog
-    await ChangelogService().updateLastSeenVersion();
+    // Note: Version tracking is updated by completeVersionChange() after all dialogs
     
     if (mounted) {
       Navigator.of(context).pop();

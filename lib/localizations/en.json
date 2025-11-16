@@ -112,6 +112,7 @@
     "sandboxModeWarning": "Cannot submit edits on production nodes to sandbox. Switch to Production mode in Settings to edit nodes.",
     "enableSubmittableProfile": "Enable a submittable profile in Settings to edit nodes.",
     "profileViewOnlyWarning": "This profile is for map viewing only. Please select a submittable profile to edit nodes.",
+    "cannotMoveConstrainedNode": "Cannot move this camera - it's connected to a street or area (OSM way/relation). You can still edit its tags and direction.",
     "refineTags": "Refine Tags",
     "refineTagsWithProfile": "Refine Tags ({})"
   },
@@ -325,7 +326,15 @@
   },
   "networkStatus": {
     "showIndicator": "Show network status indicator",
-    "showIndicatorSubtitle": "Display network loading and error status on the map"
+    "showIndicatorSubtitle": "Display network loading and error status on the map",
+    "loading": "Loading...",
+    "timedOut": "Timed out",
+    "noData": "No tiles here",
+    "success": "Done",
+    "nodeLimitReached": "Showing limit - increase in settings",
+    "tileProviderSlow": "Tile provider slow",
+    "nodeDataSlow": "Node data slow",
+    "networkIssues": "Network issues"
   },
   "navigation": {
     "searchLocation": "Search Location",

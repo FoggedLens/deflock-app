@@ -112,6 +112,7 @@
     "sandboxModeWarning": "Impossibile inviare modifiche di nodi di produzione alla sandbox. Passa alla modalità Produzione nelle Impostazioni per modificare i nodi.",
     "enableSubmittableProfile": "Abilita un profilo inviabile nelle Impostazioni per modificare i nodi.",
     "profileViewOnlyWarning": "Questo profilo è solo per la visualizzazione della mappa. Per favore seleziona un profilo inviabile per modificare i nodi.",
+    "cannotMoveConstrainedNode": "Impossibile spostare questa telecamera - è collegata a una strada o area (OSM way/relation). Puoi ancora modificare i suoi tag e direzione.",
     "refineTags": "Affina Tag",
     "refineTagsWithProfile": "Affina Tag ({})"
   },
@@ -325,7 +326,15 @@
   },
   "networkStatus": {
     "showIndicator": "Mostra indicatore di stato di rete",
-    "showIndicatorSubtitle": "Visualizza lo stato di caricamento e errori di rete sulla mappa"
+    "showIndicatorSubtitle": "Visualizza lo stato di caricamento e errori di rete sulla mappa",
+    "loading": "Caricamento...",
+    "timedOut": "Tempo scaduto",
+    "noData": "Nessuna tessera qui",
+    "success": "Fatto",
+    "nodeLimitReached": "Limite visualizzato - aumentare nelle impostazioni",
+    "tileProviderSlow": "Provider di tessere lento",
+    "nodeDataSlow": "Dati del nodo lenti",
+    "networkIssues": "Problemi di rete"
   },
   "navigation": {
     "searchLocation": "Cerca posizione",

@@ -12,6 +12,7 @@ import '../models/osm_node.dart';
 import '../models/node_profile.dart';
 import '../models/suspected_location.dart';
 import '../models/tile_provider.dart';
+import '../state/session_state.dart';
 import 'debouncer.dart';
 import 'camera_provider_with_cache.dart';
 import 'camera_icon.dart';
@@ -258,6 +259,28 @@ class MapViewState extends State<MapView> {
     const double significantMovementThreshold = 0.005; // degrees (~500m at equator)
     
     return latDiff > significantMovementThreshold || lngDiff > significantMovementThreshold;
+  }
+
+  /// Get interaction options for the map based on whether we're editing a constrained node.
+  /// Allows zoom and rotation but disables panning/dragging for constrained nodes.
+  InteractionOptions _getInteractionOptions(EditNodeSession? editSession) {
+    // Check if we're editing a constrained node
+    if (editSession?.originalNode.isConstrained == true) {
+      // Constrained node: disable dragging/panning but keep zoom, rotate, etc.
+      return const InteractionOptions(
+        flags: InteractiveFlag.all & ~InteractiveFlag.drag,
+        scrollWheelVelocity: kScrollWheelVelocity,
+        pinchZoomThreshold: kPinchZoomThreshold,
+        pinchMoveThreshold: kPinchMoveThreshold,
+      );
+    }
+    
+    // Normal case: all interactions allowed
+    return const InteractionOptions(
+      scrollWheelVelocity: kScrollWheelVelocity,
+      pinchZoomThreshold: kPinchZoomThreshold,
+      pinchMoveThreshold: kPinchMoveThreshold,
+    );
   }
 
   /// Show zoom warning if user is below minimum zoom level
@@ -543,11 +566,7 @@ class MapViewState extends State<MapView> {
               initialCenter: _gpsController.currentLocation ?? _positionManager.initialLocation ?? LatLng(37.7749, -122.4194),
             initialZoom: _positionManager.initialZoom ?? 15,
             maxZoom: (appState.selectedTileType?.maxZoom ?? 18).toDouble(),
-            interactionOptions: const InteractionOptions(
-              scrollWheelVelocity: kScrollWheelVelocity,
-              pinchZoomThreshold: kPinchZoomThreshold,
-              pinchMoveThreshold: kPinchMoveThreshold,
-            ),
+            interactionOptions: _getInteractionOptions(editSession),
             onPositionChanged: (pos, gesture) {
               setState(() {}); // Instant UI update for zoom, etc.
               if (gesture) {

@@ -4,11 +4,13 @@ class OsmNode {
   final int id;
   final LatLng coord;
   final Map<String, String> tags;
+  final bool isConstrained; // true if part of any way/relation
 
   OsmNode({
     required this.id,
     required this.coord,
     required this.tags,
+    this.isConstrained = false, // Default to unconstrained for backward compatibility
   });
 
   Map<String, dynamic> toJson() => {
@@ -16,6 +18,7 @@ class OsmNode {
     'lat': coord.latitude,
     'lon': coord.longitude,
     'tags': tags,
+    'isConstrained': isConstrained,
   };
 
   factory OsmNode.fromJson(Map<String, dynamic> json) {
@@ -29,6 +32,7 @@ class OsmNode {
       id: json['id'] is int ? json['id'] as int : int.tryParse(json['id'].toString()) ?? 0,
       coord: LatLng((json['lat'] as num).toDouble(), (json['lon'] as num).toDouble()),
       tags: tags,
+      isConstrained: json['isConstrained'] as bool? ?? false, // Default to false for backward compatibility
     );
   }
 

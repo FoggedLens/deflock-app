@@ -210,6 +210,24 @@ class EditNodeSheet extends StatelessWidget {
               // Direction controls
               _buildDirectionControls(context, appState, session, locService),
 
+              // Constraint message for nodes that cannot be moved
+              if (session.originalNode.isConstrained)
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.info_outline, size: 20),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          locService.t('editNode.cannotMoveConstrainedNode'),
+                          style: Theme.of(context).textTheme.bodyMedium,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
               if (!kEnableNodeEdits)
                 Padding(
                   padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),

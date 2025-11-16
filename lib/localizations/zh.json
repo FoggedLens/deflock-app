@@ -112,6 +112,7 @@
     "sandboxModeWarning": "无法将生产节点的编辑提交到沙盒。在设置中切换到生产模式以编辑节点。",
     "enableSubmittableProfile": "在设置中启用可提交的配置文件以编辑节点。",
     "profileViewOnlyWarning": "此配置文件仅用于地图查看。请选择可提交的配置文件来编辑节点。",
+    "cannotMoveConstrainedNode": "无法移动此相机 - 它连接到街道或区域（OSM way/relation）。您仍可以编辑其标签和方向。",
     "refineTags": "细化标签",
     "refineTagsWithProfile": "细化标签（{}）"
   },
@@ -325,7 +326,15 @@
   },
   "networkStatus": {
     "showIndicator": "显示网络状态指示器",
-    "showIndicatorSubtitle": "在地图上显示网络加载和错误状态"
+    "showIndicatorSubtitle": "在地图上显示网络加载和错误状态",
+    "loading": "加载中...",
+    "timedOut": "超时",
+    "noData": "这里没有瓦片",
+    "success": "完成",
+    "nodeLimitReached": "显示限制 - 在设置中增加",
+    "tileProviderSlow": "瓦片提供商缓慢",
+    "nodeDataSlow": "节点数据缓慢",
+    "networkIssues": "网络问题"
   },
   "navigation": {
     "searchLocation": "搜索位置",

@@ -11,8 +11,7 @@ class ChangelogDialog extends StatelessWidget {
   });
 
   void _onClose(BuildContext context) async {
-    // Update version tracking when closing changelog dialog
-    await ChangelogService().updateLastSeenVersion();
+    // Note: Version tracking is updated by completeVersionChange() after all dialogs
     
     if (context.mounted) {
       Navigator.of(context).pop();
