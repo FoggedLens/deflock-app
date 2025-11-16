@@ -160,6 +160,39 @@ class NodeProfile {
           submittable: true,
           editable: true,
         ),
+        NodeProfile(
+          id: 'builtin-rekor',
+          name: 'Rekor',
+          tags: const {
+            'man_made': 'surveillance',
+            'surveillance': 'public',
+            'surveillance:type': 'ALPR',
+            'surveillance:zone': 'traffic',
+            'camera:type': 'fixed',
+            'manufacturer': 'Rekor',
+          },
+          builtin: true,
+          requiresDirection: true,
+          submittable: true,
+          editable: true,
+        ),
+        NodeProfile(
+          id: 'builtin-axis',
+          name: 'Axis Communications',
+          tags: const {
+            'man_made': 'surveillance',
+            'surveillance': 'public',
+            'surveillance:type': 'ALPR',
+            'surveillance:zone': 'traffic',
+            'camera:type': 'fixed',
+            'manufacturer': 'Axis Communications',
+            'manufacturer:wikidata': 'Q2347731',
+          },
+          builtin: true,
+          requiresDirection: true,
+          submittable: true,
+          editable: true,
+        ),
       ];
 
 

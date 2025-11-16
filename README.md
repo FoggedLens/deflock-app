@@ -107,7 +107,6 @@ cp lib/keys.dart.example lib/keys.dart
 - Swap in alprwatch.org/directions avoidance routing API
 - Clean cache when nodes have disappeared / been deleted by others / queue item was deleted
 - Improve offline area node refresh live display
-- Add Rekor profile
 
 ### Future Features & Wishlist
 - Update offline area nodes while browsing?

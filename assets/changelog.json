@@ -1,4 +1,7 @@
 {
+  "1.3.3": {
+    "content": "• NEW: Added builtin surveillance device profiles for Rekor and Axis Communications ALPR cameras"
+  },
   "1.3.2": {
     "content": "• HOTFIX: Temporarily disabled node editing to prevent OSM database issues while a bug is resolved\n• UX: Fixed Android navigation bar covering settings page content"
   },
