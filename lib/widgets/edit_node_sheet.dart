@@ -8,6 +8,7 @@ import '../models/operator_profile.dart';
 import '../services/localization_service.dart';
 import '../state/settings_state.dart';
 import 'refine_tags_sheet.dart';
+import 'advanced_edit_options_sheet.dart';
 
 class EditNodeSheet extends StatelessWidget {
   const EditNodeSheet({super.key, required this.session});
@@ -214,15 +215,33 @@ class EditNodeSheet extends StatelessWidget {
               if (session.originalNode.isConstrained)
                 Padding(
                   padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-                  child: Row(
+                  child: Column(
                     children: [
-                      const Icon(Icons.info_outline, size: 20),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          locService.t('editNode.cannotMoveConstrainedNode'),
-                          style: Theme.of(context).textTheme.bodyMedium,
-                        ),
+                      Row(
+                        children: [
+                          const Icon(Icons.info_outline, size: 20),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              locService.t('editNode.cannotMoveConstrainedNode'),
+                              style: Theme.of(context).textTheme.bodyMedium,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          OutlinedButton.icon(
+                            onPressed: () => _openAdvancedEdit(context),
+                            icon: const Icon(Icons.open_in_new, size: 16),
+                            label: const Text('Use Advanced Editor'),
+                            style: OutlinedButton.styleFrom(
+                              minimumSize: const Size(0, 32),
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
@@ -347,6 +366,14 @@ class EditNodeSheet extends StatelessWidget {
             ],
         );
       },
+    );
+  }
+
+  void _openAdvancedEdit(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      builder: (context) => AdvancedEditOptionsSheet(node: session.originalNode),
     );
   }
 }

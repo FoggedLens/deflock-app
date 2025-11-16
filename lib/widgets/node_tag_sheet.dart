@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../models/osm_node.dart';
 import '../app_state.dart';
 import '../services/localization_service.dart';
+import 'advanced_edit_options_sheet.dart';
 
 class NodeTagSheet extends StatelessWidget {
   final OsmNode node;
@@ -67,6 +69,36 @@ class NodeTagSheet extends StatelessWidget {
           }
         }
 
+        void _viewOnOSM() async {
+          final url = 'https://www.openstreetmap.org/node/${node.id}';
+          try {
+            final uri = Uri.parse(url);
+            if (await canLaunchUrl(uri)) {
+              await launchUrl(uri, mode: LaunchMode.externalApplication);
+            } else {
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Could not open OSM website')),
+                );
+              }
+            }
+          } catch (e) {
+            if (context.mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Could not open OSM website')),
+              );
+            }
+          }
+        }
+
+        void _openAdvancedEdit() {
+          showModalBottomSheet(
+            context: context,
+            isScrollControlled: true,
+            builder: (context) => AdvancedEditOptionsSheet(node: node),
+          );
+        }
+
         return SafeArea(
           child: Padding(
             padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
@@ -108,6 +140,30 @@ class NodeTagSheet extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 16),
+                  // First row: View and Advanced buttons
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      TextButton.icon(
+                        onPressed: () => _viewOnOSM(),
+                        icon: const Icon(Icons.open_in_new, size: 16),
+                        label: const Text('View on OSM'),
+                      ),
+                      const SizedBox(width: 8),
+                      if (isEditable) ...[
+                        OutlinedButton.icon(
+                          onPressed: _openAdvancedEdit,
+                          icon: const Icon(Icons.open_in_new, size: 18),
+                          label: const Text('Advanced'),
+                          style: OutlinedButton.styleFrom(
+                            minimumSize: const Size(0, 36),
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  // Second row: Edit, Delete, and Close buttons
                   Row(
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [

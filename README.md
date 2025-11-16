@@ -107,10 +107,8 @@ cp lib/keys.dart.example lib/keys.dart
 - Persistent cache for MY submissions: clean up when we see that node appear in overpass results or when older than 24h
 - Dropdown on "refine tags" page to select acceptable options for camera:mount=
 - Tutorial / info guide before submitting first node
-- Link to OSM node in node_details_sheet
 - Link to "my changes" on osm (username edit history)
 - Option to "extract node from way" for nodes attached to a way to allow moving
-- Option to "open in other editor" for advanced edits: StreetComplete/EveryDoor/Vespucci/GO!! Map/OSM.org(iD)/Rapid/Level0/OSMand/OrganicMaps/CoMaps
 
 ### On Pause
 - Suspected locations expansion to more regions

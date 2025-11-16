@@ -1,6 +1,6 @@
 {
   "1.3.3": {
-    "content": "• NEW: Added builtin surveillance device profiles for Rekor and Axis Communications ALPR cameras"
+    "content": "• NEW: Added builtin surveillance device profiles for Rekor and Axis Communications ALPR cameras\n• NEW: Smart constraint system prevents moving nodes that are part of OSM ways/relations to protect data integrity\n• NEW: \"View on OSM\" button in node details opens the node page on OpenStreetMap.org\n• NEW: \"Advanced Edit\" options with links to iD Editor, RapiD, Vespucci, StreetComplete, Go Map!!, and EveryDoor\n• IMPROVED: Network status messages are now fully localized in all supported languages\n• IMPROVED: Map interaction controls for constrained nodes - zoom/rotate allowed, movement prevented\n• IMPROVED: Debounced snap-back system keeps constrained nodes centered smoothly\n• FIXED: Eliminated duplicate changelog service calls on app updates\n• FIXED: Network status now correctly says \"Node data slow\" instead of \"Camera data slow\""
   },
   "1.3.2": {
     "content": "• HOTFIX: Temporarily disabled node editing to prevent OSM database issues while a bug is resolved\n• UX: Fixed Android navigation bar covering settings page content"
