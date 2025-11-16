@@ -102,6 +102,17 @@ cp lib/keys.dart.example lib/keys.dart
 - Fix network indicator - only done when fetch queue is empty!
 
 ### Current Development
+- Add some builtin satellite tile provider
+- Option to pull in profiles from NSI (man_made=surveillance only)
+- Persistent cache for MY submissions: clean up when we see that node appear in overpass results or when older than 24h
+- Dropdown on "refine tags" page to select acceptable options for camera:mount=
+- Tutorial / info guide before submitting first node
+- Link to OSM node in node_details_sheet
+- Link to "my changes" on osm (username edit history)
+- Option to "extract node from way" for nodes attached to a way to allow moving
+- Option to "open in other editor" for advanced edits: StreetComplete/EveryDoor/Vespucci/GO!! Map/OSM.org(iD)/Rapid/Level0/OSMand/OrganicMaps/CoMaps
+
+### On Pause
 - Suspected locations expansion to more regions
 - Import/Export map providers
 - Swap in alprwatch.org/directions avoidance routing API
