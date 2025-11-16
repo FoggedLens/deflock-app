@@ -145,6 +145,25 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     // Disable follow-me when editing a camera so the map doesn't jump around
     appState.setFollowMeMode(FollowMeMode.off);
     
+    final session = appState.editSession!;     // should be non-null when this is called
+    
+    // Center map on the node being edited (same animation as openNodeTagSheet)
+    try {
+      _mapController.animateTo(
+        dest: session.originalNode.coord,
+        zoom: _mapController.mapController.camera.zoom,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeOut,
+      );
+    } catch (_) {
+      // Map controller not ready, fallback to immediate move
+      try {
+        _mapController.mapController.move(session.originalNode.coord, _mapController.mapController.camera.zoom);
+      } catch (_) {
+        // Controller really not ready, skip centering
+      }
+    }
+    
     // Set transition flag to prevent map bounce
     _transitioningToEdit = true;
     
@@ -152,8 +171,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     if (_tagSheetHeight > 0) {
       Navigator.of(context).pop();
     }
-    
-    final session = appState.editSession!;     // should be non-null when this is called
 
     // Small delay to let tag sheet close smoothly
     Future.delayed(const Duration(milliseconds: 150), () {

@@ -61,8 +61,13 @@ class UploadQueueState extends ChangeNotifier {
 
   // Add a completed edit session to the upload queue
   void addFromEditSession(EditNodeSession session, {required UploadMode uploadMode}) {
+    // For constrained nodes, always use original position regardless of session.target
+    final coordToUse = session.originalNode.isConstrained 
+        ? session.originalNode.coord 
+        : session.target;
+    
     final upload = PendingUpload(
-      coord: session.target,
+      coord: coordToUse,
       direction: _formatDirectionsAsString(session.directions),
       profile: session.profile!,  // Safe to use ! because commitEditSession() checks for null
       operatorProfile: session.operatorProfile,

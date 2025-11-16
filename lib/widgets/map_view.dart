@@ -63,6 +63,7 @@ class MapViewState extends State<MapView> {
   final Debouncer _cameraDebounce = Debouncer(kDebounceCameraRefresh);
   final Debouncer _tileDebounce = Debouncer(const Duration(milliseconds: 150));
   final Debouncer _mapPositionDebounce = Debouncer(const Duration(milliseconds: 1000));
+  final Debouncer _constrainedNodeSnapBack = Debouncer(const Duration(milliseconds: 100));
 
   late final MapPositionManager _positionManager;
   late final TileLayerManager _tileManager;
@@ -262,13 +263,13 @@ class MapViewState extends State<MapView> {
   }
 
   /// Get interaction options for the map based on whether we're editing a constrained node.
-  /// Allows zoom and rotation but disables panning/dragging for constrained nodes.
+  /// Allows zoom and rotation but disables all forms of panning for constrained nodes.
   InteractionOptions _getInteractionOptions(EditNodeSession? editSession) {
     // Check if we're editing a constrained node
     if (editSession?.originalNode.isConstrained == true) {
-      // Constrained node: disable dragging/panning but keep zoom, rotate, etc.
+      // Constrained node: only allow pinch zoom and rotation, disable ALL panning
       return const InteractionOptions(
-        flags: InteractiveFlag.all & ~InteractiveFlag.drag,
+        flags: InteractiveFlag.pinchZoom | InteractiveFlag.rotate,
         scrollWheelVelocity: kScrollWheelVelocity,
         pinchZoomThreshold: kPinchZoomThreshold,
         pinchMoveThreshold: kPinchMoveThreshold,
@@ -277,6 +278,7 @@ class MapViewState extends State<MapView> {
     
     // Normal case: all interactions allowed
     return const InteractionOptions(
+      flags: InteractiveFlag.all,
       scrollWheelVelocity: kScrollWheelVelocity,
       pinchZoomThreshold: kPinchZoomThreshold,
       pinchMoveThreshold: kPinchMoveThreshold,
@@ -577,7 +579,35 @@ class MapViewState extends State<MapView> {
                 appState.updateSession(target: pos.center);
               }
               if (editSession != null) {
-                appState.updateEditSession(target: pos.center);
+                // For constrained nodes, always snap back to original position
+                if (editSession.originalNode.isConstrained) {
+                  final originalPos = editSession.originalNode.coord;
+                  
+                  // Always keep session target as original position
+                  appState.updateEditSession(target: originalPos);
+                  
+                  // Only snap back if position actually drifted, and debounce to wait for gesture completion
+                  if (pos.center.latitude != originalPos.latitude || pos.center.longitude != originalPos.longitude) {
+                    _constrainedNodeSnapBack(() {
+                      // Only animate if we're still in a constrained edit session and still drifted
+                      final currentEditSession = appState.editSession;
+                      if (currentEditSession?.originalNode.isConstrained == true) {
+                        final currentPos = _controller.mapController.camera.center;
+                        if (currentPos.latitude != originalPos.latitude || currentPos.longitude != originalPos.longitude) {
+                          _controller.animateTo(
+                            dest: originalPos,
+                            zoom: _controller.mapController.camera.zoom,
+                            curve: Curves.easeOut,
+                            duration: const Duration(milliseconds: 250),
+                          );
+                        }
+                      }
+                    });
+                  }
+                } else {
+                  // Normal unconstrained node - allow position updates
+                  appState.updateEditSession(target: pos.center);
+                }
               }
               
               // Update provisional pin location during navigation search/routing
