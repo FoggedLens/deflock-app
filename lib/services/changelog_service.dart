@@ -17,6 +17,22 @@ class ChangelogService {
   Map<String, dynamic>? _changelogData;
   bool _initialized = false;
 
+  /// Parse changelog content from either string or array format
+  String? _parseChangelogContent(dynamic content) {
+    if (content == null) return null;
+    
+    if (content is String) {
+      // Legacy format: single string with \n
+      return content.isEmpty ? null : content;
+    } else if (content is List) {
+      // New format: array of strings
+      final lines = content.whereType<String>().where((line) => line.isNotEmpty).toList();
+      return lines.isEmpty ? null : lines.join('\n');
+    }
+    
+    return null;
+  }
+
   /// Initialize the service by loading changelog data
   Future<void> init() async {
     if (_initialized) return;
@@ -89,8 +105,7 @@ class ChangelogService {
       return null;
     }
 
-    final content = versionData['content'] as String?;
-    return (content?.isEmpty == true) ? null : content;
+    return _parseChangelogContent(versionData['content']);
   }
 
   /// Get the changelog content that should be displayed (may be combined from multiple versions)
@@ -112,8 +127,7 @@ class ChangelogService {
     final versionData = _changelogData![version] as Map<String, dynamic>?;
     if (versionData == null) return null;
     
-    final content = versionData['content'] as String?;
-    return (content?.isEmpty == true) ? null : content;
+    return _parseChangelogContent(versionData['content']);
   }
 
   /// Get all changelog entries (for settings page)
@@ -125,7 +139,7 @@ class ChangelogService {
     for (final entry in _changelogData!.entries) {
       final version = entry.key;
       final versionData = entry.value as Map<String, dynamic>?;
-      final content = versionData?['content'] as String?;
+      final content = _parseChangelogContent(versionData?['content']);
       
       // Only include versions with non-empty content
       if (content != null && content.isNotEmpty) {
@@ -203,7 +217,7 @@ class ChangelogService {
     for (final entry in _changelogData!.entries) {
       final version = entry.key;
       final versionData = entry.value as Map<String, dynamic>?;
-      final content = versionData?['content'] as String?;
+      final content = _parseChangelogContent(versionData?['content']);
       
       // Skip versions with empty content
       if (content == null || content.isEmpty) continue;
@@ -220,7 +234,7 @@ class ChangelogService {
     // Build changelog content
     final intermediateChangelogs = intermediateVersions.map((version) {
       final versionData = _changelogData![version] as Map<String, dynamic>;
-      final content = versionData['content'] as String;
+      final content = _parseChangelogContent(versionData['content'])!; // Safe to use ! here since we filtered empty content above
       return '**Version $version:**\n$content';
     }).toList();
     

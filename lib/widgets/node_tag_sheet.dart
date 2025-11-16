@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:flutter_linkify/flutter_linkify.dart';
 import '../models/osm_node.dart';
 import '../app_state.dart';
 import '../services/localization_service.dart';
@@ -127,12 +128,26 @@ class NodeTagSheet extends StatelessWidget {
                           ),
                           const SizedBox(width: 8),
                           Expanded(
-                            child: Text(
-                              e.value,
+                            child: Linkify(
+                              onOpen: (link) async {
+                                final uri = Uri.parse(link.url);
+                                if (await canLaunchUrl(uri)) {
+                                  await launchUrl(uri, mode: LaunchMode.externalApplication);
+                                } else if (context.mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(content: Text('Could not open URL: ${link.url}')),
+                                  );
+                                }
+                              },
+                              text: e.value,
                               style: TextStyle(
                                 color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
                               ),
-                              softWrap: true,
+                              linkStyle: TextStyle(
+                                color: Theme.of(context).colorScheme.primary,
+                                decoration: TextDecoration.underline,
+                              ),
+                              options: const LinkifyOptions(humanize: false),
                             ),
                           ),
                         ],

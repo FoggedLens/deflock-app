@@ -1,29 +1,82 @@
 {
   "1.3.3": {
-    "content": "• NEW: Added builtin surveillance device profiles for Rekor and Axis Communications ALPR cameras\n• NEW: Smart constraint system prevents moving nodes that are part of OSM ways/relations to protect data integrity\n• NEW: \"View on OSM\" button in node details opens the node page on OpenStreetMap.org\n• NEW: \"Advanced Edit\" options with links to iD Editor, RapiD, Vespucci, StreetComplete, Go Map!!, and EveryDoor\n• IMPROVED: Network status messages are now fully localized in all supported languages\n• IMPROVED: Map interaction controls for constrained nodes - zoom/rotate allowed, movement prevented\n• IMPROVED: Debounced snap-back system keeps constrained nodes centered smoothly\n• FIXED: Eliminated duplicate changelog service calls on app updates\n• FIXED: Network status now correctly says \"Node data slow\" instead of \"Camera data slow\""
+    "content": [
+      "• NEW: Added builtin surveillance device profiles for Rekor and Axis Communications ALPR cameras",
+      "• Both profiles include proper OSM tags for manufacturer identification and require direction setting",
+      "• NEW: Advanced editing options - access iD Editor, RapiD, Vespucci, StreetComplete, and other OSM editors",
+      "• NEW: 'View on OSM' links to see nodes directly on OpenStreetMap website", 
+      "• UX: Constrained nodes (part of ways/relations) cannot be moved to prevent data corruption",
+      "• UX: Auto-clickable URLs in all tag values - any URL becomes a tappable link",
+      "• UX: Tag lists now scroll with max height to keep buttons and map visible",
+      "• UX: Improved button layout on mobile with two rows for better accessibility",
+      "• UX: Localized network status messages in all supported languages",
+      "• FIXED: Duplicate changelog service calls eliminated"
+    ]
   },
   "1.3.2": {
-    "content": "• HOTFIX: Temporarily disabled node editing to prevent OSM database issues while a bug is resolved\n• UX: Fixed Android navigation bar covering settings page content"
+    "content": [
+      "• HOTFIX: Temporarily disabled node editing to prevent OSM database issues while a bug is resolved",
+      "• UX: Fixed Android navigation bar covering settings page content"
+    ]
   },
   "1.3.1": {
-    "content": "• UX: Network status indicator always enabled\n• UX: Direction slider wider on small screens\n• UX: Fixed iOS keyboard missing 'Done' in settings\n• UX: Fixed multi-direction nodes in upload queue\n• UX: Improved suspected locations loading indicator; removed popup, fixed stuck spinner"
+    "content": [
+      "• UX: Network status indicator always enabled",
+      "• UX: Direction slider wider on small screens", 
+      "• UX: Fixed iOS keyboard missing 'Done' in settings",
+      "• UX: Fixed multi-direction nodes in upload queue",
+      "• UX: Improved suspected locations loading indicator; removed popup, fixed stuck spinner"
+    ]
   },
   "1.2.8": {
-    "content": "• UX: Profile selection is now a required step to prevent accidental submission of default profile.\n• NEW: Note in welcome message about not submitting data you cannot vouch for personally (no street view etc)\n• NEW: Added default operator profiles for the most common private operators nationwide (Lowe's, Home Depot, et al)\n• NEW: Support for cardinal directions in OSM data, multiple directions on a node."
+    "content": [
+      "• UX: Profile selection is now a required step to prevent accidental submission of default profile",
+      "• NEW: Note in welcome message about not submitting data you cannot vouch for personally (no street view etc)",
+      "• NEW: Added default operator profiles for the most common private operators nationwide (Lowe's, Home Depot, et al)",
+      "• NEW: Support for cardinal directions in OSM data, multiple directions on a node"
+    ]
   },
   "1.2.7": {
-    "content": "• NEW: Compass indicator shows map orientation; tap to spin north-up\n• Smart area caching: Loads 3x larger areas and refreshes data every 60 seconds for much faster browsing\n• Enhanced tile loading: Increased retry attempts with faster delays - tiles load much more reliably\n• Better network status: Simplified loading indicator logic\n• Instant node display: Surveillance devices now appear immediately when data finishes loading\n• Node limit alerts: Get notified when some nodes are not drawn"
+    "content": [
+      "• NEW: Compass indicator shows map orientation; tap to spin north-up",
+      "• Smart area caching: Loads 3x larger areas and refreshes data every 60 seconds for much faster browsing",
+      "• Enhanced tile loading: Increased retry attempts with faster delays - tiles load much more reliably",
+      "• Better network status: Simplified loading indicator logic",
+      "• Instant node display: Surveillance devices now appear immediately when data finishes loading",
+      "• Node limit alerts: Get notified when some nodes are not drawn"
+    ]
   },
   "1.2.4": {
-    "content": "• New welcome popup for first-time users with essential privacy information\n• Automatic changelog display when app updates (like this one!)\n• Added Release Notes viewer in Settings > About\n• Enhanced user onboarding and transparency about data handling\n• Improved documentation for contributors"
+    "content": [
+      "• New welcome popup for first-time users with essential privacy information",
+      "• Automatic changelog display when app updates (like this one!)",
+      "• Added Release Notes viewer in Settings > About",
+      "• Enhanced user onboarding and transparency about data handling",
+      "• Improved documentation for contributors"
+    ]
   },
   "1.2.3": {
-    "content": "• Enhanced map performance and stability\n• Improved offline sync reliability\n• Added better error handling for uploads\n• Various bug fixes and improvements"
+    "content": [
+      "• Enhanced map performance and stability",
+      "• Improved offline sync reliability", 
+      "• Added better error handling for uploads",
+      "• Various bug fixes and improvements"
+    ]
   },
   "1.2.2": {
-    "content": "• New surveillance device profiles added\n• Improved tile loading performance\n• Fixed issue with GPS accuracy\n• Updated translations"
+    "content": [
+      "• New surveillance device profiles added",
+      "• Improved tile loading performance",
+      "• Fixed issue with GPS accuracy",
+      "• Updated translations"
+    ]
   },
   "1.2.0": {
-    "content": "• Major UI improvements\n• Added proximity alerts\n• Enhanced offline capabilities\n• New suspected locations feature"
+    "content": [
+      "• Major UI improvements",
+      "• Added proximity alerts",
+      "• Enhanced offline capabilities", 
+      "• New suspected locations feature"
+    ]
   }
 }

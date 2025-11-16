@@ -44,8 +44,16 @@ class SuspectedLocationSheet extends StatelessWidget {
                   ),
                   const SizedBox(height: 12),
                   
-                  // Display all fields
-                  ...displayData.entries.map(
+                  // Constrain field list height to keep buttons visible
+                  ConstrainedBox(
+                    constraints: BoxConstraints(
+                      maxHeight: MediaQuery.of(context).size.height * 0.4, // Max 40% of screen height
+                    ),
+                    child: SingleChildScrollView(
+                      child: Column(
+                        children: [
+                          // Display all fields
+                          ...displayData.entries.map(
                     (e) => Padding(
                       padding: const EdgeInsets.symmetric(vertical: 2),
                       child: Row(
