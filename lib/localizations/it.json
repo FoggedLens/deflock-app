@@ -34,7 +34,10 @@
     "close": "Chiudi",
     "submit": "Invia",
     "saveEdit": "Salva Modifica",
-    "clear": "Pulisci"
+    "clear": "Pulisci",
+    "viewOnOSM": "Visualizza su OSM",
+    "advanced": "Avanzato",
+    "useAdvancedEditor": "Usa Editor Avanzato"
   },
   "followMe": {
     "off": "Attiva seguimi",
@@ -112,7 +115,7 @@
     "sandboxModeWarning": "Impossibile inviare modifiche di nodi di produzione alla sandbox. Passa alla modalità Produzione nelle Impostazioni per modificare i nodi.",
     "enableSubmittableProfile": "Abilita un profilo inviabile nelle Impostazioni per modificare i nodi.",
     "profileViewOnlyWarning": "Questo profilo è solo per la visualizzazione della mappa. Per favore seleziona un profilo inviabile per modificare i nodi.",
-    "cannotMoveConstrainedNode": "Impossibile spostare questa telecamera - è collegata a una strada o area (OSM way/relation). Puoi ancora modificare i suoi tag e direzione.",
+    "cannotMoveConstrainedNode": "Impossibile spostare questa telecamera - è collegata a un altro elemento della mappa (OSM way/relation). Puoi ancora modificare i suoi tag e direzione.",
     "refineTags": "Affina Tag",
     "refineTagsWithProfile": "Affina Tag ({})"
   },

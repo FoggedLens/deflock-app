@@ -34,7 +34,10 @@
     "close": "Fermer",
     "submit": "Soumettre",
     "saveEdit": "Sauvegarder Modification",
-    "clear": "Effacer"
+    "clear": "Effacer",
+    "viewOnOSM": "Voir sur OSM",
+    "advanced": "Avancé",
+    "useAdvancedEditor": "Utiliser l'Éditeur Avancé"
   },
   "followMe": {
     "off": "Activer le suivi",
@@ -112,7 +115,7 @@
     "sandboxModeWarning": "Impossible de soumettre des modifications de nœuds de production au sandbox. Passez au mode Production dans les Paramètres pour modifier les nœuds.",
     "enableSubmittableProfile": "Activez un profil soumissible dans les Paramètres pour modifier les nœuds.",
     "profileViewOnlyWarning": "Ce profil est uniquement pour la visualisation de la carte. Veuillez sélectionner un profil soumissible pour modifier les nœuds.",
-    "cannotMoveConstrainedNode": "Impossible de déplacer cette caméra - elle est connectée à une rue ou une zone (OSM way/relation). Vous pouvez toujours modifier ses balises et sa direction.",
+    "cannotMoveConstrainedNode": "Impossible de déplacer cette caméra - elle est connectée à un autre élément de carte (OSM way/relation). Vous pouvez toujours modifier ses balises et sa direction.",
     "refineTags": "Affiner Balises",
     "refineTagsWithProfile": "Affiner Balises ({})"
   },

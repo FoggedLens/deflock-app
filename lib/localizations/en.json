@@ -34,7 +34,10 @@
     "close": "Close",
     "submit": "Submit",
     "saveEdit": "Save Edit",
-    "clear": "Clear"
+    "clear": "Clear",
+    "viewOnOSM": "View on OSM",
+    "advanced": "Advanced",
+    "useAdvancedEditor": "Use Advanced Editor"
   },
   "followMe": {
     "off": "Enable follow-me",
@@ -112,7 +115,7 @@
     "sandboxModeWarning": "Cannot submit edits on production nodes to sandbox. Switch to Production mode in Settings to edit nodes.",
     "enableSubmittableProfile": "Enable a submittable profile in Settings to edit nodes.",
     "profileViewOnlyWarning": "This profile is for map viewing only. Please select a submittable profile to edit nodes.",
-    "cannotMoveConstrainedNode": "Cannot move this camera - it's connected to a street or area (OSM way/relation). You can still edit its tags and direction.",
+    "cannotMoveConstrainedNode": "Cannot move this camera - it's connected to another map element (OSM way/relation). You can still edit its tags and direction.",
     "refineTags": "Refine Tags",
     "refineTagsWithProfile": "Refine Tags ({})"
   },
@@ -323,6 +326,27 @@
     "cannotChangeTileTypes": "Cannot change tile types while downloading offline areas",
     "selectMapLayer": "Select Map Layer",
     "noTileProvidersAvailable": "No tile providers available"
+  },
+  "advancedEdit": {
+    "title": "Advanced Editing Options",
+    "subtitle": "These editors offer more advanced features for complex edits.",
+    "webEditors": "Web Editors",
+    "mobileEditors": "Mobile Editors",
+    "iDEditor": "iD Editor",
+    "iDEditorSubtitle": "Full-featured web editor - always works",
+    "rapidEditor": "RapiD Editor", 
+    "rapidEditorSubtitle": "AI-assisted editing with Facebook data",
+    "vespucci": "Vespucci",
+    "vespucciSubtitle": "Advanced Android OSM editor",
+    "streetComplete": "StreetComplete",
+    "streetCompleteSubtitle": "Survey-based mapping app",
+    "everyDoor": "EveryDoor",
+    "everyDoorSubtitle": "Fast POI editing",
+    "goMap": "Go Map!!",
+    "goMapSubtitle": "iOS OSM editor",
+    "couldNotOpenEditor": "Could not open editor - app may not be installed",
+    "couldNotOpenURL": "Could not open URL",
+    "couldNotOpenOSMWebsite": "Could not open OSM website"
   },
   "networkStatus": {
     "showIndicator": "Show network status indicator",

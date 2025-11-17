@@ -21,12 +21,12 @@ class AdvancedEditOptionsSheet extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Advanced Editing Options',
+              locService.t('advancedEdit.title'),
               style: Theme.of(context).textTheme.titleLarge,
             ),
             const SizedBox(height: 8),
             Text(
-              'These editors offer more advanced features for complex edits.',
+              locService.t('advancedEdit.subtitle'),
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                 color: Theme.of(context).textTheme.bodySmall?.color,
               ),
@@ -35,22 +35,22 @@ class AdvancedEditOptionsSheet extends StatelessWidget {
             
             // Web Editors Section
             Text(
-              'Web Editors',
+              locService.t('advancedEdit.webEditors'),
               style: Theme.of(context).textTheme.titleMedium,
             ),
             const SizedBox(height: 8),
             _buildEditorTile(
               context: context,
               icon: Icons.public,
-              title: 'iD Editor',
-              subtitle: 'Full-featured web editor - always works',
+              title: locService.t('advancedEdit.iDEditor'),
+              subtitle: locService.t('advancedEdit.iDEditorSubtitle'),
               onTap: () => _launchEditor(context, 'https://www.openstreetmap.org/edit?editor=id&node=${node.id}'),
             ),
             _buildEditorTile(
               context: context,
               icon: Icons.speed,
-              title: 'RapiD Editor',
-              subtitle: 'AI-assisted editing with Facebook data',
+              title: locService.t('advancedEdit.rapidEditor'),
+              subtitle: locService.t('advancedEdit.rapidEditorSubtitle'),
               onTap: () => _launchEditor(context, 'https://rapideditor.org/edit#map=19/0/0&nodes=${node.id}'),
             ),
             
@@ -58,7 +58,7 @@ class AdvancedEditOptionsSheet extends StatelessWidget {
             
             // Mobile Editors Section
             Text(
-              'Mobile Editors',
+              locService.t('advancedEdit.mobileEditors'),
               style: Theme.of(context).textTheme.titleMedium,
             ),
             const SizedBox(height: 8),
@@ -67,22 +67,22 @@ class AdvancedEditOptionsSheet extends StatelessWidget {
               _buildEditorTile(
                 context: context,
                 icon: Icons.android,
-                title: 'Vespucci',
-                subtitle: 'Advanced Android OSM editor',
+                title: locService.t('advancedEdit.vespucci'),
+                subtitle: locService.t('advancedEdit.vespucciSubtitle'),
                 onTap: () => _launchEditor(context, 'vespucci://edit?node=${node.id}'),
               ),
               _buildEditorTile(
                 context: context,
                 icon: Icons.place,
-                title: 'StreetComplete',
-                subtitle: 'Survey-based mapping app',
+                title: locService.t('advancedEdit.streetComplete'),
+                subtitle: locService.t('advancedEdit.streetCompleteSubtitle'),
                 onTap: () => _launchEditor(context, 'streetcomplete://quest?node=${node.id}'),
               ),
               _buildEditorTile(
                 context: context,
                 icon: Icons.map,
-                title: 'EveryDoor',
-                subtitle: 'Fast POI editing',
+                title: locService.t('advancedEdit.everyDoor'),
+                subtitle: locService.t('advancedEdit.everyDoorSubtitle'),
                 onTap: () => _launchEditor(context, 'everydoor://edit?node=${node.id}'),
               ),
             ],
@@ -91,8 +91,8 @@ class AdvancedEditOptionsSheet extends StatelessWidget {
               _buildEditorTile(
                 context: context,
                 icon: Icons.phone_iphone,
-                title: 'Go Map!!',
-                subtitle: 'iOS OSM editor',
+                title: locService.t('advancedEdit.goMap'),
+                subtitle: locService.t('advancedEdit.goMapSubtitle'),
                 onTap: () => _launchEditor(context, 'gomaposm://edit?node=${node.id}'),
               ),
             ],
@@ -131,6 +131,7 @@ class AdvancedEditOptionsSheet extends StatelessWidget {
   }
 
   void _launchEditor(BuildContext context, String url) async {
+    final locService = LocalizationService.instance;
     Navigator.pop(context); // Close the sheet first
     
     try {
@@ -140,14 +141,14 @@ class AdvancedEditOptionsSheet extends StatelessWidget {
       } else {
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Could not open $url - app may not be installed')),
+            SnackBar(content: Text(locService.t('advancedEdit.couldNotOpenEditor'))),
           );
         }
       }
     } catch (e) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Could not open editor - app may not be installed')),
+          SnackBar(content: Text(locService.t('advancedEdit.couldNotOpenEditor'))),
         );
       }
     }

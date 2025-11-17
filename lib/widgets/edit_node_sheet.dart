@@ -236,7 +236,7 @@ class EditNodeSheet extends StatelessWidget {
                           OutlinedButton.icon(
                             onPressed: () => _openAdvancedEdit(context),
                             icon: const Icon(Icons.open_in_new, size: 16),
-                            label: const Text('Use Advanced Editor'),
+                            label: Text(locService.t('actions.useAdvancedEditor')),
                             style: OutlinedButton.styleFrom(
                               minimumSize: const Size(0, 32),
                             ),

@@ -34,7 +34,10 @@
     "close": "Fechar",
     "submit": "Enviar",
     "saveEdit": "Salvar Edição",
-    "clear": "Limpar"
+    "clear": "Limpar",
+    "viewOnOSM": "Ver no OSM",
+    "advanced": "Avançado",
+    "useAdvancedEditor": "Usar Editor Avançado"
   },
   "followMe": {
     "off": "Ativar seguir-me",
@@ -112,7 +115,7 @@
     "sandboxModeWarning": "Não é possível enviar edições de nós de produção para o sandbox. Mude para o modo Produção nas Configurações para editar nós.",
     "enableSubmittableProfile": "Ative um perfil enviável nas Configurações para editar nós.",
     "profileViewOnlyWarning": "Este perfil é apenas para visualização do mapa. Por favor, selecione um perfil enviável para editar nós.",
-    "cannotMoveConstrainedNode": "Não é possível mover esta câmera - ela está conectada a uma rua ou área (OSM way/relation). Você ainda pode editar suas tags e direção.",
+    "cannotMoveConstrainedNode": "Não é possível mover esta câmera - ela está conectada a outro elemento do mapa (OSM way/relation). Você ainda pode editar suas tags e direção.",
     "refineTags": "Refinar Tags",
     "refineTagsWithProfile": "Refinar Tags ({})"
   },

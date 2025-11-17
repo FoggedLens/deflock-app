@@ -5,6 +5,7 @@ import 'package:flutter_linkify/flutter_linkify.dart';
 import '../models/osm_node.dart';
 import '../app_state.dart';
 import '../services/localization_service.dart';
+import '../dev_config.dart';
 import 'advanced_edit_options_sheet.dart';
 
 class NodeTagSheet extends StatelessWidget {
@@ -79,14 +80,14 @@ class NodeTagSheet extends StatelessWidget {
             } else {
               if (context.mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Could not open OSM website')),
+                  SnackBar(content: Text(locService.t('advancedEdit.couldNotOpenOSMWebsite'))),
                 );
               }
             }
           } catch (e) {
             if (context.mounted) {
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Could not open OSM website')),
+                SnackBar(content: Text(locService.t('advancedEdit.couldNotOpenOSMWebsite'))),
               );
             }
           }
@@ -113,21 +114,29 @@ class NodeTagSheet extends StatelessWidget {
                     style: Theme.of(context).textTheme.titleLarge,
                   ),
                   const SizedBox(height: 12),
-                  ...node.tags.entries.map(
-                    (e) => Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 2),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                  // Constrain tag list height to keep buttons and map visible
+                  ConstrainedBox(
+                    constraints: BoxConstraints(
+                      maxHeight: MediaQuery.of(context).size.height * kMaxTagListHeightRatio,
+                    ),
+                    child: SingleChildScrollView(
+                      child: Column(
                         children: [
-                          Text(
-                            e.key,
-                            style: TextStyle(
-                              fontWeight: FontWeight.w500,
-                              color: Theme.of(context).colorScheme.onSurface,
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
+                          ...node.tags.entries.map(
+                            (e) => Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 2),
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    e.key,
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.w500,
+                                      color: Theme.of(context).colorScheme.onSurface,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Expanded(
                             child: Linkify(
                               onOpen: (link) async {
                                 final uri = Uri.parse(link.url);
@@ -135,19 +144,23 @@ class NodeTagSheet extends StatelessWidget {
                                   await launchUrl(uri, mode: LaunchMode.externalApplication);
                                 } else if (context.mounted) {
                                   ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(content: Text('Could not open URL: ${link.url}')),
+                                    SnackBar(content: Text('${LocalizationService.instance.t('advancedEdit.couldNotOpenURL')}: ${link.url}')),
                                   );
                                 }
                               },
-                              text: e.value,
-                              style: TextStyle(
-                                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+                                      text: e.value,
+                                      style: TextStyle(
+                                        color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+                                      ),
+                                      linkStyle: TextStyle(
+                                        color: Theme.of(context).colorScheme.primary,
+                                        decoration: TextDecoration.underline,
+                                      ),
+                                      options: const LinkifyOptions(humanize: false),
+                                    ),
+                                  ),
+                                ],
                               ),
-                              linkStyle: TextStyle(
-                                color: Theme.of(context).colorScheme.primary,
-                                decoration: TextDecoration.underline,
-                              ),
-                              options: const LinkifyOptions(humanize: false),
                             ),
                           ),
                         ],
@@ -162,14 +175,14 @@ class NodeTagSheet extends StatelessWidget {
                       TextButton.icon(
                         onPressed: () => _viewOnOSM(),
                         icon: const Icon(Icons.open_in_new, size: 16),
-                        label: const Text('View on OSM'),
+                        label: Text(locService.t('actions.viewOnOSM')),
                       ),
                       const SizedBox(width: 8),
                       if (isEditable) ...[
                         OutlinedButton.icon(
                           onPressed: _openAdvancedEdit,
                           icon: const Icon(Icons.open_in_new, size: 18),
-                          label: const Text('Advanced'),
+                          label: Text(locService.t('actions.advanced')),
                           style: OutlinedButton.styleFrom(
                             minimumSize: const Size(0, 36),
                           ),

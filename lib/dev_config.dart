@@ -79,6 +79,9 @@ const int kDataRefreshIntervalSeconds = 60; // Refresh cached data after this ma
 const Duration kFollowMeAnimationDuration = Duration(milliseconds: 600);
 const double kMinSpeedForRotationMps = 1.0; // Minimum speed (m/s) to apply rotation
 
+// Sheet content configuration
+const double kMaxTagListHeightRatio = 0.4; // Maximum height for tag lists as fraction of screen height
+
 // Proximity alerts configuration
 const int kProximityAlertDefaultDistance = 200; // meters
 const int kProximityAlertMinDistance = 50; // meters

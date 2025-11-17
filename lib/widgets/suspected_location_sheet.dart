@@ -5,6 +5,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../models/suspected_location.dart';
 import '../app_state.dart';
 import '../services/localization_service.dart';
+import '../dev_config.dart';
 
 class SuspectedLocationSheet extends StatelessWidget {
   final SuspectedLocation location;
@@ -47,7 +48,7 @@ class SuspectedLocationSheet extends StatelessWidget {
                   // Constrain field list height to keep buttons visible
                   ConstrainedBox(
                     constraints: BoxConstraints(
-                      maxHeight: MediaQuery.of(context).size.height * 0.4, // Max 40% of screen height
+                      maxHeight: MediaQuery.of(context).size.height * kMaxTagListHeightRatio,
                     ),
                     child: SingleChildScrollView(
                       child: Column(
