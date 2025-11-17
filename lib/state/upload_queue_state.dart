@@ -163,16 +163,17 @@ class UploadQueueState extends ChangeNotifier {
   // Start the upload processing loop
   void startUploader({
     required bool offlineMode, 
+    required bool pauseQueueProcessing,
     required UploadMode uploadMode,
     required Future<String?> Function() getAccessToken,
   }) {
     _uploadTimer?.cancel();
 
-    // No uploads without queue, or if offline mode is enabled.
-    if (_queue.isEmpty || offlineMode) return;
+    // No uploads if queue is empty, offline mode is enabled, or queue processing is paused
+    if (_queue.isEmpty || offlineMode || pauseQueueProcessing) return;
 
     _uploadTimer = Timer.periodic(const Duration(seconds: 10), (t) async {
-      if (_queue.isEmpty || offlineMode) {
+      if (_queue.isEmpty || offlineMode || pauseQueueProcessing) {
         _uploadTimer?.cancel();
         return;
       }

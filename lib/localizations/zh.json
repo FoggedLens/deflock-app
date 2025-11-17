@@ -57,6 +57,8 @@
     "maxNodesWarning": "除非您确定有充分的理由，否则您可能不想这样做。",
     "offlineMode": "离线模式",
     "offlineModeSubtitle": "禁用除本地/离线区域外的所有网络请求。",
+    "pauseQueueProcessing": "暂停上传队列",
+    "pauseQueueProcessingSubtitle": "停止上传排队的更改，同时保持实时数据访问。",
     "offlineModeWarningTitle": "活动下载",
     "offlineModeWarningMessage": "启用离线模式将取消任何活动的区域下载。您要继续吗？",
     "enableOfflineMode": "启用离线模式",

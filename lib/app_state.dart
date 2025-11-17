@@ -130,6 +130,7 @@ class AppState extends ChangeNotifier {
   
   // Settings state
   bool get offlineMode => _settingsState.offlineMode;
+  bool get pauseQueueProcessing => _settingsState.pauseQueueProcessing;
   int get maxCameras => _settingsState.maxCameras;
   UploadMode get uploadMode => _settingsState.uploadMode;
   FollowMeMode get followMeMode => _settingsState.followMeMode;
@@ -411,6 +412,15 @@ class AppState extends ChangeNotifier {
     }
   }
 
+  Future<void> setPauseQueueProcessing(bool enabled) async {
+    await _settingsState.setPauseQueueProcessing(enabled);
+    if (!enabled) {
+      _startUploader(); // Resume upload queue processing
+    } else {
+      _uploadQueueState.stopUploader(); // Stop uploader when paused
+    }
+  }
+
   set maxCameras(int n) {
     _settingsState.maxCameras = n;
   }
@@ -524,6 +534,7 @@ class AppState extends ChangeNotifier {
   void _startUploader() {
     _uploadQueueState.startUploader(
       offlineMode: offlineMode,
+      pauseQueueProcessing: pauseQueueProcessing,
       uploadMode: uploadMode,
       getAccessToken: _authState.getAccessToken,
     );

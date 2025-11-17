@@ -28,8 +28,10 @@ class SettingsState extends ChangeNotifier {
   static const String _proximityAlertDistancePrefsKey = 'proximity_alert_distance';
   static const String _networkStatusIndicatorEnabledPrefsKey = 'network_status_indicator_enabled';
   static const String _suspectedLocationMinDistancePrefsKey = 'suspected_location_min_distance';
+  static const String _pauseQueueProcessingPrefsKey = 'pause_queue_processing';
 
   bool _offlineMode = false;
+  bool _pauseQueueProcessing = false;
   int _maxCameras = 250;
   UploadMode _uploadMode = kEnableDevelopmentModes ? UploadMode.simulate : UploadMode.production;
   FollowMeMode _followMeMode = FollowMeMode.follow;
@@ -42,6 +44,7 @@ class SettingsState extends ChangeNotifier {
 
   // Getters
   bool get offlineMode => _offlineMode;
+  bool get pauseQueueProcessing => _pauseQueueProcessing;
   int get maxCameras => _maxCameras;
   UploadMode get uploadMode => _uploadMode;
   FollowMeMode get followMeMode => _followMeMode;
@@ -91,6 +94,9 @@ class SettingsState extends ChangeNotifier {
     
     // Load offline mode
     _offlineMode = prefs.getBool(_offlineModePrefsKey) ?? false;
+    
+    // Load queue processing setting
+    _pauseQueueProcessing = prefs.getBool(_pauseQueueProcessingPrefsKey) ?? false;
     
     // Load max cameras
     if (prefs.containsKey(_maxCamerasPrefsKey)) {
@@ -209,6 +215,13 @@ class SettingsState extends ChangeNotifier {
     _offlineMode = enabled;
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(_offlineModePrefsKey, enabled);
+    notifyListeners();
+  }
+
+  Future<void> setPauseQueueProcessing(bool enabled) async {
+    _pauseQueueProcessing = enabled;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_pauseQueueProcessingPrefsKey, enabled);
     notifyListeners();
   }
 

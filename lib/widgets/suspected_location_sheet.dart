@@ -29,131 +29,134 @@ class SuspectedLocationSheet extends StatelessWidget {
           }
         }
 
-        return SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
-            child: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    locService.t('suspectedLocation.title', params: [location.ticketNo]),
-                    style: Theme.of(context).textTheme.titleLarge,
+        return LayoutBuilder(
+          builder: (context, constraints) {
+            return SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
+                child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  locService.t('suspectedLocation.title', params: [location.ticketNo]),
+                  style: Theme.of(context).textTheme.titleLarge,
+                ),
+                const SizedBox(height: 12),
+                
+                // Field list with flexible height constraint
+                ConstrainedBox(
+                  constraints: BoxConstraints(
+                    maxHeight: MediaQuery.of(context).size.height * getTagListHeightRatio(context),
                   ),
-                  const SizedBox(height: 12),
-                  
-                  // Constrain field list height to keep buttons visible
-                  ConstrainedBox(
-                    constraints: BoxConstraints(
-                      maxHeight: MediaQuery.of(context).size.height * kMaxTagListHeightRatio,
-                    ),
-                    child: SingleChildScrollView(
-                      child: Column(
-                        children: [
-                          // Display all fields
-                          ...displayData.entries.map(
-                            (e) => Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 2),
-                              child: Row(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    e.key,
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.w500,
-                                      color: Theme.of(context).colorScheme.onSurface,
-                                    ),
+                  child: SingleChildScrollView(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        // Display all fields
+                        ...displayData.entries.map(
+                          (e) => Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 2),
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  e.key,
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.w500,
+                                    color: Theme.of(context).colorScheme.onSurface,
                                   ),
-                                  const SizedBox(width: 8),
-                                  Expanded(
-                                    child: e.key.toLowerCase().contains('url') && e.value.isNotEmpty
-                                        ? GestureDetector(
-                                            onTap: () async {
-                                              final uri = Uri.parse(e.value);
-                                              if (await canLaunchUrl(uri)) {
-                                                await launchUrl(uri, mode: LaunchMode.externalApplication);
-                                              } else {
-                                                if (context.mounted) {
-                                                  ScaffoldMessenger.of(context).showSnackBar(
-                                                    SnackBar(
-                                                      content: Text('Could not open URL: ${e.value}'),
-                                                    ),
-                                                  );
-                                                }
+                                ),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: e.key.toLowerCase().contains('url') && e.value.isNotEmpty
+                                      ? GestureDetector(
+                                          onTap: () async {
+                                            final uri = Uri.parse(e.value);
+                                            if (await canLaunchUrl(uri)) {
+                                              await launchUrl(uri, mode: LaunchMode.externalApplication);
+                                            } else {
+                                              if (context.mounted) {
+                                                ScaffoldMessenger.of(context).showSnackBar(
+                                                  SnackBar(
+                                                    content: Text('Could not open URL: ${e.value}'),
+                                                  ),
+                                                );
                                               }
-                                            },
-                                            child: Text(
-                                              e.value,
-                                              style: TextStyle(
-                                                color: Theme.of(context).colorScheme.primary,
-                                                decoration: TextDecoration.underline,
-                                              ),
-                                              softWrap: true,
-                                            ),
-                                          )
-                                        : Text(
+                                            }
+                                          },
+                                          child: Text(
                                             e.value,
                                             style: TextStyle(
-                                              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+                                              color: Theme.of(context).colorScheme.primary,
+                                              decoration: TextDecoration.underline,
                                             ),
                                             softWrap: true,
                                           ),
-                                  ),
-                                ],
-                              ),
+                                        )
+                                      : Text(
+                                          e.value,
+                                          style: TextStyle(
+                                            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+                                          ),
+                                          softWrap: true,
+                                        ),
+                                ),
+                              ],
                             ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  
-                  const SizedBox(height: 16),
-                  
-                  // Coordinates info
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 2),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          locService.t('suspectedLocation.coordinates'),
-                          style: TextStyle(
-                            fontWeight: FontWeight.w500,
-                            color: Theme.of(context).colorScheme.onSurface,
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            '${location.centroid.latitude.toStringAsFixed(6)}, ${location.centroid.longitude.toStringAsFixed(6)}',
-                            style: TextStyle(
-                              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
-                            ),
-                            softWrap: true,
                           ),
                         ),
                       ],
                     ),
                   ),
-                  
-                  const SizedBox(height: 16),
-                  
-                  // Close button
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
+                ),
+                
+                const SizedBox(height: 16),
+                
+                // Coordinates info
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 2),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      TextButton(
-                        onPressed: () => Navigator.pop(context),
-                        child: Text(locService.t('actions.close')),
+                      Text(
+                        locService.t('suspectedLocation.coordinates'),
+                        style: TextStyle(
+                          fontWeight: FontWeight.w500,
+                          color: Theme.of(context).colorScheme.onSurface,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          '${location.centroid.latitude.toStringAsFixed(6)}, ${location.centroid.longitude.toStringAsFixed(6)}',
+                          style: TextStyle(
+                            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+                          ),
+                          softWrap: true,
+                        ),
                       ),
                     ],
                   ),
-                ],
-              ),
+                ),
+                
+                const SizedBox(height: 16),
+                
+                // Close button
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: Text(locService.t('actions.close')),
+                    ),
+                  ],
+                ),
+              ],
             ),
           ),
+        );
+          },
         );
       },
     );

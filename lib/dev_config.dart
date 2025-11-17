@@ -80,7 +80,15 @@ const Duration kFollowMeAnimationDuration = Duration(milliseconds: 600);
 const double kMinSpeedForRotationMps = 1.0; // Minimum speed (m/s) to apply rotation
 
 // Sheet content configuration
-const double kMaxTagListHeightRatio = 0.4; // Maximum height for tag lists as fraction of screen height
+const double kMaxTagListHeightRatioPortrait = 0.4; // Maximum height for tag lists in portrait mode
+const double kMaxTagListHeightRatioLandscape = 0.3; // Maximum height for tag lists in landscape mode
+
+/// Get appropriate tag list height ratio based on screen orientation
+double getTagListHeightRatio(BuildContext context) {
+  final size = MediaQuery.of(context).size;
+  final isLandscape = size.width > size.height;
+  return isLandscape ? kMaxTagListHeightRatioLandscape : kMaxTagListHeightRatioPortrait;
+}
 
 // Proximity alerts configuration
 const int kProximityAlertDefaultDistance = 200; // meters

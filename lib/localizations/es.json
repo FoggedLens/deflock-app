@@ -57,6 +57,8 @@
     "maxNodesWarning": "Probablemente no quieras hacer eso a menos que estés absolutamente seguro de que tienes una buena razón para ello.",
     "offlineMode": "Modo Sin Conexión",
     "offlineModeSubtitle": "Deshabilitar todas las solicitudes de red excepto para áreas locales/sin conexión.",
+    "pauseQueueProcessing": "Pausar Cola de Subida",
+    "pauseQueueProcessingSubtitle": "Detener la subida de cambios en cola manteniendo acceso a datos en vivo.",
     "offlineModeWarningTitle": "Descargas Activas",
     "offlineModeWarningMessage": "Habilitar el modo sin conexión cancelará cualquier descarga de área activa. ¿Desea continuar?",
     "enableOfflineMode": "Habilitar Modo Sin Conexión",

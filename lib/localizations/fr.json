@@ -57,6 +57,8 @@
     "maxNodesWarning": "Vous ne voulez probablement pas faire cela à moins d'être absolument sûr d'avoir une bonne raison de le faire.",
     "offlineMode": "Mode Hors Ligne",
     "offlineModeSubtitle": "Désactiver toutes les requêtes réseau sauf pour les zones locales/hors ligne.",
+    "pauseQueueProcessing": "Suspendre la File d'Upload",
+    "pauseQueueProcessingSubtitle": "Arrêter l'upload des modifications en attente tout en gardant l'accès aux données en direct.",
     "offlineModeWarningTitle": "Téléchargements Actifs",
     "offlineModeWarningMessage": "L'activation du mode hors ligne annulera tous les téléchargements de zone actifs. Voulez-vous continuer?",
     "enableOfflineMode": "Activer le Mode Hors Ligne",

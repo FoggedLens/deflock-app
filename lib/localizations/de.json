@@ -39,6 +39,8 @@
     "maxNodesWarning": "Sie möchten das wahrscheinlich nicht tun, es sei denn, Sie sind absolut sicher, dass Sie einen guten Grund dafür haben.",
     "offlineMode": "Offline-Modus",
     "offlineModeSubtitle": "Alle Netzwerkanfragen außer für lokale/Offline-Bereiche deaktivieren.",
+    "pauseQueueProcessing": "Upload-Warteschlange pausieren",
+    "pauseQueueProcessingSubtitle": "Upload von wartenden Änderungen stoppen, aber Live-Datenzugriff beibehalten.",
     "offlineModeWarningTitle": "Aktive Downloads",
     "offlineModeWarningMessage": "Die Aktivierung des Offline-Modus bricht alle aktiven Bereichsdownloads ab. Möchten Sie fortfahren?",
     "enableOfflineMode": "Offline-Modus Aktivieren",

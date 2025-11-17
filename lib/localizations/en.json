@@ -57,6 +57,8 @@
     "maxNodesWarning": "You probably don't want to do that unless you are absolutely sure you have a good reason for it.",
     "offlineMode": "Offline Mode",
     "offlineModeSubtitle": "Disable all network requests except for local/offline areas.",
+    "pauseQueueProcessing": "Pause Upload Queue",
+    "pauseQueueProcessingSubtitle": "Stop uploading queued changes while keeping live data access.",
     "offlineModeWarningTitle": "Active Downloads",
     "offlineModeWarningMessage": "Enabling offline mode will cancel any active area downloads. Do you want to continue?",
     "enableOfflineMode": "Enable Offline Mode",

@@ -57,6 +57,8 @@
     "maxNodesWarning": "Você provavelmente não quer fazer isso a menos que tenha certeza absoluta de que tem uma boa razão para isso.",
     "offlineMode": "Modo Offline",
     "offlineModeSubtitle": "Desabilitar todas as requisições de rede exceto para áreas locais/offline.",
+    "pauseQueueProcessing": "Pausar Fila de Upload",
+    "pauseQueueProcessingSubtitle": "Parar upload de alterações na fila mantendo acesso a dados ao vivo.",
     "offlineModeWarningTitle": "Downloads Ativos",
     "offlineModeWarningMessage": "Ativar o modo offline cancelará qualquer download de área ativo. Deseja continuar?",
     "enableOfflineMode": "Ativar Modo Offline",
