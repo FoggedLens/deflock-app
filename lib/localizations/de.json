@@ -309,6 +309,27 @@
     "selectMapLayer": "Kartenschicht Auswählen",
     "noTileProvidersAvailable": "Keine Kachel-Anbieter verfügbar"
   },
+  "advancedEdit": {
+    "title": "Erweiterte Bearbeitungsoptionen",
+    "subtitle": "Diese Editoren bieten erweiterte Funktionen für komplexe Bearbeitungen.",
+    "webEditors": "Web-Editoren",
+    "mobileEditors": "Mobile Editoren",
+    "iDEditor": "iD Editor",
+    "iDEditorSubtitle": "Voll ausgestatteter Web-Editor - funktioniert immer",
+    "rapidEditor": "RapiD Editor",
+    "rapidEditorSubtitle": "KI-unterstütztes Bearbeiten mit Facebook-Daten",
+    "vespucci": "Vespucci",
+    "vespucciSubtitle": "Erweiterte Android OSM-Editor",
+    "streetComplete": "StreetComplete",
+    "streetCompleteSubtitle": "Umfragebasierte Mapping-App",
+    "everyDoor": "EveryDoor",
+    "everyDoorSubtitle": "Schnelle POI-Bearbeitung",
+    "goMap": "Go Map!!",
+    "goMapSubtitle": "iOS OSM-Editor",
+    "couldNotOpenEditor": "Editor konnte nicht geöffnet werden - App möglicherweise nicht installiert",
+    "couldNotOpenURL": "URL konnte nicht geöffnet werden",
+    "couldNotOpenOSMWebsite": "OSM-Website konnte nicht geöffnet werden"
+  },
   "networkStatus": {
     "showIndicator": "Netzwerkstatus-Anzeige anzeigen",
     "showIndicatorSubtitle": "Netzwerk-Ladestatus und Fehlerstatus auf der Karte anzeigen",

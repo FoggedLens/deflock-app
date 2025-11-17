@@ -327,6 +327,27 @@
     "selectMapLayer": "选择地图图层",
     "noTileProvidersAvailable": "无可用瓦片提供商"
   },
+  "advancedEdit": {
+    "title": "高级编辑选项",
+    "subtitle": "这些编辑器为复杂编辑提供更高级的功能。",
+    "webEditors": "网页编辑器",
+    "mobileEditors": "移动编辑器",
+    "iDEditor": "iD 编辑器",
+    "iDEditorSubtitle": "功能完整的网页编辑器 - 始终有效",
+    "rapidEditor": "RapiD 编辑器",
+    "rapidEditorSubtitle": "使用Facebook数据的AI辅助编辑",
+    "vespucci": "Vespucci",
+    "vespucciSubtitle": "高级Android OSM编辑器",
+    "streetComplete": "StreetComplete",
+    "streetCompleteSubtitle": "基于调查的地图应用",
+    "everyDoor": "EveryDoor",
+    "everyDoorSubtitle": "快速POI编辑",
+    "goMap": "Go Map!!",
+    "goMapSubtitle": "iOS OSM编辑器",
+    "couldNotOpenEditor": "无法打开编辑器 - 应用可能未安装",
+    "couldNotOpenURL": "无法打开URL",
+    "couldNotOpenOSMWebsite": "无法打开OSM网站"
+  },
   "networkStatus": {
     "showIndicator": "显示网络状态指示器",
     "showIndicatorSubtitle": "在地图上显示网络加载和错误状态",

@@ -327,6 +327,27 @@
     "selectMapLayer": "Selecionar Camada do Mapa",
     "noTileProvidersAvailable": "Nenhum provedor de tiles disponível"
   },
+  "advancedEdit": {
+    "title": "Opções de Edição Avançada",
+    "subtitle": "Estes editores oferecem recursos mais avançados para edições complexas.",
+    "webEditors": "Editores Web",
+    "mobileEditors": "Editores Móveis",
+    "iDEditor": "Editor iD",
+    "iDEditorSubtitle": "Editor web completo - sempre funciona",
+    "rapidEditor": "Editor RapiD",
+    "rapidEditorSubtitle": "Edição assistida por IA com dados do Facebook",
+    "vespucci": "Vespucci",
+    "vespucciSubtitle": "Editor OSM avançado para Android",
+    "streetComplete": "StreetComplete",
+    "streetCompleteSubtitle": "Aplicativo de mapeamento baseado em pesquisas",
+    "everyDoor": "EveryDoor",
+    "everyDoorSubtitle": "Edição rápida de POI",
+    "goMap": "Go Map!!",
+    "goMapSubtitle": "Editor OSM iOS",
+    "couldNotOpenEditor": "Não foi possível abrir o editor - aplicativo pode não estar instalado",
+    "couldNotOpenURL": "Não foi possível abrir a URL",
+    "couldNotOpenOSMWebsite": "Não foi possível abrir o site do OSM"
+  },
   "networkStatus": {
     "showIndicator": "Exibir indicador de status de rede",
     "showIndicatorSubtitle": "Mostrar status de carregamento e erro de rede no mapa",

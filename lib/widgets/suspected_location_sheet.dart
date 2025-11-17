@@ -20,8 +20,6 @@ class SuspectedLocationSheet extends StatelessWidget {
         final appState = context.watch<AppState>();
         final locService = LocalizationService.instance;
 
-
-
         // Get all fields except location and ticket_no
         final displayData = <String, String>{};
         for (final entry in location.allFields.entries) {
@@ -55,52 +53,56 @@ class SuspectedLocationSheet extends StatelessWidget {
                         children: [
                           // Display all fields
                           ...displayData.entries.map(
-                    (e) => Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 2),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            e.key,
-                            style: TextStyle(
-                              fontWeight: FontWeight.w500,
-                              color: Theme.of(context).colorScheme.onSurface,
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: e.key.toLowerCase().contains('url') && e.value.isNotEmpty
-                                ? GestureDetector(
-                                    onTap: () async {
-                                      final uri = Uri.parse(e.value);
-                                      if (await canLaunchUrl(uri)) {
-                                        await launchUrl(uri, mode: LaunchMode.externalApplication);
-                                      } else {
-                                        if (context.mounted) {
-                                          ScaffoldMessenger.of(context).showSnackBar(
-                                            SnackBar(
-                                              content: Text('Could not open URL: ${e.value}'),
-                                            ),
-                                          );
-                                        }
-                                      }
-                                    },
-                                    child: Text(
-                                      e.value,
-                                      style: TextStyle(
-                                        color: Theme.of(context).colorScheme.primary,
-                                        decoration: TextDecoration.underline,
-                                      ),
-                                      softWrap: true,
-                                    ),
-                                  )
-                                : Text(
-                                    e.value,
+                            (e) => Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 2),
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    e.key,
                                     style: TextStyle(
-                                      color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+                                      fontWeight: FontWeight.w500,
+                                      color: Theme.of(context).colorScheme.onSurface,
                                     ),
-                                    softWrap: true,
                                   ),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: e.key.toLowerCase().contains('url') && e.value.isNotEmpty
+                                        ? GestureDetector(
+                                            onTap: () async {
+                                              final uri = Uri.parse(e.value);
+                                              if (await canLaunchUrl(uri)) {
+                                                await launchUrl(uri, mode: LaunchMode.externalApplication);
+                                              } else {
+                                                if (context.mounted) {
+                                                  ScaffoldMessenger.of(context).showSnackBar(
+                                                    SnackBar(
+                                                      content: Text('Could not open URL: ${e.value}'),
+                                                    ),
+                                                  );
+                                                }
+                                              }
+                                            },
+                                            child: Text(
+                                              e.value,
+                                              style: TextStyle(
+                                                color: Theme.of(context).colorScheme.primary,
+                                                decoration: TextDecoration.underline,
+                                              ),
+                                              softWrap: true,
+                                            ),
+                                          )
+                                        : Text(
+                                            e.value,
+                                            style: TextStyle(
+                                              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+                                            ),
+                                            softWrap: true,
+                                          ),
+                                  ),
+                                ],
+                              ),
+                            ),
                           ),
                         ],
                       ),
