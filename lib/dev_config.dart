@@ -34,7 +34,20 @@ double bottomPositionFromButtonBar(double spacingAboveButtonBar, double safeArea
   return safeAreaBottom + kBottomButtonBarOffset + kButtonBarHeight + spacingAboveButtonBar;
 }
 
+// Helper to get left positioning that accounts for safe area (for landscape mode)
+double leftPositionWithSafeArea(double baseLeft, EdgeInsets safeArea) {
+  return baseLeft + safeArea.left;
+}
 
+// Helper to get right positioning that accounts for safe area (for landscape mode)
+double rightPositionWithSafeArea(double baseRight, EdgeInsets safeArea) {
+  return baseRight + safeArea.right;
+}
+
+// Helper to get top positioning that accounts for safe area
+double topPositionWithSafeArea(double baseTop, EdgeInsets safeArea) {
+  return baseTop + safeArea.top;
+}
 
 // Client name for OSM uploads ("created_by" tag)
 const String kClientName = 'DeFlock';

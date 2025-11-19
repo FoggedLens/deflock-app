@@ -51,13 +51,15 @@ class MapOverlays extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final safeArea = MediaQuery.of(context).padding;
+    
     return Stack(
       children: [
         // MODE INDICATOR badge (top-right)
         if (uploadMode == UploadMode.sandbox || uploadMode == UploadMode.simulate)
           Positioned(
-            top: 18,
-            right: 14,
+            top: topPositionWithSafeArea(18, safeArea),
+            right: rightPositionWithSafeArea(14, safeArea),
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
               decoration: BoxDecoration(
@@ -86,12 +88,13 @@ class MapOverlays extends StatelessWidget {
         // Compass indicator (top-right, below mode indicator)
         CompassIndicator(
           mapController: mapController,
+          safeArea: safeArea,
         ),
 
-        // Zoom indicator, positioned relative to button bar
+        // Zoom indicator, positioned relative to button bar with left safe area
         Positioned(
-          left: 10,
-          bottom: bottomPositionFromButtonBar(kZoomIndicatorSpacingAboveButtonBar, MediaQuery.of(context).padding.bottom),
+          left: leftPositionWithSafeArea(10, safeArea),
+          bottom: bottomPositionFromButtonBar(kZoomIndicatorSpacingAboveButtonBar, safeArea.bottom),
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
             decoration: BoxDecoration(
@@ -119,11 +122,11 @@ class MapOverlays extends StatelessWidget {
           ),
         ),
 
-        // Attribution overlay, positioned relative to button bar
+        // Attribution overlay, positioned relative to button bar with left safe area
         if (attribution != null)
           Positioned(
-            bottom: bottomPositionFromButtonBar(kAttributionSpacingAboveButtonBar, MediaQuery.of(context).padding.bottom),
-            left: 10,
+            bottom: bottomPositionFromButtonBar(kAttributionSpacingAboveButtonBar, safeArea.bottom),
+            left: leftPositionWithSafeArea(10, safeArea),
             child: GestureDetector(
               onTap: () => _showAttributionDialog(context, attribution!),
               child: Container(
@@ -146,10 +149,10 @@ class MapOverlays extends StatelessWidget {
             ),
           ),
 
-        // Zoom and layer controls (bottom-right), positioned relative to button bar
+        // Zoom and layer controls (bottom-right), positioned relative to button bar with right safe area
         Positioned(
-          bottom: bottomPositionFromButtonBar(kZoomControlsSpacingAboveButtonBar, MediaQuery.of(context).padding.bottom),
-          right: 16,
+          bottom: bottomPositionFromButtonBar(kZoomControlsSpacingAboveButtonBar, safeArea.bottom),
+          right: rightPositionWithSafeArea(16, safeArea),
           child: Consumer<AppState>(
             builder: (context, appState, child) {
               return Column(

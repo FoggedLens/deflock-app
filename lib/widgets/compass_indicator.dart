@@ -11,10 +11,12 @@ import '../app_state.dart';
 /// The compass appears in the top-right corner of the map and is disabled (non-interactive) when in follow+rotate mode.
 class CompassIndicator extends StatefulWidget {
   final AnimatedMapController mapController;
+  final EdgeInsets safeArea;
 
   const CompassIndicator({
     super.key,
     required this.mapController,
+    required this.safeArea,
   });
 
   @override
@@ -46,9 +48,11 @@ class _CompassIndicatorState extends State<CompassIndicator> {
         // Check if we're in follow+rotate mode (compass should be disabled)
         final isDisabled = appState.followMeMode == FollowMeMode.rotating;
 
+        final baseTop = (appState.uploadMode == UploadMode.sandbox || appState.uploadMode == UploadMode.simulate) ? 60 : 18;
+        
         return Positioned(
-          top: (appState.uploadMode == UploadMode.sandbox || appState.uploadMode == UploadMode.simulate) ? 60 : 18,
-          right: 16,
+          top: baseTop + widget.safeArea.top,
+          right: 16 + widget.safeArea.right,
           child: GestureDetector(
             onTap: isDisabled ? null : () {
               // Animate to north-up orientation

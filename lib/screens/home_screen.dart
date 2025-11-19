@@ -708,71 +708,76 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             // Bottom button bar (restored to original)
             Align(
               alignment: Alignment.bottomCenter,
-              child: Padding(
-                padding: EdgeInsets.only(
-                  bottom: MediaQuery.of(context).padding.bottom + kBottomButtonBarOffset,
-                  left: 8,
-                  right: 8,
-                ),
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 600), // Match typical sheet width
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.surface,
-                      borderRadius: BorderRadius.circular(16),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Theme.of(context).shadowColor.withOpacity(0.3),
-                          blurRadius: 10,
-                          offset: Offset(0, -2),
-                        )
-                      ],
+              child: Builder(
+                builder: (context) {
+                  final safeArea = MediaQuery.of(context).padding;
+                  return Padding(
+                    padding: EdgeInsets.only(
+                      bottom: safeArea.bottom + kBottomButtonBarOffset,
+                      left: leftPositionWithSafeArea(8, safeArea),
+                      right: rightPositionWithSafeArea(8, safeArea),
                     ),
-                    margin: EdgeInsets.only(bottom: kBottomButtonBarOffset),
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                    child: Row(
-                    children: [
-                      Expanded(
-                        flex: 7, // 70% for primary action
-                        child: AnimatedBuilder(
-                          animation: LocalizationService.instance,
-                          builder: (context, child) => ElevatedButton.icon(
-                            icon: Icon(Icons.add_location_alt),
-                            label: Text(LocalizationService.instance.tagNode),
-                            onPressed: _openAddNodeSheet,
-                            style: ElevatedButton.styleFrom(
-                              minimumSize: Size(0, 48),
-                              textStyle: TextStyle(fontSize: 16),
-                            ),
-                          ),
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 600), // Match typical sheet width
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).colorScheme.surface,
+                          borderRadius: BorderRadius.circular(16),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Theme.of(context).shadowColor.withOpacity(0.3),
+                              blurRadius: 10,
+                              offset: Offset(0, -2),
+                            )
+                          ],
                         ),
-                      ),
-                      SizedBox(width: 12),
-                      Expanded(
-                        flex: 3, // 30% for secondary action
-                        child: AnimatedBuilder(
-                          animation: LocalizationService.instance,
-                          builder: (context, child) => FittedBox(
-                            fit: BoxFit.scaleDown,
-                            child: ElevatedButton.icon(
-                              icon: Icon(Icons.download_for_offline),
-                              label: Text(LocalizationService.instance.download),
-                              onPressed: () => showDialog(
-                                context: context,
-                                builder: (ctx) => DownloadAreaDialog(controller: _mapController.mapController),
-                              ),
-                              style: ElevatedButton.styleFrom(
-                                minimumSize: Size(0, 48),
-                                textStyle: TextStyle(fontSize: 16),
+                        margin: EdgeInsets.only(bottom: kBottomButtonBarOffset),
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              flex: 7, // 70% for primary action
+                              child: AnimatedBuilder(
+                                animation: LocalizationService.instance,
+                                builder: (context, child) => ElevatedButton.icon(
+                                  icon: Icon(Icons.add_location_alt),
+                                  label: Text(LocalizationService.instance.tagNode),
+                                  onPressed: _openAddNodeSheet,
+                                  style: ElevatedButton.styleFrom(
+                                    minimumSize: Size(0, 48),
+                                    textStyle: TextStyle(fontSize: 16),
+                                  ),
+                                ),
                               ),
                             ),
-                          ),
+                            SizedBox(width: 12),
+                            Expanded(
+                              flex: 3, // 30% for secondary action
+                              child: AnimatedBuilder(
+                                animation: LocalizationService.instance,
+                                builder: (context, child) => FittedBox(
+                                  fit: BoxFit.scaleDown,
+                                  child: ElevatedButton.icon(
+                                    icon: Icon(Icons.download_for_offline),
+                                    label: Text(LocalizationService.instance.download),
+                                    onPressed: () => showDialog(
+                                      context: context,
+                                      builder: (ctx) => DownloadAreaDialog(controller: _mapController.mapController),
+                                    ),
+                                    style: ElevatedButton.styleFrom(
+                                      minimumSize: Size(0, 48),
+                                      textStyle: TextStyle(fontSize: 16),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                    ],
-                  ),
-                ),
-                ),
+                    ),
+                  );
+                },
               ),
             ),
           ],
