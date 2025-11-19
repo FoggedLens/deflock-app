@@ -50,8 +50,11 @@ class _CompassIndicatorState extends State<CompassIndicator> {
 
         final baseTop = (appState.uploadMode == UploadMode.sandbox || appState.uploadMode == UploadMode.simulate) ? 60 : 18;
         
+        // Add extra spacing when search bar is visible
+        final searchBarOffset = (!appState.offlineMode && appState.isInSearchMode) ? 60 : 0;
+        
         return Positioned(
-          top: baseTop + widget.safeArea.top,
+          top: baseTop + widget.safeArea.top + searchBarOffset,
           right: 16 + widget.safeArea.right,
           child: GestureDetector(
             onTap: isDisabled ? null : () {
