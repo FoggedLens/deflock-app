@@ -269,6 +269,7 @@ class MapViewState extends State<MapView> {
     if (editSession?.originalNode.isConstrained == true) {
       // Constrained node: only allow pinch zoom and rotation, disable ALL panning
       return const InteractionOptions(
+        enableMultiFingerGestureRace: true,
         flags: InteractiveFlag.pinchZoom | InteractiveFlag.rotate,
         scrollWheelVelocity: kScrollWheelVelocity,
         pinchZoomThreshold: kPinchZoomThreshold,
@@ -276,9 +277,16 @@ class MapViewState extends State<MapView> {
       );
     }
     
-    // Normal case: all interactions allowed
+    // Normal case: all interactions allowed with gesture race to prevent accidental rotation during zoom
     return const InteractionOptions(
-      flags: InteractiveFlag.all,
+      enableMultiFingerGestureRace: true,
+      flags: InteractiveFlag.doubleTapDragZoom |
+          InteractiveFlag.doubleTapZoom |
+          InteractiveFlag.drag |
+          InteractiveFlag.flingAnimation |
+          InteractiveFlag.pinchZoom |
+          InteractiveFlag.rotate |
+          InteractiveFlag.scrollWheelZoom,
       scrollWheelVelocity: kScrollWheelVelocity,
       pinchZoomThreshold: kPinchZoomThreshold,
       pinchMoveThreshold: kPinchMoveThreshold,

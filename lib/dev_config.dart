@@ -111,9 +111,10 @@ const Duration kProximityAlertCooldown = Duration(minutes: 10); // Cooldown betw
 
 // Map interaction configuration
 const double kNodeDoubleTapZoomDelta = 1.0; // How much to zoom in when double-tapping nodes (was 1.0)
-const double kScrollWheelVelocity = 0.005; // Mouse scroll wheel zoom speed (default 0.005)
+const double kScrollWheelVelocity = 0.01; // Mouse scroll wheel zoom speed (default 0.005)
 const double kPinchZoomThreshold = 0.5; // How much pinch required to start zoom (default 0.5)
-const double kPinchMoveThreshold = 40.0; // How much drag required for two-finger pan (default 40.0)
+const double kPinchMoveThreshold = 30.0; // How much drag required for two-finger pan (default 40.0)
+const double kRotationThreshold = 10.0; // Degrees of rotation required before map actually rotates (Google Maps style)
 
 // Tile fetch retry parameters (configurable backoff system)
 const int kTileFetchMaxAttempts = 16;              // Number of retry attempts before giving up
