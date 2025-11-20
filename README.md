@@ -98,16 +98,27 @@ cp lib/keys.dart.example lib/keys.dart
 ## Roadmap
 
 ### Needed Bugfixes
+- Decide what to do for extracting nodes attached to a way/relation:
+  - Auto extract (how?)
+  - Leave it alone (wrong answer unless user chooses intentionally)
+  - Manual cleanup (cognitive load for users)
+  - Delete the old one (also wrong answer unless user chooses intentionally)
+  - Give multiple of these options??
+- Two nodes too close together warning
+- Nav start+end too close together error (warning + disable submit button?)
+- Improve/retune tile fetching backoff/retry
+- Disable deletes on nodes belonging to ways/relations
+- Support FOV range notation: 0-360, 90-270, 10-45;90-125
+- Add some builtin satellite tile provider
+- Link to "my changes" on osm (username edit history)
 - Are offline areas preferred for fast loading even when online? Check working.
 - Fix network indicator - only done when fetch queue is empty!
 
 ### Current Development
-- Add some builtin satellite tile provider
-- Option to pull in profiles from NSI (man_made=surveillance only)
-- Persistent cache for MY submissions: clean up when we see that node appear in overpass results or when older than 24h
-- Dropdown on "refine tags" page to select acceptable options for camera:mount=
-- Tutorial / info guide before submitting first node
-- Link to "my changes" on osm (username edit history)
+- Persistent cache for MY submissions: clean up when we see that node appear in overpass/OSM results or when older than 24h
+- Dropdown on "refine tags" page to select acceptable options for camera:mount= (is this a boolean property of a profile?)
+- Tutorial / info guide before submitting first node, info and links before creating first profile
+- Option to pull in profiles from NSI (man_made=surveillance only?)
 
 ### On Pause
 - Suspected locations expansion to more regions
