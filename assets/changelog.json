@@ -1,4 +1,13 @@
 {
+  "1.4.0": {
+    "content": [
+      "• IMPROVED: Advanced editing options now only show apps available on your platform (iOS/Android)",
+      "• IMPROVED: When an OSM editor app isn't installed, automatically redirect to the appropriate app store",
+      "• IMPROVED: Better error handling for external editor launches with app store fallback",
+      "• Supported editors: Vespucci (Android), StreetComplete (Android), EveryDoor (both), Go Map!! (iOS)",
+      "• Web editors (iD, RapiD) remain available on all platforms as before"
+    ]
+  },
   "1.3.4": {
     "content": [
       "• NEW: 'Pause Upload Queue' toggle in Offline Settings - stops uploads while keeping live data access",
