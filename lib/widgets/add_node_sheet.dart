@@ -88,10 +88,12 @@ class AddNodeSheet extends StatelessWidget {
                 icon: Icon(
                   Icons.add, 
                   size: 20,
-                  color: requiresDirection ? null : Theme.of(context).disabledColor,
+                  color: requiresDirection && session.directions.length < 8 ? null : Theme.of(context).disabledColor,
                 ),
-                onPressed: requiresDirection ? () => appState.addDirection() : null,
-                tooltip: requiresDirection ? 'Add new direction' : 'Direction not required for this profile',
+                onPressed: requiresDirection && session.directions.length < 8 ? () => appState.addDirection() : null,
+                tooltip: requiresDirection 
+                    ? (session.directions.length >= 8 ? 'Maximum 8 directions allowed' : 'Add new direction') 
+                    : 'Direction not required for this profile',
                 padding: EdgeInsets.zero,
                 constraints: const BoxConstraints(minWidth: kDirectionButtonMinWidth, minHeight: kDirectionButtonMinHeight),
               ),

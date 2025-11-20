@@ -118,6 +118,8 @@
     "enableSubmittableProfile": "在设置中启用可提交的配置文件以编辑节点。",
     "profileViewOnlyWarning": "此配置文件仅用于地图查看。请选择可提交的配置文件来编辑节点。",
     "cannotMoveConstrainedNode": "无法移动此相机 - 它连接到另一个地图元素（OSM way/relation）。您仍可以编辑其标签和方向。",
+    "extractFromWay": "从way/relation中提取节点",
+    "extractFromWaySubtitle": "创建具有相同标签的新节点，允许移动到新位置",
     "refineTags": "细化标签",
     "refineTagsWithProfile": "细化标签（{}）"
   },

@@ -90,10 +90,12 @@ class EditNodeSheet extends StatelessWidget {
                 icon: Icon(
                   Icons.add, 
                   size: 20,
-                  color: requiresDirection ? null : Theme.of(context).disabledColor,
+                  color: requiresDirection && session.directions.length < 8 ? null : Theme.of(context).disabledColor,
                 ),
-                onPressed: requiresDirection ? () => appState.addDirection() : null,
-                tooltip: requiresDirection ? 'Add new direction' : 'Direction not required for this profile',
+                onPressed: requiresDirection && session.directions.length < 8 ? () => appState.addDirection() : null,
+                tooltip: requiresDirection 
+                    ? (session.directions.length >= 8 ? 'Maximum 8 directions allowed' : 'Add new direction') 
+                    : 'Direction not required for this profile',
                 padding: EdgeInsets.zero,
                 constraints: const BoxConstraints(minWidth: kDirectionButtonMinWidth, minHeight: kDirectionButtonMinHeight),
               ),
@@ -217,19 +219,34 @@ class EditNodeSheet extends StatelessWidget {
                   padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
                   child: Column(
                     children: [
-                      Row(
-                        children: [
-                          const Icon(Icons.info_outline, size: 20),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Text(
-                              locService.t('editNode.cannotMoveConstrainedNode'),
-                              style: Theme.of(context).textTheme.bodyMedium,
-                            ),
-                          ),
-                        ],
+                      // Extract from way checkbox
+                      CheckboxListTile(
+                        title: Text(locService.t('editNode.extractFromWay')),
+                        subtitle: Text(locService.t('editNode.extractFromWaySubtitle')),
+                        value: session.extractFromWay,
+                        onChanged: (value) {
+                          appState.updateEditSession(extractFromWay: value);
+                        },
+                        controlAffinity: ListTileControlAffinity.leading,
+                        contentPadding: EdgeInsets.zero,
                       ),
                       const SizedBox(height: 8),
+                      // Constraint info message (only show if extract is not checked)
+                      if (!session.extractFromWay) ...[
+                        Row(
+                          children: [
+                            const Icon(Icons.info_outline, size: 20),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                locService.t('editNode.cannotMoveConstrainedNode'),
+                                style: Theme.of(context).textTheme.bodyMedium,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                      ],
                       Row(
                         mainAxisAlignment: MainAxisAlignment.end,
                         children: [

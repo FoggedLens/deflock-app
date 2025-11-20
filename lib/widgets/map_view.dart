@@ -263,11 +263,11 @@ class MapViewState extends State<MapView> {
   }
 
   /// Get interaction options for the map based on whether we're editing a constrained node.
-  /// Allows zoom and rotation but disables all forms of panning for constrained nodes.
+  /// Allows zoom and rotation but disables all forms of panning for constrained nodes unless extract is enabled.
   InteractionOptions _getInteractionOptions(EditNodeSession? editSession) {
-    // Check if we're editing a constrained node
-    if (editSession?.originalNode.isConstrained == true) {
-      // Constrained node: only allow pinch zoom and rotation, disable ALL panning
+    // Check if we're editing a constrained node that's not being extracted
+    if (editSession?.originalNode.isConstrained == true && editSession?.extractFromWay != true) {
+      // Constrained node (not extracting): only allow pinch zoom and rotation, disable ALL panning
       return const InteractionOptions(
         enableMultiFingerGestureRace: true,
         flags: InteractiveFlag.pinchZoom | InteractiveFlag.rotate,
@@ -377,6 +377,19 @@ class MapViewState extends State<MapView> {
           (_) => appState.updateSession(target: center),
         );
       } catch (_) {/* controller not ready yet */}
+    }
+    
+    // Check for pending snap backs (when extract checkbox is unchecked)
+    final snapBackTarget = appState.consumePendingSnapBack();
+    if (snapBackTarget != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _controller.animateTo(
+          dest: snapBackTarget,
+          zoom: _controller.mapController.camera.zoom,
+          curve: Curves.easeOut,
+          duration: const Duration(milliseconds: 250),
+        );
+      });
     }
     
     // Edit sessions don't need to center - we're already centered from the node tap
@@ -575,6 +588,7 @@ class MapViewState extends State<MapView> {
             options: MapOptions(
               initialCenter: _gpsController.currentLocation ?? _positionManager.initialLocation ?? LatLng(37.7749, -122.4194),
             initialZoom: _positionManager.initialZoom ?? 15,
+            minZoom: 1.0,
             maxZoom: (appState.selectedTileType?.maxZoom ?? 18).toDouble(),
             interactionOptions: _getInteractionOptions(editSession),
             onPositionChanged: (pos, gesture) {
@@ -587,8 +601,8 @@ class MapViewState extends State<MapView> {
                 appState.updateSession(target: pos.center);
               }
               if (editSession != null) {
-                // For constrained nodes, always snap back to original position
-                if (editSession.originalNode.isConstrained) {
+                // For constrained nodes that are not being extracted, always snap back to original position
+                if (editSession.originalNode.isConstrained && !editSession.extractFromWay) {
                   final originalPos = editSession.originalNode.coord;
                   
                   // Always keep session target as original position
@@ -599,7 +613,7 @@ class MapViewState extends State<MapView> {
                     _constrainedNodeSnapBack(() {
                       // Only animate if we're still in a constrained edit session and still drifted
                       final currentEditSession = appState.editSession;
-                      if (currentEditSession?.originalNode.isConstrained == true) {
+                      if (currentEditSession?.originalNode.isConstrained == true && currentEditSession?.extractFromWay != true) {
                         final currentPos = _controller.mapController.camera.center;
                         if (currentPos.latitude != originalPos.latitude || currentPos.longitude != originalPos.longitude) {
                           _controller.animateTo(

@@ -1,4 +1,13 @@
 {
+  "1.4.1": {
+    "content": [
+      "• NEW: 'Extract node from way/relation' option for constrained nodes",
+      "• When editing nodes that are part of ways or relations, you can now check 'Extract node from way' to create a new node with the same tags at a new location",
+      "• This preserves the original node in its way/relation while creating an independent copy that can be moved freely",
+      "• Useful for cases where surveillance equipment has been relocated but the original node must remain for mapping accuracy",
+      "• Extraction creates a separate OSM changeset and node, leaving the original node untouched"
+    ]
+  },
   "1.4.0": {
     "content": [
       "• IMPROVED: Advanced editing options now only show apps available on your platform (iOS/Android)",

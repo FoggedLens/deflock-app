@@ -3,7 +3,7 @@ import 'node_profile.dart';
 import 'operator_profile.dart';
 import '../state/settings_state.dart';
 
-enum UploadOperation { create, modify, delete }
+enum UploadOperation { create, modify, delete, extract }
 
 class PendingUpload {
   final LatLng coord;
@@ -32,12 +32,12 @@ class PendingUpload {
     this.completing = false,
   }) : assert(
          (operation == UploadOperation.create && originalNodeId == null) ||
-         (operation != UploadOperation.create && originalNodeId != null),
-         'originalNodeId must be null for create operations and non-null for modify/delete operations'
+         (operation == UploadOperation.create) || (originalNodeId != null),
+         'originalNodeId must be null for create operations and non-null for modify/delete/extract operations'
        ),
        assert(
          (operation == UploadOperation.delete) || (profile != null),
-         'profile is required for create and modify operations'
+         'profile is required for create, modify, and extract operations'
        );
 
   // True if this is an edit of an existing node, false if it's a new node
@@ -45,6 +45,9 @@ class PendingUpload {
   
   // True if this is a deletion of an existing node
   bool get isDeletion => operation == UploadOperation.delete;
+  
+  // True if this is an extract operation (new node with tags from constrained node)
+  bool get isExtraction => operation == UploadOperation.extract;
 
   // Get display name for the upload destination
   String get uploadModeDisplayName {

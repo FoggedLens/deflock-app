@@ -100,6 +100,8 @@
     "enableSubmittableProfile": "Aktivieren Sie ein übertragbares Profil in den Einstellungen, um Knoten zu bearbeiten.",
     "profileViewOnlyWarning": "Dieses Profil ist nur zum Anzeigen der Karte gedacht. Bitte wählen Sie ein übertragbares Profil aus, um Knoten zu bearbeiten.",
     "cannotMoveConstrainedNode": "Kann diese Kamera nicht verschieben - sie ist mit einem anderen Kartenelement verbunden (OSM-Weg/Relation). Sie können trotzdem ihre Tags und Richtung bearbeiten.",
+    "extractFromWay": "Knoten aus Weg/Relation extrahieren",
+    "extractFromWaySubtitle": "Neuen Knoten mit gleichen Tags erstellen, Verschieben an neuen Ort ermöglichen",
     "refineTags": "Tags Verfeinern",
     "refineTagsWithProfile": "Tags Verfeinern ({})"
   },

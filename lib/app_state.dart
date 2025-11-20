@@ -277,13 +277,20 @@ class AppState extends ChangeNotifier {
     NodeProfile? profile,
     OperatorProfile? operatorProfile,
     LatLng? target,
+    bool? extractFromWay,
   }) {
     _sessionState.updateEditSession(
       directionDeg: directionDeg,
       profile: profile,
       operatorProfile: operatorProfile,
       target: target,
+      extractFromWay: extractFromWay,
     );
+  }
+  
+  // For map view to check for pending snap backs
+  LatLng? consumePendingSnapBack() {
+    return _sessionState.consumePendingSnapBack();
   }
 
   void addDirection() {

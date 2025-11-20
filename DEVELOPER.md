@@ -135,17 +135,23 @@ The welcome popup explains that the app:
 **Why this approach:**
 Reduces API load by 3-4x while ensuring data freshness. User sees instant responses from cache while background fetching keeps data current. Eliminates complex dual-path logic in favor of simple spatial/temporal triggers.
 
-### 2. Node Operations (Create/Edit/Delete)
+### 2. Node Operations (Create/Edit/Delete/Extract)
 
 **Upload Operations Enum:**
 ```dart
-enum UploadOperation { create, modify, delete }
+enum UploadOperation { create, modify, delete, extract }
 ```
 
 **Why explicit enum vs boolean flags:**
-- **Brutalist**: Three explicit states instead of nullable booleans
+- **Brutalist**: Four explicit states instead of nullable booleans
 - **Extensible**: Easy to add new operations (like bulk operations)
 - **Clear intent**: `operation == UploadOperation.delete` is unambiguous
+
+**Operations explained:**
+- **create**: Add new node to OSM
+- **modify**: Update existing node's tags/position/direction
+- **delete**: Remove existing node from OSM
+- **extract**: Create new node with tags copied from constrained node, leaving original unchanged
 
 **Session Pattern:**
 - `AddNodeSession`: For creating new nodes with single or multiple directions

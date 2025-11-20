@@ -118,6 +118,8 @@
     "enableSubmittableProfile": "Ative um perfil enviável nas Configurações para editar nós.",
     "profileViewOnlyWarning": "Este perfil é apenas para visualização do mapa. Por favor, selecione um perfil enviável para editar nós.",
     "cannotMoveConstrainedNode": "Não é possível mover esta câmera - ela está conectada a outro elemento do mapa (OSM way/relation). Você ainda pode editar suas tags e direção.",
+    "extractFromWay": "Extrair nó do way/relation",
+    "extractFromWaySubtitle": "Criar novo nó com as mesmas tags, permitir mover para nova localização",
     "refineTags": "Refinar Tags",
     "refineTagsWithProfile": "Refinar Tags ({})"
   },

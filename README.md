@@ -108,7 +108,6 @@ cp lib/keys.dart.example lib/keys.dart
 - Dropdown on "refine tags" page to select acceptable options for camera:mount=
 - Tutorial / info guide before submitting first node
 - Link to "my changes" on osm (username edit history)
-- Option to "extract node from way" for nodes attached to a way to allow moving
 
 ### On Pause
 - Suspected locations expansion to more regions

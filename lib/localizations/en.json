@@ -118,6 +118,8 @@
     "enableSubmittableProfile": "Enable a submittable profile in Settings to edit nodes.",
     "profileViewOnlyWarning": "This profile is for map viewing only. Please select a submittable profile to edit nodes.",
     "cannotMoveConstrainedNode": "Cannot move this camera - it's connected to another map element (OSM way/relation). You can still edit its tags and direction.",
+    "extractFromWay": "Extract node from way/relation",
+    "extractFromWaySubtitle": "Create new node with same tags, allow moving to new location",
     "refineTags": "Refine Tags",
     "refineTagsWithProfile": "Refine Tags ({})"
   },

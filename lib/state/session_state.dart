@@ -34,12 +34,14 @@ class EditNodeSession {
   LatLng target; // Current position (can be dragged)
   List<double> directions;          // All directions [90, 180, 270]
   int currentDirectionIndex;        // Which direction we're editing (e.g. 1 = editing the 180°)
+  bool extractFromWay; // True if user wants to extract this constrained node
   
   EditNodeSession({
     required this.originalNode,
     this.profile,
     required double initialDirection,
     required this.target,
+    this.extractFromWay = false,
   }) : directions = [initialDirection],
        currentDirectionIndex = 0;
   
@@ -138,10 +140,14 @@ class SessionState extends ChangeNotifier {
     NodeProfile? profile,
     OperatorProfile? operatorProfile,
     LatLng? target,
+    bool? extractFromWay,
   }) {
     if (_editSession == null) return;
 
     bool dirty = false;
+    bool snapBackRequired = false;
+    LatLng? snapBackTarget;
+    
     if (directionDeg != null && directionDeg != _editSession!.directionDegrees) {
       _editSession!.directionDegrees = directionDeg;
       dirty = true;
@@ -158,7 +164,31 @@ class SessionState extends ChangeNotifier {
       _editSession!.target = target;
       dirty = true;
     }
+    if (extractFromWay != null && extractFromWay != _editSession!.extractFromWay) {
+      _editSession!.extractFromWay = extractFromWay;
+      // When extract is unchecked, snap back to original location
+      if (!extractFromWay) {
+        _editSession!.target = _editSession!.originalNode.coord;
+        snapBackRequired = true;
+        snapBackTarget = _editSession!.originalNode.coord;
+      }
+      dirty = true;
+    }
+    
     if (dirty) notifyListeners();
+    
+    // Store snap back info for map view to pick up
+    if (snapBackRequired && snapBackTarget != null) {
+      _pendingSnapBack = snapBackTarget;
+    }
+  }
+
+  // For map view to check and consume snap back requests
+  LatLng? _pendingSnapBack;
+  LatLng? consumePendingSnapBack() {
+    final result = _pendingSnapBack;
+    _pendingSnapBack = null;
+    return result;
   }
 
   // Add new direction at 0° and switch to editing it

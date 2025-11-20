@@ -17,8 +17,8 @@ class Uploader {
     try {
       print('Uploader: Starting upload for node at ${p.coord.latitude}, ${p.coord.longitude}');
       
-      // Safety check: create and modify operations MUST have profiles
-      if ((p.operation == UploadOperation.create || p.operation == UploadOperation.modify) && p.profile == null) {
+      // Safety check: create, modify, and extract operations MUST have profiles
+      if ((p.operation == UploadOperation.create || p.operation == UploadOperation.modify || p.operation == UploadOperation.extract) && p.profile == null) {
         print('Uploader: ERROR - ${p.operation.name} operation attempted without profile data');
         return false;
       }
@@ -34,6 +34,9 @@ class Uploader {
           break;
         case UploadOperation.delete:
           action = 'Delete';
+          break;
+        case UploadOperation.extract:
+          action = 'Extract';
           break;
       }
       // Generate appropriate comment based on operation type
@@ -140,6 +143,23 @@ class Uploader {
           print('Uploader: Deleting node ${p.originalNodeId}...');
           nodeResp = await _delete('/api/0.6/node/${p.originalNodeId}', nodeXml);
           nodeId = p.originalNodeId.toString();
+          break;
+
+        case UploadOperation.extract:
+          // Extract creates a new node with tags from the original node
+          // The new node is created at the session's target coordinates
+          final mergedTags = p.getCombinedTags();
+          final tagsXml = mergedTags.entries.map((e) =>
+            '<tag k="${e.key}" v="${e.value}"/>').join('\n            ');
+          final nodeXml = '''
+        <osm>
+          <node changeset="$csId" lat="${p.coord.latitude}" lon="${p.coord.longitude}">
+            $tagsXml
+          </node>
+        </osm>''';
+          print('Uploader: Extracting node from ${p.originalNodeId} to create new node...');
+          nodeResp = await _put('/api/0.6/node/create', nodeXml);
+          nodeId = nodeResp.body.trim();
           break;
       }
       

@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:latlong2/latlong.dart';
 
 import '../models/pending_upload.dart';
 import '../models/osm_node.dart';
@@ -61,10 +62,23 @@ class UploadQueueState extends ChangeNotifier {
 
   // Add a completed edit session to the upload queue
   void addFromEditSession(EditNodeSession session, {required UploadMode uploadMode}) {
-    // For constrained nodes, always use original position regardless of session.target
-    final coordToUse = session.originalNode.isConstrained 
-        ? session.originalNode.coord 
-        : session.target;
+    // Determine operation type and coordinates
+    final UploadOperation operation;
+    final LatLng coordToUse;
+    
+    if (session.extractFromWay && session.originalNode.isConstrained) {
+      // Extract operation: create new node at new location
+      operation = UploadOperation.extract;
+      coordToUse = session.target;
+    } else if (session.originalNode.isConstrained) {
+      // Constrained node without extract: use original position
+      operation = UploadOperation.modify;
+      coordToUse = session.originalNode.coord;
+    } else {
+      // Unconstrained node: normal modify operation
+      operation = UploadOperation.modify;
+      coordToUse = session.target;
+    }
     
     final upload = PendingUpload(
       coord: coordToUse,
@@ -72,38 +86,54 @@ class UploadQueueState extends ChangeNotifier {
       profile: session.profile!,  // Safe to use ! because commitEditSession() checks for null
       operatorProfile: session.operatorProfile,
       uploadMode: uploadMode,
-      operation: UploadOperation.modify,
+      operation: operation,
       originalNodeId: session.originalNode.id, // Track which node we're editing
     );
     
     _queue.add(upload);
     _saveQueue();
     
-    // Create two cache entries:
-    
-    // 1. Mark the original node with _pending_edit (grey ring) at original location
-    final originalTags = Map<String, String>.from(session.originalNode.tags);
-    originalTags['_pending_edit'] = 'true'; // Mark original as having pending edit
-    
-    final originalNode = OsmNode(
-      id: session.originalNode.id,
-      coord: session.originalNode.coord, // Keep at original location
-      tags: originalTags,
-    );
-    
-    // 2. Create new temp node for the edited node (purple ring) at new location
-    final tempId = -DateTime.now().millisecondsSinceEpoch;
-    final editedTags = upload.getCombinedTags();
-    editedTags['_pending_upload'] = 'true'; // Mark as pending upload
-    editedTags['_original_node_id'] = session.originalNode.id.toString(); // Track original for line drawing
-    
-    final editedNode = OsmNode(
-      id: tempId,
-      coord: upload.coord, // At new location
-      tags: editedTags,
-    );
-    
-    NodeCache.instance.addOrUpdate([originalNode, editedNode]);
+    // Create cache entries based on operation type:
+    if (operation == UploadOperation.extract) {
+      // For extract: only create new node, leave original unchanged
+      final tempId = -DateTime.now().millisecondsSinceEpoch;
+      final extractedTags = upload.getCombinedTags();
+      extractedTags['_pending_upload'] = 'true'; // Mark as pending upload
+      extractedTags['_original_node_id'] = session.originalNode.id.toString(); // Track original for line drawing
+      
+      final extractedNode = OsmNode(
+        id: tempId,
+        coord: upload.coord, // At new location
+        tags: extractedTags,
+      );
+      
+      NodeCache.instance.addOrUpdate([extractedNode]);
+    } else {
+      // For modify: mark original with grey ring and create new temp node
+      // 1. Mark the original node with _pending_edit (grey ring) at original location
+      final originalTags = Map<String, String>.from(session.originalNode.tags);
+      originalTags['_pending_edit'] = 'true'; // Mark original as having pending edit
+      
+      final originalNode = OsmNode(
+        id: session.originalNode.id,
+        coord: session.originalNode.coord, // Keep at original location
+        tags: originalTags,
+      );
+      
+      // 2. Create new temp node for the edited node (purple ring) at new location
+      final tempId = -DateTime.now().millisecondsSinceEpoch;
+      final editedTags = upload.getCombinedTags();
+      editedTags['_pending_upload'] = 'true'; // Mark as pending upload
+      editedTags['_original_node_id'] = session.originalNode.id.toString(); // Track original for line drawing
+      
+      final editedNode = OsmNode(
+        id: tempId,
+        coord: upload.coord, // At new location
+        tags: editedTags,
+      );
+      
+      NodeCache.instance.addOrUpdate([originalNode, editedNode]);
+    }
     // Notify node provider to update the map
     CameraProviderWithCache.instance.notifyListeners();
     
@@ -277,7 +307,8 @@ class UploadQueueState extends ChangeNotifier {
     // Clean up any temp nodes at the same coordinate
     NodeCache.instance.removeTempNodesByCoordinate(item.coord);
     
-    // For edits, also clean up the original node's _pending_edit marker
+    // For modify operations, clean up the original node's _pending_edit marker
+    // For extract operations, we don't modify the original node so leave it unchanged
     if (item.isEdit && item.originalNodeId != null) {
       // Remove the _pending_edit marker from the original node in cache
       // The next Overpass fetch will provide the authoritative data anyway
