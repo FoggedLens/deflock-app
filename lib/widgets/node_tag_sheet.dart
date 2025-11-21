@@ -209,12 +209,12 @@ class NodeTagSheet extends StatelessWidget {
                       ),
                       const SizedBox(width: 8),
                       ElevatedButton.icon(
-                        onPressed: _deleteNode,
+                        onPressed: node.isConstrained ? null : _deleteNode,
                         icon: const Icon(Icons.delete, size: 18),
                         label: Text(locService.t('actions.delete')),
                         style: ElevatedButton.styleFrom(
                           minimumSize: const Size(0, 36),
-                          foregroundColor: Colors.red,
+                          foregroundColor: node.isConstrained ? null : Colors.red,
                         ),
                       ),
                       const SizedBox(width: 12),

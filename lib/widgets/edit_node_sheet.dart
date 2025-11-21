@@ -219,20 +219,22 @@ class EditNodeSheet extends StatelessWidget {
                   padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
                   child: Column(
                     children: [
-                      // Extract from way checkbox
-                      CheckboxListTile(
-                        title: Text(locService.t('editNode.extractFromWay')),
-                        subtitle: Text(locService.t('editNode.extractFromWaySubtitle')),
-                        value: session.extractFromWay,
-                        onChanged: (value) {
-                          appState.updateEditSession(extractFromWay: value);
-                        },
-                        controlAffinity: ListTileControlAffinity.leading,
-                        contentPadding: EdgeInsets.zero,
-                      ),
-                      const SizedBox(height: 8),
-                      // Constraint info message (only show if extract is not checked)
-                      if (!session.extractFromWay) ...[
+                      // Extract from way checkbox (only show if enabled in dev config)
+                      if (kEnableNodeExtraction) ...[
+                        CheckboxListTile(
+                          title: Text(locService.t('editNode.extractFromWay')),
+                          subtitle: Text(locService.t('editNode.extractFromWaySubtitle')),
+                          value: session.extractFromWay,
+                          onChanged: (value) {
+                            appState.updateEditSession(extractFromWay: value);
+                          },
+                          controlAffinity: ListTileControlAffinity.leading,
+                          contentPadding: EdgeInsets.zero,
+                        ),
+                        const SizedBox(height: 8),
+                      ],
+                      // Constraint info message (only show if extract is not checked or not enabled)
+                      if (!kEnableNodeExtraction || !session.extractFromWay) ...[
                         Row(
                           children: [
                             const Icon(Icons.info_outline, size: 20),

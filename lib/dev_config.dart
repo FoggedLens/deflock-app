@@ -65,6 +65,9 @@ const bool kEnableNavigationFeatures = kEnableDevelopmentModes; // Hide navigati
 // Node editing features - set to false to temporarily disable editing
 const bool kEnableNodeEdits = true; // Set to false to temporarily disable node editing
 
+// Node extraction features - set to false to hide extract functionality for constrained nodes
+const bool kEnableNodeExtraction = false; // Set to true to enable extract from way/relation feature (WIP)
+
 /// Navigation availability: only dev builds, and only when online
 bool enableNavigationFeatures({required bool offlineMode}) {
   if (!kEnableDevelopmentModes) {
