@@ -11,6 +11,8 @@ import 'screens/advanced_settings_screen.dart';
 import 'screens/language_settings_screen.dart';
 import 'screens/about_screen.dart';
 import 'screens/release_notes_screen.dart';
+import 'screens/osm_account_screen.dart';
+import 'screens/upload_queue_screen.dart';
 import 'services/localization_service.dart';
 import 'services/version_service.dart';
 
@@ -69,6 +71,8 @@ class DeFlockApp extends StatelessWidget {
       routes: {
         '/': (context) => const HomeScreen(),
         '/settings': (context) => const SettingsScreen(),
+        '/settings/osm-account': (context) => const OSMAccountScreen(),
+        '/settings/queue': (context) => const UploadQueueScreen(),
         '/settings/profiles': (context) => const ProfilesSettingsScreen(),
         '/settings/navigation': (context) => const NavigationSettingsScreen(),
         '/settings/offline': (context) => const OfflineSettingsScreen(),

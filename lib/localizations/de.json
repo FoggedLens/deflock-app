@@ -129,6 +129,8 @@
     "simulateDescription": "Uploads simulieren (kontaktiert OSM-Server nicht)"
   },
   "auth": {
+    "osmAccountTitle": "OpenStreetMap-Konto",
+    "osmAccountSubtitle": "Ihr OSM-Login verwalten und Ihre Beiträge einsehen",
     "loggedInAs": "Angemeldet als {}",
     "loginToOSM": "Bei OpenStreetMap anmelden",
     "tapToLogout": "Zum Abmelden antippen",
@@ -138,6 +140,11 @@
     "testConnectionSubtitle": "OSM-Anmeldedaten überprüfen",
     "connectionOK": "Verbindung OK - Anmeldedaten sind gültig",
     "connectionFailed": "Verbindung fehlgeschlagen - bitte erneut anmelden",
+    "viewMyEdits": "Meine Änderungen bei OSM Anzeigen",
+    "viewMyEditsSubtitle": "Ihr Bearbeitungsverlauf bei OpenStreetMap einsehen",
+    "aboutOSM": "Über OpenStreetMap",
+    "aboutOSMDescription": "OpenStreetMap ist ein gemeinschaftliches Open-Source-Kartenprojekt, bei dem Mitwirkende eine kostenlose, bearbeitbare Karte der Welt erstellen und pflegen. Ihre Beiträge zu Überwachungsgeräten helfen dabei, diese Infrastruktur sichtbar und durchsuchbar zu machen.",
+    "visitOSM": "OpenStreetMap Besuchen",
     "deleteAccount": "OSM-Konto Löschen",
     "deleteAccountSubtitle": "Ihr OpenStreetMap-Konto verwalten",
     "deleteAccountExplanation": "Um Ihr OpenStreetMap-Konto zu löschen, müssen Sie die OpenStreetMap-Website besuchen. Dies entfernt dauerhaft Ihr OSM-Konto und alle zugehörigen Daten.",
@@ -145,7 +152,11 @@
     "goToOSM": "Zu OpenStreetMap gehen"
   },
   "queue": {
+    "title": "Upload-Warteschlange",
+    "subtitle": "Ausstehende Überwachungsgeräte-Uploads verwalten",
     "pendingUploads": "Ausstehende Uploads: {}",
+    "pendingItemsCount": "Ausstehende Elemente: {}",
+    "nothingInQueue": "Warteschlange ist leer",
     "simulateModeEnabled": "Simulationsmodus aktiviert – Uploads simuliert",
     "sandboxMode": "Sandbox-Modus – Uploads gehen an OSM Sandbox",
     "tapToViewQueue": "Zum Anzeigen der Warteschlange antippen",

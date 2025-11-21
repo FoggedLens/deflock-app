@@ -147,6 +147,8 @@
     "simulateDescription": "模拟上传（不联系 OSM 服务器）"
   },
   "auth": {
+    "osmAccountTitle": "OpenStreetMap 账户",
+    "osmAccountSubtitle": "管理您的 OSM 登录并查看您的贡献",
     "loggedInAs": "已登录为 {}",
     "loginToOSM": "登录 OpenStreetMap",
     "tapToLogout": "点击登出",
@@ -156,6 +158,11 @@
     "testConnectionSubtitle": "验证 OSM 凭据是否有效",
     "connectionOK": "连接正常 - 凭据有效",
     "connectionFailed": "连接失败 - 请重新登录",
+    "viewMyEdits": "在 OSM 上查看我的编辑",
+    "viewMyEditsSubtitle": "查看您在 OpenStreetMap 上的编辑历史",
+    "aboutOSM": "关于 OpenStreetMap",
+    "aboutOSMDescription": "OpenStreetMap 是一个协作的开源地图项目，贡献者创建和维护一个免费的、可编辑的世界地图。您的监控设备贡献有助于使这种基础设施可见和可搜索。",
+    "visitOSM": "访问 OpenStreetMap",
     "deleteAccount": "删除 OSM 账户",
     "deleteAccountSubtitle": "管理您的 OpenStreetMap 账户",
     "deleteAccountExplanation": "要删除您的 OpenStreetMap 账户，您需要访问 OpenStreetMap 网站。这将永久删除您的 OSM 账户和所有相关数据。",
@@ -163,7 +170,11 @@
     "goToOSM": "前往 OpenStreetMap"
   },
   "queue": {
+    "title": "上传队列",
+    "subtitle": "管理待上传的监控设备",
     "pendingUploads": "待上传：{}",
+    "pendingItemsCount": "待处理项目：{}",
+    "nothingInQueue": "队列中没有内容",
     "simulateModeEnabled": "模拟模式已启用 – 上传已模拟",
     "sandboxMode": "沙盒模式 – 上传到 OSM 沙盒",
     "tapToViewQueue": "点击查看队列",

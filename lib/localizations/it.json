@@ -147,6 +147,8 @@
     "simulateDescription": "Simula upload (non contatta i server OSM)"
   },
   "auth": {
+    "osmAccountTitle": "Account OpenStreetMap",
+    "osmAccountSubtitle": "Gestisci il tuo login OSM e visualizza i tuoi contributi",
     "loggedInAs": "Loggato come {}",
     "loginToOSM": "Accedi a OpenStreetMap",
     "tapToLogout": "Tocca per disconnetterti",
@@ -156,6 +158,11 @@
     "testConnectionSubtitle": "Verifica che le credenziali OSM funzionino",
     "connectionOK": "Connessione OK - le credenziali sono valide",
     "connectionFailed": "Connessione fallita - per favore accedi di nuovo",
+    "viewMyEdits": "Visualizza le Mie Modifiche su OSM",
+    "viewMyEditsSubtitle": "Visualizza la cronologia delle tue modifiche su OpenStreetMap",
+    "aboutOSM": "Informazioni su OpenStreetMap",
+    "aboutOSMDescription": "OpenStreetMap è un progetto cartografico collaborativo open source dove i contributori creano e mantengono una mappa gratuita e modificabile del mondo. I tuoi contributi sui dispositivi di sorveglianza aiutano a rendere visibile e ricercabile questa infrastruttura.",
+    "visitOSM": "Visita OpenStreetMap",
     "deleteAccount": "Elimina Account OSM",
     "deleteAccountSubtitle": "Gestisci il tuo account OpenStreetMap",
     "deleteAccountExplanation": "Per eliminare il tuo account OpenStreetMap, dovrai visitare il sito web di OpenStreetMap. Questo rimuoverà permanentemente il tuo account OSM e tutti i dati associati.",
@@ -163,7 +170,11 @@
     "goToOSM": "Vai a OpenStreetMap"
   },
   "queue": {
+    "title": "Coda di Upload",
+    "subtitle": "Gestisci gli upload di dispositivi di sorveglianza in sospeso",
     "pendingUploads": "Upload in sospeso: {}",
+    "pendingItemsCount": "Elementi in Sospeso: {}",
+    "nothingInQueue": "Niente in coda",
     "simulateModeEnabled": "Modalità simulazione abilitata – upload simulati",
     "sandboxMode": "Modalità sandbox – upload vanno alla Sandbox OSM",
     "tapToViewQueue": "Tocca per vedere la coda",

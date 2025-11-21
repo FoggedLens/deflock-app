@@ -147,6 +147,8 @@
     "simulateDescription": "Simuler les téléchargements (ne contacte pas les serveurs OSM)"
   },
   "auth": {
+    "osmAccountTitle": "Compte OpenStreetMap",
+    "osmAccountSubtitle": "Gérer votre connexion OSM et voir vos contributions",
     "loggedInAs": "Connecté en tant que {}",
     "loginToOSM": "Se connecter à OpenStreetMap",
     "tapToLogout": "Appuyer pour se déconnecter",
@@ -156,6 +158,11 @@
     "testConnectionSubtitle": "Vérifier que les identifiants OSM fonctionnent",
     "connectionOK": "Connexion OK - les identifiants sont valides",
     "connectionFailed": "Connexion échouée - veuillez vous reconnecter",
+    "viewMyEdits": "Voir Mes Modifications sur OSM",
+    "viewMyEditsSubtitle": "Voir votre historique de modifications sur OpenStreetMap",
+    "aboutOSM": "À Propos d'OpenStreetMap",
+    "aboutOSMDescription": "OpenStreetMap est un projet cartographique collaboratif open source où les contributeurs créent et maintiennent une carte gratuite et modifiable du monde. Vos contributions de dispositifs de surveillance aident à rendre cette infrastructure visible et consultable.",
+    "visitOSM": "Visiter OpenStreetMap",
     "deleteAccount": "Supprimer Compte OSM",
     "deleteAccountSubtitle": "Gérez votre compte OpenStreetMap",
     "deleteAccountExplanation": "Pour supprimer votre compte OpenStreetMap, vous devrez visiter le site web OpenStreetMap. Cela supprimera définitivement votre compte OSM et toutes les données associées.",
@@ -163,7 +170,11 @@
     "goToOSM": "Aller à OpenStreetMap"
   },
   "queue": {
+    "title": "File de Téléchargement",
+    "subtitle": "Gérer les téléchargements de dispositifs de surveillance en attente",
     "pendingUploads": "Téléchargements en attente: {}",
+    "pendingItemsCount": "Éléments en Attente: {}",
+    "nothingInQueue": "Rien dans la file",
     "simulateModeEnabled": "Mode simulation activé – téléchargements simulés",
     "sandboxMode": "Mode sandbox – téléchargements vont vers OSM Sandbox",
     "tapToViewQueue": "Appuyer pour voir la file",

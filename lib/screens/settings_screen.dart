@@ -1,7 +1,4 @@
 import 'package:flutter/material.dart';
-import 'settings/sections/auth_section.dart';
-import 'settings/sections/upload_mode_section.dart';
-import 'settings/sections/queue_section.dart';
 import '../services/localization_service.dart';
 import '../services/version_service.dart';
 import '../dev_config.dart';
@@ -25,14 +22,24 @@ class SettingsScreen extends StatelessWidget {
             16 + MediaQuery.of(context).padding.bottom,
           ),
           children: [
-            // Only show upload mode section in development builds
-            if (kEnableDevelopmentModes) ...[
-              const UploadModeSection(),
-              const Divider(),
-            ],
-            const AuthSection(),
+            // OpenStreetMap Account
+            _buildNavigationTile(
+              context,
+              icon: Icons.account_circle,
+              title: locService.t('auth.osmAccountTitle'),
+              subtitle: locService.t('auth.osmAccountSubtitle'),
+              onTap: () => Navigator.pushNamed(context, '/settings/osm-account'),
+            ),
             const Divider(),
-            const QueueSection(),
+            
+            // Upload Queue
+            _buildNavigationTile(
+              context,
+              icon: Icons.queue,
+              title: locService.t('queue.title'),
+              subtitle: locService.t('queue.subtitle'),
+              onTap: () => Navigator.pushNamed(context, '/settings/queue'),
+            ),
             const Divider(),
             
             // Navigation to sub-pages

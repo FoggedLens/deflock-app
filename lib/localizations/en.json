@@ -147,6 +147,8 @@
     "simulateDescription": "Simulate uploads (does not contact OSM servers)"
   },
   "auth": {
+    "osmAccountTitle": "OpenStreetMap Account",
+    "osmAccountSubtitle": "Manage your OSM login and view your contributions",
     "loggedInAs": "Logged in as {}",
     "loginToOSM": "Log in to OpenStreetMap",
     "tapToLogout": "Tap to logout",
@@ -156,6 +158,11 @@
     "testConnectionSubtitle": "Verify OSM credentials are working",
     "connectionOK": "Connection OK - credentials are valid",
     "connectionFailed": "Connection failed - please re-login",
+    "viewMyEdits": "View My Edits on OSM",
+    "viewMyEditsSubtitle": "See your edit history on OpenStreetMap",
+    "aboutOSM": "About OpenStreetMap",
+    "aboutOSMDescription": "OpenStreetMap is a collaborative, open-source mapping project where contributors create and maintain a free, editable map of the world. Your surveillance device contributions help make this infrastructure visible and searchable.",
+    "visitOSM": "Visit OpenStreetMap",
     "deleteAccount": "Delete OSM Account",
     "deleteAccountSubtitle": "Manage your OpenStreetMap account",
     "deleteAccountExplanation": "To delete your OpenStreetMap account, you'll need to visit the OpenStreetMap website. This will permanently remove your OSM account and all associated data.",
@@ -163,7 +170,11 @@
     "goToOSM": "Go to OpenStreetMap"
   },
   "queue": {
+    "title": "Upload Queue",
+    "subtitle": "Manage pending surveillance device uploads",
     "pendingUploads": "Pending uploads: {}",
+    "pendingItemsCount": "Pending Items: {}",
+    "nothingInQueue": "Nothing in queue",
     "simulateModeEnabled": "Simulate mode enabled – uploads simulated",
     "sandboxMode": "Sandbox mode – uploads go to OSM Sandbox",
     "tapToViewQueue": "Tap to view queue",

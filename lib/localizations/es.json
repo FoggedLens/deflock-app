@@ -147,6 +147,8 @@
     "simulateDescription": "Simular subidas (no contacta servidores OSM)"
   },
   "auth": {
+    "osmAccountTitle": "Cuenta de OpenStreetMap",
+    "osmAccountSubtitle": "Gestionar tu login de OSM y ver tus contribuciones",
     "loggedInAs": "Conectado como {}",
     "loginToOSM": "Iniciar sesión en OpenStreetMap",
     "tapToLogout": "Toque para cerrar sesión",
@@ -156,6 +158,11 @@
     "testConnectionSubtitle": "Verificar que las credenciales de OSM funcionen",
     "connectionOK": "Conexión OK - las credenciales son válidas",
     "connectionFailed": "Conexión falló - por favor, inicie sesión nuevamente",
+    "viewMyEdits": "Ver Mis Ediciones en OSM",
+    "viewMyEditsSubtitle": "Ver tu historial de ediciones en OpenStreetMap",
+    "aboutOSM": "Acerca de OpenStreetMap",
+    "aboutOSMDescription": "OpenStreetMap es un proyecto de mapeo colaborativo de código abierto donde los contribuyentes crean y mantienen un mapa gratuito y editable del mundo. Tus contribuciones de dispositivos de vigilancia ayudan a hacer visible y buscable esta infraestructura.",
+    "visitOSM": "Visitar OpenStreetMap",
     "deleteAccount": "Eliminar Cuenta OSM",
     "deleteAccountSubtitle": "Gestiona tu cuenta de OpenStreetMap",
     "deleteAccountExplanation": "Para eliminar tu cuenta de OpenStreetMap, necesitarás visitar el sitio web de OpenStreetMap. Esto eliminará permanentemente tu cuenta OSM y todos los datos asociados.",
@@ -163,7 +170,11 @@
     "goToOSM": "Ir a OpenStreetMap"
   },
   "queue": {
+    "title": "Cola de Subida",
+    "subtitle": "Gestionar subidas pendientes de dispositivos de vigilancia",
     "pendingUploads": "Subidas pendientes: {}",
+    "pendingItemsCount": "Elementos Pendientes: {}",
+    "nothingInQueue": "No hay nada en la cola",
     "simulateModeEnabled": "Modo simulación activado – subidas simuladas",
     "sandboxMode": "Modo sandbox – subidas van al Sandbox OSM",
     "tapToViewQueue": "Toque para ver cola",
