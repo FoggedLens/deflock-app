@@ -107,10 +107,7 @@ cp lib/keys.dart.example lib/keys.dart
   - Give multiple of these options??
 - Nav start+end too close together error (warning + disable submit button?)
 - Improve/retune tile fetching backoff/retry
-- Disable deletes on nodes belonging to ways/relations
-- Support FOV range notation: 0-360, 90-270, 10-45;90-125
 - Add some builtin satellite tile provider
-- Link to "my changes" on osm (username edit history)
 - Are offline areas preferred for fast loading even when online? Check working.
 - Fix network indicator - only done when fetch queue is empty!
 
