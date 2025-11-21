@@ -81,7 +81,7 @@ class AddNodeSheet extends StatelessWidget {
                     : null,
                 tooltip: requiresDirection ? 'Remove current direction' : 'Direction not required for this profile',
                 padding: EdgeInsets.zero,
-                constraints: const BoxConstraints(minWidth: kDirectionButtonMinWidth, minHeight: kDirectionButtonMinHeight),
+                constraints: BoxConstraints(minWidth: dev.kDirectionButtonMinWidth, minHeight: dev.kDirectionButtonMinHeight),
               ),
               // Add button
               IconButton(
@@ -95,7 +95,7 @@ class AddNodeSheet extends StatelessWidget {
                     ? (session.directions.length >= 8 ? 'Maximum 8 directions allowed' : 'Add new direction') 
                     : 'Direction not required for this profile',
                 padding: EdgeInsets.zero,
-                constraints: const BoxConstraints(minWidth: kDirectionButtonMinWidth, minHeight: kDirectionButtonMinHeight),
+                constraints: BoxConstraints(minWidth: dev.kDirectionButtonMinWidth, minHeight: dev.kDirectionButtonMinHeight),
               ),
               // Cycle button
               IconButton(
@@ -109,7 +109,7 @@ class AddNodeSheet extends StatelessWidget {
                     : null,
                 tooltip: requiresDirection ? 'Cycle through directions' : 'Direction not required for this profile',
                 padding: EdgeInsets.zero,
-                constraints: const BoxConstraints(minWidth: kDirectionButtonMinWidth, minHeight: kDirectionButtonMinHeight),
+                constraints: BoxConstraints(minWidth: dev.kDirectionButtonMinWidth, minHeight: dev.kDirectionButtonMinHeight),
               ),
             ],
           ),

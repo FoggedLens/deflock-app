@@ -30,8 +30,8 @@ class PrefetchAreaService {
   Timer? _debounceTimer;
   
   // Configuration from dev_config
-  static const double _areaExpansionMultiplier = kPreFetchAreaExpansionMultiplier;
-  static const int _preFetchZoomLevel = kPreFetchZoomLevel;
+  static final double _areaExpansionMultiplier = dev.dev.kPreFetchAreaExpansionMultiplier;
+  static final int _preFetchZoomLevel = dev.dev.kPreFetchZoomLevel;
   
   /// Check if the given bounds are fully within the current pre-fetched area.
   bool isWithinPreFetchedArea(LatLngBounds bounds, List<NodeProfile> profiles, UploadMode uploadMode) {
@@ -58,7 +58,7 @@ class PrefetchAreaService {
   /// Check if cached data is stale (older than configured refresh interval).
   bool isDataStale() {
     if (_lastFetchTime == null) return true;
-    return DateTime.now().difference(_lastFetchTime!).inSeconds > kDataRefreshIntervalSeconds;
+    return DateTime.now().difference(_lastFetchTime!).inSeconds > dev.kDataRefreshIntervalSeconds;
   }
   
   /// Request pre-fetch for the given view bounds if not already covered or if data is stale.
@@ -84,7 +84,7 @@ class PrefetchAreaService {
     }
     
     if (isStale) {
-      debugPrint('[PrefetchAreaService] Data is stale (>${kDataRefreshIntervalSeconds}s), refreshing');
+      debugPrint('[PrefetchAreaService] Data is stale (>${dev.kDataRefreshIntervalSeconds}s), refreshing');
     } else {
       debugPrint('[PrefetchAreaService] Current view outside pre-fetched area, fetching larger area');
     }

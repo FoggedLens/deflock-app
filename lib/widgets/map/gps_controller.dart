@@ -60,7 +60,7 @@ class GpsController {
           controller.animateTo(
             dest: _currentLatLng!,
             zoom: controller.mapController.camera.zoom,
-            duration: kFollowMeAnimationDuration,
+            duration: dev.kFollowMeAnimationDuration,
             curve: Curves.easeOut,
           );
           onMapMovedProgrammatically?.call();
@@ -70,7 +70,7 @@ class GpsController {
             dest: _currentLatLng!,
             zoom: controller.mapController.camera.zoom,
             rotation: 0.0,
-            duration: kFollowMeAnimationDuration,
+            duration: dev.kFollowMeAnimationDuration,
             curve: Curves.easeOut,
           );
           onMapMovedProgrammatically?.call();
@@ -123,7 +123,7 @@ class GpsController {
               dest: latLng,
               zoom: controller.mapController.camera.zoom,
               rotation: controller.mapController.camera.rotation,
-              duration: kFollowMeAnimationDuration,
+              duration: dev.kFollowMeAnimationDuration,
               curve: Curves.easeOut,
             );
             
@@ -135,14 +135,14 @@ class GpsController {
             final speed = position.speed; // Speed in m/s
             
             // Only apply rotation if moving fast enough to avoid wild spinning when stationary
-            final shouldRotate = !speed.isNaN && speed >= kMinSpeedForRotationMps && !heading.isNaN;
+            final shouldRotate = !speed.isNaN && speed >= dev.kMinSpeedForRotationMps && !heading.isNaN;
             final rotation = shouldRotate ? -heading : controller.mapController.camera.rotation;
             
             controller.animateTo(
               dest: latLng,
               zoom: controller.mapController.camera.zoom,
               rotation: rotation,
-              duration: kFollowMeAnimationDuration,
+              duration: dev.kFollowMeAnimationDuration,
               curve: Curves.easeOut,
             );
             

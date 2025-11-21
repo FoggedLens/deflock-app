@@ -28,7 +28,7 @@ class SuspectedLocationMapMarker extends StatefulWidget {
 class _SuspectedLocationMapMarkerState extends State<SuspectedLocationMapMarker> {
   Timer? _tapTimer;
   // From dev_config.dart for build-time parameters
-  static const Duration tapTimeout = kMarkerTapTimeout;
+  static final Duration tapTimeout = dev.dev.kMarkerTapTimeout;
 
   void _onTap() {
     _tapTimer = Timer(tapTimeout, () {
@@ -47,7 +47,7 @@ class _SuspectedLocationMapMarkerState extends State<SuspectedLocationMapMarker>
 
   void _onDoubleTap() {
     _tapTimer?.cancel();
-    widget.mapController.move(widget.location.centroid, widget.mapController.camera.zoom + kNodeDoubleTapZoomDelta);
+    widget.mapController.move(widget.location.centroid, widget.mapController.camera.zoom + dev.kNodeDoubleTapZoomDelta);
   }
 
   @override

@@ -345,7 +345,7 @@ class _TileTypeDialogState extends State<_TileTypeDialog> {
                       if (value?.trim().isEmpty == true) return locService.t('tileTypeEditor.maxZoomRequired');
                       final zoom = int.tryParse(value!);
                       if (zoom == null) return locService.t('tileTypeEditor.maxZoomInvalid');
-                      if (zoom < 1 || zoom > kAbsoluteMaxZoom) return locService.t('tileTypeEditor.maxZoomRange', params: ['1', kAbsoluteMaxZoom.toString()]);
+                      if (zoom < 1 || zoom > dev.kAbsoluteMaxZoom) return locService.t('tileTypeEditor.maxZoomRange', params: ['1', kAbsoluteMaxZoom.toString()]);
                       return null;
                     },
                   ),
@@ -405,9 +405,9 @@ class _TileTypeDialogState extends State<_TileTypeDialog> {
     try {
       // Use a sample tile from configured preview location
       final url = _urlController.text
-          .replaceAll('{z}', kPreviewTileZoom.toString())
-          .replaceAll('{x}', kPreviewTileX.toString())
-          .replaceAll('{y}', kPreviewTileY.toString());
+          .replaceAll('{z}', dev.kPreviewTileZoom.toString())
+          .replaceAll('{x}', dev.kPreviewTileX.toString())
+          .replaceAll('{y}', dev.kPreviewTileY.toString());
       
       final response = await http.get(Uri.parse(url));
       

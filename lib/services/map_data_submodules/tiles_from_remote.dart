@@ -36,14 +36,14 @@ void clearRemoteTileQueueSelective(LatLngBounds currentBounds) {
 /// Uses: initialDelay * (multiplier ^ (attempt - 1)) + randomJitter, capped at maxDelay
 int _calculateRetryDelay(int attempt, Random random) {
   // Calculate exponential backoff: initialDelay * (multiplier ^ (attempt - 1))
-  final baseDelay = (kTileFetchInitialDelayMs * 
-    pow(kTileFetchBackoffMultiplier, attempt - 1)).round();
+  final baseDelay = (dev.kTileFetchInitialDelayMs * 
+    pow(dev.kTileFetchBackoffMultiplier, attempt - 1)).round();
   
   // Add random jitter to avoid thundering herd
-  final jitter = random.nextInt(kTileFetchRandomJitterMs + 1);
+  final jitter = random.nextInt(dev.kTileFetchRandomJitterMs + 1);
   
   // Apply max delay cap
-  return (baseDelay + jitter).clamp(0, kTileFetchMaxDelayMs);
+  return (baseDelay + jitter).clamp(0, dev.kTileFetchMaxDelayMs);
 }
 
 /// Convert tile coordinates to lat/lng bounds for spatial filtering
@@ -101,7 +101,7 @@ Future<List<int>> fetchRemoteTile({
   required int y,
   required String url,
 }) async {
-  const int maxAttempts = kTileFetchMaxAttempts;
+  final int maxAttempts = dev.dev.kTileFetchMaxAttempts;
   int attempt = 0;
   final random = Random();
   final hostInfo = Uri.parse(url).host; // For logging

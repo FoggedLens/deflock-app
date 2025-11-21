@@ -94,7 +94,7 @@ class MapOverlays extends StatelessWidget {
         // Zoom indicator, positioned relative to button bar with left safe area
         Positioned(
           left: leftPositionWithSafeArea(10, safeArea),
-          bottom: bottomPositionFromButtonBar(kZoomIndicatorSpacingAboveButtonBar, safeArea.bottom),
+          bottom: bottomPositionFromButtonBar(dev.kZoomIndicatorSpacingAboveButtonBar, safeArea.bottom),
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
             decoration: BoxDecoration(
@@ -125,7 +125,7 @@ class MapOverlays extends StatelessWidget {
         // Attribution overlay, positioned relative to button bar with left safe area
         if (attribution != null)
           Positioned(
-            bottom: bottomPositionFromButtonBar(kAttributionSpacingAboveButtonBar, safeArea.bottom),
+            bottom: bottomPositionFromButtonBar(dev.kAttributionSpacingAboveButtonBar, safeArea.bottom),
             left: leftPositionWithSafeArea(10, safeArea),
             child: GestureDetector(
               onTap: () => _showAttributionDialog(context, attribution!),
@@ -151,7 +151,7 @@ class MapOverlays extends StatelessWidget {
 
         // Zoom and layer controls (bottom-right), positioned relative to button bar with right safe area
         Positioned(
-          bottom: bottomPositionFromButtonBar(kZoomControlsSpacingAboveButtonBar, safeArea.bottom),
+          bottom: bottomPositionFromButtonBar(dev.kZoomControlsSpacingAboveButtonBar, safeArea.bottom),
           right: rightPositionWithSafeArea(16, safeArea),
           child: Consumer<AppState>(
             builder: (context, appState, child) {

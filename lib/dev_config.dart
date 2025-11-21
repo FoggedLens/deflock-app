@@ -2,36 +2,125 @@
 import 'package:flutter/material.dart';
 
 /// Developer/build-time configuration for global/non-user-tunable constants.
+/// Single source of truth with typed maps for settings auto-generation.
 
-// Fallback tile storage estimate (KB per tile), used when no preview tile data is available
-const double kFallbackTileEstimateKb = 25.0;
+// Typed configuration maps - single definition of each constant
+const Map<String, bool> _boolConfig = {
+  'kEnableDevelopmentModes': true,
+  'kEnableNodeEdits': true,
+  'kEnableNodeExtraction': false,
+};
 
-// Preview tile coordinates for tile provider previews and size estimates
-const int kPreviewTileZoom = 18;
-const int kPreviewTileY = 101300;
-const int kPreviewTileX = 41904;
+const Map<String, int> _intConfig = {
+  'kPreviewTileZoom': 18,
+  'kPreviewTileY': 101300,
+  'kPreviewTileX': 41904,
+  'kNodeMinZoomLevel': 10,
+  'kOsmApiMinZoomLevel': 13,
+  'kPreFetchZoomLevel': 10,
+  'kMaxPreFetchSplitDepth': 3,
+  'kDataRefreshIntervalSeconds': 60,
+  'kProximityAlertDefaultDistance': 400,
+  'kProximityAlertMinDistance': 50,
+  'kProximityAlertMaxDistance': 1600,
+  'kTileFetchMaxAttempts': 16,
+  'kTileFetchInitialDelayMs': 500,
+  'kTileFetchMaxDelayMs': 10000,
+  'kTileFetchRandomJitterMs': 250,
+  'kMaxUserDownloadZoomSpan': 7,
+  'kMaxReasonableTileCount': 20000,
+  'kAbsoluteMaxTileCount': 50000,
+  'kAbsoluteMaxZoom': 23,
+};
 
-// Direction cone for map view
-const double kDirectionConeHalfAngle = 35.0; // degrees
-const double kDirectionConeBaseLength = 5; // multiplier
-const Color kDirectionConeColor = Color(0xD0767474); // FOV cone color
-const double kDirectionConeOpacity = 0.5; // Fill opacity for FOV cones
-// Base values for thickness - use helper functions below for pixel-ratio scaling
-const double _kDirectionConeBorderWidthBase = 1.6;
+const Map<String, double> _doubleConfig = {
+  'kFallbackTileEstimateKb': 25.0,
+  'kDirectionConeHalfAngle': 35.0,
+  'kDirectionConeBaseLength': 5.0,
+  'kDirectionConeOpacity': 0.5,
+  '_kDirectionConeBorderWidthBase': 1.6,
+  'kBottomButtonBarOffset': 4.0,
+  'kButtonBarHeight': 60.0,
+  'kAttributionSpacingAboveButtonBar': 10.0,
+  'kZoomIndicatorSpacingAboveButtonBar': 40.0,
+  'kScaleBarSpacingAboveButtonBar': 70.0,
+  'kZoomControlsSpacingAboveButtonBar': 20.0,
+  'kPreFetchAreaExpansionMultiplier': 3.0,
+  'kMinSpeedForRotationMps': 1.0,
+  'kMaxTagListHeightRatioPortrait': 0.3,
+  'kMaxTagListHeightRatioLandscape': 0.2,
+  'kNodeDoubleTapZoomDelta': 1.0,
+  'kScrollWheelVelocity': 0.01,
+  'kPinchZoomThreshold': 0.2,
+  'kPinchMoveThreshold': 30.0,
+  'kRotationThreshold': 6.0,
+  'kNodeIconDiameter': 18.0,
+  '_kNodeRingThicknessBase': 2.5,
+  'kNodeDotOpacity': 0.3,
+  'kDirectionButtonMinWidth': 22.0,
+  'kDirectionButtonMinHeight': 32.0,
+  'kTileFetchBackoffMultiplier': 1.5,
+};
 
-// Bottom button bar positioning
-const double kBottomButtonBarOffset = 4.0; // Distance from screen bottom (above safe area)
-const double kButtonBarHeight = 60.0; // Button height (48) + padding (12)
+const Map<String, String> _stringConfig = {
+  'kClientName': 'DeFlock', // Read-only in settings
+  'kSuspectedLocationsCsvUrl': 'https://stopflock.com/app/flock_utilities_mini_latest.csv',
+};
 
-// Map overlay spacing relative to button bar top
-const double kAttributionSpacingAboveButtonBar = 10.0; // Attribution above button bar top
-const double kZoomIndicatorSpacingAboveButtonBar = 40.0; // Zoom indicator above button bar top  
-const double kScaleBarSpacingAboveButtonBar = 70.0; // Scale bar above button bar top
-const double kZoomControlsSpacingAboveButtonBar = 20.0; // Zoom controls above button bar top
+const Map<String, Color> _colorConfig = {
+  'kDirectionConeColor': Color(0xD0767474),
+  'kNodeRingColorReal': Color(0xFF3036F0),
+  'kNodeRingColorMock': Color(0xD0FFFFFF),
+  'kNodeRingColorPending': Color(0xD09C27B0),
+  'kNodeRingColorEditing': Color(0xD0FF9800),
+  'kNodeRingColorPendingEdit': Color(0xD0757575),
+  'kNodeRingColorPendingDeletion': Color(0xC0F44336),
+};
+
+const Map<String, Duration> _durationConfig = {
+  'kMarkerTapTimeout': Duration(milliseconds: 250),
+  'kDebounceCameraRefresh': Duration(milliseconds: 500),
+  'kFollowMeAnimationDuration': Duration(milliseconds: 600),
+  'kProximityAlertCooldown': Duration(minutes: 10),
+};
+
+// Dynamic accessor class
+class _DevConfig {
+  @override
+  dynamic noSuchMethod(Invocation invocation) {
+    final name = invocation.memberName.toString().replaceAll('Symbol("', '').replaceAll('")', '');
+    
+    // Check each typed map
+    if (_boolConfig.containsKey(name)) return _boolConfig[name];
+    if (_intConfig.containsKey(name)) return _intConfig[name];
+    if (_doubleConfig.containsKey(name)) return _doubleConfig[name];
+    if (_stringConfig.containsKey(name)) return _stringConfig[name];
+    if (_colorConfig.containsKey(name)) return _colorConfig[name];
+    if (_durationConfig.containsKey(name)) return _durationConfig[name];
+    
+    throw NoSuchMethodError.withInvocation(this, invocation);
+  }
+}
+
+// Global accessor
+final dynamic dev = _DevConfig();
+
+// For settings page - combine all maps
+Map<String, dynamic> get devConfigForSettings => {
+  ..._boolConfig,
+  ..._intConfig,
+  ..._doubleConfig,
+  ..._stringConfig,
+  ..._colorConfig,
+  ..._durationConfig,
+};
+
+// Computed constants
+bool get kEnableNavigationFeatures => dev.kEnableDevelopmentModes;
 
 // Helper to calculate bottom position relative to button bar
 double bottomPositionFromButtonBar(double spacingAboveButtonBar, double safeAreaBottom) {
-  return safeAreaBottom + kBottomButtonBarOffset + kButtonBarHeight + spacingAboveButtonBar;
+  return safeAreaBottom + dev.kBottomButtonBarOffset + dev.kButtonBarHeight + spacingAboveButtonBar;
 }
 
 // Helper to get left positioning that accounts for safe area (for landscape mode)
@@ -49,28 +138,9 @@ double topPositionWithSafeArea(double baseTop, EdgeInsets safeArea) {
   return baseTop + safeArea.top;
 }
 
-// Client name for OSM uploads ("created_by" tag)
-const String kClientName = 'DeFlock';
-// Note: Version is now dynamically retrieved from VersionService
-
-// Suspected locations CSV URL
-const String kSuspectedLocationsCsvUrl = 'https://stopflock.com/app/flock_utilities_mini_latest.csv';
-
-// Development/testing features - set to false for production builds
-const bool kEnableDevelopmentModes = true; // Set to false to hide sandbox/simulate modes and force production mode
-
-// Navigation features - set to false to hide navigation UI elements while in development
-const bool kEnableNavigationFeatures = kEnableDevelopmentModes; // Hide navigation until fully implemented
-
-// Node editing features - set to false to temporarily disable editing
-const bool kEnableNodeEdits = true; // Set to false to temporarily disable node editing
-
-// Node extraction features - set to false to hide extract functionality for constrained nodes
-const bool kEnableNodeExtraction = false; // Set to true to enable extract from way/relation feature (WIP)
-
 /// Navigation availability: only dev builds, and only when online
 bool enableNavigationFeatures({required bool offlineMode}) {
-  if (!kEnableDevelopmentModes) {
+  if (!dev.kEnableDevelopmentModes) {
     return false; // Release builds: never allow navigation
   } else {
     return !offlineMode; // Dev builds: only when online
@@ -151,11 +221,11 @@ const double kDirectionButtonMinHeight = 32.0;
 
 // Helper functions for pixel-ratio scaling
 double getDirectionConeBorderWidth(BuildContext context) {
-//  return _kDirectionConeBorderWidthBase * MediaQuery.of(context).devicePixelRatio;
-  return _kDirectionConeBorderWidthBase;
+//  return dev._kDirectionConeBorderWidthBase * MediaQuery.of(context).devicePixelRatio;
+  return dev._kDirectionConeBorderWidthBase;
 }
 
 double getNodeRingThickness(BuildContext context) {
-//  return _kNodeRingThicknessBase * MediaQuery.of(context).devicePixelRatio;
-  return _kNodeRingThicknessBase;
+//  return dev._kNodeRingThicknessBase * MediaQuery.of(context).devicePixelRatio;
+  return dev._kNodeRingThicknessBase;
 }

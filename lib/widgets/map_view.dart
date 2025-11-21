@@ -60,7 +60,7 @@ class MapView extends StatefulWidget {
 
 class MapViewState extends State<MapView> {
   late final AnimatedMapController _controller;
-  final Debouncer _cameraDebounce = Debouncer(kDebounceCameraRefresh);
+  final Debouncer _cameraDebounce = Debouncer(dev.kDebounceCameraRefresh);
   final Debouncer _tileDebounce = Debouncer(const Duration(milliseconds: 150));
   final Debouncer _mapPositionDebounce = Debouncer(const Duration(milliseconds: 1000));
   final Debouncer _constrainedNodeSnapBack = Debouncer(const Duration(milliseconds: 100));
@@ -240,9 +240,9 @@ class MapViewState extends State<MapView> {
     
     // OSM API (sandbox mode) needs higher zoom level due to bbox size limits
     if (uploadMode == UploadMode.sandbox) {
-      return kOsmApiMinZoomLevel;
+      return dev.kOsmApiMinZoomLevel;
     } else {
-      return kNodeMinZoomLevel;
+      return dev.kNodeMinZoomLevel;
     }
   }
 
@@ -268,17 +268,17 @@ class MapViewState extends State<MapView> {
     // Check if we're editing a constrained node that's not being extracted
     if (editSession?.originalNode.isConstrained == true && editSession?.extractFromWay != true) {
       // Constrained node (not extracting): only allow pinch zoom and rotation, disable ALL panning
-      return const InteractionOptions(
+      return InteractionOptions(
         enableMultiFingerGestureRace: true,
         flags: InteractiveFlag.pinchZoom | InteractiveFlag.rotate,
-        scrollWheelVelocity: kScrollWheelVelocity,
-        pinchZoomThreshold: kPinchZoomThreshold,
-        pinchMoveThreshold: kPinchMoveThreshold,
+        scrollWheelVelocity: dev.kScrollWheelVelocity,
+        pinchZoomThreshold: dev.kPinchZoomThreshold,
+        pinchMoveThreshold: dev.kPinchMoveThreshold,
       );
     }
     
     // Normal case: all interactions allowed with gesture race to prevent accidental rotation during zoom
-    return const InteractionOptions(
+    return InteractionOptions(
       enableMultiFingerGestureRace: true,
       flags: InteractiveFlag.doubleTapDragZoom |
           InteractiveFlag.doubleTapZoom |
@@ -287,9 +287,9 @@ class MapViewState extends State<MapView> {
           InteractiveFlag.pinchZoom |
           InteractiveFlag.rotate |
           InteractiveFlag.scrollWheelZoom,
-      scrollWheelVelocity: kScrollWheelVelocity,
-      pinchZoomThreshold: kPinchZoomThreshold,
-      pinchMoveThreshold: kPinchMoveThreshold,
+      scrollWheelVelocity: dev.kScrollWheelVelocity,
+      pinchZoomThreshold: dev.kPinchZoomThreshold,
+      pinchMoveThreshold: dev.kPinchMoveThreshold,
     );
   }
 
@@ -506,8 +506,8 @@ class MapViewState extends State<MapView> {
             centerMarkers.add(
               Marker(
                 point: center,
-                width: kNodeIconDiameter,
-                height: kNodeIconDiameter,
+                width: dev.kNodeIconDiameter,
+                height: dev.kNodeIconDiameter,
                 child: CameraIcon(
                   type: editSession != null ? CameraIconType.editing : CameraIconType.mock,
                 ),
@@ -691,7 +691,7 @@ class MapViewState extends State<MapView> {
                   alignment: Alignment.bottomLeft,
                   padding: EdgeInsets.only(
                     left: leftPositionWithSafeArea(8, safeArea), 
-                    bottom: bottomPositionFromButtonBar(kScaleBarSpacingAboveButtonBar, safeArea.bottom)
+                    bottom: bottomPositionFromButtonBar(dev.kScaleBarSpacingAboveButtonBar, safeArea.bottom)
                   ),
                   textStyle: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
                   lineColor: Colors.black,
@@ -753,7 +753,7 @@ class MapViewState extends State<MapView> {
         if (originalCoord != null) {
           lines.add(Polyline(
             points: [originalCoord, node.coord],
-            color: kNodeRingColorPending,
+            color: dev.kNodeRingColorPending,
             strokeWidth: 3.0,
           ));
         }

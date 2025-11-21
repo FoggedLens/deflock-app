@@ -713,7 +713,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   final safeArea = MediaQuery.of(context).padding;
                   return Padding(
                     padding: EdgeInsets.only(
-                      bottom: safeArea.bottom + kBottomButtonBarOffset,
+                      bottom: safeArea.bottom + dev.kBottomButtonBarOffset,
                       left: leftPositionWithSafeArea(8, safeArea),
                       right: rightPositionWithSafeArea(8, safeArea),
                     ),
@@ -731,7 +731,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                             )
                           ],
                         ),
-                        margin: EdgeInsets.only(bottom: kBottomButtonBarOffset),
+                        margin: EdgeInsets.only(bottom: dev.kBottomButtonBarOffset),
                         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                         child: Row(
                           children: [

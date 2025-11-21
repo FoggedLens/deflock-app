@@ -28,7 +28,7 @@ class ProximityAlertService {
   
   // Simple in-memory tracking of recent alerts to prevent spam
   final List<RecentAlert> _recentAlerts = [];
-  static const Duration _alertCooldown = kProximityAlertCooldown;
+  static final Duration _alertCooldown = dev.dev.kProximityAlertCooldown;
   
   // Callback for showing in-app visual alerts
   VoidCallback? _onVisualAlert;

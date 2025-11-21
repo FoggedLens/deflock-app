@@ -28,7 +28,7 @@ class CameraMapMarker extends StatefulWidget {
 class _CameraMapMarkerState extends State<CameraMapMarker> {
   Timer? _tapTimer;
   // From dev_config.dart for build-time parameters
-  static const Duration tapTimeout = kMarkerTapTimeout;
+  static final Duration tapTimeout = dev.dev.kMarkerTapTimeout;
 
   void _onTap() {
     _tapTimer = Timer(tapTimeout, () {
@@ -49,7 +49,7 @@ class _CameraMapMarkerState extends State<CameraMapMarker> {
 
   void _onDoubleTap() {
     _tapTimer?.cancel();
-    widget.mapController.move(widget.node.coord, widget.mapController.camera.zoom + kNodeDoubleTapZoomDelta);
+    widget.mapController.move(widget.node.coord, widget.mapController.camera.zoom + dev.kNodeDoubleTapZoomDelta);
   }
 
   @override
@@ -108,8 +108,8 @@ class CameraMarkersBuilder {
           
           return Marker(
             point: n.coord,
-            width: kNodeIconDiameter,
-            height: kNodeIconDiameter,
+            width: dev.kNodeIconDiameter,
+            height: dev.kNodeIconDiameter,
             child: Opacity(
               opacity: shouldDimNode ? 0.5 : 1.0,
               child: CameraMapMarker(

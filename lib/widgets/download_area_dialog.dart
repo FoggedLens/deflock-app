@@ -76,14 +76,14 @@ class _DownloadAreaDialogState extends State<DownloadAreaDialog> {
   
   /// Calculate the maximum zoom level that keeps tile count under the absolute limit
   int _calculateMaxZoomForTileLimit(LatLngBounds bounds, int minZoom) {
-    for (int zoom = minZoom; zoom <= kAbsoluteMaxZoom; zoom++) {
+    for (int zoom = minZoom; zoom <= dev.kAbsoluteMaxZoom; zoom++) {
       final tileCount = computeTileList(bounds, minZoom, zoom).length;
-      if (tileCount > kAbsoluteMaxTileCount) {
+      if (tileCount > dev.kAbsoluteMaxTileCount) {
         // Return the previous zoom level that was still under the absolute limit
         return math.max(minZoom, zoom - 1);
       }
     }
-    return kAbsoluteMaxZoom;
+    return dev.kAbsoluteMaxZoom;
   }
 
   /// Get tile size estimate in KB, using preview tile data if available, otherwise fallback to constant
@@ -98,7 +98,7 @@ class _DownloadAreaDialogState extends State<DownloadAreaDialog> {
       return previewSizeKb;
     } else {
       // Fall back to configured estimate
-      return kFallbackTileEstimateKb;
+      return dev.kFallbackTileEstimateKb;
     }
   }
 
@@ -176,7 +176,7 @@ class _DownloadAreaDialogState extends State<DownloadAreaDialog> {
                     child: Container(
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
-                        color: _tileCount! > kMaxReasonableTileCount 
+                        color: _tileCount! > dev.kMaxReasonableTileCount 
                             ? Colors.orange.withOpacity(0.1)
                             : Colors.green.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(4),
@@ -185,12 +185,12 @@ class _DownloadAreaDialogState extends State<DownloadAreaDialog> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            _tileCount! > kMaxReasonableTileCount 
+                            _tileCount! > dev.kMaxReasonableTileCount 
                                 ? 'Above recommended limit (Z${_maxPossibleZoom})'
                                 : locService.t('download.maxRecommendedZoom', params: [_maxPossibleZoom.toString()]),
                             style: TextStyle(
                               fontSize: 12,
-                              color: _tileCount! > kMaxReasonableTileCount 
+                              color: _tileCount! > dev.kMaxReasonableTileCount 
                                   ? Colors.orange[700] 
                                   : Colors.green[700],
                               fontWeight: FontWeight.w500,
@@ -198,12 +198,12 @@ class _DownloadAreaDialogState extends State<DownloadAreaDialog> {
                           ),
                           const SizedBox(height: 2),
                           Text(
-                            _tileCount! > kMaxReasonableTileCount
-                                ? 'Current selection exceeds ${kMaxReasonableTileCount} recommended tile limit but is within ${kAbsoluteMaxTileCount} absolute limit'
+                            _tileCount! > dev.kMaxReasonableTileCount
+                                ? 'Current selection exceeds ${dev.kMaxReasonableTileCount} recommended tile limit but is within ${dev.kAbsoluteMaxTileCount} absolute limit'
                                 : locService.t('download.withinTileLimit', params: [kMaxReasonableTileCount.toString()]),
                             style: TextStyle(
                               fontSize: 11,
-                              color: _tileCount! > kMaxReasonableTileCount 
+                              color: _tileCount! > dev.kMaxReasonableTileCount 
                                   ? Colors.orange[600] 
                                   : Colors.green[600],
                             ),

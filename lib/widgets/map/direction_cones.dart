@@ -112,11 +112,11 @@ class DirectionConesBuilder {
     bool isSession = false,
     bool isActiveDirection = true,
   }) {
-    final halfAngle = kDirectionConeHalfAngle;
+    final halfAngle = dev.kDirectionConeHalfAngle;
     
     // Calculate pixel-based radii
-    final outerRadiusPx = kNodeIconDiameter + (kNodeIconDiameter * kDirectionConeBaseLength);
-    final innerRadiusPx = kNodeIconDiameter + (2 * getNodeRingThickness(context));
+    final outerRadiusPx = dev.kNodeIconDiameter + (dev.kNodeIconDiameter * dev.kDirectionConeBaseLength);
+    final innerRadiusPx = dev.kNodeIconDiameter + (2 * getNodeRingThickness(context));
     
     // Convert pixels to coordinate distances with zoom scaling
     final pixelToCoordinate = 0.00001 * math.pow(2, 15 - zoom);
@@ -150,15 +150,15 @@ class DirectionConesBuilder {
     }
 
     // Adjust opacity based on direction state
-    double opacity = kDirectionConeOpacity;
+    double opacity = dev.kDirectionConeOpacity;
     if (isSession && !isActiveDirection) {
-      opacity = kDirectionConeOpacity * 0.4; // Reduced opacity for inactive session directions
+      opacity = dev.kDirectionConeOpacity * 0.4; // Reduced opacity for inactive session directions
     }
 
     return Polygon(
       points: points,
-      color: kDirectionConeColor.withOpacity(opacity),
-      borderColor: kDirectionConeColor,
+      color: dev.kDirectionConeColor.withOpacity(opacity),
+      borderColor: dev.kDirectionConeColor,
       borderStrokeWidth: getDirectionConeBorderWidth(context),
     );
   }

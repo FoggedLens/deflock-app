@@ -83,7 +83,7 @@ class EditNodeSheet extends StatelessWidget {
                     : null,
                 tooltip: requiresDirection ? 'Remove current direction' : 'Direction not required for this profile',
                 padding: EdgeInsets.zero,
-                constraints: const BoxConstraints(minWidth: kDirectionButtonMinWidth, minHeight: kDirectionButtonMinHeight),
+                constraints: BoxConstraints(minWidth: dev.kDirectionButtonMinWidth, minHeight: dev.kDirectionButtonMinHeight),
               ),
               // Add button
               IconButton(
@@ -97,7 +97,7 @@ class EditNodeSheet extends StatelessWidget {
                     ? (session.directions.length >= 8 ? 'Maximum 8 directions allowed' : 'Add new direction') 
                     : 'Direction not required for this profile',
                 padding: EdgeInsets.zero,
-                constraints: const BoxConstraints(minWidth: kDirectionButtonMinWidth, minHeight: kDirectionButtonMinHeight),
+                constraints: BoxConstraints(minWidth: dev.kDirectionButtonMinWidth, minHeight: dev.kDirectionButtonMinHeight),
               ),
               // Cycle button
               IconButton(
@@ -111,7 +111,7 @@ class EditNodeSheet extends StatelessWidget {
                     : null,
                 tooltip: requiresDirection ? 'Cycle through directions' : 'Direction not required for this profile',
                 padding: EdgeInsets.zero,
-                constraints: const BoxConstraints(minWidth: kDirectionButtonMinWidth, minHeight: kDirectionButtonMinHeight),
+                constraints: BoxConstraints(minWidth: dev.kDirectionButtonMinWidth, minHeight: dev.kDirectionButtonMinHeight),
               ),
             ],
           ),
@@ -160,7 +160,7 @@ class EditNodeSheet extends StatelessWidget {
 
         final submittableProfiles = appState.enabledProfiles.where((p) => p.isSubmittable).toList();
         final isSandboxMode = appState.uploadMode == UploadMode.sandbox;
-        final allowSubmit = kEnableNodeEdits && 
+        final allowSubmit = dev.kEnableNodeEdits && 
             appState.isLoggedIn && 
             submittableProfiles.isNotEmpty && 
             session.profile != null && 
@@ -220,7 +220,7 @@ class EditNodeSheet extends StatelessWidget {
                   child: Column(
                     children: [
                       // Extract from way checkbox (only show if enabled in dev config)
-                      if (kEnableNodeExtraction) ...[
+                      if (dev.kEnableNodeExtraction) ...[
                         CheckboxListTile(
                           title: Text(locService.t('editNode.extractFromWay')),
                           subtitle: Text(locService.t('editNode.extractFromWaySubtitle')),
@@ -234,7 +234,7 @@ class EditNodeSheet extends StatelessWidget {
                         const SizedBox(height: 8),
                       ],
                       // Constraint info message (only show if extract is not checked or not enabled)
-                      if (!kEnableNodeExtraction || !session.extractFromWay) ...[
+                      if (!dev.kEnableNodeExtraction || !session.extractFromWay) ...[
                         Row(
                           children: [
                             const Icon(Icons.info_outline, size: 20),
@@ -266,7 +266,7 @@ class EditNodeSheet extends StatelessWidget {
                   ),
                 ),
 
-              if (!kEnableNodeEdits)
+              if (!dev.kEnableNodeEdits)
                 Padding(
                   padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
                   child: Row(

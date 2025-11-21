@@ -1,10 +1,40 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import '../services/localization_service.dart';
 import '../services/version_service.dart';
 import '../dev_config.dart';
 
-class SettingsScreen extends StatelessWidget {
+class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
+
+  @override
+  State<SettingsScreen> createState() => _SettingsScreenState();
+}
+
+class _SettingsScreenState extends State<SettingsScreen> {
+  int _versionTapCount = 0;
+  Timer? _tapTimer;
+
+  @override
+  void dispose() {
+    _tapTimer?.cancel();
+    super.dispose();
+  }
+
+  void _onVersionTap() {
+    _tapTimer?.cancel();
+    _versionTapCount++;
+    
+    if (_versionTapCount >= 10) {
+      Navigator.pushNamed(context, '/settings/developer');
+      _versionTapCount = 0;
+      return;
+    }
+    
+    _tapTimer = Timer(const Duration(milliseconds: 400), () {
+      _versionTapCount = 0;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -100,15 +130,18 @@ class SettingsScreen extends StatelessWidget {
             ),
             const Divider(),
             
-            // Version display
+            // Version display with secret tap counter
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              child: Text(
-                'Version: ${VersionService().version}',
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: Theme.of(context).textTheme.bodySmall?.color?.withOpacity(0.6),
+              child: GestureDetector(
+                onTap: _onVersionTap,
+                child: Text(
+                  'Version: ${VersionService().version}',
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: Theme.of(context).textTheme.bodySmall?.color?.withOpacity(0.6),
+                  ),
+                  textAlign: TextAlign.center,
                 ),
-                textAlign: TextAlign.center,
               ),
             ),
           ],

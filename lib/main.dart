@@ -8,6 +8,7 @@ import 'screens/profiles_settings_screen.dart';
 import 'screens/navigation_settings_screen.dart';
 import 'screens/offline_settings_screen.dart';
 import 'screens/advanced_settings_screen.dart';
+import 'screens/developer_settings_screen.dart';
 import 'screens/language_settings_screen.dart';
 import 'screens/about_screen.dart';
 import 'screens/release_notes_screen.dart';
@@ -77,6 +78,7 @@ class DeFlockApp extends StatelessWidget {
         '/settings/navigation': (context) => const NavigationSettingsScreen(),
         '/settings/offline': (context) => const OfflineSettingsScreen(),
         '/settings/advanced': (context) => const AdvancedSettingsScreen(),
+        '/settings/developer': (context) => const DeveloperSettingsScreen(),
         '/settings/language': (context) => const LanguageSettingsScreen(),
         '/settings/about': (context) => const AboutScreen(),
         '/settings/release-notes': (context) => const ReleaseNotesScreen(),

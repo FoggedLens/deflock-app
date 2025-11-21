@@ -117,7 +117,7 @@ class OSMAccountScreen extends StatelessWidget {
               const SizedBox(height: 16),
               
               // Upload Mode Section (only show in development builds)
-              if (kEnableDevelopmentModes) ...[
+              if (dev.kEnableDevelopmentModes) ...[
                 Card(
                   child: const Padding(
                     padding: EdgeInsets.all(16.0),

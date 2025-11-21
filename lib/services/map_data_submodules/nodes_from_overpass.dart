@@ -44,7 +44,7 @@ Future<List<OsmNode>> _fetchOverpassNodesWithSplitting({
 }) async {
   if (profiles.isEmpty) return [];
   
-  const int maxSplitDepth = kMaxPreFetchSplitDepth; // Maximum times we'll split (4^3 = 64 max sub-areas)
+  final int maxSplitDepth = dev.dev.kMaxPreFetchSplitDepth; // Maximum times we'll split (4^3 = 64 max sub-areas)
   
   try {
     return await _fetchSingleOverpassQuery(

@@ -61,7 +61,7 @@ class TilePreviewService {
 
   static Future<Uint8List?> _fetchPreviewForTileType(TileType tileType, String? apiKey) async {
     try {
-      final url = tileType.getTileUrl(kPreviewTileZoom, kPreviewTileX, kPreviewTileY, apiKey: apiKey);
+      final url = tileType.getTileUrl(dev.kPreviewTileZoom, dev.kPreviewTileX, dev.kPreviewTileY, apiKey: apiKey);
       
       final response = await http.get(Uri.parse(url)).timeout(_timeout);
       

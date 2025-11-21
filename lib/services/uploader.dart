@@ -44,7 +44,7 @@ class Uploader {
       final csXml = '''
         <osm>
           <changeset>
-            <tag k="created_by" v="$kClientName ${VersionService().version}"/>
+            <tag k="created_by" v="$dev.kClientName ${VersionService().version}"/>
             <tag k="comment" v="$action $profileName surveillance node"/>
           </changeset>
         </osm>''';

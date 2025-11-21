@@ -33,10 +33,10 @@ class SettingsState extends ChangeNotifier {
   bool _offlineMode = false;
   bool _pauseQueueProcessing = false;
   int _maxCameras = 250;
-  UploadMode _uploadMode = kEnableDevelopmentModes ? UploadMode.simulate : UploadMode.production;
+  UploadMode _uploadMode = dev.kEnableDevelopmentModes ? UploadMode.simulate : UploadMode.production;
   FollowMeMode _followMeMode = FollowMeMode.follow;
   bool _proximityAlertsEnabled = false;
-  int _proximityAlertDistance = kProximityAlertDefaultDistance;
+  int _proximityAlertDistance = dev.kProximityAlertDefaultDistance;
   bool _networkStatusIndicatorEnabled = true;
   int _suspectedLocationMinDistance = 100; // meters
   List<TileProvider> _tileProviders = [];
@@ -105,7 +105,7 @@ class SettingsState extends ChangeNotifier {
     
     // Load proximity alerts settings
     _proximityAlertsEnabled = prefs.getBool(_proximityAlertsEnabledPrefsKey) ?? false;
-    _proximityAlertDistance = prefs.getInt(_proximityAlertDistancePrefsKey) ?? kProximityAlertDefaultDistance;
+    _proximityAlertDistance = prefs.getInt(_proximityAlertDistancePrefsKey) ?? dev.kProximityAlertDefaultDistance;
     
     // Load network status indicator setting
     _networkStatusIndicatorEnabled = prefs.getBool(_networkStatusIndicatorEnabledPrefsKey) ?? true;
@@ -128,7 +128,7 @@ class SettingsState extends ChangeNotifier {
     }
     
     // In production builds, force production mode if development modes are disabled
-    if (!kEnableDevelopmentModes && _uploadMode != UploadMode.production) {
+    if (!dev.kEnableDevelopmentModes && _uploadMode != UploadMode.production) {
       debugPrint('SettingsState: Development modes disabled, forcing production mode');
       _uploadMode = UploadMode.production;
       await prefs.setInt(_uploadModePrefsKey, _uploadMode.index);
@@ -236,7 +236,7 @@ class SettingsState extends ChangeNotifier {
 
   Future<void> setUploadMode(UploadMode mode) async {
     // In production builds, only allow production mode
-    if (!kEnableDevelopmentModes && mode != UploadMode.production) {
+    if (!dev.kEnableDevelopmentModes && mode != UploadMode.production) {
       debugPrint('SettingsState: Development modes disabled, forcing production mode');
       mode = UploadMode.production;
     }
@@ -323,8 +323,8 @@ class SettingsState extends ChangeNotifier {
 
   /// Set proximity alert distance in meters
   Future<void> setProximityAlertDistance(int distance) async {
-    if (distance < kProximityAlertMinDistance) distance = kProximityAlertMinDistance;
-    if (distance > kProximityAlertMaxDistance) distance = kProximityAlertMaxDistance;
+    if (distance < dev.kProximityAlertMinDistance) distance = dev.kProximityAlertMinDistance;
+    if (distance > dev.kProximityAlertMaxDistance) distance = dev.kProximityAlertMaxDistance;
     if (_proximityAlertDistance != distance) {
       _proximityAlertDistance = distance;
       final prefs = await SharedPreferences.getInstance();

@@ -102,10 +102,10 @@ class SuspectedLocationService {
   /// Fetch data from the CSV URL
   Future<bool> _fetchData() async {
     try {
-      debugPrint('[SuspectedLocationService] Fetching CSV data from $kSuspectedLocationsCsvUrl');
+      debugPrint('[SuspectedLocationService] Fetching CSV data from $dev.kSuspectedLocationsCsvUrl');
       
       final response = await http.get(
-        Uri.parse(kSuspectedLocationsCsvUrl),
+        Uri.parse(dev.kSuspectedLocationsCsvUrl),
         headers: {
           'User-Agent': 'DeFlock/1.0 (OSM surveillance mapping app)',
         },
