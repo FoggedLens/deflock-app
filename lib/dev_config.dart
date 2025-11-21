@@ -104,9 +104,9 @@ double getTagListHeightRatio(BuildContext context) {
 }
 
 // Proximity alerts configuration
-const int kProximityAlertDefaultDistance = 200; // meters
+const int kProximityAlertDefaultDistance = 400; // meters
 const int kProximityAlertMinDistance = 50; // meters
-const int kProximityAlertMaxDistance = 1000; // meters
+const int kProximityAlertMaxDistance = 1600; // meters
 const Duration kProximityAlertCooldown = Duration(minutes: 10); // Cooldown between alerts for same node
 
 // Map interaction configuration
