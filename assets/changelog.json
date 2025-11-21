@@ -1,12 +1,16 @@
 {
   "1.4.2": {
     "content": [
+      "• NEW: Proximity warning when placing nodes too close together - prevents accidental duplicate submissions",
+      "• NEW: Configurable distance threshold (5 meters default) warns when nodes are too close to existing devices",
+      "• NEW: Smart warning dialog suggests using multiple directions on single nodes instead of separate nearby nodes",
       "• NEW: Dedicated 'Upload Queue' page - queue items are now shown in a proper list view instead of a popup",
       "• NEW: 'Clear Upload Queue' button is always visible at the top of queue page, greyed out when empty",
       "• NEW: 'OpenStreetMap Account' page for managing OSM login and account settings",
       "• NEW: 'View My Edits on OSM' button takes you directly to your edit history on OpenStreetMap",
       "• IMPROVED: Settings page organization with dedicated pages for upload management and OSM account",
       "• IMPROVED: Better empty queue state with helpful messaging",
+      "• UX: Proximity warnings help maintain data quality by preventing common mapping errors",
       "• UX: Cleaner settings page layout with auth and queue sections moved to their own dedicated pages",
       "• UX: Added informational content about OpenStreetMap on the account page"
     ]

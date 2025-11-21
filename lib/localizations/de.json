@@ -21,6 +21,24 @@
     "advanced": "Erweitert",
     "useAdvancedEditor": "Erweiterten Editor verwenden"
   },
+  "proximityWarning": {
+    "title": "Knoten sehr nah an vorhandenem Gerät",
+    "message": "Dieser Knoten ist nur {} Meter von einem vorhandenen Überwachungsgerät entfernt.",
+    "suggestion": "Wenn mehrere Geräte am selben Mast sind, verwenden Sie bitte mehrere Richtungen auf einem einzigen Knoten, anstatt separate Knoten zu erstellen.",
+    "nearbyNodes": "Nahegelegene Gerät(e) gefunden ({}):",
+    "nodeInfo": "Knoten #{} - {}",
+    "andMore": "...und {} weitere",
+    "goBack": "Zurück",
+    "submitAnyway": "Trotzdem senden",
+    "nodeType": {
+      "alpr": "ALPR/ANPR Kamera",
+      "publicCamera": "Öffentliche Überwachungskamera",
+      "camera": "Überwachungskamera",
+      "amenity": "{}",
+      "device": "{} Gerät",
+      "unknown": "Unbekanntes Gerät"
+    }
+  },
   "followMe": {
     "off": "Verfolgung aktivieren",
     "follow": "Verfolgung aktivieren (Rotation)",

@@ -39,6 +39,24 @@
     "advanced": "Avancé",
     "useAdvancedEditor": "Utiliser l'Éditeur Avancé"
   },
+  "proximityWarning": {
+    "title": "Nœud Très Proche d'un Dispositif Existant",
+    "message": "Ce nœud n'est qu'à {} mètres d'un dispositif de surveillance existant.",
+    "suggestion": "Si plusieurs dispositifs se trouvent sur le même poteau, veuillez utiliser plusieurs directions sur un seul nœud au lieu de créer des nœuds séparés.",
+    "nearbyNodes": "Dispositif(s) proche(s) trouvé(s) ({}) :",
+    "nodeInfo": "Nœud #{} - {}",
+    "andMore": "...et {} de plus",
+    "goBack": "Retour",
+    "submitAnyway": "Soumettre Quand Même",
+    "nodeType": {
+      "alpr": "Caméra ALPR/ANPR",
+      "publicCamera": "Caméra de Surveillance Publique",
+      "camera": "Caméra de Surveillance",
+      "amenity": "{}",
+      "device": "Dispositif {}",
+      "unknown": "Dispositif Inconnu"
+    }
+  },
   "followMe": {
     "off": "Activer le suivi",
     "follow": "Activer le suivi (rotation)",

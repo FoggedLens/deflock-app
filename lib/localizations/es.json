@@ -39,6 +39,24 @@
     "advanced": "Avanzado",
     "useAdvancedEditor": "Usar Editor Avanzado"
   },
+  "proximityWarning": {
+    "title": "Nodo Muy Cerca de Dispositivo Existente",
+    "message": "Este nodo está a solo {} metros de un dispositivo de vigilancia existente.",
+    "suggestion": "Si hay múltiples dispositivos en el mismo poste, use múltiples direcciones en un solo nodo en lugar de crear nodos separados.",
+    "nearbyNodes": "Dispositivo(s) cercano(s) encontrado(s) ({}):",
+    "nodeInfo": "Nodo #{} - {}",
+    "andMore": "...y {} más",
+    "goBack": "Volver",
+    "submitAnyway": "Enviar de Todas Formas",
+    "nodeType": {
+      "alpr": "Cámara ALPR/ANPR",
+      "publicCamera": "Cámara de Vigilancia Pública",
+      "camera": "Cámara de Vigilancia",
+      "amenity": "{}",
+      "device": "Dispositivo {}",
+      "unknown": "Dispositivo Desconocido"
+    }
+  },
   "followMe": {
     "off": "Activar seguimiento",
     "follow": "Activar seguimiento (rotación)",

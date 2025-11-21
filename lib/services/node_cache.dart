@@ -2,6 +2,8 @@ import 'package:latlong2/latlong.dart';
 import '../models/osm_node.dart';
 import 'package:flutter_map/flutter_map.dart' show LatLngBounds;
 
+const Distance _distance = Distance();
+
 class NodeCache {
   // Singleton instance
   static final NodeCache instance = NodeCache._internal();
@@ -101,6 +103,34 @@ class NodeCache {
   bool _coordsMatch(LatLng coord1, LatLng coord2, double tolerance) {
     return (coord1.latitude - coord2.latitude).abs() < tolerance &&
            (coord1.longitude - coord2.longitude).abs() < tolerance;
+  }
+
+  /// Find nodes within the specified distance (in meters) of the given coordinate
+  /// Excludes nodes with the excludeNodeId (useful when checking proximity for edited nodes)
+  List<OsmNode> findNodesWithinDistance(LatLng coord, double distanceMeters, {int? excludeNodeId}) {
+    final nearbyNodes = <OsmNode>[];
+    
+    for (final node in _nodes.values) {
+      // Skip the excluded node (typically the node being edited)
+      if (excludeNodeId != null && node.id == excludeNodeId) {
+        continue;
+      }
+      
+      // Skip temporary nodes (negative IDs) with pending upload/edit/deletion markers
+      if (node.id < 0 && (
+          node.tags.containsKey('_pending_upload') ||
+          node.tags.containsKey('_pending_edit') ||
+          node.tags.containsKey('_pending_deletion'))) {
+        continue;
+      }
+      
+      final distance = _distance.as(LengthUnit.Meter, coord, node.coord);
+      if (distance <= distanceMeters) {
+        nearbyNodes.add(node);
+      }
+    }
+    
+    return nearbyNodes;
   }
 
   /// Utility: point-in-bounds for coordinates

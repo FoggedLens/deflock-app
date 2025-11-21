@@ -6,14 +6,54 @@ import '../dev_config.dart';
 import '../models/node_profile.dart';
 import '../models/operator_profile.dart';
 import '../services/localization_service.dart';
+import '../services/node_cache.dart';
 import '../state/settings_state.dart';
 import 'refine_tags_sheet.dart';
 import 'advanced_edit_options_sheet.dart';
+import 'proximity_warning_dialog.dart';
 
 class EditNodeSheet extends StatelessWidget {
   const EditNodeSheet({super.key, required this.session});
 
   final EditNodeSession session;
+
+  void _checkProximityAndCommit(BuildContext context, AppState appState, LocalizationService locService) {
+    // Check for nearby nodes within the configured distance, excluding the node being edited
+    final nearbyNodes = NodeCache.instance.findNodesWithinDistance(
+      session.target, 
+      kNodeProximityWarningDistance,
+      excludeNodeId: session.originalNode.id,
+    );
+    
+    if (nearbyNodes.isNotEmpty) {
+      // Show proximity warning dialog
+      showDialog<void>(
+        context: context,
+        builder: (context) => ProximityWarningDialog(
+          nearbyNodes: nearbyNodes,
+          distance: kNodeProximityWarningDistance,
+          onGoBack: () {
+            Navigator.of(context).pop(); // Close dialog
+          },
+          onSubmitAnyway: () {
+            Navigator.of(context).pop(); // Close dialog
+            _commitWithoutCheck(context, appState, locService);
+          },
+        ),
+      );
+    } else {
+      // No nearby nodes, proceed with commit
+      _commitWithoutCheck(context, appState, locService);
+    }
+  }
+
+  void _commitWithoutCheck(BuildContext context, AppState appState, LocalizationService locService) {
+    appState.commitEditSession();
+    Navigator.pop(context);
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(locService.t('node.editQueuedForUpload'))),
+    );
+  }
 
   Widget _buildDirectionControls(BuildContext context, AppState appState, EditNodeSession session, LocalizationService locService) {
     final requiresDirection = session.profile != null && session.profile!.requiresDirection;
@@ -146,11 +186,7 @@ class EditNodeSheet extends StatelessWidget {
         final appState = context.watch<AppState>();
 
         void _commit() {
-          appState.commitEditSession();
-          Navigator.pop(context);
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(locService.t('node.editQueuedForUpload'))),
-          );
+          _checkProximityAndCommit(context, appState, locService);
         }
 
         void _cancel() {

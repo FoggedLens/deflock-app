@@ -39,6 +39,24 @@
     "advanced": "Advanced",
     "useAdvancedEditor": "Use Advanced Editor"
   },
+  "proximityWarning": {
+    "title": "Node Very Close to Existing Device",
+    "message": "This node is only {} meters from an existing surveillance device.",
+    "suggestion": "If multiple devices are on the same pole, please use multiple directions on a single node instead of creating separate nodes.",
+    "nearbyNodes": "Nearby device(s) found ({}):",
+    "nodeInfo": "Node #{} - {}",
+    "andMore": "...and {} more",
+    "goBack": "Go Back",
+    "submitAnyway": "Submit Anyway",
+    "nodeType": {
+      "alpr": "ALPR/ANPR Camera",
+      "publicCamera": "Public Surveillance Camera", 
+      "camera": "Surveillance Camera",
+      "amenity": "{}",
+      "device": "{} Device",
+      "unknown": "Unknown Device"
+    }
+  },
   "followMe": {
     "off": "Enable follow-me",
     "follow": "Enable follow-me (rotating)",

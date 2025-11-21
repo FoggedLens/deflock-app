@@ -39,6 +39,24 @@
     "advanced": "Avanzato",
     "useAdvancedEditor": "Usa Editor Avanzato"
   },
+  "proximityWarning": {
+    "title": "Nodo Molto Vicino a Dispositivo Esistente",
+    "message": "Questo nodo è a soli {} metri da un dispositivo di sorveglianza esistente.",
+    "suggestion": "Se ci sono più dispositivi sullo stesso palo, utilizzare più direzioni su un singolo nodo invece di creare nodi separati.",
+    "nearbyNodes": "Dispositivo/i vicino/i trovato/i ({}):",
+    "nodeInfo": "Nodo #{} - {}",
+    "andMore": "...e altri {}",
+    "goBack": "Torna Indietro",
+    "submitAnyway": "Invia Comunque",
+    "nodeType": {
+      "alpr": "Telecamera ALPR/ANPR",
+      "publicCamera": "Telecamera di Sorveglianza Pubblica",
+      "camera": "Telecamera di Sorveglianza",
+      "amenity": "{}",
+      "device": "Dispositivo {}",
+      "unknown": "Dispositivo Sconosciuto"
+    }
+  },
   "followMe": {
     "off": "Attiva seguimi",
     "follow": "Attiva seguimi (rotazione)",

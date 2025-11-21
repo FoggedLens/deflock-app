@@ -39,6 +39,24 @@
     "advanced": "高级",
     "useAdvancedEditor": "使用高级编辑器"
   },
+  "proximityWarning": {
+    "title": "节点过于靠近现有设备",
+    "message": "此节点距离现有监控设备仅 {} 米。",
+    "suggestion": "如果同一根杆上有多个设备，请在单个节点上使用多个方向，而不是创建单独的节点。",
+    "nearbyNodes": "发现附近设备 ({})：",
+    "nodeInfo": "节点 #{} - {}",
+    "andMore": "...还有 {} 个",
+    "goBack": "返回",
+    "submitAnyway": "仍然提交",
+    "nodeType": {
+      "alpr": "ALPR/ANPR 摄像头",
+      "publicCamera": "公共监控摄像头",
+      "camera": "监控摄像头",
+      "amenity": "{}",
+      "device": "{} 设备",
+      "unknown": "未知设备"
+    }
+  },
   "followMe": {
     "off": "启用跟随模式",
     "follow": "启用跟随模式（旋转）",
