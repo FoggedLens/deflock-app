@@ -1,41 +1,24 @@
 {
   "1.4.3": {
     "content": [
-      "• NEW: Proximity warning when placing nodes too close together - prevents accidental duplicate submissions",
-      "• NEW: Configurable distance threshold (5 meters default) warns when nodes are too close to existing devices",
-      "• NEW: Smart warning dialog suggests using multiple directions on single nodes instead of separate nearby nodes",
-      "• UX: Proximity warnings help maintain data quality by preventing common mapping errors",
-      "• UX: Warning messages are fully localized in all 7 supported languages",
-      "• UX: Dialog shows nearby device details to help users make informed decisions",
-      "• TECHNICAL: Added intelligent filtering to exclude temporary/pending nodes from proximity checks"
+      "• NEW: Proximity warning when placing nodes too close together - prevents accidental duplicate submissions"
     ]
   },
   "1.4.2": {
     "content": [
       "• NEW: Dedicated 'Upload Queue' page - queue items are now shown in a proper list view instead of a popup",
-      "• NEW: 'Clear Upload Queue' button is always visible at the top of queue page, greyed out when empty",
       "• NEW: 'OpenStreetMap Account' page for managing OSM login and account settings",
-      "• NEW: 'View My Edits on OSM' button takes you directly to your edit history on OpenStreetMap",
-      "• IMPROVED: Settings page organization with dedicated pages for upload management and OSM account",
-      "• IMPROVED: Better empty queue state with helpful messaging",
-      "• UX: Cleaner settings page layout with auth and queue sections moved to their own dedicated pages",
-      "• UX: Added informational content about OpenStreetMap on the account page"
+      "• NEW: 'View My Edits on OSM' button takes you directly to your edit history on OpenStreetMap"
     ]
   },
   "1.4.1": {
     "content": [
-      "• NEW: 'Extract node from way/relation' option for constrained nodes",
-      "• When editing nodes that are part of ways or relations, you can now check 'Extract node from way' to create a new node with the same tags at a new location",
-      "• This preserves the original node in its way/relation while creating an independent copy that can be moved freely",
-      "• Useful for cases where surveillance equipment has been relocated but the original node must remain for mapping accuracy",
-      "• Extraction creates a separate OSM changeset and node, leaving the original node untouched"
+      "• NEW: 'Extract node from way/relation' option for constrained nodes (currently disabled while we decide what that means)"
     ]
   },
   "1.4.0": {
     "content": [
       "• IMPROVED: Advanced editing options now only show apps available on your platform (iOS/Android)",
-      "• IMPROVED: When an OSM editor app isn't installed, automatically redirect to the appropriate app store",
-      "• IMPROVED: Better error handling for external editor launches with app store fallback",
       "• Supported editors: Vespucci (Android), StreetComplete (Android), EveryDoor (both), Go Map!! (iOS)",
       "• Web editors (iD, RapiD) remain available on all platforms as before"
     ]
@@ -44,27 +27,17 @@
     "content": [
       "• NEW: 'Pause Upload Queue' toggle in Offline Settings - stops uploads while keeping live data access",
       "• Useful for metered connections or when you want to batch uploads later",
-      "• Upload queue is now disabled if either full offline mode OR pause queue processing is enabled",
-      "• FIXED: Sheet buttons now remain visible when rotating from portrait to landscape mode",
-      "• FIXED: Sheets now properly resize when rotating between orientations without requiring user interaction", 
-      "• IMPROVED: Tag list height adapts automatically for landscape orientation to prevent covering map",
-      "• IMPROVED: Sheets with few tags now shrink to appropriate size rather than maintaining fixed height",
-      "• IMPROVED: More reliable sheet layout using proper flexible height constraints",
-      "• CLEANED: Fixed minor code formatting inconsistencies"
+      "• FIXED: Sheets now resize when rotating between orientations"
     ]
   },
   "1.3.3": {
     "content": [
+      "• UX: Edits re-enabled. Only nodes which are part of ways/relations cannot be moved",
       "• NEW: Added builtin surveillance device profiles for Rekor and Axis Communications ALPR cameras",
-      "• Both profiles include proper OSM tags for manufacturer identification and require direction setting",
       "• NEW: Advanced editing options - access iD Editor, RapiD, Vespucci, StreetComplete, and other OSM editors",
       "• NEW: 'View on OSM' links to see nodes directly on OpenStreetMap website", 
-      "• UX: Constrained nodes (part of ways/relations) cannot be moved to prevent data corruption",
       "• UX: Auto-clickable URLs in all tag values - any URL becomes a tappable link",
-      "• UX: Tag lists now scroll with max height to keep buttons and map visible",
-      "• UX: Improved button layout on mobile with two rows for better accessibility",
-      "• UX: Localized network status messages in all supported languages",
-      "• FIXED: Duplicate changelog service calls eliminated"
+      "• UX: Tag lists now scroll with max height to keep buttons and map visible"
     ]
   },
   "1.3.2": {
