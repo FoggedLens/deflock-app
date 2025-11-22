@@ -1,4 +1,10 @@
 {
+  "1.4.6": {
+    "content": [
+      "• IMPROVED: Tile fetching reliability - removed retry limits so visible tiles always load eventually",
+      "• FIXED: Queue management - cancel requests for off-screen tiles, ongoing requests continue normally"
+    ]
+  },
   "1.4.5": {
     "content": [
       "• NEW: Minimum zoom level (Z15) enforced for adding and editing surveillance nodes to ensure precise positioning",

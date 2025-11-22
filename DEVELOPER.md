@@ -123,7 +123,7 @@ The welcome popup explains that the app:
 
 **Key methods:**
 - `getNodes()`: Returns cache immediately, triggers pre-fetch if needed (spatial or temporal)
-- `getTile()`: Tile fetching with enhanced retry strategy (6 attempts, 1-8s delays)
+- `getTile()`: Tile fetching with unlimited retry strategy (retries until success)
 - `_fetchRemoteNodes()`: Handles Overpass → OSM API fallback
 
 **Smart caching flow:**

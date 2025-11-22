@@ -99,7 +99,6 @@ cp lib/keys.dart.example lib/keys.dart
 
 ### Needed Bugfixes
 - Update node cache to reflect cleared queue entries
-- Improve/retune tile fetching backoff/retry
 - Are offline areas preferred for fast loading even when online? Check working.
 - Fix network indicator - only done when fetch queue is empty!
 

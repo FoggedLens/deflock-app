@@ -9,7 +9,7 @@ import 'package:deflockapp/dev_config.dart';
 import '../network_status.dart';
 
 /// Global semaphore to limit simultaneous tile fetches
-final _tileFetchSemaphore = _SimpleSemaphore(4); // Max 4 concurrent
+final _tileFetchSemaphore = _SimpleSemaphore(kTileFetchConcurrentThreads);
 
 /// Clear queued tile requests when map view changes significantly
 void clearRemoteTileQueue() {
@@ -93,15 +93,15 @@ bool _isTileVisible(int z, int x, int y, LatLngBounds viewBounds) {
 
 
 
-/// Fetches a tile from any remote provider, with in-memory retries/backoff, and global concurrency limit.
-/// Returns tile image bytes, or throws on persistent failure.
+/// Fetches a tile from any remote provider with unlimited retries.
+/// Returns tile image bytes. Retries forever until success.
+/// Brutalist approach: Keep trying until it works - no arbitrary retry limits.
 Future<List<int>> fetchRemoteTile({
   required int z,
   required int x,
   required int y,
   required String url,
 }) async {
-  const int maxAttempts = kTileFetchMaxAttempts;
   int attempt = 0;
   final random = Random();
   final hostInfo = Uri.parse(url).host; // For logging
@@ -109,20 +109,23 @@ Future<List<int>> fetchRemoteTile({
   while (true) {
     await _tileFetchSemaphore.acquire(z: z, x: x, y: y);
     try {
-      // Only log on first attempt or errors
-      if (attempt == 1) {
+      // Only log on first attempt
+      if (attempt == 0) {
         debugPrint('[fetchRemoteTile] Fetching $z/$x/$y from $hostInfo');
       }
       attempt++;
       final resp = await http.get(Uri.parse(url));
       
       if (resp.statusCode == 200 && resp.bodyBytes.isNotEmpty) {
-        // Success - no logging for normal operation
-        NetworkStatus.instance.reportOsmTileSuccess(); // Generic tile server reporting
+        // Success!
+        if (attempt > 1) {
+          debugPrint('[fetchRemoteTile] SUCCESS $z/$x/$y from $hostInfo after $attempt attempts');
+        }
+        NetworkStatus.instance.reportOsmTileSuccess();
         return resp.bodyBytes;
       } else {
         debugPrint('[fetchRemoteTile] FAIL $z/$x/$y from $hostInfo: code=${resp.statusCode}, bytes=${resp.bodyBytes.length}');
-        NetworkStatus.instance.reportOsmTileIssue(); // Generic tile server reporting
+        NetworkStatus.instance.reportOsmTileIssue();
         throw HttpException('Failed to fetch tile $z/$x/$y from $hostInfo: status ${resp.statusCode}');
       }
     } catch (e) {
@@ -130,17 +133,16 @@ Future<List<int>> fetchRemoteTile({
       if (e.toString().contains('Connection refused') || 
           e.toString().contains('Connection timed out') ||
           e.toString().contains('Connection reset')) {
-        NetworkStatus.instance.reportOsmTileIssue(); // Generic tile server reporting
+        NetworkStatus.instance.reportOsmTileIssue();
       }
       
-      if (attempt >= maxAttempts) {
-        debugPrint("[fetchRemoteTile] Failed for $z/$x/$y from $hostInfo after $attempt attempts: $e");
-        rethrow;
-      }
-      
+      // Calculate delay and retry (no attempt limit - keep trying forever)
       final delay = _calculateRetryDelay(attempt, random);
       if (attempt == 1) {
         debugPrint("[fetchRemoteTile] Attempt $attempt for $z/$x/$y from $hostInfo failed: $e. Retrying in ${delay}ms.");
+      } else if (attempt % 10 == 0) {
+        // Log every 10th attempt to show we're still working
+        debugPrint("[fetchRemoteTile] Still trying $z/$x/$y from $hostInfo (attempt $attempt). Retrying in ${delay}ms.");
       }
       await Future.delayed(Duration(milliseconds: delay));
     } finally {
