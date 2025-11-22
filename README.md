@@ -127,6 +127,7 @@ cp lib/keys.dart.example lib/keys.dart
 ### Future Features & Wishlist
 - Update offline area nodes while browsing?
 - Offline navigation (pending vector map tiles)
+- Android Auto / CarPlay
 
 ### Maybes
 - Yellow ring for devices missing specific tag details
