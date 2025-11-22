@@ -66,7 +66,7 @@ A comprehensive Flutter app for mapping public surveillance infrastructure with 
 1. **Install** the app on iOS or Android - a welcome popup will guide you through key information
 2. **Enable location** permissions  
 3. **Log into OpenStreetMap**: Choose upload mode and get OAuth2 credentials
-4. **Add your first device**: Tap the "New Node" button, position the pin, set direction(s), select a profile, and tap submit
+4. **Add your first device**: Tap the "New Node" button, position the pin, set direction(s), select a profile, and tap submit - a guidance popup will help you with best practices on your first submission
 5. **Edit or delete devices**: Tap any device marker to view details, then use Edit or Delete buttons
 
 **New to OpenStreetMap?** Visit [deflock.me](https://deflock.me) for complete setup instructions and community guidelines.

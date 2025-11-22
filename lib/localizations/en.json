@@ -23,6 +23,17 @@
     "dontShowAgain": "Don't show this welcome message again",
     "getStarted": "Let's Get DeFlocking!"
   },
+  "submissionGuide": {
+    "title": "Submission Best Practices",
+    "description": "Before submitting your first surveillance device, please take a moment to review these important guidelines to ensure high-quality contributions to OpenStreetMap.",
+    "bestPractices": "• Only map devices you've personally observed firsthand\n• Take time to accurately identify the device type and manufacturer\n• Use precise positioning - zoom in close before placing the marker\n• Include direction information when applicable\n• Double-check your tag selections before submitting",
+    "placementNote": "Remember: Accurate, first-hand data is essential for the DeFlock community and OpenStreetMap project.",
+    "moreInfo": "For detailed guidance on device identification and mapping best practices:",
+    "identificationGuide": "ID Guide",
+    "osmWiki": "OSM Wiki",
+    "dontShowAgain": "Don't show this guide again",
+    "gotIt": "Got It!"
+  },
   "actions": {
     "tagNode": "New Node",
     "download": "Download",

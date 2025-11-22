@@ -7,8 +7,10 @@ import '../models/node_profile.dart';
 import '../models/operator_profile.dart';
 import '../services/localization_service.dart';
 import '../services/node_cache.dart';
+import '../services/changelog_service.dart';
 import 'refine_tags_sheet.dart';
 import 'proximity_warning_dialog.dart';
+import 'submission_guide_dialog.dart';
 
 class AddNodeSheet extends StatelessWidget {
   const AddNodeSheet({super.key, required this.session});
@@ -16,6 +18,27 @@ class AddNodeSheet extends StatelessWidget {
   final AddNodeSession session;
 
   void _checkProximityAndCommit(BuildContext context, AppState appState, LocalizationService locService) {
+    _checkSubmissionGuideAndProceed(context, appState, locService);
+  }
+
+  void _checkSubmissionGuideAndProceed(BuildContext context, AppState appState, LocalizationService locService) async {
+    // Check if user has seen the submission guide
+    final hasSeenGuide = await ChangelogService().hasSeenSubmissionGuide();
+    
+    if (!hasSeenGuide) {
+      // Show submission guide dialog first
+      await showDialog<void>(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => const SubmissionGuideDialog(),
+      );
+    }
+    
+    // Now proceed with proximity check
+    _checkProximityOnly(context, appState, locService);
+  }
+
+  void _checkProximityOnly(BuildContext context, AppState appState, LocalizationService locService) {
     // Only check proximity if we have a target location
     if (session.target == null) {
       _commitWithoutCheck(context, appState, locService);

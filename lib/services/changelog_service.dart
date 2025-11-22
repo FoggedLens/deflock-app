@@ -13,6 +13,7 @@ class ChangelogService {
 
   static const String _lastSeenVersionKey = 'last_seen_version';
   static const String _hasSeenWelcomeKey = 'has_seen_welcome';
+  static const String _hasSeenSubmissionGuideKey = 'has_seen_submission_guide';
 
   Map<String, dynamic>? _changelogData;
   bool _initialized = false;
@@ -65,6 +66,18 @@ class ChangelogService {
   Future<void> markWelcomeSeen() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(_hasSeenWelcomeKey, true);
+  }
+
+  /// Check if user has seen the submission guide popup
+  Future<bool> hasSeenSubmissionGuide() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool(_hasSeenSubmissionGuideKey) ?? false;
+  }
+
+  /// Mark that user has seen the submission guide popup
+  Future<void> markSubmissionGuideSeen() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_hasSeenSubmissionGuideKey, true);
   }
 
   /// Check if app version has changed since last launch

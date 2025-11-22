@@ -23,6 +23,17 @@
     "dontShowAgain": "不再显示此欢迎消息",
     "getStarted": "开始使用 DeFlock！"
   },
+  "submissionGuide": {
+    "title": "提交最佳实践",
+    "description": "在提交您的第一个监控设备之前，请花点时间查看这些重要指南，以确保对 OpenStreetMap 的高质量贡献。",
+    "bestPractices": "• 只映射您亲自观察到的设备\n• 花时间准确识别设备类型和制造商\n• 使用精确定位 - 放置标记前请放大\n• 在适用时包含方向信息\n• 提交前请检查您的标签选择",
+    "placementNote": "请记住：准确的第一手数据对 DeFlock 社区和 OpenStreetMap 项目至关重要。",
+    "moreInfo": "有关设备识别和映射最佳实践的详细指导：",
+    "identificationGuide": "识别指南",
+    "osmWiki": "OSM Wiki",
+    "dontShowAgain": "不再显示此指南",
+    "gotIt": "明白了！"
+  },
   "actions": {
     "tagNode": "新建节点",
     "download": "下载",

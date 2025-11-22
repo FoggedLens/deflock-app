@@ -23,6 +23,17 @@
     "dontShowAgain": "Não mostrar esta mensagem de boas-vindas novamente",
     "getStarted": "Vamos começar com o DeFlock!"
   },
+  "submissionGuide": {
+    "title": "Melhores Práticas de Submissão",
+    "description": "Antes de submeter seu primeiro dispositivo de vigilância, dedique um momento para revisar estas diretrizes importantes para contribuições de alta qualidade ao OpenStreetMap.",
+    "bestPractices": "• Mapear apenas dispositivos que você observou pessoalmente\n• Dedicar tempo para identificar com precisão tipo e fabricante\n• Usar posicionamento preciso - aproximar antes de colocar o marcador\n• Incluir informações de direção quando aplicável\n• Verificar suas seleções de tags antes de submeter",
+    "placementNote": "Lembre-se: Dados precisos e de primeira mão são essenciais para a comunidade DeFlock e o projeto OpenStreetMap.",
+    "moreInfo": "Para orientação detalhada sobre identificação de dispositivos e melhores práticas de mapeamento:",
+    "identificationGuide": "Guia de ID",
+    "osmWiki": "Wiki OSM",
+    "dontShowAgain": "Não mostrar este guia novamente",
+    "gotIt": "Entendi!"
+  },
   "actions": {
     "tagNode": "Novo Nó",
     "download": "Baixar",

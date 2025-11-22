@@ -405,6 +405,17 @@
     "dontShowAgain": "Diese Willkommensnachricht nicht mehr anzeigen",
     "getStarted": "Los geht's mit DeFlocking!"
   },
+  "submissionGuide": {
+    "title": "Einreichungs-Richtlinien",
+    "description": "Bevor Sie Ihr erstes Überwachungsgerät einreichen, lesen Sie bitte diese wichtigen Richtlinien für qualitativ hochwertige Beiträge zu OpenStreetMap.",
+    "bestPractices": "• Nur Geräte erfassen, die Sie persönlich beobachtet haben\n• Zeit nehmen für genaue Identifikation von Typ und Hersteller\n• Präzise Positionierung - nah heranzoomen vor Markierung\n• Richtungsinformationen angeben, falls zutreffend\n• Tag-Auswahl vor dem Senden überprüfen",
+    "placementNote": "Denken Sie daran: Genaue, persönlich verifizierte Daten sind essentiell für die DeFlock-Community und das OpenStreetMap-Projekt.",
+    "moreInfo": "Für detaillierte Anleitungen zur Geräteerkennung und Kartierung:",
+    "identificationGuide": "ID-Leitfaden",
+    "osmWiki": "OSM Wiki",
+    "dontShowAgain": "Diese Anleitung nicht mehr anzeigen",
+    "gotIt": "Verstanden!"
+  },
   "navigation": {
     "searchLocation": "Ort suchen",
     "searchPlaceholder": "Orte oder Koordinaten suchen...",

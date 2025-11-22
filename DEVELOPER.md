@@ -72,6 +72,7 @@ The app includes a comprehensive system for welcoming new users and notifying ex
 ### Components
 - **ChangelogService**: Manages version tracking and changelog loading
 - **WelcomeDialog**: First launch popup with privacy information and quick links
+- **SubmissionGuideDialog**: One-time popup before first node submission with best practices
 - **ChangelogDialog**: Update notification popup for version changes  
 - **ReleaseNotesScreen**: Settings page for viewing all changelog history
 
@@ -96,6 +97,7 @@ Changelog content is stored in `assets/changelog.json`:
 
 ### User Experience Flow
 - **First Launch**: Welcome popup with "don't show again" option
+- **First Submission**: Submission guide popup with best practices and resource links
 - **Version Updates**: Changelog popup (only if content exists, no "don't show again")  
 - **Settings Access**: Complete changelog history available in Settings > About > Release Notes
 
