@@ -99,6 +99,11 @@ cp lib/keys.dart.example lib/keys.dart
 
 ### Needed Bugfixes
 - Update node cache to reflect cleared queue entries
+- Improve/retune tile fetching backoff/retry
+- Are offline areas preferred for fast loading even when online? Check working.
+- Fix network indicator - only done when fetch queue is empty!
+
+### Current Development
 - Decide what to do for extracting nodes attached to a way/relation:
   - Auto extract (how?)
   - Leave it alone (wrong answer unless user chooses intentionally)
@@ -106,12 +111,7 @@ cp lib/keys.dart.example lib/keys.dart
   - Delete the old one (also wrong answer unless user chooses intentionally)
   - Give multiple of these options??
 - Nav start+end too close together error (warning + disable submit button?)
-- Improve/retune tile fetching backoff/retry
 - Add some builtin satellite tile provider
-- Are offline areas preferred for fast loading even when online? Check working.
-- Fix network indicator - only done when fetch queue is empty!
-
-### Current Development
 - Persistent cache for MY submissions: assume submissions worked, cache,clean up when we see that node appear in overpass/OSM results or when older than 24h
 - Dropdown on "refine tags" page to select acceptable options for camera:mount= (is this a boolean property of a profile?)
 - Tutorial / info guide before submitting first node, info and links before creating first profile
