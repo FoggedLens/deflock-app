@@ -4,7 +4,9 @@ import '../services/changelog_service.dart';
 import '../services/localization_service.dart';
 
 class SubmissionGuideDialog extends StatefulWidget {
-  const SubmissionGuideDialog({super.key});
+  const SubmissionGuideDialog({super.key, this.showDontShowAgain = true});
+
+  final bool showDontShowAgain;
 
   @override
   State<SubmissionGuideDialog> createState() => _SubmissionGuideDialogState();
@@ -12,6 +14,7 @@ class SubmissionGuideDialog extends StatefulWidget {
 
 class _SubmissionGuideDialogState extends State<SubmissionGuideDialog> {
   bool _dontShowAgain = false;
+  bool _isInitialized = false;
 
   Future<void> _launchUrl(String url) async {
     final uri = Uri.parse(url);
@@ -20,8 +23,29 @@ class _SubmissionGuideDialogState extends State<SubmissionGuideDialog> {
     }
   }
 
+  @override
+  void initState() {
+    super.initState();
+    _loadCurrentState();
+  }
+
+  Future<void> _loadCurrentState() async {
+    if (!widget.showDontShowAgain) {
+      // When manually opened, show the actual current state
+      final hasSeenSubmissionGuide = await ChangelogService().hasSeenSubmissionGuide();
+      setState(() {
+        _dontShowAgain = hasSeenSubmissionGuide;
+        _isInitialized = true;
+      });
+    } else {
+      setState(() {
+        _isInitialized = true;
+      });
+    }
+  }
+
   void _onClose() async {
-    if (_dontShowAgain) {
+    if (_dontShowAgain && widget.showDontShowAgain) {
       await ChangelogService().markSubmissionGuideSeen();
     }
     
@@ -96,25 +120,31 @@ class _SubmissionGuideDialogState extends State<SubmissionGuideDialog> {
               ),
             ),
             const SizedBox(height: 16),
-            // Always visible checkbox at the bottom
-            Row(
-              children: [
-                Checkbox(
-                  value: _dontShowAgain,
-                  onChanged: (value) {
-                    setState(() {
-                      _dontShowAgain = value ?? false;
-                    });
-                  },
-                ),
-                Expanded(
-                  child: Text(
-                    locService.t('submissionGuide.dontShowAgain'),
-                    style: const TextStyle(fontSize: 13),
+            // Always visible checkbox, but disabled when manually opened
+            if (_isInitialized)
+              Row(
+                children: [
+                  Checkbox(
+                    value: _dontShowAgain,
+                    onChanged: widget.showDontShowAgain ? (value) {
+                      setState(() {
+                        _dontShowAgain = value ?? false;
+                      });
+                    } : null,
                   ),
-                ),
-              ],
-            ),
+                  Expanded(
+                    child: Text(
+                      locService.t('submissionGuide.dontShowAgain'),
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: widget.showDontShowAgain 
+                          ? null 
+                          : Theme.of(context).disabledColor,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
           ],
         ),
         actions: [

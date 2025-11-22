@@ -10,7 +10,10 @@
     "description": "DeFlock es una aplicación móvil enfocada en la privacidad para mapear infraestructura de vigilancia pública usando OpenStreetMap. Documenta cámaras, ALPRs, detectores de disparos y otros dispositivos de vigilancia en tu comunidad para hacer visible y consultable esta infraestructura.",
     "features": "• Mapeo con capacidad offline con áreas descargables\n• Subida directa a OpenStreetMap con OAuth2\n• Perfiles integrados para fabricantes principales\n• Respeta la privacidad - no se recopilan datos del usuario\n• Múltiples proveedores de mapas (OSM, imágenes satelitales)",
     "initiative": "Parte de la iniciativa más amplia DeFlock para promover la transparencia en vigilancia.",
-    "footer": "Visita: deflock.me\nConstruido con Flutter • Código Abierto"
+    "footer": "Visita: deflock.me\nConstruido con Flutter • Código Abierto",
+    "showWelcome": "Mostrar Mensaje de Bienvenida",
+    "showSubmissionGuide": "Mostrar Guía de Envío",
+    "viewReleaseNotes": "Ver Notas de Lanzamiento"
   },
   "welcome": {
     "title": "Bienvenido a DeFlock",
@@ -29,8 +32,8 @@
     "bestPractices": "• Solo mapee dispositivos que haya observado personalmente\n• Tómese tiempo para identificar con precisión el tipo y fabricante\n• Use posicionamiento preciso - acerque antes de colocar el marcador\n• Incluya información de dirección cuando sea aplicable\n• Verifique sus selecciones de etiquetas antes de enviar",
     "placementNote": "Recuerde: Los datos precisos y de primera mano son esenciales para la comunidad DeFlock y el proyecto OpenStreetMap.",
     "moreInfo": "Para orientación detallada sobre identificación de dispositivos y mejores prácticas de mapeo:",
-    "identificationGuide": "Guía de ID",
-    "osmWiki": "Wiki OSM",
+    "identificationGuide": "Guía de Identificación",
+    "osmWiki": "Wiki de OpenStreetMap",
     "dontShowAgain": "No mostrar esta guía otra vez",
     "gotIt": "¡Entendido!"
   },

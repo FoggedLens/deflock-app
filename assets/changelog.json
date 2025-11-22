@@ -2,7 +2,10 @@
   "1.5.0": {
     "content": [
       "• NEW: First-submission guide popup - provides essential guidance and links before your first device submission",
-      "• IMPROVED: Better onboarding for new contributors with links to identification guides and OSM wiki resources"
+      "• NEW: Manual access to dialogs in Settings > About - view welcome message and submission guide anytime",
+      "• IMPROVED: Better onboarding for new contributors with links to identification guides and OSM wiki resources",
+      "• IMPROVED: More descriptive button labels for external resources",
+      "• IMPROVED: Consistent button styling in About page"
     ]
   },
   "1.4.6": {

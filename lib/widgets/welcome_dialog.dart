@@ -4,7 +4,9 @@ import '../services/changelog_service.dart';
 import '../services/localization_service.dart';
 
 class WelcomeDialog extends StatefulWidget {
-  const WelcomeDialog({super.key});
+  const WelcomeDialog({super.key, this.showDontShowAgain = true});
+
+  final bool showDontShowAgain;
 
   @override
   State<WelcomeDialog> createState() => _WelcomeDialogState();
@@ -12,6 +14,7 @@ class WelcomeDialog extends StatefulWidget {
 
 class _WelcomeDialogState extends State<WelcomeDialog> {
   bool _dontShowAgain = false;
+  bool _isInitialized = false;
 
   Future<void> _launchUrl(String url) async {
     final uri = Uri.parse(url);
@@ -20,8 +23,29 @@ class _WelcomeDialogState extends State<WelcomeDialog> {
     }
   }
 
+  @override
+  void initState() {
+    super.initState();
+    _loadCurrentState();
+  }
+
+  Future<void> _loadCurrentState() async {
+    if (!widget.showDontShowAgain) {
+      // When manually opened, show the actual current state
+      final hasSeenWelcome = await ChangelogService().hasSeenWelcome();
+      setState(() {
+        _dontShowAgain = hasSeenWelcome;
+        _isInitialized = true;
+      });
+    } else {
+      setState(() {
+        _isInitialized = true;
+      });
+    }
+  }
+
   void _onClose() async {
-    if (_dontShowAgain) {
+    if (_dontShowAgain && widget.showDontShowAgain) {
       await ChangelogService().markWelcomeSeen();
     }
     
@@ -103,25 +127,31 @@ class _WelcomeDialogState extends State<WelcomeDialog> {
               ),
             ),
             const SizedBox(height: 16),
-            // Always visible checkbox at the bottom
-            Row(
-              children: [
-                Checkbox(
-                  value: _dontShowAgain,
-                  onChanged: (value) {
-                    setState(() {
-                      _dontShowAgain = value ?? false;
-                    });
-                  },
-                ),
-                Expanded(
-                  child: Text(
-                    locService.t('welcome.dontShowAgain'),
-                    style: const TextStyle(fontSize: 13),
+            // Always visible checkbox, but disabled when manually opened
+            if (_isInitialized)
+              Row(
+                children: [
+                  Checkbox(
+                    value: _dontShowAgain,
+                    onChanged: widget.showDontShowAgain ? (value) {
+                      setState(() {
+                        _dontShowAgain = value ?? false;
+                      });
+                    } : null,
                   ),
-                ),
-              ],
-            ),
+                  Expanded(
+                    child: Text(
+                      locService.t('welcome.dontShowAgain'),
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: widget.showDontShowAgain 
+                          ? null 
+                          : Theme.of(context).disabledColor,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
           ],
         ),
         actions: [

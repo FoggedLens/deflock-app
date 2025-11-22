@@ -10,7 +10,10 @@
     "description": "DeFlock est une application mobile axée sur la confidentialité pour cartographier l'infrastructure de surveillance publique en utilisant OpenStreetMap. Documentez les caméras, ALPRs, détecteurs de coups de feu et autres dispositifs de surveillance dans votre communauté pour rendre cette infrastructure visible et consultable.",
     "features": "• Cartographie hors ligne avec zones téléchargeables\n• Upload direct vers OpenStreetMap avec OAuth2\n• Profils intégrés pour les principaux fabricants\n• Respectueux de la confidentialité - aucune donnée utilisateur collectée\n• Multiples fournisseurs de cartes (OSM, imagerie satellite)",
     "initiative": "Partie de l'initiative plus large DeFlock pour promouvoir la transparence de la surveillance.",
-    "footer": "Visitez : deflock.me\nConstruit avec Flutter • Source Ouverte"
+    "footer": "Visitez : deflock.me\nConstruit avec Flutter • Source Ouverte",
+    "showWelcome": "Afficher le Message de Bienvenue",
+    "showSubmissionGuide": "Afficher le Guide de Soumission",
+    "viewReleaseNotes": "Voir les Notes de Version"
   },
   "welcome": {
     "title": "Bienvenue dans DeFlock",
@@ -29,8 +32,8 @@
     "bestPractices": "• Ne cartographiez que les dispositifs que vous avez observés personnellement\n• Prenez le temps d'identifier avec précision le type et le fabricant\n• Utilisez un positionnement précis - zoomez avant de placer le marqueur\n• Incluez les informations de direction quand c'est applicable\n• Vérifiez vos sélections d'étiquettes avant de soumettre",
     "placementNote": "Rappelez-vous : Des données précises et de première main sont essentielles pour la communauté DeFlock et le projet OpenStreetMap.",
     "moreInfo": "Pour des conseils détaillés sur l'identification des dispositifs et les meilleures pratiques de cartographie :",
-    "identificationGuide": "Guide ID",
-    "osmWiki": "Wiki OSM",
+    "identificationGuide": "Guide d'Identification",
+    "osmWiki": "Wiki OpenStreetMap",
     "dontShowAgain": "Ne plus afficher ce guide",
     "gotIt": "Compris !"
   },

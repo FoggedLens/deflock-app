@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../services/localization_service.dart';
+import '../widgets/welcome_dialog.dart';
+import '../widgets/submission_guide_dialog.dart';
 
 class AboutScreen extends StatelessWidget {
   const AboutScreen({super.key});
@@ -74,16 +76,8 @@ class AboutScreen extends StatelessWidget {
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 24),
-              // Release Notes button
-              Center(
-                child: OutlinedButton.icon(
-                  onPressed: () {
-                    Navigator.pushNamed(context, '/settings/release-notes');
-                  },
-                  icon: const Icon(Icons.article_outlined),
-                  label: const Text('View Release Notes'),
-                ),
-              ),
+              // Information dialogs section
+              _buildDialogButtons(context),
               const SizedBox(height: 24),
               _buildHelpLinks(context),
             ],
@@ -190,4 +184,50 @@ class AboutScreen extends StatelessWidget {
       ),
     );
   }
+
+  Widget _buildDialogButtons(BuildContext context) {
+    final locService = LocalizationService.instance;
+    
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        // Welcome Message button
+        OutlinedButton.icon(
+          onPressed: () {
+            showDialog<void>(
+              context: context,
+              barrierDismissible: false,
+              builder: (context) => const WelcomeDialog(showDontShowAgain: false),
+            );
+          },
+          icon: const Icon(Icons.waving_hand_outlined),
+          label: Text(locService.t('about.showWelcome')),
+        ),
+        const SizedBox(height: 8),
+        // Submission Guide button
+        OutlinedButton.icon(
+          onPressed: () {
+            showDialog<void>(
+              context: context,
+              barrierDismissible: false,
+              builder: (context) => const SubmissionGuideDialog(showDontShowAgain: false),
+            );
+          },
+          icon: const Icon(Icons.info_outline),
+          label: Text(locService.t('about.showSubmissionGuide')),
+        ),
+        const SizedBox(height: 8),
+        // Release Notes button
+        OutlinedButton.icon(
+          onPressed: () {
+            Navigator.pushNamed(context, '/settings/release-notes');
+          },
+          icon: const Icon(Icons.article_outlined),
+          label: Text(locService.t('about.viewReleaseNotes')),
+        ),
+      ],
+    );
+  }
+
+
 }
