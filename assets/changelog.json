@@ -1,6 +1,12 @@
 {
   "1.4.5": {
     "content": [
+      "• NEW: Minimum zoom level (Z15) enforced for adding and editing surveillance nodes to ensure precise positioning",
+      "• UX: Snackbar explains why add/edit sheets cannot open when zoomed out too far",
+      "• UX: Prevents zooming out below minimum level when add/edit sheets are open",
+      "• Node tags sheet continues to work at all zoom levels for viewing device information",
+      "• NEW: Minimum zoom level (Z10) enforced for offline area downloads to prevent app crashes from large areas",
+      "• UX: Download button shows explanatory message when zoomed out too far instead of hanging",
       "• IMPROVED: Offline area download confirmation now shows as popup with 'View Progress in Settings' button instead of simple notification",
       "• UX: Download failures now display as dialog instead of snackbar for better visibility"
     ]

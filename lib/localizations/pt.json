@@ -136,6 +136,7 @@
     "enableSubmittableProfile": "Ative um perfil enviável nas Configurações para editar nós.",
     "profileViewOnlyWarning": "Este perfil é apenas para visualização do mapa. Por favor, selecione um perfil enviável para editar nós.",
     "cannotMoveConstrainedNode": "Não é possível mover esta câmera - ela está conectada a outro elemento do mapa (OSM way/relation). Você ainda pode editar suas tags e direção.",
+    "zoomInRequiredMessage": "Amplie para pelo menos o nível {} para adicionar ou editar nós de vigilância. Isto garante um posicionamento preciso para mapeamento exato.",
     "extractFromWay": "Extrair nó do way/relation",
     "extractFromWaySubtitle": "Criar novo nó com as mesmas tags, permitir mover para nova localização",
     "refineTags": "Refinar Tags",
@@ -151,6 +152,7 @@
     "withinTileLimit": "Dentro do limite de {} tiles",
     "exceedsTileLimit": "A seleção atual excede o limite de {} tiles",
     "offlineModeWarning": "Downloads desabilitados no modo offline. Desative o modo offline para baixar novas áreas.",
+    "areaTooBigMessage": "Amplie para pelo menos o nível {} para baixar áreas offline. Downloads de áreas grandes podem tornar o aplicativo não responsivo.",
     "downloadStarted": "Download iniciado! Buscando tiles e nós...",
     "downloadFailed": "Falha ao iniciar o download: {}"
   },

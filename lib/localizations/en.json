@@ -136,6 +136,7 @@
     "enableSubmittableProfile": "Enable a submittable profile in Settings to edit nodes.",
     "profileViewOnlyWarning": "This profile is for map viewing only. Please select a submittable profile to edit nodes.",
     "cannotMoveConstrainedNode": "Cannot move this camera - it's connected to another map element (OSM way/relation). You can still edit its tags and direction.",
+    "zoomInRequiredMessage": "Zoom in to at least level {} to add or edit surveillance nodes. This ensures precise positioning for accurate mapping.",
     "extractFromWay": "Extract node from way/relation",
     "extractFromWaySubtitle": "Create new node with same tags, allow moving to new location",
     "refineTags": "Refine Tags",
@@ -151,6 +152,7 @@
     "withinTileLimit": "Within {} tile limit",
     "exceedsTileLimit": "Current selection exceeds {} tile limit",
     "offlineModeWarning": "Downloads disabled while in offline mode. Disable offline mode to download new areas.",
+    "areaTooBigMessage": "Zoom in to at least level {} to download offline areas. Large area downloads can cause the app to become unresponsive.",
     "downloadStarted": "Download started! Fetching tiles and nodes...",
     "downloadFailed": "Failed to start download: {}"
   },

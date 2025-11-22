@@ -98,8 +98,6 @@ cp lib/keys.dart.example lib/keys.dart
 ## Roadmap
 
 ### Needed Bugfixes
-- Disallow new/edit nodes below zoom 10 (15?) (don't allow zooming out beyond that either)
-- Disallow large downloads or otherwise fix performance issue calculating number of tiles
 - Update node cache to reflect cleared queue entries
 - Improve/retune tile fetching backoff/retry
 - Are offline areas preferred for fast loading even when online? Check working.

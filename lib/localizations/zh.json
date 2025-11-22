@@ -136,6 +136,7 @@
     "enableSubmittableProfile": "在设置中启用可提交的配置文件以编辑节点。",
     "profileViewOnlyWarning": "此配置文件仅用于地图查看。请选择可提交的配置文件来编辑节点。",
     "cannotMoveConstrainedNode": "无法移动此相机 - 它连接到另一个地图元素（OSM way/relation）。您仍可以编辑其标签和方向。",
+    "zoomInRequiredMessage": "请放大至至少第{}级来添加或编辑监控节点。这确保精确定位以便准确制图。",
     "extractFromWay": "从way/relation中提取节点",
     "extractFromWaySubtitle": "创建具有相同标签的新节点，允许移动到新位置",
     "refineTags": "细化标签",
@@ -151,6 +152,7 @@
     "withinTileLimit": "在 {} 瓦片限制内",
     "exceedsTileLimit": "当前选择超出 {} 瓦片限制",
     "offlineModeWarning": "离线模式下禁用下载。禁用离线模式以下载新区域。",
+    "areaTooBigMessage": "请放大至至少第{}级来下载离线区域。下载大区域可能导致应用程序无响应。",
     "downloadStarted": "下载已开始！正在获取瓦片和节点...",
     "downloadFailed": "启动下载失败：{}"
   },

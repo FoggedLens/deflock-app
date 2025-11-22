@@ -597,6 +597,18 @@ class MapViewState extends State<MapView> {
                 widget.onUserGesture();
               }
               
+              // Enforce minimum zoom level for add/edit node sheets (but not tag sheet)
+              if ((session != null || editSession != null) && pos.zoom < kMinZoomForNodeEditingSheets) {
+                // User tried to zoom out below minimum - snap back to minimum zoom
+                _controller.animateTo(
+                  dest: pos.center,
+                  zoom: kMinZoomForNodeEditingSheets.toDouble(),
+                  duration: const Duration(milliseconds: 200),
+                  curve: Curves.easeOut,
+                );
+                return; // Don't process other position updates
+              }
+              
               if (session != null) {
                 appState.updateSession(target: pos.center);
               }

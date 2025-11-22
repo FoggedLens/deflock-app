@@ -103,6 +103,21 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
   void _openAddNodeSheet() {
     final appState = context.read<AppState>();
+    
+    // Check minimum zoom level before opening sheet
+    final currentZoom = _mapController.mapController.camera.zoom;
+    if (currentZoom < kMinZoomForNodeEditingSheets) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            LocalizationService.instance.t('editNode.zoomInRequiredMessage', 
+              params: [kMinZoomForNodeEditingSheets.toString()])
+          ),
+        ),
+      );
+      return;
+    }
+    
     // Disable follow-me when adding a camera so the map doesn't jump around
     appState.setFollowMeMode(FollowMeMode.off);
     
@@ -532,6 +547,20 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           child: NodeTagSheet(
             node: node,
             onEditPressed: () {
+              // Check minimum zoom level before starting edit session
+              final currentZoom = _mapController.mapController.camera.zoom;
+              if (currentZoom < kMinZoomForNodeEditingSheets) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      LocalizationService.instance.t('editNode.zoomInRequiredMessage', 
+                        params: [kMinZoomForNodeEditingSheets.toString()])
+                    ),
+                  ),
+                );
+                return;
+              }
+              
               final appState = context.read<AppState>();
               appState.startEditSession(node);
               // This will trigger _openEditNodeSheet via the existing auto-show logic
@@ -760,10 +789,26 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                   child: ElevatedButton.icon(
                                     icon: Icon(Icons.download_for_offline),
                                     label: Text(LocalizationService.instance.download),
-                                    onPressed: () => showDialog(
-                                      context: context,
-                                      builder: (ctx) => DownloadAreaDialog(controller: _mapController.mapController),
-                                    ),
+                                    onPressed: () {
+                                      // Check minimum zoom level before opening download dialog
+                                      final currentZoom = _mapController.mapController.camera.zoom;
+                                      if (currentZoom < kMinZoomForOfflineDownload) {
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          SnackBar(
+                                            content: Text(
+                                              LocalizationService.instance.t('download.areaTooBigMessage', 
+                                                params: [kMinZoomForOfflineDownload.toString()])
+                                            ),
+                                          ),
+                                        );
+                                        return;
+                                      }
+                                      
+                                      showDialog(
+                                        context: context,
+                                        builder: (ctx) => DownloadAreaDialog(controller: _mapController.mapController),
+                                      );
+                                    },
                                     style: ElevatedButton.styleFrom(
                                       minimumSize: Size(0, 48),
                                       textStyle: TextStyle(fontSize: 16),

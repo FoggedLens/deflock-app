@@ -136,6 +136,7 @@
     "enableSubmittableProfile": "Abilita un profilo inviabile nelle Impostazioni per modificare i nodi.",
     "profileViewOnlyWarning": "Questo profilo è solo per la visualizzazione della mappa. Per favore seleziona un profilo inviabile per modificare i nodi.",
     "cannotMoveConstrainedNode": "Impossibile spostare questa telecamera - è collegata a un altro elemento della mappa (OSM way/relation). Puoi ancora modificare i suoi tag e direzione.",
+    "zoomInRequiredMessage": "Ingrandisci almeno al livello {} per aggiungere o modificare nodi di sorveglianza. Questo garantisce un posizionamento preciso per una mappatura accurata.",
     "extractFromWay": "Estrai nodo da way/relation",
     "extractFromWaySubtitle": "Crea nuovo nodo con gli stessi tag, consenti spostamento in nuova posizione",
     "refineTags": "Affina Tag",
@@ -151,6 +152,7 @@
     "withinTileLimit": "Entro il limite di {} tile",
     "exceedsTileLimit": "La selezione corrente supera il limite di {} tile",
     "offlineModeWarning": "Download disabilitati in modalità offline. Disabilita la modalità offline per scaricare nuove aree.",
+    "areaTooBigMessage": "Ingrandisci almeno al livello {} per scaricare aree offline. I download di aree grandi possono rendere l'app non reattiva.",
     "downloadStarted": "Download avviato! Recupero tile e nodi...",
     "downloadFailed": "Impossibile avviare il download: {}"
   },

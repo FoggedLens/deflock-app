@@ -136,6 +136,7 @@
     "enableSubmittableProfile": "Habilite un perfil envíable en Configuración para editar nodos.",
     "profileViewOnlyWarning": "Este perfil es solo para visualización del mapa. Por favor, seleccione un perfil envíable para editar nodos.",
     "cannotMoveConstrainedNode": "No se puede mover esta cámara - está conectada a otro elemento del mapa (OSM way/relation). Aún puede editar sus etiquetas y dirección.",
+    "zoomInRequiredMessage": "Amplíe al menos al nivel {} para agregar o editar nodos de vigilancia. Esto garantiza un posicionamiento preciso para un mapeo exacto.",
     "extractFromWay": "Extraer nodo de way/relation",
     "extractFromWaySubtitle": "Crear nuevo nodo con las mismas etiquetas, permitir mover a nueva ubicación",
     "refineTags": "Refinar Etiquetas",
@@ -151,6 +152,7 @@
     "withinTileLimit": "Dentro del límite de {} mosaicos",
     "exceedsTileLimit": "La selección actual excede el límite de {} mosaicos",
     "offlineModeWarning": "Descargas deshabilitadas en modo sin conexión. Deshabilite el modo sin conexión para descargar nuevas áreas.",
+    "areaTooBigMessage": "Amplíe al menos al nivel {} para descargar áreas sin conexión. Las descargas de áreas grandes pueden hacer que la aplicación deje de responder.",
     "downloadStarted": "¡Descarga iniciada! Obteniendo mosaicos y nodos...",
     "downloadFailed": "Error al iniciar la descarga: {}"
   },

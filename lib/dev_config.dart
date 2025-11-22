@@ -80,6 +80,8 @@ bool enableNavigationFeatures({required bool offlineMode}) {
 // Marker/node interaction
 const int kNodeMinZoomLevel = 10; // Minimum zoom to show nodes (Overpass)
 const int kOsmApiMinZoomLevel = 13; // Minimum zoom for OSM API bbox queries (sandbox mode)
+const int kMinZoomForNodeEditingSheets = 15; // Minimum zoom to open add/edit node sheets
+const int kMinZoomForOfflineDownload = 10; // Minimum zoom to download offline areas (prevents large area crashes)
 const Duration kMarkerTapTimeout = Duration(milliseconds: 250);
 const Duration kDebounceCameraRefresh = Duration(milliseconds: 500);
 
