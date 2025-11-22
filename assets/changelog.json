@@ -1,4 +1,10 @@
 {
+  "1.4.5": {
+    "content": [
+      "• IMPROVED: Offline area download confirmation now shows as popup with 'View Progress in Settings' button instead of simple notification",
+      "• UX: Download failures now display as dialog instead of snackbar for better visibility"
+    ]
+  },
   "1.4.4": {
     "content": [
       "• FOV range notation parsing - now supports OSM data like '90-270' (180° FOV centered at 180°)",

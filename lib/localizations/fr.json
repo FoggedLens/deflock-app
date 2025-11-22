@@ -154,6 +154,12 @@
     "downloadStarted": "Téléchargement démarré! Récupération des tuiles et nœuds...",
     "downloadFailed": "Échec du démarrage du téléchargement: {}"
   },
+  "downloadStarted": {
+    "title": "Téléchargement Démarré",
+    "message": "Téléchargement démarré! Récupération des tuiles et nœuds...",
+    "ok": "OK",
+    "viewProgress": "Voir le Progrès dans Paramètres"
+  },
   "uploadMode": {
     "title": "Destination de Téléchargement",
     "subtitle": "Choisir où les caméras sont téléchargées",

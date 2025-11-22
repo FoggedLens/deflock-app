@@ -154,6 +154,12 @@
     "downloadStarted": "¡Descarga iniciada! Obteniendo mosaicos y nodos...",
     "downloadFailed": "Error al iniciar la descarga: {}"
   },
+  "downloadStarted": {
+    "title": "Descarga Iniciada",
+    "message": "¡Descarga iniciada! Obteniendo mosaicos y nodos...",
+    "ok": "OK",
+    "viewProgress": "Ver Progreso en Configuración"
+  },
   "uploadMode": {
     "title": "Destino de Subida",
     "subtitle": "Elige dónde se suben las cámaras",

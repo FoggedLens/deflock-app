@@ -154,6 +154,12 @@
     "downloadStarted": "下载已开始！正在获取瓦片和节点...",
     "downloadFailed": "启动下载失败：{}"
   },
+  "downloadStarted": {
+    "title": "下载已开始",
+    "message": "下载已开始！正在获取瓦片和节点...",
+    "ok": "确定",
+    "viewProgress": "在设置中查看进度"
+  },
   "uploadMode": {
     "title": "上传目标",
     "subtitle": "选择摄像头上传位置",

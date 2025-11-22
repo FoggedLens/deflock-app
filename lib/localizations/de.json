@@ -136,6 +136,12 @@
     "downloadStarted": "Download gestartet! Lade Kacheln und Knoten...",
     "downloadFailed": "Download konnte nicht gestartet werden: {}"
   },
+  "downloadStarted": {
+    "title": "Download gestartet",
+    "message": "Download gestartet! Lade Kacheln und Knoten...",
+    "ok": "OK",
+    "viewProgress": "Fortschritt in Einstellungen anzeigen"
+  },
   "uploadMode": {
     "title": "Upload-Ziel",
     "subtitle": "Wählen Sie, wohin Kameras hochgeladen werden",

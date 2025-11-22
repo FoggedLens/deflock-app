@@ -154,6 +154,12 @@
     "downloadStarted": "Download avviato! Recupero tile e nodi...",
     "downloadFailed": "Impossibile avviare il download: {}"
   },
+  "downloadStarted": {
+    "title": "Download Avviato",
+    "message": "Download avviato! Recupero tile e nodi...",
+    "ok": "OK",
+    "viewProgress": "Visualizza Progresso in Impostazioni"
+  },
   "uploadMode": {
     "title": "Destinazione Upload",
     "subtitle": "Scegli dove vengono caricate le telecamere",

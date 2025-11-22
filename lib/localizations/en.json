@@ -154,6 +154,12 @@
     "downloadStarted": "Download started! Fetching tiles and nodes...",
     "downloadFailed": "Failed to start download: {}"
   },
+  "downloadStarted": {
+    "title": "Download Started",
+    "message": "Download started! Fetching tiles and nodes...",
+    "ok": "OK",
+    "viewProgress": "View Progress in Settings"
+  },
   "uploadMode": {
     "title": "Upload Destination",
     "subtitle": "Choose where cameras are uploaded",

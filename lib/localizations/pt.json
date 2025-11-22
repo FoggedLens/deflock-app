@@ -154,6 +154,12 @@
     "downloadStarted": "Download iniciado! Buscando tiles e nós...",
     "downloadFailed": "Falha ao iniciar o download: {}"
   },
+  "downloadStarted": {
+    "title": "Download Iniciado",
+    "message": "Download iniciado! Buscando tiles e nós...",
+    "ok": "OK",
+    "viewProgress": "Ver Progresso nas Configurações"
+  },
   "uploadMode": {
     "title": "Destino do Upload",
     "subtitle": "Escolha onde as câmeras são enviadas",

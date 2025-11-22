@@ -9,6 +9,7 @@ import '../dev_config.dart';
 import '../services/localization_service.dart';
 import '../services/offline_area_service.dart';
 import '../services/offline_areas/offline_tile_utils.dart';
+import 'download_started_dialog.dart';
 
 class DownloadAreaDialog extends StatefulWidget {
   final MapController controller;
@@ -275,16 +276,29 @@ class _DownloadAreaDialogState extends State<DownloadAreaDialog> {
                     tileTypeName: selectedTileType?.name,
                   );
                   Navigator.pop(context);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(locService.t('download.downloadStarted')),
-                    ),
+                  showDialog(
+                    context: context,
+                    builder: (context) => const DownloadStartedDialog(),
                   );
                 } catch (e) {
                   Navigator.pop(context);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
+                  showDialog(
+                    context: context,
+                    builder: (context) => AlertDialog(
+                      title: Row(
+                        children: [
+                          const Icon(Icons.error, color: Colors.red),
+                          const SizedBox(width: 10),
+                          Text(locService.t('download.title')),
+                        ],
+                      ),
                       content: Text(locService.t('download.downloadFailed', params: [e.toString()])),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(context),
+                          child: Text(locService.t('actions.ok')),
+                        ),
+                      ],
                     ),
                   );
                 }
