@@ -9,6 +9,7 @@ class NodeProfile {
   final bool requiresDirection;
   final bool submittable;
   final bool editable;
+  final double? fov; // Field-of-view in degrees (null means use dev_config default)
 
   NodeProfile({
     required this.id,
@@ -18,6 +19,7 @@ class NodeProfile {
     this.requiresDirection = true,
     this.submittable = true,
     this.editable = true,
+    this.fov,
   });
 
   /// Get all built-in default node profiles
@@ -50,6 +52,7 @@ class NodeProfile {
           requiresDirection: true,
           submittable: true,
           editable: true,
+          fov: 45.0, // Flock cameras typically have narrow FOV
         ),
         NodeProfile(
           id: 'builtin-motorola',
@@ -67,6 +70,7 @@ class NodeProfile {
           requiresDirection: true,
           submittable: true,
           editable: true,
+          fov: 60.0, // Motorola cameras typically have moderate FOV
         ),
         NodeProfile(
           id: 'builtin-genetec',
@@ -84,6 +88,7 @@ class NodeProfile {
           requiresDirection: true,
           submittable: true,
           editable: true,
+          fov: 50.0, // Genetec cameras typically have moderate FOV
         ),
         NodeProfile(
           id: 'builtin-leonardo',
@@ -101,6 +106,7 @@ class NodeProfile {
           requiresDirection: true,
           submittable: true,
           editable: true,
+          fov: 55.0, // Leonardo cameras typically have moderate FOV
         ),
         NodeProfile(
           id: 'builtin-neology',
@@ -150,6 +156,7 @@ class NodeProfile {
           requiresDirection: true,
           submittable: true,
           editable: true,
+          fov: 90.0, // Axis cameras can have wider FOV
         ),
         NodeProfile(
           id: 'builtin-generic-gunshot',
@@ -208,6 +215,7 @@ class NodeProfile {
     bool? requiresDirection,
     bool? submittable,
     bool? editable,
+    double? fov,
   }) =>
       NodeProfile(
         id: id ?? this.id,
@@ -217,6 +225,7 @@ class NodeProfile {
         requiresDirection: requiresDirection ?? this.requiresDirection,
         submittable: submittable ?? this.submittable,
         editable: editable ?? this.editable,
+        fov: fov ?? this.fov,
       );
 
   Map<String, dynamic> toJson() => {
@@ -227,6 +236,7 @@ class NodeProfile {
         'requiresDirection': requiresDirection,
         'submittable': submittable,
         'editable': editable,
+        'fov': fov,
       };
 
   factory NodeProfile.fromJson(Map<String, dynamic> j) => NodeProfile(
@@ -237,6 +247,7 @@ class NodeProfile {
         requiresDirection: j['requiresDirection'] ?? true, // Default to true for backward compatibility
         submittable: j['submittable'] ?? true, // Default to true for backward compatibility
         editable: j['editable'] ?? true, // Default to true for backward compatibility
+        fov: j['fov']?.toDouble(), // Can be null for backward compatibility
       );
 
   @override

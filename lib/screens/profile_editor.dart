@@ -20,6 +20,7 @@ class _ProfileEditorState extends State<ProfileEditor> {
   late List<MapEntry<String, String>> _tags;
   late bool _requiresDirection;
   late bool _submittable;
+  late TextEditingController _fovCtrl;
 
   static const _defaultTags = [
     MapEntry('man_made', 'surveillance'),
@@ -38,6 +39,7 @@ class _ProfileEditorState extends State<ProfileEditor> {
     _nameCtrl = TextEditingController(text: widget.profile.name);
     _requiresDirection = widget.profile.requiresDirection;
     _submittable = widget.profile.submittable;
+    _fovCtrl = TextEditingController(text: widget.profile.fov?.toString() ?? '');
 
     if (widget.profile.tags.isEmpty) {
       // New profile → start with sensible defaults
@@ -50,6 +52,7 @@ class _ProfileEditorState extends State<ProfileEditor> {
   @override
   void dispose() {
     _nameCtrl.dispose();
+    _fovCtrl.dispose();
     super.dispose();
   }
 
@@ -90,6 +93,21 @@ class _ProfileEditorState extends State<ProfileEditor> {
                   value: _requiresDirection,
                   onChanged: (value) => setState(() => _requiresDirection = value ?? true),
                   controlAffinity: ListTileControlAffinity.leading,
+                ),
+                if (_requiresDirection) Padding(
+                  padding: const EdgeInsets.only(left: 16, right: 16, bottom: 8),
+                  child: TextField(
+                    controller: _fovCtrl,
+                    keyboardType: TextInputType.number,
+                    decoration: InputDecoration(
+                      labelText: locService.t('profileEditor.fov'),
+                      hintText: locService.t('profileEditor.fovHint'),
+                      helperText: locService.t('profileEditor.fovSubtitle'),
+                      errorText: _validateFov(),
+                      suffixText: '°',
+                    ),
+                    onChanged: (value) => setState(() {}), // Trigger validation
+                  ),
                 ),
                 CheckboxListTile(
                   title: Text(locService.t('profileEditor.submittable')),
@@ -181,6 +199,17 @@ class _ProfileEditorState extends State<ProfileEditor> {
     });
   }
 
+  String? _validateFov() {
+    final text = _fovCtrl.text.trim();
+    if (text.isEmpty) return null; // Optional field
+    
+    final fov = double.tryParse(text);
+    if (fov == null || fov <= 0 || fov > 360) {
+      return LocalizationService.instance.t('profileEditor.fovInvalid');
+    }
+    return null;
+  }
+
   void _save() {
     final locService = LocalizationService.instance;
     final name = _nameCtrl.text.trim();
@@ -190,6 +219,15 @@ class _ProfileEditorState extends State<ProfileEditor> {
           .showSnackBar(SnackBar(content: Text(locService.t('profileEditor.profileNameRequired'))));
       return;
     }
+
+    // Validate FOV if provided
+    if (_validateFov() != null) {
+      return; // Don't save if FOV validation fails
+    }
+
+    // Parse FOV
+    final fovText = _fovCtrl.text.trim();
+    final fov = fovText.isEmpty ? null : double.tryParse(fovText);
     
     final tagMap = <String, String>{};
     for (final e in _tags) {
@@ -211,6 +249,7 @@ class _ProfileEditorState extends State<ProfileEditor> {
       requiresDirection: _requiresDirection,
       submittable: _submittable,
       editable: true, // All custom profiles are editable by definition
+      fov: fov,
     );
     
     context.read<AppState>().addOrUpdateProfile(newProfile);

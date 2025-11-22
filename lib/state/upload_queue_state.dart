@@ -30,7 +30,7 @@ class UploadQueueState extends ChangeNotifier {
   void addFromSession(AddNodeSession session, {required UploadMode uploadMode}) {
     final upload = PendingUpload(
       coord: session.target!,
-      direction: _formatDirectionsAsString(session.directions),
+      direction: _formatDirectionsForSubmission(session.directions, session.profile),
       profile: session.profile!,  // Safe to use ! because commitSession() checks for null
       operatorProfile: session.operatorProfile,
       uploadMode: uploadMode,
@@ -82,7 +82,7 @@ class UploadQueueState extends ChangeNotifier {
     
     final upload = PendingUpload(
       coord: coordToUse,
-      direction: _formatDirectionsAsString(session.directions),
+      direction: _formatDirectionsForSubmission(session.directions, session.profile),
       profile: session.profile!,  // Safe to use ! because commitEditSession() checks for null
       operatorProfile: session.operatorProfile,
       uploadMode: uploadMode,
@@ -330,11 +330,31 @@ class UploadQueueState extends ChangeNotifier {
     }
   }
 
-  // Helper method to format multiple directions as a string or number
-  dynamic _formatDirectionsAsString(List<double> directions) {
+  // Helper method to format multiple directions for submission, supporting profile FOV
+  dynamic _formatDirectionsForSubmission(List<double> directions, NodeProfile? profile) {
     if (directions.isEmpty) return 0.0;
+    
+    // If profile has FOV, convert center directions to range notation
+    if (profile?.fov != null && profile!.fov! > 0) {
+      final ranges = directions.map((center) => 
+        _formatDirectionWithFov(center, profile.fov!)
+      ).toList();
+      
+      return ranges.length == 1 ? ranges.first : ranges.join(';');
+    }
+    
+    // No profile FOV: use original format (single number or semicolon-separated)
     if (directions.length == 1) return directions.first;
     return directions.map((d) => d.round().toString()).join(';');
+  }
+
+  // Convert a center direction and FOV to range notation (e.g., 180° center with 90° FOV -> "135-225")
+  String _formatDirectionWithFov(double center, double fov) {
+    final halfFov = fov / 2;
+    final start = (center - halfFov + 360) % 360;
+    final end = (center + halfFov) % 360;
+    
+    return '${start.round()}-${end.round()}';
   }
 
   // ---------- Queue persistence ----------

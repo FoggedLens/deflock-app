@@ -1,4 +1,18 @@
 {
+  "1.4.4": {
+    "content": [
+      "• NEW: Enhanced FOV (Field of View) support for surveillance cameras",
+      "• FOV range notation parsing - now supports OSM data like '90-270' (180° FOV centered at 180°)",
+      "• Complex range notation support: '10-45;90-125;290' displays multiple FOV cones correctly",
+      "• Profile FOV configuration - built-in profiles now have manufacturer-specific FOV values",
+      "• Smart cone rendering - variable FOV widths, 360° cameras show full circles",
+      "• Intelligent submission format - profiles with FOV submit as range notation (e.g., direction 180° with 90° FOV submits as '135-225')",
+      "• Enhanced visual feedback - provisional cones during editing use profile FOV when available",
+      "• Backward compatibility - existing single direction values continue to work with default FOV",
+      "• Profile editor improvements - FOV field added to custom profile creation with validation",
+      "• Full localization - FOV interface strings translated to all 7 supported languages"
+    ]
+  },
   "1.4.3": {
     "content": [
       "• NEW: Proximity warning when placing nodes too close together - prevents accidental duplicate submissions"

@@ -1,4 +1,6 @@
 import 'package:latlong2/latlong.dart';
+import 'direction_fov.dart';
+import '../dev_config.dart';
 
 class OsmNode {
   final int id;
@@ -36,9 +38,10 @@ class OsmNode {
     );
   }
 
-  bool get hasDirection => directionDeg.isNotEmpty;
+  bool get hasDirection => directionFovPairs.isNotEmpty;
 
-  List<double> get directionDeg {
+  /// Get direction and FOV pairs, supporting range notation like "90-270" or "10-45;90-125;290"
+  List<DirectionFov> get directionFovPairs {
     final raw = tags['direction'] ?? tags['camera:direction'];
     if (raw == null) return [];
 
@@ -50,17 +53,35 @@ class OsmNode {
       'W': 270.0, 'WNW': 292.5, 'NW': 315.0, 'NNW': 337.5,
     };
 
-    // Split on semicolons and parse each direction
-    final directions = <double>[];
+    final directionFovList = <DirectionFov>[];
     final parts = raw.split(';');
     
     for (final part in parts) {
-      final trimmed = part.trim().toUpperCase();
+      final trimmed = part.trim();
       if (trimmed.isEmpty) continue;
       
+      // Check if this part contains a range (e.g., "90-270")
+      if (trimmed.contains('-') && RegExp(r'^\d+\.?\d*-\d+\.?\d*$').hasMatch(trimmed)) {
+        final rangeParts = trimmed.split('-');
+        if (rangeParts.length == 2) {
+          final start = double.tryParse(rangeParts[0]);
+          final end = double.tryParse(rangeParts[1]);
+          
+          if (start != null && end != null) {
+            final normalized = _calculateRangeCenter(start, end);
+            directionFovList.add(normalized);
+            continue;
+          }
+        }
+      }
+      
+      // Not a range, handle as single direction
+      final trimmedUpper = trimmed.toUpperCase();
+      
       // First try compass direction lookup
-      if (compassDirections.containsKey(trimmed)) {
-        directions.add(compassDirections[trimmed]!);
+      if (compassDirections.containsKey(trimmedUpper)) {
+        final degrees = compassDirections[trimmedUpper]!;
+        directionFovList.add(DirectionFov(degrees, kDirectionConeHalfAngle * 2));
         continue;
       }
       
@@ -74,9 +95,35 @@ class OsmNode {
 
       // Normalize: wrap negative or >360 into 0‑359 range
       final normalized = ((val % 360) + 360) % 360;
-      directions.add(normalized);
+      directionFovList.add(DirectionFov(normalized, kDirectionConeHalfAngle * 2));
     }
     
-    return directions;
+    return directionFovList;
+  }
+
+  /// Calculate center and width for a range like "90-270" or "270-90"
+  DirectionFov _calculateRangeCenter(double start, double end) {
+    // Normalize start and end to 0-359 range
+    start = ((start % 360) + 360) % 360;
+    end = ((end % 360) + 360) % 360;
+    
+    double width, center;
+    
+    if (start > end) {
+      // Wrapping case: 270-90
+      width = (end + 360) - start;
+      center = ((start + end + 360) / 2) % 360;
+    } else {
+      // Normal case: 90-270  
+      width = end - start;
+      center = (start + end) / 2;
+    }
+    
+    return DirectionFov(center, width);
+  }
+
+  /// Legacy getter for backward compatibility - returns just center directions
+  List<double> get directionDeg {
+    return directionFovPairs.map((df) => df.centerDegrees).toList();
   }
 }
