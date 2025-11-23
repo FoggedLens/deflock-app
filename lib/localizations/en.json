@@ -267,7 +267,7 @@
     "urlTemplate": "URL Template",
     "urlTemplateHint": "https://example.com/{z}/{x}/{y}.png",
     "urlTemplateRequired": "URL template is required",
-    "urlTemplatePlaceholders": "URL must contain {z}, {x}, and {y} placeholders",
+    "urlTemplatePlaceholders": "URL must contain either {quadkey} or {z}, {x}, and {y} placeholders",
     "attribution": "Attribution",
     "attributionHint": "© Map Provider",
     "attributionRequired": "Attribution is required",

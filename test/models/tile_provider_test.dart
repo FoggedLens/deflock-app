@@ -15,24 +15,37 @@ void main() {
       expect(url, 'https://example.com/3/2/1.png');
     });
 
-    test('getTileUrl handles subdomain replacement', () {
-      final tileType = TileType(
-        id: 'test',
-        name: 'Test',
-        urlTemplate: 'https://a{subdomain}.example.com/{z}/{x}/{y}.png',
+    test('getTileUrl handles subdomain patterns', () {
+      final tileType0_3 = TileType(
+        id: 'test_0_3',
+        name: 'Test 0-3',
+        urlTemplate: 'https://s{0_3}.example.com/{z}/{x}/{y}.png',
         attribution: 'Test',
       );
 
-      // Test subdomain distribution (should be consistent)
-      final url1 = tileType.getTileUrl(1, 2, 3);
-      final url2 = tileType.getTileUrl(1, 2, 3);
-      expect(url1, url2); // Same input should give same output
+      final tileType1_4 = TileType(
+        id: 'test_1_4',
+        name: 'Test 1-4',
+        urlTemplate: 'https://s{1_4}.example.com/{z}/{x}/{y}.png',
+        attribution: 'Test',
+      );
 
-      // Test that different tiles can get different subdomains
-      final url3 = tileType.getTileUrl(1, 0, 0);
-      final url4 = tileType.getTileUrl(1, 1, 1);
-      expect(url3, contains('a0.example.com'));
-      expect(url4, contains('a2.example.com'));
+      // Test 0-3 range
+      final url_0_3_a = tileType0_3.getTileUrl(1, 0, 0);
+      final url_0_3_b = tileType0_3.getTileUrl(1, 3, 0);
+      expect(url_0_3_a, contains('s0.example.com'));
+      expect(url_0_3_b, contains('s3.example.com'));
+
+      // Test 1-4 range
+      final url_1_4_a = tileType1_4.getTileUrl(1, 0, 0);
+      final url_1_4_b = tileType1_4.getTileUrl(1, 3, 0);
+      expect(url_1_4_a, contains('s1.example.com'));
+      expect(url_1_4_b, contains('s4.example.com'));
+
+      // Test consistency
+      final url1 = tileType0_3.getTileUrl(1, 2, 3);
+      final url2 = tileType0_3.getTileUrl(1, 2, 3);
+      expect(url1, url2); // Same input should give same output
     });
 
     test('getTileUrl handles Bing Maps quadkey conversion', () {
@@ -109,7 +122,7 @@ void main() {
       expect(satelliteType.id, 'bing_satellite');
       expect(satelliteType.name, 'Satellite');
       expect(satelliteType.urlTemplate, contains('quadkey'));
-      expect(satelliteType.urlTemplate, contains('subdomain'));
+      expect(satelliteType.urlTemplate, contains('0_3'));
       expect(satelliteType.requiresApiKey, isFalse);
       expect(satelliteType.attribution, '© Microsoft Corporation');
     });

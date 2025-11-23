@@ -20,6 +20,13 @@ class TileType {
   });
 
   /// Create URL for a specific tile, replacing template variables
+  /// 
+  /// Supported placeholders:
+  /// - {x}, {y}, {z}: Standard tile coordinates
+  /// - {quadkey}: Bing Maps quadkey format (alternative to x/y/z)
+  /// - {0_3}: Subdomain 0-3 for load balancing
+  /// - {1_4}: Subdomain 1-4 for providers that use 1-based indexing
+  /// - {api_key}: API key placeholder (optional)
   String getTileUrl(int z, int x, int y, {String? apiKey}) {
     String url = urlTemplate;
     
@@ -29,10 +36,15 @@ class TileType {
       url = url.replaceAll('{quadkey}', quadkey);
     }
     
-    // Handle subdomains (for Bing Maps and other multi-subdomain providers)
-    if (url.contains('{subdomain}')) {
-      final subdomain = (x + y) % 4; // Distribute across 0-3 subdomains
-      url = url.replaceAll('{subdomain}', subdomain.toString());
+    // Handle subdomains for load balancing
+    if (url.contains('{0_3}')) {
+      final subdomain = (x + y) % 4; // 0, 1, 2, 3
+      url = url.replaceAll('{0_3}', subdomain.toString());
+    }
+    
+    if (url.contains('{1_4}')) {
+      final subdomain = ((x + y) % 4) + 1; // 1, 2, 3, 4
+      url = url.replaceAll('{1_4}', subdomain.toString());
     }
     
     // Standard x/y/z replacement
@@ -196,7 +208,7 @@ class DefaultTileProviders {
           TileType(
             id: 'bing_satellite',
             name: 'Satellite',
-            urlTemplate: 'https://ecn.t{subdomain}.tiles.virtualearth.net/tiles/a{quadkey}.jpeg?g=1&n=z',
+            urlTemplate: 'https://ecn.t{0_3}.tiles.virtualearth.net/tiles/a{quadkey}.jpeg?g=1&n=z',
             attribution: '© Microsoft Corporation',
             maxZoom: 20,
           ),

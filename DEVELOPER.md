@@ -340,7 +340,36 @@ Most users should contribute to production; testing modes add complexity
 bool get showUploadModeSelector => kDebugMode;
 ```
 
-### 11. Navigation & Routing (Implemented, Awaiting Integration)
+### 11. Tile Provider System & URL Templates
+
+**Design approach:**
+- **Flexible URL templates**: Support multiple coordinate systems and load-balancing patterns
+- **Built-in providers**: Curated set of high-quality, reliable tile sources
+- **Custom providers**: Users can add any tile service with full validation
+- **API key management**: Secure storage with per-provider API keys
+
+**Supported URL placeholders:**
+```
+{x}, {y}, {z}          - Standard TMS tile coordinates
+{quadkey}              - Bing Maps quadkey format (alternative to x/y/z)
+{0_3}                  - Subdomain 0-3 for load balancing
+{1_4}                  - Subdomain 1-4 for providers using 1-based indexing
+{api_key}              - API key insertion point (optional)
+```
+
+**Built-in providers:**
+- **OpenStreetMap**: Standard street map tiles, no API key required
+- **Bing Maps**: High-quality satellite imagery using quadkey system, no API key required  
+- **Mapbox**: Satellite and street tiles, requires API key
+- **OpenTopoMap**: Topographic maps, no API key required
+
+**Validation logic:**
+URL templates must contain either `{quadkey}` OR all of `{x}`, `{y}`, and `{z}`. This allows for both standard tile services and specialized formats like Bing Maps.
+
+**Why this approach:**
+Provides maximum flexibility while maintaining simplicity. Users can add any tile service without code changes, while built-in providers offer immediate functionality. The quadkey system enables access to high-quality satellite imagery without API key requirements.
+
+### 12. Navigation & Routing (Implemented, Awaiting Integration)
 
 **Current state:**
 - **Search functionality**: Fully implemented and active

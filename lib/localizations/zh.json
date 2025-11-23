@@ -267,7 +267,7 @@
     "urlTemplate": "URL 模板",
     "urlTemplateHint": "https://example.com/{z}/{x}/{y}.png",
     "urlTemplateRequired": "URL 模板为必填项",
-    "urlTemplatePlaceholders": "URL 必须包含 {z}、{x} 和 {y} 占位符",
+    "urlTemplatePlaceholders": "URL 必须包含 {quadkey} 或 {z}、{x} 和 {y} 占位符",
     "attribution": "归属",
     "attributionHint": "© 地图提供商",
     "attributionRequired": "归属为必填项",

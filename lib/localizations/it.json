@@ -267,7 +267,7 @@
     "urlTemplate": "Template URL",
     "urlTemplateHint": "https://esempio.com/{z}/{x}/{y}.png",
     "urlTemplateRequired": "Il template URL è obbligatorio",
-    "urlTemplatePlaceholders": "L'URL deve contenere i segnaposto {z}, {x} e {y}",
+    "urlTemplatePlaceholders": "L'URL deve contenere o {quadkey} o i segnaposto {z}, {x} e {y}",
     "attribution": "Attribuzione",
     "attributionHint": "© Fornitore Mappe",
     "attributionRequired": "L'attribuzione è obbligatoria",

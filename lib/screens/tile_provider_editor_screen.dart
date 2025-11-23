@@ -318,9 +318,15 @@ class _TileTypeDialogState extends State<_TileTypeDialog> {
                     ),
                     validator: (value) {
                       if (value?.trim().isEmpty == true) return locService.t('tileTypeEditor.urlTemplateRequired');
-                      if (!value!.contains('{z}') || !value.contains('{x}') || !value.contains('{y}')) {
+                      
+                      // Check for either quadkey OR x+y+z placeholders
+                      final hasQuadkey = value!.contains('{quadkey}');
+                      final hasXYZ = value.contains('{x}') && value.contains('{y}') && value.contains('{z}');
+                      
+                      if (!hasQuadkey && !hasXYZ) {
                         return locService.t('tileTypeEditor.urlTemplatePlaceholders');
                       }
+                      
                       return null;
                     },
                   ),
@@ -403,11 +409,20 @@ class _TileTypeDialogState extends State<_TileTypeDialog> {
     });
 
     try {
-      // Use a sample tile from configured preview location
-      final url = _urlController.text
-          .replaceAll('{z}', kPreviewTileZoom.toString())
-          .replaceAll('{x}', kPreviewTileX.toString())
-          .replaceAll('{y}', kPreviewTileY.toString());
+      // Create a temporary TileType to use the getTileUrl method
+      final tempTileType = TileType(
+        id: 'preview',
+        name: 'Preview',
+        urlTemplate: _urlController.text.trim(),
+        attribution: 'Preview',
+      );
+      
+      final url = tempTileType.getTileUrl(
+        kPreviewTileZoom,
+        kPreviewTileX,
+        kPreviewTileY,
+        apiKey: null, // Don't use API key for preview
+      );
       
       final response = await http.get(Uri.parse(url));
       

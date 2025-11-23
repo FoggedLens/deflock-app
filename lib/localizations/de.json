@@ -235,7 +235,7 @@
     "urlTemplate": "URL-Vorlage",
     "urlTemplateHint": "https://beispiel.com/{z}/{x}/{y}.png",
     "urlTemplateRequired": "URL-Vorlage ist erforderlich",
-    "urlTemplatePlaceholders": "URL muss {z}, {x} und {y} Platzhalter enthalten",
+    "urlTemplatePlaceholders": "URL muss entweder {quadkey} oder {z}, {x} und {y} Platzhalter enthalten",
     "attribution": "Zuschreibung",
     "attributionHint": "© Karten-Anbieter",
     "attributionRequired": "Zuschreibung ist erforderlich",

@@ -267,7 +267,7 @@
     "urlTemplate": "Plantilla de URL",
     "urlTemplateHint": "https://ejemplo.com/{z}/{x}/{y}.png",
     "urlTemplateRequired": "La plantilla de URL es requerida",
-    "urlTemplatePlaceholders": "La URL debe contener marcadores {z}, {x} y {y}",
+    "urlTemplatePlaceholders": "La URL debe contener marcadores {quadkey} o {z}, {x} y {y}",
     "attribution": "Atribución",
     "attributionHint": "© Proveedor de Mapas",
     "attributionRequired": "La atribución es requerida",

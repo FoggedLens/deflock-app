@@ -267,7 +267,7 @@
     "urlTemplate": "Modèle d'URL",
     "urlTemplateHint": "https://exemple.com/{z}/{x}/{y}.png",
     "urlTemplateRequired": "Le modèle d'URL est requis",
-    "urlTemplatePlaceholders": "L'URL doit contenir les marqueurs {z}, {x} et {y}",
+    "urlTemplatePlaceholders": "L'URL doit contenir soit {quadkey} soit les marqueurs {z}, {x} et {y}",
     "attribution": "Attribution",
     "attributionHint": "© Fournisseur de Cartes",
     "attributionRequired": "L'attribution est requise",

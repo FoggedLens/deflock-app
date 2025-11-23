@@ -2,7 +2,9 @@
   "1.5.1": {
     "content": [
       "• NEW: Bing satellite imagery - high-quality satellite tiles used by the iD editor, no API key required",
-      "• IMPROVED: Added support for quadkey tile formats and multi-subdomain providers"
+      "• IMPROVED: Enhanced tile provider system with quadkey format support (for Bing Maps and similar providers)",
+      "• IMPROVED: Flexible subdomain patterns - supports both 0-3 and 1-4 subdomain ranges for load balancing",
+      "• IMPROVED: Tile URL validation now accepts either {quadkey} or {x}/{y}/{z} coordinate systems"
     ]
   },
   "1.5.0": {
