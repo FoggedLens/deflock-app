@@ -1,4 +1,10 @@
 {
+  "1.5.1": {
+    "content": [
+      "• NEW: Bing satellite imagery - high-quality satellite tiles used by the iD editor, no API key required",
+      "• IMPROVED: Added support for quadkey tile formats and multi-subdomain providers"
+    ]
+  },
   "1.5.0": {
     "content": [
       "• NEW: First-submission guide popup - provides essential guidance and links before your first device submission",

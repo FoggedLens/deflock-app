@@ -21,7 +21,22 @@ class TileType {
 
   /// Create URL for a specific tile, replacing template variables
   String getTileUrl(int z, int x, int y, {String? apiKey}) {
-    String url = urlTemplate
+    String url = urlTemplate;
+    
+    // Handle Bing Maps quadkey conversion
+    if (url.contains('{quadkey}')) {
+      final quadkey = _convertToQuadkey(x, y, z);
+      url = url.replaceAll('{quadkey}', quadkey);
+    }
+    
+    // Handle subdomains (for Bing Maps and other multi-subdomain providers)
+    if (url.contains('{subdomain}')) {
+      final subdomain = (x + y) % 4; // Distribute across 0-3 subdomains
+      url = url.replaceAll('{subdomain}', subdomain.toString());
+    }
+    
+    // Standard x/y/z replacement
+    url = url
         .replaceAll('{z}', z.toString())
         .replaceAll('{x}', x.toString())
         .replaceAll('{y}', y.toString());
@@ -31,6 +46,19 @@ class TileType {
     }
     
     return url;
+  }
+
+  /// Convert x, y, z to Bing Maps quadkey format
+  String _convertToQuadkey(int x, int y, int z) {
+    final quadkey = StringBuffer();
+    for (int i = z; i > 0; i--) {
+      int digit = 0;
+      final mask = 1 << (i - 1);
+      if ((x & mask) != 0) digit++;
+      if ((y & mask) != 0) digit += 2;
+      quadkey.write(digit);
+    }
+    return quadkey.toString();
   }
 
   /// Check if this tile type needs an API key
@@ -158,6 +186,19 @@ class DefaultTileProviders {
             urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
             attribution: '© OpenStreetMap contributors',
             maxZoom: 19,
+          ),
+        ],
+      ),
+      TileProvider(
+        id: 'bing',
+        name: 'Bing Maps',
+        tileTypes: [
+          TileType(
+            id: 'bing_satellite',
+            name: 'Satellite',
+            urlTemplate: 'https://ecn.t{subdomain}.tiles.virtualearth.net/tiles/a{quadkey}.jpeg?g=1&n=z',
+            attribution: '© Microsoft Corporation',
+            maxZoom: 20,
           ),
         ],
       ),
