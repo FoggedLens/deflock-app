@@ -98,6 +98,7 @@ cp lib/keys.dart.example lib/keys.dart
 ## Roadmap
 
 ### Needed Bugfixes
+- Max nodes not working
 - Update node cache to reflect cleared queue entries
 - Are offline areas preferred for fast loading even when online? Check working.
 - Fix network indicator - only done when fetch queue is empty!
