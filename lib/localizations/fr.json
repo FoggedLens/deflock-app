@@ -409,15 +409,13 @@
   },
   "networkStatus": {
     "showIndicator": "Afficher l'indicateur de statut réseau",
-    "showIndicatorSubtitle": "Afficher l'état de chargement et d'erreur réseau sur la carte",
-    "loading": "Chargement...",
-    "timedOut": "Temps dépassé",
-    "noData": "Aucune tuile ici",
-    "success": "Terminé",
+    "showIndicatorSubtitle": "Afficher l'état de chargement et d'erreur des données de surveillance",
+    "loading": "Chargement des données de surveillance...",
+    "timedOut": "Demande expirée",
+    "noData": "Aucune donnée hors ligne",
+    "success": "Données de surveillance chargées",
     "nodeLimitReached": "Limite affichée - augmenter dans les paramètres",
-    "tileProviderSlow": "Fournisseur de tuiles lent",
-    "nodeDataSlow": "Données de nœud lentes",
-    "networkIssues": "Problèmes réseau"
+    "nodeDataSlow": "Données de surveillance lentes"
   },
   "navigation": {
     "searchLocation": "Rechercher lieu",

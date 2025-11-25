@@ -6,7 +6,6 @@ import 'package:flutter/foundation.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:deflockapp/dev_config.dart';
-import '../network_status.dart';
 
 /// Global semaphore to limit simultaneous tile fetches
 final _tileFetchSemaphore = _SimpleSemaphore(kTileFetchConcurrentThreads);
@@ -121,21 +120,12 @@ Future<List<int>> fetchRemoteTile({
         if (attempt > 1) {
           debugPrint('[fetchRemoteTile] SUCCESS $z/$x/$y from $hostInfo after $attempt attempts');
         }
-        NetworkStatus.instance.reportOsmTileSuccess();
         return resp.bodyBytes;
       } else {
         debugPrint('[fetchRemoteTile] FAIL $z/$x/$y from $hostInfo: code=${resp.statusCode}, bytes=${resp.bodyBytes.length}');
-        NetworkStatus.instance.reportOsmTileIssue();
         throw HttpException('Failed to fetch tile $z/$x/$y from $hostInfo: status ${resp.statusCode}');
       }
     } catch (e) {
-      // Report network issues on connection errors
-      if (e.toString().contains('Connection refused') || 
-          e.toString().contains('Connection timed out') ||
-          e.toString().contains('Connection reset')) {
-        NetworkStatus.instance.reportOsmTileIssue();
-      }
-      
       // Calculate delay and retry (no attempt limit - keep trying forever)
       final delay = _calculateRetryDelay(attempt, random);
       if (attempt == 1) {

@@ -1,4 +1,14 @@
 {
+  "1.5.2": {
+    "content": [
+      "• IMPROVED: Simplified tile loading architecture - replaced HTTP interception with clean TileProvider implementation",
+      "• IMPROVED: Network status indicator now focuses only on surveillance data loading, not tile loading (tiles show their own progress)",
+      "• IMPROVED: Reduced complexity in cache management and state tracking",
+      "• FIXED: Tile cache properly clears when switching between tile providers/types - no more mixed tiles",
+      "• FIXED: Network status indicator no longer shows false timeouts during surveillance data splitting operations",
+      "• FIXED: Eliminated potential conflicts between multiple cache layers"
+    ]
+  },
   "1.5.1": {
     "content": [
       "• NEW: Bing satellite imagery - high-quality satellite tiles used by the iD editor, no API key required",

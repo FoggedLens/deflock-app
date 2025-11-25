@@ -409,15 +409,13 @@
   },
   "networkStatus": {
     "showIndicator": "显示网络状态指示器",
-    "showIndicatorSubtitle": "在地图上显示网络加载和错误状态",
-    "loading": "加载中...",
-    "timedOut": "超时",
-    "noData": "这里没有瓦片",
-    "success": "完成",
+    "showIndicatorSubtitle": "显示监控数据加载和错误状态",
+    "loading": "加载监控数据...",
+    "timedOut": "请求超时",
+    "noData": "无离线数据",
+    "success": "监控数据已加载",
     "nodeLimitReached": "显示限制 - 在设置中增加",
-    "tileProviderSlow": "瓦片提供商缓慢",
-    "nodeDataSlow": "节点数据缓慢",
-    "networkIssues": "网络问题"
+    "nodeDataSlow": "监控数据缓慢"
   },
   "navigation": {
     "searchLocation": "搜索位置",

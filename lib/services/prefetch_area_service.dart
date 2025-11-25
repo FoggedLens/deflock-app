@@ -139,20 +139,15 @@ class PrefetchAreaService {
       _preFetchedUploadMode = uploadMode;
       _lastFetchTime = DateTime.now();
       
-      // Report completion to network status (only if user was waiting)
-      NetworkStatus.instance.setSuccess();
+      // The overpass module already reported success/failure during fetching
+      // We just need to handle the successful result here
       
       // Notify UI that cache has been updated with fresh data
       CameraProviderWithCache.instance.refreshDisplay();
       
     } catch (e) {
       debugPrint('[PrefetchAreaService] Pre-fetch failed: $e');
-      // Report failure to network status (only if user was waiting)
-      if (e.toString().contains('timeout') || e.toString().contains('timed out')) {
-        NetworkStatus.instance.setTimeoutError();
-      } else {
-        NetworkStatus.instance.setNetworkError();
-      }
+      // The overpass module already reported the error status
       // Don't update pre-fetched area info on failure
     } finally {
       _preFetchInProgress = false;

@@ -309,7 +309,32 @@ Local cache contains production data. Showing production nodes in sandbox mode w
 **Why separate from follow mode:**
 Users often want to follow their location while keeping the map oriented north. Previous "north up" follow mode was confusing because it didn't actually keep north up. This separation provides clear, predictable behavior.
 
-### 9. Suspected Locations
+### 9. Network Status Indicator (Simplified in v1.5.2+)
+
+**Purpose**: Show loading and error states for surveillance data fetching only
+
+**Simplified approach (v1.5.2+):**
+- **Surveillance data focus**: Only tracks node/camera data loading, not tile loading
+- **Visual feedback**: Tiles show their own loading progress naturally
+- **Reduced complexity**: Eliminated tile completion tracking and multiple issue types
+
+**Status types:**
+- **Loading**: Shows when fetching surveillance data from APIs
+- **Success**: Brief confirmation when data loads successfully  
+- **Timeout**: Network request timeouts
+- **Limit reached**: When node display limit is hit
+- **API issues**: Overpass/OSM API problems only
+
+**What was removed:**
+- Tile server issue tracking (tiles handle their own progress)
+- "Both" network issue type (only surveillance data matters)
+- Complex semaphore-based completion detection
+- Tile-related status messages and localizations
+
+**Why the change:**
+The previous approach tracked both tile loading and surveillance data, creating redundancy since tiles already show loading progress visually on the map. Users don't need to be notified about tile loading issues when they can see tiles loading/failing directly. Focusing only on surveillance data makes the indicator more purposeful and less noisy.
+
+### 11. Suspected Locations
 
 **Data pipeline:**
 - **CSV ingestion**: Downloads utility permit data from alprwatch.org
@@ -327,7 +352,7 @@ Users often want to follow their location while keeping the map oriented north. 
 **Why utility permits:**
 Utility companies often must file permits when installing surveillance infrastructure. This creates a paper trail that can indicate potential surveillance sites before devices are confirmed through direct observation.
 
-### 10. Upload Mode Simplification
+### 12. Upload Mode Simplification
 
 **Release vs Debug builds:**
 - **Release builds**: Production OSM only (simplified UX)
@@ -340,11 +365,22 @@ Most users should contribute to production; testing modes add complexity
 bool get showUploadModeSelector => kDebugMode;
 ```
 
-### 11. Tile Provider System & URL Templates
+### 13. Tile Provider System & Clean Architecture (v1.5.2+)
 
-**Design approach:**
+**Architecture (post-v1.5.2):**
+- **Custom TileProvider**: Clean Flutter Map integration using `DeflockTileProvider` 
+- **Direct MapDataProvider integration**: Tiles go through existing offline/online routing
+- **No HTTP interception**: Eliminated fake URLs and complex HTTP clients
+- **Simplified caching**: Single cache layer (FlutterMap's internal cache)
+
+**Key components:**
+- `DeflockTileProvider`: Custom Flutter Map TileProvider implementation
+- `DeflockTileImageProvider`: Handles tile fetching through MapDataProvider
+- Automatic offline/online routing: Uses `MapSource.auto` for each tile
+
+**Tile provider configuration:**
 - **Flexible URL templates**: Support multiple coordinate systems and load-balancing patterns
-- **Built-in providers**: Curated set of high-quality, reliable tile sources
+- **Built-in providers**: Curated set of high-quality, reliable tile sources  
 - **Custom providers**: Users can add any tile service with full validation
 - **API key management**: Secure storage with per-provider API keys
 
@@ -352,7 +388,7 @@ bool get showUploadModeSelector => kDebugMode;
 ```
 {x}, {y}, {z}          - Standard TMS tile coordinates
 {quadkey}              - Bing Maps quadkey format (alternative to x/y/z)
-{0_3}                  - Subdomain 0-3 for load balancing
+{0_3}                  - Subdomain 0-3 for load balancing  
 {1_4}                  - Subdomain 1-4 for providers using 1-based indexing
 {api_key}              - API key insertion point (optional)
 ```
@@ -363,13 +399,14 @@ bool get showUploadModeSelector => kDebugMode;
 - **Mapbox**: Satellite and street tiles, requires API key
 - **OpenTopoMap**: Topographic maps, no API key required
 
-**Validation logic:**
-URL templates must contain either `{quadkey}` OR all of `{x}`, `{y}`, and `{z}`. This allows for both standard tile services and specialized formats like Bing Maps.
+**Why the architectural change:**
+The previous HTTP interception approach (`SimpleTileHttpClient` with fake URLs) fought against Flutter Map's architecture and created unnecessary complexity. The new `TileProvider` approach:
+- **Cleaner integration**: Works with Flutter Map's design instead of against it
+- **Simpler caching**: One cache layer instead of multiple conflicting systems
+- **Better error handling**: Graceful fallbacks for missing tiles  
+- **Reduced complexity**: Eliminated semaphores, queue management, and tile completion tracking
 
-**Why this approach:**
-Provides maximum flexibility while maintaining simplicity. Users can add any tile service without code changes, while built-in providers offer immediate functionality. The quadkey system enables access to high-quality satellite imagery without API key requirements.
-
-### 12. Navigation & Routing (Implemented, Awaiting Integration)
+### 14. Navigation & Routing (Implemented, Awaiting Integration)
 
 **Current state:**
 - **Search functionality**: Fully implemented and active

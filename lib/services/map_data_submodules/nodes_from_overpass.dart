@@ -23,14 +23,35 @@ Future<List<OsmNode>> fetchOverpassNodes({
   // Check if this is a user-initiated fetch (indicated by loading state)
   final wasUserInitiated = NetworkStatus.instance.currentStatus == NetworkStatusType.waiting;
   
-  return _fetchOverpassNodesWithSplitting(
-    bounds: bounds,
-    profiles: profiles,
-    uploadMode: uploadMode,
-    maxResults: maxResults,
-    splitDepth: 0,
-    wasUserInitiated: wasUserInitiated,
-  );
+  try {
+    final nodes = await _fetchOverpassNodesWithSplitting(
+      bounds: bounds,
+      profiles: profiles,
+      uploadMode: uploadMode,
+      maxResults: maxResults,
+      splitDepth: 0,
+      reportStatus: wasUserInitiated, // Only top level reports status
+    );
+    
+    // Only report success at the top level if this was user-initiated
+    if (wasUserInitiated) {
+      NetworkStatus.instance.setSuccess();
+    }
+    
+    return nodes;
+  } catch (e) {
+    // Only report errors at the top level if this was user-initiated
+    if (wasUserInitiated) {
+      if (e.toString().contains('timeout') || e.toString().contains('timed out')) {
+        NetworkStatus.instance.setTimeoutError();
+      } else {
+        NetworkStatus.instance.setNetworkError();
+      }
+    }
+    
+    debugPrint('[fetchOverpassNodes] Top-level operation failed: $e');
+    return [];
+  }
 }
 
 /// Internal method that handles splitting when node limit is exceeded.
@@ -40,7 +61,7 @@ Future<List<OsmNode>> _fetchOverpassNodesWithSplitting({
   UploadMode uploadMode = UploadMode.production,
   required int maxResults,
   required int splitDepth,
-  required bool wasUserInitiated,
+  required bool reportStatus, // Only true for top level
 }) async {
   if (profiles.isEmpty) return [];
   
@@ -51,28 +72,20 @@ Future<List<OsmNode>> _fetchOverpassNodesWithSplitting({
       bounds: bounds,
       profiles: profiles,
       maxResults: maxResults,
+      reportStatus: reportStatus,
     );
   } on OverpassRateLimitException catch (e) {
     // Rate limits should NOT be split - just fail with extended backoff
     debugPrint('[fetchOverpassNodes] Rate limited - using extended backoff, not splitting');
     
-    // Report error if user was waiting
-    if (wasUserInitiated) {
-      NetworkStatus.instance.setNetworkError();
-    }
-    
     // Wait longer for rate limits before giving up entirely  
     await Future.delayed(const Duration(seconds: 30));
-    return []; // Return empty rather than rethrowing
+    return []; // Return empty rather than rethrowing - let caller handle error reporting
   } on OverpassNodeLimitException {
     // If we've hit max split depth, give up to avoid infinite recursion
     if (splitDepth >= maxSplitDepth) {
       debugPrint('[fetchOverpassNodes] Max split depth reached, giving up on area: $bounds');
-      // Report timeout if this was user-initiated (can't split further)
-      if (wasUserInitiated) {
-        NetworkStatus.instance.setTimeoutError();
-      }
-      return [];
+      return []; // Return empty - let caller handle error reporting
     }
     
     // Split the bounds into 4 quadrants and try each separately
@@ -87,7 +100,7 @@ Future<List<OsmNode>> _fetchOverpassNodesWithSplitting({
         uploadMode: uploadMode,
         maxResults: 0, // No limit on individual quadrants to avoid double-limiting
         splitDepth: splitDepth + 1,
-        wasUserInitiated: wasUserInitiated,
+        reportStatus: false, // Sub-requests don't report status
       );
       allNodes.addAll(nodes);
     }
@@ -102,6 +115,7 @@ Future<List<OsmNode>> _fetchSingleOverpassQuery({
   required LatLngBounds bounds,
   required List<NodeProfile> profiles,
   required int maxResults,
+  required bool reportStatus,
 }) async {
   const String overpassEndpoint = 'https://overpass-api.de/api/interpreter';
   
@@ -146,8 +160,8 @@ Future<List<OsmNode>> _fetchSingleOverpassQuery({
         throw OverpassRateLimitException('Rate limited by server', serverResponse: errorBody);
       }
       
-      NetworkStatus.instance.reportOverpassIssue();
-      return [];
+      // Don't report status here - let the top level handle it
+      throw Exception('Overpass API error: $errorBody');
     }
     
     final data = await compute(jsonDecode, response.body) as Map<String, dynamic>;
@@ -157,7 +171,7 @@ Future<List<OsmNode>> _fetchSingleOverpassQuery({
       debugPrint('[fetchOverpassNodes] Retrieved ${elements.length} elements (nodes + ways/relations)');
     }
     
-    NetworkStatus.instance.reportOverpassSuccess();
+    // Don't report success here - let the top level handle it
     
     // Parse response to determine which nodes are constrained
     final nodes = _parseOverpassResponseWithConstraints(elements);
@@ -173,14 +187,8 @@ Future<List<OsmNode>> _fetchSingleOverpassQuery({
     
     debugPrint('[fetchOverpassNodes] Exception: $e');
     
-    // Report network issues for connection errors
-    if (e.toString().contains('Connection refused') || 
-        e.toString().contains('Connection timed out') ||
-        e.toString().contains('Connection reset')) {
-      NetworkStatus.instance.reportOverpassIssue();
-    }
-    
-    return [];
+    // Don't report status here - let the top level handle it
+    throw e; // Re-throw to let caller handle
   }
 }
 

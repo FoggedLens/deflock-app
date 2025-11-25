@@ -409,15 +409,13 @@
   },
   "networkStatus": {
     "showIndicator": "Exibir indicador de status de rede",
-    "showIndicatorSubtitle": "Mostrar status de carregamento e erro de rede no mapa",
-    "loading": "Carregando...",
-    "timedOut": "Tempo esgotado",
-    "noData": "Nenhum tile aqui",
-    "success": "Concluído",
+    "showIndicatorSubtitle": "Mostrar status de carregamento e erro de dados de vigilância",
+    "loading": "Carregando dados de vigilância...",
+    "timedOut": "Solicitação expirada",
+    "noData": "Nenhum dado offline",
+    "success": "Dados de vigilância carregados",
     "nodeLimitReached": "Limite exibido - aumentar nas configurações",
-    "tileProviderSlow": "Provedor de tiles lento",
-    "nodeDataSlow": "Dados do nó lentos",
-    "networkIssues": "Problemas de rede"
+    "nodeDataSlow": "Dados de vigilância lentos"
   },
   "navigation": {
     "searchLocation": "Buscar localização",

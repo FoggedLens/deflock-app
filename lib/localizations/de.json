@@ -377,15 +377,13 @@
   },
   "networkStatus": {
     "showIndicator": "Netzwerkstatus-Anzeige anzeigen",
-    "showIndicatorSubtitle": "Netzwerk-Ladestatus und Fehlerstatus auf der Karte anzeigen",
-    "loading": "Lädt...",
-    "timedOut": "Zeitüberschreitung",
-    "noData": "Keine Kacheln hier",
-    "success": "Fertig",
+    "showIndicatorSubtitle": "Ladestatus und Fehler für Überwachungsdaten anzeigen",
+    "loading": "Lade Überwachungsdaten...",
+    "timedOut": "Anfrage Zeitüberschreitung",
+    "noData": "Keine Offline-Daten",
+    "success": "Überwachungsdaten geladen",
     "nodeLimitReached": "Limit erreicht - in Einstellungen erhöhen",
-    "tileProviderSlow": "Kartenanbieter langsam",
-    "nodeDataSlow": "Knotendaten langsam",
-    "networkIssues": "Netzwerkprobleme"
+    "nodeDataSlow": "Überwachungsdaten langsam"
   },
   "about": {
     "title": "DeFlock - Überwachungs-Transparenz",

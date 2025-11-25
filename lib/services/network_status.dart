@@ -3,7 +3,7 @@ import 'dart:async';
 
 import '../app_state.dart';
 
-enum NetworkIssueType { osmTiles, overpassApi, both }
+enum NetworkIssueType { overpassApi }
 enum NetworkStatusType { waiting, issues, timedOut, noData, ready, success, nodeLimitReached }
 
 
@@ -12,14 +12,12 @@ class NetworkStatus extends ChangeNotifier {
   static final NetworkStatus instance = NetworkStatus._();
   NetworkStatus._();
 
-  bool _osmTilesHaveIssues = false;
   bool _overpassHasIssues = false;
   bool _isWaitingForData = false;
   bool _isTimedOut = false;
   bool _hasNoData = false;
   bool _hasSuccess = false;
   int _recentOfflineMisses = 0;
-  Timer? _osmRecoveryTimer;
   Timer? _overpassRecoveryTimer;
   Timer? _waitingTimer;
   Timer? _noDataResetTimer;
@@ -28,8 +26,7 @@ class NetworkStatus extends ChangeNotifier {
   Timer? _nodeLimitResetTimer;
 
   // Getters
-  bool get hasAnyIssues => _osmTilesHaveIssues || _overpassHasIssues;
-  bool get osmTilesHaveIssues => _osmTilesHaveIssues;
+  bool get hasAnyIssues => _overpassHasIssues;
   bool get overpassHasIssues => _overpassHasIssues;
   bool get isWaitingForData => _isWaitingForData;
   bool get isTimedOut => _isTimedOut;
@@ -49,27 +46,8 @@ class NetworkStatus extends ChangeNotifier {
   }
 
   NetworkIssueType? get currentIssueType {
-    if (_osmTilesHaveIssues && _overpassHasIssues) return NetworkIssueType.both;
-    if (_osmTilesHaveIssues) return NetworkIssueType.osmTiles;
     if (_overpassHasIssues) return NetworkIssueType.overpassApi;
     return null;
-  }
-
-  /// Report tile server issues (for any provider)
-  void reportOsmTileIssue() {
-    if (!_osmTilesHaveIssues) {
-      _osmTilesHaveIssues = true;
-      notifyListeners();
-      debugPrint('[NetworkStatus] Tile server issues detected');
-    }
-    
-    // Reset recovery timer - if we keep getting errors, keep showing indicator
-    _osmRecoveryTimer?.cancel();
-    _osmRecoveryTimer = Timer(const Duration(minutes: 2), () {
-      _osmTilesHaveIssues = false;
-      notifyListeners();
-      debugPrint('[NetworkStatus] Tile server issues cleared');
-    });
   }
 
   /// Report Overpass API issues
@@ -90,16 +68,6 @@ class NetworkStatus extends ChangeNotifier {
   }
 
   /// Report successful operations to potentially clear issues faster
-  void reportOsmTileSuccess() {
-    // Clear issues immediately on success (they were likely temporary)
-    if (_osmTilesHaveIssues) {
-      // Quietly clear - don't log routine success
-      _osmTilesHaveIssues = false;
-      _osmRecoveryTimer?.cancel();
-      notifyListeners();
-    }
-  }
-
   void reportOverpassSuccess() {
     if (_overpassHasIssues) {
       // Quietly clear - don't log routine success
@@ -271,7 +239,6 @@ class NetworkStatus extends ChangeNotifier {
 
   @override
   void dispose() {
-    _osmRecoveryTimer?.cancel();
     _overpassRecoveryTimer?.cancel();
     _waitingTimer?.cancel();
     _noDataResetTimer?.cancel();

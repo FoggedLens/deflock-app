@@ -52,20 +52,10 @@ class NetworkStatusIndicator extends StatelessWidget {
                 
               case NetworkStatusType.issues:
                 switch (networkStatus.currentIssueType) {
-                  case NetworkIssueType.osmTiles:
-                    message = locService.t('networkStatus.tileProviderSlow');
-                    icon = Icons.map_outlined;
-                    color = Colors.orange;
-                    break;
                   case NetworkIssueType.overpassApi:
                     message = locService.t('networkStatus.nodeDataSlow');
                     icon = Icons.camera_alt_outlined;
                     color = Colors.orange;
-                    break;
-                  case NetworkIssueType.both:
-                    message = locService.t('networkStatus.networkIssues');
-                    icon = Icons.cloud_off_outlined;
-                    color = Colors.red;
                     break;
                   default:
                     return const SizedBox.shrink();

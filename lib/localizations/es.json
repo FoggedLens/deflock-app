@@ -409,15 +409,13 @@
   },
   "networkStatus": {
     "showIndicator": "Mostrar indicador de estado de red",
-    "showIndicatorSubtitle": "Mostrar estado de carga y errores de red en el mapa",
-    "loading": "Cargando...",
-    "timedOut": "Tiempo agotado",
-    "noData": "Sin mosaicos aquí",
-    "success": "Hecho",
+    "showIndicatorSubtitle": "Mostrar estado de carga y errores de datos de vigilancia",
+    "loading": "Cargando datos de vigilancia...",
+    "timedOut": "Solicitud agotada",
+    "noData": "Sin datos sin conexión",
+    "success": "Datos de vigilancia cargados",
     "nodeLimitReached": "Mostrando límite - aumentar en ajustes",
-    "tileProviderSlow": "Proveedor de mosaicos lento",
-    "nodeDataSlow": "Datos de nodo lentos",
-    "networkIssues": "Problemas de red"
+    "nodeDataSlow": "Datos de vigilancia lentos"
   },
   "navigation": {
     "searchLocation": "Buscar ubicación",

@@ -101,7 +101,6 @@ cp lib/keys.dart.example lib/keys.dart
 - Max nodes not working
 - Update node cache to reflect cleared queue entries
 - Are offline areas preferred for fast loading even when online? Check working.
-- Fix network indicator - only done when fetch queue is empty!
 
 ### Current Development
 - Decide what to do for extracting nodes attached to a way/relation:

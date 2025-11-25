@@ -409,15 +409,13 @@
   },
   "networkStatus": {
     "showIndicator": "Mostra indicatore di stato di rete",
-    "showIndicatorSubtitle": "Visualizza lo stato di caricamento e errori di rete sulla mappa",
-    "loading": "Caricamento...",
-    "timedOut": "Tempo scaduto",
-    "noData": "Nessuna tessera qui",
-    "success": "Fatto",
+    "showIndicatorSubtitle": "Visualizza lo stato di caricamento e errori dei dati di sorveglianza",
+    "loading": "Caricamento dati di sorveglianza...",
+    "timedOut": "Richiesta scaduta",
+    "noData": "Nessun dato offline",
+    "success": "Dati di sorveglianza caricati",
     "nodeLimitReached": "Limite visualizzato - aumentare nelle impostazioni",
-    "tileProviderSlow": "Provider di tessere lento",
-    "nodeDataSlow": "Dati del nodo lenti",
-    "networkIssues": "Problemi di rete"
+    "nodeDataSlow": "Dati di sorveglianza lenti"
   },
   "navigation": {
     "searchLocation": "Cerca posizione",
