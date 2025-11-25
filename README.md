@@ -99,6 +99,7 @@ cp lib/keys.dart.example lib/keys.dart
 
 ### Needed Bugfixes
 - Max nodes not working
+- Download area zoom goes too far
 - Update node cache to reflect cleared queue entries
 - Are offline areas preferred for fast loading even when online? Check working.
 
