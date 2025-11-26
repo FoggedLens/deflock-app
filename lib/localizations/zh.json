@@ -414,8 +414,10 @@
     "timedOut": "请求超时",
     "noData": "无离线数据",
     "success": "监控数据已加载",
-    "nodeLimitReached": "显示限制 - 在设置中增加",
     "nodeDataSlow": "监控数据缓慢"
+  },
+  "nodeLimitIndicator": {
+    "message": "显示 {rendered} / {total} 设备"
   },
   "navigation": {
     "searchLocation": "搜索位置",

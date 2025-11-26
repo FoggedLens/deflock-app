@@ -414,8 +414,10 @@
     "timedOut": "Solicitud agotada",
     "noData": "Sin datos sin conexión",
     "success": "Datos de vigilancia cargados",
-    "nodeLimitReached": "Mostrando límite - aumentar en ajustes",
     "nodeDataSlow": "Datos de vigilancia lentos"
+  },
+  "nodeLimitIndicator": {
+    "message": "Mostrando {rendered} de {total} dispositivos"
   },
   "navigation": {
     "searchLocation": "Buscar ubicación",

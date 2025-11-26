@@ -4,7 +4,7 @@ import 'dart:async';
 import '../app_state.dart';
 
 enum NetworkIssueType { overpassApi }
-enum NetworkStatusType { waiting, issues, timedOut, noData, ready, success, nodeLimitReached }
+enum NetworkStatusType { waiting, issues, timedOut, noData, ready, success }
 
 
 
@@ -22,9 +22,6 @@ class NetworkStatus extends ChangeNotifier {
   Timer? _waitingTimer;
   Timer? _noDataResetTimer;
   Timer? _successResetTimer;
-  bool _nodeLimitReached = false;
-  Timer? _nodeLimitResetTimer;
-
   // Getters
   bool get hasAnyIssues => _overpassHasIssues;
   bool get overpassHasIssues => _overpassHasIssues;
@@ -32,7 +29,6 @@ class NetworkStatus extends ChangeNotifier {
   bool get isTimedOut => _isTimedOut;
   bool get hasNoData => _hasNoData;
   bool get hasSuccess => _hasSuccess;
-  bool get nodeLimitReached => _nodeLimitReached;
   
   NetworkStatusType get currentStatus {
     // Simple single-path status logic
@@ -41,7 +37,6 @@ class NetworkStatus extends ChangeNotifier {
     if (_isTimedOut) return NetworkStatusType.timedOut;
     if (_hasNoData) return NetworkStatusType.noData;
     if (_hasSuccess) return NetworkStatusType.success;
-    if (_nodeLimitReached) return NetworkStatusType.nodeLimitReached;
     return NetworkStatusType.ready;
   }
 
@@ -144,17 +139,15 @@ class NetworkStatus extends ChangeNotifier {
 
   /// Clear waiting/timeout/no-data status (legacy method for compatibility)
   void clearWaiting() {
-    if (_isWaitingForData || _isTimedOut || _hasNoData || _hasSuccess || _nodeLimitReached) {
+    if (_isWaitingForData || _isTimedOut || _hasNoData || _hasSuccess) {
       _isWaitingForData = false;
       _isTimedOut = false;
       _hasNoData = false;
       _hasSuccess = false;
-      _nodeLimitReached = false;
       _recentOfflineMisses = 0;
       _waitingTimer?.cancel();
       _noDataResetTimer?.cancel();
       _successResetTimer?.cancel();
-      _nodeLimitResetTimer?.cancel();
       notifyListeners();
     }
   }
@@ -195,22 +188,6 @@ class NetworkStatus extends ChangeNotifier {
     debugPrint('[NetworkStatus] Network error occurred');
   }
   
-  /// Show notification that node display limit was reached
-  void reportNodeLimitReached(int totalNodes, int maxNodes) {
-    _nodeLimitReached = true;
-    notifyListeners();
-    debugPrint('[NetworkStatus] Node display limit reached: $totalNodes found, showing $maxNodes');
-    
-    // Auto-clear after 8 seconds
-    _nodeLimitResetTimer?.cancel();
-    _nodeLimitResetTimer = Timer(const Duration(seconds: 8), () {
-      if (_nodeLimitReached) {
-        _nodeLimitReached = false;
-        notifyListeners();
-      }
-    });
-  }
-
 
   
   /// Report that a tile was not available offline
@@ -243,7 +220,6 @@ class NetworkStatus extends ChangeNotifier {
     _waitingTimer?.cancel();
     _noDataResetTimer?.cancel();
     _successResetTimer?.cancel();
-    _nodeLimitResetTimer?.cancel();
     super.dispose();
   }
 }

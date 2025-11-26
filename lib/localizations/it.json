@@ -414,8 +414,10 @@
     "timedOut": "Richiesta scaduta",
     "noData": "Nessun dato offline",
     "success": "Dati di sorveglianza caricati",
-    "nodeLimitReached": "Limite visualizzato - aumentare nelle impostazioni",
     "nodeDataSlow": "Dati di sorveglianza lenti"
+  },
+  "nodeLimitIndicator": {
+    "message": "Mostra {rendered} di {total} dispositivi"
   },
   "navigation": {
     "searchLocation": "Cerca posizione",

@@ -414,8 +414,10 @@
     "timedOut": "Solicitação expirada",
     "noData": "Nenhum dado offline",
     "success": "Dados de vigilância carregados",
-    "nodeLimitReached": "Limite exibido - aumentar nas configurações",
     "nodeDataSlow": "Dados de vigilância lentos"
+  },
+  "nodeLimitIndicator": {
+    "message": "Mostrando {rendered} de {total} dispositivos"
   },
   "navigation": {
     "searchLocation": "Buscar localização",

@@ -4,6 +4,8 @@
       "• IMPROVED: Simplified tile loading architecture - replaced HTTP interception with clean TileProvider implementation",
       "• IMPROVED: Network status indicator now focuses only on surveillance data loading, not tile loading (tiles show their own progress)",
       "• IMPROVED: Reduced complexity in cache management and state tracking",
+      "• FIXED: Max nodes setting now correctly limits rendering only (not data fetching) to prevent UI lag",
+      "• FIXED: New node limit indicator shows when not all devices are displayed due to rendering limit",
       "• FIXED: Tile cache properly clears when switching between tile providers/types - no more mixed tiles",
       "• FIXED: Network status indicator no longer shows false timeouts during surveillance data splitting operations",
       "• FIXED: Eliminated potential conflicts between multiple cache layers"

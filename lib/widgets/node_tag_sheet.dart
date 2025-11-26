@@ -11,8 +11,14 @@ import 'advanced_edit_options_sheet.dart';
 class NodeTagSheet extends StatelessWidget {
   final OsmNode node;
   final VoidCallback? onEditPressed;
+  final bool isNodeLimitActive;
 
-  const NodeTagSheet({super.key, required this.node, this.onEditPressed});
+  const NodeTagSheet({
+    super.key, 
+    required this.node, 
+    this.onEditPressed,
+    this.isNodeLimitActive = false,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -200,7 +206,7 @@ class NodeTagSheet extends StatelessWidget {
                   children: [
                     if (isEditable) ...[
                       ElevatedButton.icon(
-                        onPressed: _openEditSheet,
+                        onPressed: isNodeLimitActive ? null : _openEditSheet,
                         icon: const Icon(Icons.edit, size: 18),
                         label: Text(locService.edit),
                         style: ElevatedButton.styleFrom(

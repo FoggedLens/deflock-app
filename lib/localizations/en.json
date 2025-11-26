@@ -414,8 +414,10 @@
     "timedOut": "Request timed out",
     "noData": "No offline data",
     "success": "Surveillance data loaded",
-    "nodeLimitReached": "Showing limit - increase in settings",
     "nodeDataSlow": "Surveillance data slow"
+  },
+  "nodeLimitIndicator": {
+    "message": "Showing {rendered} of {total} devices"
   },
   "navigation": {
     "searchLocation": "Search Location",

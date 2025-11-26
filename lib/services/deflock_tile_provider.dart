@@ -97,19 +97,14 @@ class DeflockTileImageProvider extends ImageProvider<DeflockTileImageProvider> {
       return await decode(buffer);
       
     } catch (e) {
-      // Log error for debugging but don't spam network status
-      debugPrint('[DeflockTileProvider] Failed to load tile ${coordinates.z}/${coordinates.x}/${coordinates.y}: $e');
+      // Don't log routine offline misses to avoid console spam
+      if (!e.toString().contains('offline mode is enabled')) {
+        debugPrint('[DeflockTileProvider] Failed to load tile ${coordinates.z}/${coordinates.x}/${coordinates.y}: $e');
+      }
       
-      // Return a transparent 1x1 pixel tile for missing tiles
-      // This is more graceful than throwing and prevents cascade failures
-      final transparentPixel = Uint8List.fromList([0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 
-        0x00, 0x00, 0x00, 0x0D, 0x49, 0x48, 0x44, 0x52, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01, 
-        0x08, 0x06, 0x00, 0x00, 0x00, 0x1F, 0x15, 0xC4, 0x89, 0x00, 0x00, 0x00, 0x0B, 0x49, 0x44, 0x41, 
-        0x54, 0x78, 0x9C, 0x63, 0x00, 0x01, 0x00, 0x00, 0x05, 0x00, 0x01, 0x0D, 0x0A, 0x2D, 0xB4, 0x00, 
-        0x00, 0x00, 0x00, 0x49, 0x45, 0x4E, 0x44, 0xAE, 0x42, 0x60, 0x82]);
-      
-      final buffer = await ImmutableBuffer.fromUint8List(transparentPixel);
-      return await decode(buffer);
+      // Re-throw the exception and let FlutterMap handle missing tiles gracefully
+      // This is better than trying to provide fallback images
+      throw e;
     }
   }
   

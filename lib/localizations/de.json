@@ -382,8 +382,10 @@
     "timedOut": "Anfrage Zeitüberschreitung",
     "noData": "Keine Offline-Daten",
     "success": "Überwachungsdaten geladen",
-    "nodeLimitReached": "Limit erreicht - in Einstellungen erhöhen",
     "nodeDataSlow": "Überwachungsdaten langsam"
+  },
+  "nodeLimitIndicator": {
+    "message": "Zeige {rendered} von {total} Geräten"
   },
   "about": {
     "title": "DeFlock - Überwachungs-Transparenz",

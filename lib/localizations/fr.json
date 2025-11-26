@@ -414,8 +414,10 @@
     "timedOut": "Demande expirée",
     "noData": "Aucune donnée hors ligne",
     "success": "Données de surveillance chargées",
-    "nodeLimitReached": "Limite affichée - augmenter dans les paramètres",
     "nodeDataSlow": "Données de surveillance lentes"
+  },
+  "nodeLimitIndicator": {
+    "message": "Affichage de {rendered} sur {total} appareils"
   },
   "navigation": {
     "searchLocation": "Rechercher lieu",

@@ -44,12 +44,6 @@ class NetworkStatusIndicator extends StatelessWidget {
                 color = Colors.green;
                 break;
                 
-              case NetworkStatusType.nodeLimitReached:
-                message = locService.t('networkStatus.nodeLimitReached');
-                icon = Icons.visibility_off;
-                color = Colors.amber;
-                break;
-                
               case NetworkStatusType.issues:
                 switch (networkStatus.currentIssueType) {
                   case NetworkIssueType.overpassApi:
@@ -67,7 +61,7 @@ class NetworkStatusIndicator extends StatelessWidget {
             }
 
             return Positioned(
-              top: 8, // Position relative to the map area (not the screen)
+              top: 56, // Position below node limit indicator when present
               left: 8,
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
