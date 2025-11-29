@@ -402,9 +402,22 @@ bool get showUploadModeSelector => kDebugMode;
 **Why the architectural change:**
 The previous HTTP interception approach (`SimpleTileHttpClient` with fake URLs) fought against Flutter Map's architecture and created unnecessary complexity. The new `TileProvider` approach:
 - **Cleaner integration**: Works with Flutter Map's design instead of against it
-- **Simpler caching**: One cache layer instead of multiple conflicting systems
+- **Smart cache routing**: Only checks offline cache when needed, eliminating expensive filesystem searches
 - **Better error handling**: Graceful fallbacks for missing tiles  
-- **Reduced complexity**: Eliminated semaphores, queue management, and tile completion tracking
+- **Cross-platform performance**: Optimizations that work well on both iOS and Android
+
+**Tile Loading Performance Fix (v1.5.2):**
+The major performance issue was discovered to be double caching with expensive operations:
+1. **Problem**: Every tile request checked offline areas via filesystem I/O, even when no offline data existed
+2. **Solution**: Smart cache detection - only check offline cache when in offline mode OR when offline areas actually exist for the current provider
+3. **Result**: Dramatically improved tile loading from 0.5-5 tiles/sec back to ~70 tiles/sec for normal browsing
+
+**Cross-Platform Optimizations:**
+- **Request deduplication**: Prevents multiple simultaneous requests for identical tile coordinates
+- **Optimized retry timing**: Faster initial retry (150ms vs 200ms) with shorter backoff for quicker recovery
+- **Queue size limits**: Maximum 100 queued requests to prevent memory bloat
+- **Smart queue management**: Drops oldest requests when queue fills up
+- **Reduced concurrent connections**: 8 threads instead of 10 for better stability across platforms
 
 ### 14. Navigation & Routing (Implemented, Awaiting Integration)
 

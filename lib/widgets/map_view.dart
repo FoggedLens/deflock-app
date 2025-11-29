@@ -610,14 +610,24 @@ class MapViewState extends State<MapView> {
             MarkerLayer(markers: [...suspectedLocationMarkers, ...markers, ...centerMarkers]),
             
             // Node limit indicator (top-left) - shown when limit is active
-            NodeLimitIndicator(
-              isActive: isLimitActive,
-              renderedCount: nodesToRender.length,
-              totalCount: isLimitActive ? allNodes.where((node) {
-                return (node.coord.latitude != 0 || node.coord.longitude != 0) &&
-                       node.coord.latitude.abs() <= 90 && 
-                       node.coord.longitude.abs() <= 180;
-              }).length : 0,
+            Builder(
+              builder: (context) {
+                final appState = context.read<AppState>();
+                // Add search bar offset when search bar is visible
+                final searchBarOffset = (!appState.offlineMode && appState.isInSearchMode) ? 60.0 : 0.0;
+                
+                return NodeLimitIndicator(
+                  isActive: isLimitActive,
+                  renderedCount: nodesToRender.length,
+                  totalCount: isLimitActive ? allNodes.where((node) {
+                    return (node.coord.latitude != 0 || node.coord.longitude != 0) &&
+                           node.coord.latitude.abs() <= 90 && 
+                           node.coord.longitude.abs() <= 180;
+                  }).length : 0,
+                  top: 8.0 + searchBarOffset,
+                  left: 8.0,
+                );
+              },
             ),
           ],
         );
@@ -774,7 +784,18 @@ class MapViewState extends State<MapView> {
 
         // Network status indicator (top-left) - conditionally shown
         if (appState.networkStatusIndicatorEnabled)
-          const NetworkStatusIndicator(),
+          Builder(
+            builder: (context) {
+              // Calculate position based on node limit indicator presence and search bar
+              final searchBarOffset = (!appState.offlineMode && appState.isInSearchMode) ? 60.0 : 0.0;
+              final nodeLimitOffset = isLimitActive ? 48.0 : 0.0; // Height of node limit indicator + spacing
+              
+              return NetworkStatusIndicator(
+                top: 8.0 + searchBarOffset + nodeLimitOffset,
+                left: 8.0,
+              );
+            },
+          ),
         
         // Proximity alert banner (top)
         ProximityAlertBanner(

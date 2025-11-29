@@ -417,7 +417,8 @@
     "nodeDataSlow": "Dati di sorveglianza lenti"
   },
   "nodeLimitIndicator": {
-    "message": "Mostra {rendered} di {total} dispositivi"
+    "message": "Mostra {rendered} di {total} dispositivi",
+    "editingDisabledMessage": "Troppi dispositivi visibili per modificare in sicurezza. Ingrandisci per ridurre il numero di dispositivi visibili, poi riprova."
   },
   "navigation": {
     "searchLocation": "Cerca posizione",

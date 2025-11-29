@@ -125,11 +125,12 @@ const double kPinchMoveThreshold = 30.0; // How much drag required for two-finge
 const double kRotationThreshold = 6.0; // Degrees of rotation required before map actually rotates (Google Maps style)
 
 // Tile fetch configuration (brutalist approach: simple, configurable, unlimited retries)
-const int kTileFetchConcurrentThreads = 10;       // Number of simultaneous tile downloads
-const int kTileFetchInitialDelayMs = 200;         // Base delay for first retry (500ms)
-const double kTileFetchBackoffMultiplier = 1.5;   // Multiply delay by this each attempt
-const int kTileFetchMaxDelayMs = 5000;           // Cap delays at this value (10 seconds max)
-const int kTileFetchRandomJitterMs = 100;         // Random fuzz to add (0 to 250ms)
+const int kTileFetchConcurrentThreads = 8;          // Reduced from 10 to 8 for better cross-platform performance
+const int kTileFetchInitialDelayMs = 150;           // Reduced from 200ms for faster retries 
+const double kTileFetchBackoffMultiplier = 1.4;     // Slightly reduced for faster recovery
+const int kTileFetchMaxDelayMs = 4000;             // Reduced from 5000ms for faster max retry
+const int kTileFetchRandomJitterMs = 50;            // Reduced jitter for more predictable timing
+const int kTileFetchMaxQueueSize = 100;             // Reasonable queue size to prevent memory bloat
 // Note: Removed max attempts - tiles retry indefinitely until they succeed or are canceled
 
 // User download max zoom span (user can download up to kMaxUserDownloadZoomSpan zooms above min)
@@ -165,3 +166,4 @@ double getNodeRingThickness(BuildContext context) {
 //  return _kNodeRingThicknessBase * MediaQuery.of(context).devicePixelRatio;
   return _kNodeRingThicknessBase;
 }
+

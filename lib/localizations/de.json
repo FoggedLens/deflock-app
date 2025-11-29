@@ -385,7 +385,8 @@
     "nodeDataSlow": "Überwachungsdaten langsam"
   },
   "nodeLimitIndicator": {
-    "message": "Zeige {rendered} von {total} Geräten"
+    "message": "Zeige {rendered} von {total} Geräten",
+    "editingDisabledMessage": "Zu viele Geräte sichtbar für sicheres Bearbeiten. Vergrößern Sie die Ansicht, um die Anzahl sichtbarer Geräte zu reduzieren, und versuchen Sie es erneut."
   },
   "about": {
     "title": "DeFlock - Überwachungs-Transparenz",

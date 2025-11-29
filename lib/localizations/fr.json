@@ -417,7 +417,8 @@
     "nodeDataSlow": "Données de surveillance lentes"
   },
   "nodeLimitIndicator": {
-    "message": "Affichage de {rendered} sur {total} appareils"
+    "message": "Affichage de {rendered} sur {total} appareils",
+    "editingDisabledMessage": "Trop d'appareils visibles pour éditer en toute sécurité. Zoomez davantage pour réduire le nombre d'appareils visibles, puis réessayez."
   },
   "navigation": {
     "searchLocation": "Rechercher lieu",

@@ -115,6 +115,22 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             LocalizationService.instance.t('editNode.zoomInRequiredMessage', 
               params: [kMinZoomForNodeEditingSheets.toString()])
           ),
+          duration: const Duration(seconds: 4),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
+    
+    // Check if node limit is active and warn user
+    if (_isNodeLimitActive) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            LocalizationService.instance.t('nodeLimitIndicator.editingDisabledMessage')
+          ),
+          duration: const Duration(seconds: 4),
+          behavior: SnackBarBehavior.floating,
         ),
       );
       return;
@@ -775,7 +791,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                 builder: (context, child) => ElevatedButton.icon(
                                   icon: Icon(Icons.add_location_alt),
                                   label: Text(LocalizationService.instance.tagNode),
-                                  onPressed: _isNodeLimitActive ? null : _openAddNodeSheet,
+                                  onPressed: _openAddNodeSheet,
                                   style: ElevatedButton.styleFrom(
                                     minimumSize: Size(0, 48),
                                     textStyle: TextStyle(fontSize: 16),

@@ -5,12 +5,16 @@ class NodeLimitIndicator extends StatelessWidget {
   final bool isActive;
   final int renderedCount;
   final int totalCount;
+  final double top;
+  final double left;
   
   const NodeLimitIndicator({
     super.key,
     required this.isActive,
     required this.renderedCount,
     required this.totalCount,
+    this.top = 8.0,
+    this.left = 8.0,
   });
 
   @override
@@ -25,8 +29,8 @@ class NodeLimitIndicator extends StatelessWidget {
         .replaceAll('{total}', totalCount.toString());
 
     return Positioned(
-      top: 8, // Position at top-left of map area
-      left: 8,
+      top: top, // Position at top-left of map area
+      left: left,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
         decoration: BoxDecoration(

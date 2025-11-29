@@ -417,7 +417,8 @@
     "nodeDataSlow": "Surveillance data slow"
   },
   "nodeLimitIndicator": {
-    "message": "Showing {rendered} of {total} devices"
+    "message": "Showing {rendered} of {total} devices",
+    "editingDisabledMessage": "Too many devices shown to safely edit. Zoom in further to reduce the number of visible devices, then try again."
   },
   "navigation": {
     "searchLocation": "Search Location",

@@ -34,7 +34,7 @@ void clearRemoteTileQueueSelective(LatLngBounds currentBounds) {
 /// Calculate retry delay using configurable backoff strategy.
 /// Uses: initialDelay * (multiplier ^ (attempt - 1)) + randomJitter, capped at maxDelay
 int _calculateRetryDelay(int attempt, Random random) {
-  // Calculate exponential backoff: initialDelay * (multiplier ^ (attempt - 1))
+  // Calculate exponential backoff
   final baseDelay = (kTileFetchInitialDelayMs * 
     pow(kTileFetchBackoffMultiplier, attempt - 1)).round();
   
@@ -136,7 +136,7 @@ Future<List<int>> fetchRemoteTile({
       }
       await Future.delayed(Duration(milliseconds: delay));
     } finally {
-      _tileFetchSemaphore.release();
+      _tileFetchSemaphore.release(z: z, x: x, y: y);
     }
   }
 }
@@ -164,18 +164,40 @@ class _TileRequest {
   _TileRequest({required this.z, required this.x, required this.y, required this.callback});
 }
 
-/// Spatially-aware counting semaphore for tile requests
+/// Spatially-aware counting semaphore for tile requests with deduplication
 class _SimpleSemaphore {
   final int _max;
   int _current = 0;
   final List<_TileRequest> _queue = [];
+  final Set<String> _inFlightTiles = {}; // Track in-flight requests for deduplication
   _SimpleSemaphore(this._max);
 
   Future<void> acquire({int? z, int? x, int? y}) async {
+    // Create tile key for deduplication  
+    final tileKey = '${z ?? -1}/${x ?? -1}/${y ?? -1}';
+    
+    // If this tile is already in flight, skip the request
+    if (_inFlightTiles.contains(tileKey)) {
+      debugPrint('[SimpleSemaphore] Skipping duplicate request for $tileKey');
+      return;
+    }
+    
+    // Add to in-flight tracking
+    _inFlightTiles.add(tileKey);
+    
     if (_current < _max) {
       _current++;
       return;
     } else {
+      // Check queue size limit to prevent memory bloat
+      if (_queue.length >= kTileFetchMaxQueueSize) {
+        // Remove oldest request to make room
+        final oldRequest = _queue.removeAt(0);
+        final oldKey = '${oldRequest.z}/${oldRequest.x}/${oldRequest.y}';
+        _inFlightTiles.remove(oldKey);
+        debugPrint('[SimpleSemaphore] Queue full, dropped oldest request: $oldKey');
+      }
+      
       final c = Completer<void>();
       final request = _TileRequest(
         z: z ?? -1, 
@@ -188,7 +210,11 @@ class _SimpleSemaphore {
     }
   }
 
-  void release() {
+  void release({int? z, int? x, int? y}) {
+    // Remove from in-flight tracking
+    final tileKey = '${z ?? -1}/${x ?? -1}/${y ?? -1}';
+    _inFlightTiles.remove(tileKey);
+    
     if (_queue.isNotEmpty) {
       final request = _queue.removeAt(0);
       request.callback();
@@ -201,19 +227,37 @@ class _SimpleSemaphore {
   int clearQueue() {
     final clearedCount = _queue.length;
     _queue.clear();
+    _inFlightTiles.clear(); // Also clear deduplication tracking
     return clearedCount;
   }
   
   /// Clear only tiles that don't pass the visibility filter
   int clearStaleRequests(bool Function(int z, int x, int y) isStale) {
     final initialCount = _queue.length;
-    _queue.removeWhere((request) => isStale(request.z, request.x, request.y));
-    final clearedCount = initialCount - _queue.length;
+    final initialInFlightCount = _inFlightTiles.length;
     
-    if (clearedCount > 0) {
-      debugPrint('[SimpleSemaphore] Cleared $clearedCount stale tile requests, kept ${_queue.length}');
+    // Remove stale requests from queue
+    _queue.removeWhere((request) => isStale(request.z, request.x, request.y));
+    
+    // Remove stale tiles from in-flight tracking
+    _inFlightTiles.removeWhere((tileKey) {
+      final parts = tileKey.split('/');
+      if (parts.length == 3) {
+        final z = int.tryParse(parts[0]) ?? -1;
+        final x = int.tryParse(parts[1]) ?? -1;
+        final y = int.tryParse(parts[2]) ?? -1;
+        return isStale(z, x, y);
+      }
+      return false;
+    });
+    
+    final queueClearedCount = initialCount - _queue.length;
+    final inFlightClearedCount = initialInFlightCount - _inFlightTiles.length;
+    
+    if (queueClearedCount > 0 || inFlightClearedCount > 0) {
+      debugPrint('[SimpleSemaphore] Cleared $queueClearedCount stale queue + $inFlightClearedCount stale in-flight, kept ${_queue.length}');
     }
     
-    return clearedCount;
+    return queueClearedCount + inFlightClearedCount;
   }
 }

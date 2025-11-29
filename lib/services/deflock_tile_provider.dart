@@ -8,6 +8,7 @@ import 'dart:ui';
 import '../app_state.dart';
 import '../models/tile_provider.dart' as models;
 import 'map_data_provider.dart';
+import 'offline_area_service.dart';
 
 /// Custom tile provider that integrates with DeFlock's offline/online architecture.
 /// 
@@ -83,13 +84,16 @@ class DeflockTileImageProvider extends ImageProvider<DeflockTileImageProvider> {
         throw Exception('No tile provider configured');
       }
       
-      // Fetch tile through our existing MapDataProvider system
-      // This automatically handles offline/online routing, caching, etc.
+      // Smart cache routing: only check offline cache when needed
+      final MapSource source = _shouldCheckOfflineCache(appState) 
+          ? MapSource.auto  // Check offline first, then network
+          : MapSource.remote; // Skip offline cache, go directly to network
+      
       final tileBytes = await mapDataProvider.getTile(
         z: coordinates.z, 
         x: coordinates.x, 
         y: coordinates.y,
-        source: MapSource.auto, // Use auto routing (offline first, then online)
+        source: source,
       );
       
       // Decode the image bytes
@@ -119,4 +123,36 @@ class DeflockTileImageProvider extends ImageProvider<DeflockTileImageProvider> {
   
   @override
   int get hashCode => Object.hash(coordinates, providerId, tileTypeId);
+  
+  /// Determine if we should check offline cache for this tile request.
+  /// Only check offline cache if:
+  /// 1. We're in offline mode (forced), OR
+  /// 2. We have offline areas for the current provider/type
+  /// 
+  /// This avoids expensive filesystem searches when browsing online
+  /// with providers that have no offline areas.
+  bool _shouldCheckOfflineCache(AppState appState) {
+    // Always check offline cache in offline mode
+    if (appState.offlineMode) {
+      return true;
+    }
+    
+    // For online mode, only check if we might actually have relevant offline data
+    final currentProvider = appState.selectedTileProvider;
+    final currentTileType = appState.selectedTileType;
+    
+    if (currentProvider == null || currentTileType == null) {
+      return false;
+    }
+    
+    // Quick check: do we have any offline areas for this provider/type?
+    // This avoids the expensive per-tile filesystem search in fetchLocalTile
+    final offlineService = OfflineAreaService();
+    final hasRelevantAreas = offlineService.hasOfflineAreasForProvider(
+      currentProvider.id, 
+      currentTileType.id,
+    );
+    
+    return hasRelevantAreas;
+  }
 }

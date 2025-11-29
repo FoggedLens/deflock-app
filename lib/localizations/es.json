@@ -417,7 +417,8 @@
     "nodeDataSlow": "Datos de vigilancia lentos"
   },
   "nodeLimitIndicator": {
-    "message": "Mostrando {rendered} de {total} dispositivos"
+    "message": "Mostrando {rendered} de {total} dispositivos",
+    "editingDisabledMessage": "Demasiados dispositivos visibles para editar con seguridad. Acerque más para reducir el número de dispositivos visibles, luego inténtelo de nuevo."
   },
   "navigation": {
     "searchLocation": "Buscar ubicación",

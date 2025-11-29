@@ -37,6 +37,20 @@ class NodeTagSheet extends StatelessWidget {
                            node.tags['_pending_deletion'] != 'true');
         
         void _openEditSheet() {
+          // Check if node limit is active and warn user
+          if (isNodeLimitActive) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                  locService.t('nodeLimitIndicator.editingDisabledMessage')
+                ),
+                duration: const Duration(seconds: 4),
+                behavior: SnackBarBehavior.floating,
+              ),
+            );
+            return;
+          }
+          
           if (onEditPressed != null) {
             onEditPressed!(); // Use callback if provided
           } else {
@@ -206,7 +220,7 @@ class NodeTagSheet extends StatelessWidget {
                   children: [
                     if (isEditable) ...[
                       ElevatedButton.icon(
-                        onPressed: isNodeLimitActive ? null : _openEditSheet,
+                        onPressed: _openEditSheet,
                         icon: const Icon(Icons.edit, size: 18),
                         label: Text(locService.edit),
                         style: ElevatedButton.styleFrom(

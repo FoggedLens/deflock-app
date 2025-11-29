@@ -4,7 +4,14 @@ import '../services/network_status.dart';
 import '../services/localization_service.dart';
 
 class NetworkStatusIndicator extends StatelessWidget {
-  const NetworkStatusIndicator({super.key});
+  final double top;
+  final double left;
+  
+  const NetworkStatusIndicator({
+    super.key,
+    this.top = 56.0,
+    this.left = 8.0,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -61,8 +68,8 @@ class NetworkStatusIndicator extends StatelessWidget {
             }
 
             return Positioned(
-              top: 56, // Position below node limit indicator when present
-              left: 8,
+              top: top, // Position dynamically based on other indicators
+              left: left,
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(

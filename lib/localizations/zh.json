@@ -417,7 +417,8 @@
     "nodeDataSlow": "监控数据缓慢"
   },
   "nodeLimitIndicator": {
-    "message": "显示 {rendered} / {total} 设备"
+    "message": "显示 {rendered} / {total} 设备",
+    "editingDisabledMessage": "可见设备过多，无法安全编辑。请放大地图以减少可见设备数量，然后重试。"
   },
   "navigation": {
     "searchLocation": "搜索位置",
