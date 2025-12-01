@@ -66,6 +66,22 @@ class NodeCache {
     }
   }
 
+  /// Remove the _pending_deletion marker from a specific node (when deletion is cancelled)
+  void removePendingDeletionMarker(int nodeId) {
+    final node = _nodes[nodeId];
+    if (node != null && node.tags.containsKey('_pending_deletion')) {
+      final cleanTags = Map<String, String>.from(node.tags);
+      cleanTags.remove('_pending_deletion');
+      
+      _nodes[nodeId] = OsmNode(
+        id: node.id,
+        coord: node.coord,
+        tags: cleanTags,
+        isConstrained: node.isConstrained, // Preserve constraint information
+      );
+    }
+  }
+
   /// Remove a node by ID from the cache (used for successful deletions)
   void removeNodeById(int nodeId) {
     if (_nodes.remove(nodeId) != null) {

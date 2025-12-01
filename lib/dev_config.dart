@@ -53,11 +53,18 @@ double topPositionWithSafeArea(double baseTop, EdgeInsets safeArea) {
 const String kClientName = 'DeFlock';
 // Note: Version is now dynamically retrieved from VersionService
 
+// Upload and changeset configuration
+const Duration kUploadHttpTimeout = Duration(seconds: 30); // HTTP request timeout for uploads
+const Duration kChangesetCloseInitialRetryDelay = Duration(seconds: 10);
+const Duration kChangesetCloseMaxRetryDelay = Duration(minutes: 5);  // Cap at 5 minutes
+const Duration kChangesetAutoCloseTimeout = Duration(minutes: 59); // Give up and trust OSM auto-close
+const double kChangesetCloseBackoffMultiplier = 2.0;
+
 // Suspected locations CSV URL
 const String kSuspectedLocationsCsvUrl = 'https://alprwatch.org/suspected-locations/deflock-latest.csv';
 
 // Development/testing features - set to false for production builds
-const bool kEnableDevelopmentModes = false; // Set to false to hide sandbox/simulate modes and force production mode
+const bool kEnableDevelopmentModes = true; // Set to false to hide sandbox/simulate modes and force production mode
 
 // Navigation features - set to false to hide navigation UI elements while in development
 const bool kEnableNavigationFeatures = kEnableDevelopmentModes; // Hide navigation until fully implemented

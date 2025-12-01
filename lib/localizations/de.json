@@ -193,7 +193,7 @@
     "queueCleared": "Warteschlange geleert",
     "uploadQueueTitle": "Upload-Warteschlange ({} Elemente)",
     "queueIsEmpty": "Warteschlange ist leer",
-    "cameraWithIndex": "Kamera {}",
+    "itemWithIndex": "Objekt {}",
     "error": " (Fehler)",
     "completing": " (Wird abgeschlossen...)",
     "destination": "Ziel: {}",
@@ -203,7 +203,10 @@
     "attempts": "Versuche: {}",
     "uploadFailedRetry": "Upload fehlgeschlagen. Zum Wiederholen antippen.",
     "retryUpload": "Upload wiederholen",
-    "clearAll": "Alle Löschen"
+    "clearAll": "Alle Löschen",
+    "errorDetails": "Fehlerdetails",
+    "uploading": " (Uploading...)",
+    "closingChangeset": " (Changeset schließen...)"
   },
   "tileProviders": {
     "title": "Kachel-Anbieter",

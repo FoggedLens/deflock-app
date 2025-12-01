@@ -225,7 +225,7 @@
     "queueCleared": "队列已清空",
     "uploadQueueTitle": "上传队列（{} 项）",
     "queueIsEmpty": "队列为空",
-    "cameraWithIndex": "摄像头 {}",
+    "itemWithIndex": "项目 {}",
     "error": "（错误）",
     "completing": "（完成中...）",
     "destination": "目标：{}",
@@ -235,7 +235,10 @@
     "attempts": "尝试次数：{}",
     "uploadFailedRetry": "上传失败。点击重试再次尝试。",
     "retryUpload": "重试上传",
-    "clearAll": "全部清空"
+    "clearAll": "全部清空",
+    "errorDetails": "错误详情",
+    "uploading": " (上传中...)",
+    "closingChangeset": " (关闭变更集...)"
   },
   "tileProviders": {
     "title": "瓦片提供商",

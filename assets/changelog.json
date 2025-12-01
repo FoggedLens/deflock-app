@@ -1,4 +1,21 @@
 {
+  "1.5.3": {
+    "content": [
+      "• MAJOR: Proper three-stage upload process - uploads now correctly track changeset creation, node operation, and changeset closing as separate steps",
+      "• NEW: Enhanced upload error handling - failures in each stage (create changeset, upload node, close changeset) are now handled appropriately", 
+      "• NEW: Improved upload status display - shows 'Creating changeset...', 'Uploading...', and 'Closing changeset...' with time remaining for changeset close",
+      "• NEW: Error message details - tap the error icon (!) on failed uploads to see exactly what went wrong and at which stage",
+      "• IMPROVED: Proper 59-minute changeset window handling - node submission and changeset closing share the same timer from successful changeset creation",
+      "• IMPROVED: Step 2 failures (node operations) retry indefinitely within the 59-minute window instead of giving up after 3 attempts",
+      "• IMPROVED: Changeset close retry logic - continues trying for up to 59 minutes, then trusts OSM auto-close (never errors out once node is submitted)",
+      "• IMPROVED: Orphaned changeset cleanup - if network fails after changeset creation but before node upload, we properly close the changeset before retrying",
+      "• IMPROVED: Upload queue processing is now more robust and continues when individual items encounter errors",
+      "• IMPROVED: Real-time UI updates for all upload status changes, attempt counts, and time remaining (only shows countdown when changeset close has failed)",
+      "• FIXED: Queue processing no longer gets stuck when individual uploads fail", 
+      "• FIXED: Orphaned pending nodes - removing queue items or clearing the queue now properly removes temporary markers from the map",
+      "• IMPROVED: Better debugging support throughout the upload pipeline for easier troubleshooting"
+    ]
+  },
   "1.5.2": {
     "content": [
       "• MAJOR: Fixed severe tile loading performance issue - eliminated expensive filesystem searches on every tile request",

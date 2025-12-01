@@ -203,6 +203,10 @@ class ChangelogService {
       versionsNeedingMigration.add('1.3.1');
     }
     
+    if (needsMigration(lastSeenVersion, currentVersion, '1.5.3')) {
+      versionsNeedingMigration.add('1.5.3');
+    }
+    
     // Future versions can be added here
     // if (needsMigration(lastSeenVersion, currentVersion, '2.0.0')) {
     //   versionsNeedingMigration.add('2.0.0');
@@ -266,6 +270,12 @@ class ChangelogService {
         // Enable network status indicator for all existing users
         await appState.setNetworkStatusIndicatorEnabled(true);
         debugPrint('[ChangelogService] 1.3.1 migration completed: enabled network status indicator');
+        break;
+        
+      case '1.5.3':
+        // Migrate upload queue to new two-stage changeset system
+        await appState.migrateUploadQueueToTwoStageSystem();
+        debugPrint('[ChangelogService] 1.5.3 migration completed: migrated upload queue to two-stage system');
         break;
         
       // Future migrations can be added here

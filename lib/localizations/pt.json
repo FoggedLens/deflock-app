@@ -225,7 +225,7 @@
     "queueCleared": "Fila limpa",
     "uploadQueueTitle": "Fila de Upload ({} itens)",
     "queueIsEmpty": "A fila está vazia",
-    "cameraWithIndex": "Câmera {}",
+    "itemWithIndex": "Item {}",
     "error": " (Erro)",
     "completing": " (Completando...)",
     "destination": "Dest: {}",
@@ -235,7 +235,10 @@
     "attempts": "Tentativas: {}",
     "uploadFailedRetry": "Upload falhou. Toque em tentar novamente para tentar novamente.",
     "retryUpload": "Tentar upload novamente",
-    "clearAll": "Limpar Tudo"
+    "clearAll": "Limpar Tudo",
+    "errorDetails": "Detalhes do Erro",
+    "uploading": " (Enviando...)",
+    "closingChangeset": " (Fechando changeset...)"
   },
   "tileProviders": {
     "title": "Provedores de Tiles",

@@ -172,19 +172,33 @@ class UploadQueueState extends ChangeNotifier {
   }
 
   void clearQueue() {
+    // Clean up all pending nodes from cache before clearing queue
+    for (final upload in _queue) {
+      _cleanupPendingNodeFromCache(upload);
+    }
+    
     _queue.clear();
     _saveQueue();
+    
+    // Notify node provider to update the map
+    CameraProviderWithCache.instance.notifyListeners();
     notifyListeners();
   }
   
   void removeFromQueue(PendingUpload upload) {
+    // Clean up pending node from cache before removing from queue
+    _cleanupPendingNodeFromCache(upload);
+    
     _queue.remove(upload);
     _saveQueue();
+    
+    // Notify node provider to update the map
+    CameraProviderWithCache.instance.notifyListeners();
     notifyListeners();
   }
 
   void retryUpload(PendingUpload upload) {
-    upload.error = false;
+    upload.clearError();
     upload.attempts = 0;
     _saveQueue();
     notifyListeners();
@@ -208,44 +222,274 @@ class UploadQueueState extends ChangeNotifier {
         return;
       }
 
-      // Find the first queue item that is NOT in error state and act on that
-      final item = _queue.where((pu) => !pu.error).cast<PendingUpload?>().firstOrNull;
-      if (item == null) return;
+      // Find next item to process based on state
+      final pendingItems = _queue.where((pu) => pu.uploadState == UploadState.pending).toList();
+      final creatingChangesetItems = _queue.where((pu) => pu.uploadState == UploadState.creatingChangeset).toList();
+      final uploadingItems = _queue.where((pu) => pu.uploadState == UploadState.uploading).toList();
+      final closingItems = _queue.where((pu) => pu.uploadState == UploadState.closingChangeset).toList();
+      
+      // Process any expired items
+      for (final uploadingItem in uploadingItems) {
+        if (uploadingItem.hasChangesetExpired) {
+          debugPrint('[UploadQueue] Changeset expired during node submission - marking as failed');
+          uploadingItem.setError('Could not submit node within 59 minutes - changeset expired');
+          _saveQueue();
+          notifyListeners();
+        }
+      }
+      
+      for (final closingItem in closingItems) {
+        if (closingItem.hasChangesetExpired) {
+          debugPrint('[UploadQueue] Changeset expired during close - trusting OSM auto-close (node was submitted successfully)');
+          _markAsCompleting(closingItem, submittedNodeId: closingItem.submittedNodeId!);
+          // Continue processing loop - don't return here
+        }
+      }
+      
+      // Find next item to process (process in stage order)
+      PendingUpload? item;
+      if (pendingItems.isNotEmpty) {
+        item = pendingItems.first;
+      } else if (creatingChangesetItems.isNotEmpty) {
+        // Already in progress, skip
+        return;
+      } else if (uploadingItems.isNotEmpty) {
+        // Check if any uploading items are ready for retry
+        final readyToRetry = uploadingItems.where((ui) => 
+          !ui.hasChangesetExpired && ui.isReadyForNodeSubmissionRetry
+        ).toList();
+        
+        if (readyToRetry.isNotEmpty) {
+          item = readyToRetry.first;
+        }
+      } else {
+        // No active items, check if any changeset close items are ready for retry
+        final readyToRetry = closingItems.where((ci) => 
+          !ci.hasChangesetExpired && ci.isReadyForChangesetCloseRetry
+        ).toList();
+        
+        if (readyToRetry.isNotEmpty) {
+          item = readyToRetry.first;
+        }
+      }
+      
+      if (item == null) {
+        // No items ready for processing - check if queue is effectively empty
+        final hasActiveItems = _queue.any((pu) => 
+          pu.uploadState == UploadState.pending || 
+          pu.uploadState == UploadState.creatingChangeset ||
+          (pu.uploadState == UploadState.uploading && !pu.hasChangesetExpired) ||
+          (pu.uploadState == UploadState.closingChangeset && !pu.hasChangesetExpired)
+        );
+        
+        if (!hasActiveItems) {
+          debugPrint('[UploadQueue] No active items remaining, stopping uploader');
+          _uploadTimer?.cancel();
+        }
+        return; // Nothing to process right now
+      }
 
       // Retrieve access after every tick (accounts for re-login)
       final access = await getAccessToken();
       if (access == null) return; // not logged in
 
-      bool ok;
-      debugPrint('[UploadQueue] Processing item with uploadMode: ${item.uploadMode}');
-      if (item.uploadMode == UploadMode.simulate) {
-        // Simulate successful upload without calling real API
-        debugPrint('[UploadQueue] Simulating upload (no real API call)');
-        await Future.delayed(const Duration(seconds: 1)); // Simulate network delay
-        ok = true;
-        // Simulate a node ID for simulate mode
-        _markAsCompleting(item, simulatedNodeId: DateTime.now().millisecondsSinceEpoch);
-      } else {
-        // Real upload -- use the upload mode that was saved when this item was queued
-        debugPrint('[UploadQueue] Real upload to: ${item.uploadMode}');
-        final up = Uploader(access, (nodeId) {
-          _markAsCompleting(item, submittedNodeId: nodeId);
-        }, uploadMode: item.uploadMode);
-        ok = await up.upload(item);
-      }
-      if (!ok) {
-        item.attempts++;
-        if (item.attempts >= 3) {
-          // Mark as error and stop the uploader. User can manually retry.
-          item.error = true;
-          _saveQueue();
-          notifyListeners();
-          _uploadTimer?.cancel();
-        } else {
-          await Future.delayed(const Duration(seconds: 20));
-        }
+      debugPrint('[UploadQueue] Processing item in state: ${item.uploadState} with uploadMode: ${item.uploadMode}');
+      
+      if (item.uploadState == UploadState.pending) {
+        await _processCreateChangeset(item, access);
+      } else if (item.uploadState == UploadState.creatingChangeset) {
+        // Already in progress, skip (shouldn't happen due to filtering above)
+        debugPrint('[UploadQueue] Changeset creation already in progress, skipping');
+        return;
+      } else if (item.uploadState == UploadState.uploading) {
+        await _processNodeOperation(item, access);
+      } else if (item.uploadState == UploadState.closingChangeset) {
+        await _processChangesetClose(item, access);
       }
     });
+  }
+
+  // Process changeset creation (step 1 of 3)
+  Future<void> _processCreateChangeset(PendingUpload item, String access) async {
+    item.markAsCreatingChangeset();
+    _saveQueue();
+    notifyListeners(); // Show "Creating changeset..." immediately
+    
+    if (item.uploadMode == UploadMode.simulate) {
+      // Simulate successful upload without calling real API
+      debugPrint('[UploadQueue] Simulating changeset creation (no real API call)');
+      await Future.delayed(const Duration(milliseconds: 500)); // Simulate network delay
+      
+      // Move to node operation phase
+      item.markChangesetCreated('simulate-changeset-${DateTime.now().millisecondsSinceEpoch}');
+      _saveQueue();
+      notifyListeners();
+      return;
+    }
+    
+    // Real changeset creation
+    debugPrint('[UploadQueue] Creating changeset for ${item.operation.name} operation');
+    final up = Uploader(access, (nodeId) {}, (errorMessage) {}, uploadMode: item.uploadMode);
+    final result = await up.createChangeset(item);
+    
+    if (result.success) {
+      // Changeset created successfully - move to node operation phase
+      debugPrint('[UploadQueue] Changeset ${result.changesetId} created successfully');
+      item.markChangesetCreated(result.changesetId!);
+      _saveQueue();
+      notifyListeners(); // Show "Uploading node..." next
+    } else {
+      // Changeset creation failed
+      item.attempts++;
+      _saveQueue();
+      notifyListeners(); // Show attempt count immediately
+      
+      if (item.attempts >= 3) {
+        item.setError(result.errorMessage ?? 'Changeset creation failed after 3 attempts');
+        _saveQueue();
+        notifyListeners(); // Show error state immediately
+      } else {
+        // Reset to pending for retry
+        item.uploadState = UploadState.pending;
+        _saveQueue();
+        notifyListeners(); // Show pending state for retry
+        await Future.delayed(const Duration(seconds: 20));
+      }
+    }
+  }
+
+  // Process node operation (step 2 of 3)
+  Future<void> _processNodeOperation(PendingUpload item, String access) async {
+    if (item.changesetId == null) {
+      debugPrint('[UploadQueue] ERROR: No changeset ID for node operation');
+      item.setError('Missing changeset ID for node operation');
+      _saveQueue();
+      notifyListeners();
+      return;
+    }
+
+    // Check if 59-minute window has expired
+    if (item.hasChangesetExpired) {
+      debugPrint('[UploadQueue] Changeset expired, could not submit node within 59 minutes');
+      item.setError('Could not submit node within 59 minutes - changeset expired');
+      _saveQueue();
+      notifyListeners();
+      return;
+    }
+    
+    debugPrint('[UploadQueue] Processing node operation with changeset ${item.changesetId} (attempt ${item.nodeSubmissionAttempts + 1})');
+    
+    if (item.uploadMode == UploadMode.simulate) {
+      // Simulate successful node operation without calling real API
+      debugPrint('[UploadQueue] Simulating node operation (no real API call)');
+      await Future.delayed(const Duration(milliseconds: 500)); // Simulate network delay
+      
+      // Store simulated node ID and move to changeset close phase
+      item.submittedNodeId = DateTime.now().millisecondsSinceEpoch;
+      item.markNodeOperationComplete();
+      _saveQueue();
+      notifyListeners();
+      return;
+    }
+    
+    // Real node operation
+    final up = Uploader(access, (nodeId) {
+      // This callback is called when node operation succeeds
+      item.submittedNodeId = nodeId;
+    }, (errorMessage) {
+      // Error handling is done below
+    }, uploadMode: item.uploadMode);
+    
+    final result = await up.performNodeOperation(item, item.changesetId!);
+    
+    item.incrementNodeSubmissionAttempts(); // Record this attempt
+    _saveQueue();
+    notifyListeners(); // Show attempt count immediately
+    
+    if (result.success) {
+      // Node operation succeeded - move to changeset close phase
+      debugPrint('[UploadQueue] Node operation succeeded after ${item.nodeSubmissionAttempts} attempts, node ID: ${result.nodeId}');
+      item.submittedNodeId = result.nodeId;
+      item.markNodeOperationComplete();
+      _saveQueue();
+      notifyListeners(); // Show "Closing changeset..." next
+    } else {
+      // Node operation failed - will retry within 59-minute window
+      debugPrint('[UploadQueue] Node operation failed (attempt ${item.nodeSubmissionAttempts}): ${result.errorMessage}');
+      
+      // Check if we have time for another retry
+      if (item.hasChangesetExpired) {
+        debugPrint('[UploadQueue] Changeset expired during retry, marking as failed');
+        item.setError('Could not submit node within 59 minutes - ${result.errorMessage}');
+        _saveQueue();
+        notifyListeners();
+      } else {
+        // Still have time, will retry after backoff delay
+        final nextDelay = item.nextNodeSubmissionRetryDelay;
+        final timeLeft = item.timeUntilAutoClose;
+        debugPrint('[UploadQueue] Will retry node submission in ${nextDelay}, ${timeLeft?.inMinutes}m remaining');
+        // No state change needed - attempt count was already updated above
+      }
+    }
+  }
+
+  // Process changeset close operation (step 3 of 3)
+  Future<void> _processChangesetClose(PendingUpload item, String access) async {
+    if (item.changesetId == null) {
+      debugPrint('[UploadQueue] ERROR: No changeset ID for closing');
+      item.setError('Missing changeset ID');
+      _saveQueue();
+      notifyListeners();
+      return;
+    }
+
+    // Check if 59-minute window has expired - if so, mark as complete (trust OSM auto-close)
+    if (item.hasChangesetExpired) {
+      debugPrint('[UploadQueue] Changeset expired - trusting OSM auto-close (node was submitted successfully)');
+      _markAsCompleting(item, submittedNodeId: item.submittedNodeId!);
+      return;
+    }
+    
+    debugPrint('[UploadQueue] Attempting to close changeset ${item.changesetId} (attempt ${item.changesetCloseAttempts + 1})');
+    
+    if (item.uploadMode == UploadMode.simulate) {
+      // Simulate successful changeset close without calling real API
+      debugPrint('[UploadQueue] Simulating changeset close (no real API call)');
+      await Future.delayed(const Duration(milliseconds: 300)); // Simulate network delay
+      
+      // Mark as complete
+      _markAsCompleting(item, submittedNodeId: item.submittedNodeId!);
+      return;
+    }
+    
+    // Real changeset close
+    final up = Uploader(access, (nodeId) {}, (errorMessage) {}, uploadMode: item.uploadMode);
+    final result = await up.closeChangeset(item.changesetId!);
+    
+    item.incrementChangesetCloseAttempts(); // This records the attempt time
+    _saveQueue();
+    notifyListeners(); // Show attempt count immediately
+    
+    if (result.success) {
+      // Changeset closed successfully
+      debugPrint('[UploadQueue] Changeset close succeeded after ${item.changesetCloseAttempts} attempts');
+      _markAsCompleting(item, submittedNodeId: item.submittedNodeId!);
+      // _markAsCompleting handles its own save/notify
+    } else if (result.changesetNotFound) {
+      // Changeset not found - this suggests the upload may not have worked, start over with full retry  
+      debugPrint('[UploadQueue] Changeset not found during close, marking for full retry');
+      item.setError(result.errorMessage ?? 'Changeset not found');
+      _saveQueue();
+      notifyListeners(); // Show error state immediately
+    } else {
+      // Changeset close failed - will retry after exponential backoff delay
+      // Note: This will NEVER error out - will keep trying until 59-minute window expires
+      final nextDelay = item.nextChangesetCloseRetryDelay;
+      final timeLeft = item.timeUntilAutoClose;
+      debugPrint('[UploadQueue] Changeset close failed (attempt ${item.changesetCloseAttempts}), will retry in ${nextDelay}, ${timeLeft?.inMinutes}m remaining');
+      debugPrint('[UploadQueue] Error: ${result.errorMessage}');
+      // No additional state change needed - attempt count was already updated above
+    }
   }
 
   void stopUploader() {
@@ -254,7 +498,7 @@ class UploadQueueState extends ChangeNotifier {
 
   // Mark an item as completing (shows checkmark) and schedule removal after 1 second
   void _markAsCompleting(PendingUpload item, {int? submittedNodeId, int? simulatedNodeId}) {
-    item.completing = true;
+    item.markAsComplete();
     
     // Store the submitted node ID for cleanup purposes
     if (submittedNodeId != null) {
@@ -357,6 +601,28 @@ class UploadQueueState extends ChangeNotifier {
     return '${start.round()}-${end.round()}';
   }
 
+  // Clean up pending nodes from cache when queue items are deleted/cleared
+  void _cleanupPendingNodeFromCache(PendingUpload upload) {
+    if (upload.isDeletion) {
+      // For deletions: remove the _pending_deletion marker from the original node
+      if (upload.originalNodeId != null) {
+        NodeCache.instance.removePendingDeletionMarker(upload.originalNodeId!);
+      }
+    } else if (upload.isEdit) {
+      // For edits: remove both the temp node and the _pending_edit marker from original
+      NodeCache.instance.removeTempNodesByCoordinate(upload.coord);
+      if (upload.originalNodeId != null) {
+        NodeCache.instance.removePendingEditMarker(upload.originalNodeId!);
+      }
+    } else if (upload.operation == UploadOperation.extract) {
+      // For extracts: remove the temp node (leave original unchanged)
+      NodeCache.instance.removeTempNodesByCoordinate(upload.coord);
+    } else {
+      // For creates: remove the temp node
+      NodeCache.instance.removeTempNodesByCoordinate(upload.coord);
+    }
+  }
+
   // ---------- Queue persistence ----------
   Future<void> _saveQueue() async {
     final prefs = await SharedPreferences.getInstance();
@@ -372,6 +638,12 @@ class UploadQueueState extends ChangeNotifier {
     _queue
       ..clear()
       ..addAll(list.map((e) => PendingUpload.fromJson(e)));
+  }
+
+  // Public method for migration purposes
+  Future<void> reloadQueue() async {
+    await _loadQueue();
+    notifyListeners();
   }
 
   @override

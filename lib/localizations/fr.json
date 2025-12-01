@@ -225,7 +225,7 @@
     "queueCleared": "File vidée",
     "uploadQueueTitle": "File de Téléchargement ({} éléments)",
     "queueIsEmpty": "La file est vide",
-    "cameraWithIndex": "Caméra {}",
+    "itemWithIndex": "Élément {}",
     "error": " (Erreur)",
     "completing": " (Finalisation...)",
     "destination": "Dest: {}",
@@ -235,7 +235,10 @@
     "attempts": "Tentatives: {}",
     "uploadFailedRetry": "Téléchargement échoué. Appuyer pour réessayer.",
     "retryUpload": "Réessayer téléchargement",
-    "clearAll": "Tout Vider"
+    "clearAll": "Tout Vider",
+    "errorDetails": "Détails de l'Erreur",
+    "uploading": " (Téléchargement...)",
+    "closingChangeset": " (Fermeture du changeset...)"
   },
   "tileProviders": {
     "title": "Fournisseurs de Tuiles",

@@ -182,20 +182,47 @@ class AddNodeSession {
 **Why no delete session:**
 Deletions don't need position dragging or tag editing - they just need confirmation and queuing. A session would add complexity without benefit.
 
-### 3. Upload Queue System
+### 3. Upload Queue System & Three-Stage Upload Process
 
 **Design principles:**
-- **Operation-agnostic**: Same queue handles create/modify/delete
-- **Offline-capable**: Queue persists between app sessions
-- **Visual feedback**: Each operation type has distinct UI state
-- **Error recovery**: Retry mechanism with exponential backoff
+- **Three explicit stages**: Create changeset → Upload node → Close changeset
+- **Operation-agnostic**: Same queue handles create/modify/delete/extract
+- **Offline-capable**: Queue persists between app sessions  
+- **Visual feedback**: Each operation type and stage has distinct UI state
+- **Stage-specific error recovery**: Appropriate retry logic for each of the 3 stages
 
-**Queue workflow:**
-1. User action (add/edit/delete) → `PendingUpload` created
+**Three-stage upload workflow:**
+1. **Stage 1 - Create Changeset**: Generate changeset XML and create on OSM
+   - Retries: Up to 3 attempts with 20s delays
+   - Failures: Reset to pending for full retry
+2. **Stage 2 - Node Operation**: Create/modify/delete the surveillance node
+   - Retries: Up to 3 attempts with 20s delays  
+   - Failures: Close orphaned changeset, then retry from stage 1
+3. **Stage 3 - Close Changeset**: Close the changeset to finalize
+   - Retries: Exponential backoff up to 59 minutes
+   - Failures: OSM auto-closes after 60 minutes, so we eventually give up
+
+**Queue processing workflow:**
+1. User action (add/edit/delete) → `PendingUpload` created with `UploadState.pending`
 2. Immediate visual feedback (cache updated with temp markers)
-3. Background uploader processes queue when online
+3. Background uploader processes queue when online:
+   - **Pending** → Create changeset → **CreatingChangeset** → **Uploading**
+   - **Uploading** → Upload node → **ClosingChangeset** 
+   - **ClosingChangeset** → Close changeset → **Complete**
 4. Success → cache updated with real data, temp markers removed
-5. Failure → error state, retry available
+5. Failures → appropriate retry logic based on which stage failed
+
+**Why three explicit stages:**
+The previous implementation conflated changeset creation + node operation as one step, making error handling unclear. The new approach:
+- **Tracks which stage failed**: Users see exactly what went wrong
+- **Handles step 2 failures correctly**: Node operation failures now properly close orphaned changesets  
+- **Provides clear UI feedback**: "Creating changeset...", "Uploading...", "Closing changeset..."
+- **Enables appropriate retry logic**: Different stages have different retry needs
+
+**Stage-specific error handling:**
+- **Stage 1 failure**: Simple retry (no cleanup needed)
+- **Stage 2 failure**: Close orphaned changeset, then retry from stage 1
+- **Stage 3 failure**: Keep retrying with exponential backoff (most important for OSM data integrity)
 
 **Why immediate visual feedback:**
 Users expect instant response to their actions. By immediately updating the cache with temporary markers (e.g., `_pending_deletion`), the UI stays responsive while the actual API calls happen in background.
@@ -259,7 +286,39 @@ These are internal app tags, not OSM tags. The underscore prefix makes this expl
 **Why this approach:**
 Dense urban areas (SF, NYC) with many profiles enabled can easily exceed both 50k node limits and 25s timeouts. Splitting reduces query complexity while surgical error detection avoids unnecessary API load from network issues.
 
-### 6. Offline vs Online Mode Behavior
+### 6. Uploader Service Architecture (Refactored v1.5.3)
+
+**Three-method approach:**
+The `Uploader` class now provides three distinct methods matching the OSM API workflow:
+
+```dart
+// Step 1: Create changeset
+Future<UploadResult> createChangeset(PendingUpload p) async
+
+// Step 2: Perform node operation (create/modify/delete/extract) 
+Future<UploadResult> performNodeOperation(PendingUpload p, String changesetId) async
+
+// Step 3: Close changeset
+Future<UploadResult> closeChangeset(String changesetId) async
+```
+
+**Simplified UploadResult:**
+Replaced complex boolean flags with simple success/failure:
+```dart
+UploadResult.success({changesetId, nodeId})  // Operation succeeded
+UploadResult.failure({errorMessage, ...})   // Operation failed with details
+```
+
+**Legacy compatibility:**
+The `upload()` method still exists for simulate mode and backwards compatibility, but now internally calls the three-step methods in sequence.
+
+**Why this architecture:**
+- **Brutalist simplicity**: Each method does exactly one thing
+- **Clear failure points**: No confusion about which step failed  
+- **Easier testing**: Each stage can be unit tested independently
+- **Better error messages**: Specific failure context for each stage
+
+### 7. Offline vs Online Mode Behavior
 
 **Mode combinations:**
 ```
@@ -272,7 +331,7 @@ Sandbox + Offline    → No nodes (cache is production data)
 **Why sandbox + offline = no nodes:**
 Local cache contains production data. Showing production nodes in sandbox mode would be confusing and could lead to users trying to edit production nodes with sandbox credentials.
 
-### 7. Proximity Alerts & Background Monitoring
+### 8. Proximity Alerts & Background Monitoring
 
 **Design approach:**
 - **Simple cooldown system**: In-memory tracking to prevent notification spam
@@ -285,7 +344,7 @@ Local cache contains production data. Showing production nodes in sandbox mode w
 - Simple RecentAlert tracking prevents duplicate notifications
 - Visual callback system for in-app alerts when app is active
 
-### 8. Compass Indicator & North Lock
+### 9. Compass Indicator & North Lock
 
 **Purpose**: Visual compass showing map orientation with optional north-lock functionality
 
@@ -309,7 +368,7 @@ Local cache contains production data. Showing production nodes in sandbox mode w
 **Why separate from follow mode:**
 Users often want to follow their location while keeping the map oriented north. Previous "north up" follow mode was confusing because it didn't actually keep north up. This separation provides clear, predictable behavior.
 
-### 9. Network Status Indicator (Simplified in v1.5.2+)
+### 10. Network Status Indicator (Simplified in v1.5.2+)
 
 **Purpose**: Show loading and error states for surveillance data fetching only
 

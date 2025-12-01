@@ -478,6 +478,14 @@ class AppState extends ChangeNotifier {
     await _settingsState.setNetworkStatusIndicatorEnabled(enabled);
   }
 
+  /// Migrate upload queue to new two-stage changeset system (v1.5.3)
+  Future<void> migrateUploadQueueToTwoStageSystem() async {
+    // Migration is handled automatically in PendingUpload.fromJson via _migrateFromLegacyFields
+    // This method triggers a queue reload to apply migrations
+    await _uploadQueueState.reloadQueue();
+    debugPrint('[AppState] Upload queue migration completed');
+  }
+
   /// Set suspected location minimum distance from real nodes
   Future<void> setSuspectedLocationMinDistance(int distance) async {
     await _settingsState.setSuspectedLocationMinDistance(distance);

@@ -225,7 +225,7 @@
     "queueCleared": "Cola limpiada",
     "uploadQueueTitle": "Cola de Subida ({} elementos)",
     "queueIsEmpty": "La cola está vacía",
-    "cameraWithIndex": "Cámara {}",
+    "itemWithIndex": "Elemento {}",
     "error": " (Error)",
     "completing": " (Completando...)",
     "destination": "Dest: {}",
@@ -235,7 +235,10 @@
     "attempts": "Intentos: {}",
     "uploadFailedRetry": "Subida falló. Toque reintentar para intentar de nuevo.",
     "retryUpload": "Reintentar subida",
-    "clearAll": "Limpiar Todo"
+    "clearAll": "Limpiar Todo",
+    "errorDetails": "Detalles del Error",
+    "uploading": " (Subiendo...)",
+    "closingChangeset": " (Cerrando changeset...)"
   },
   "tileProviders": {
     "title": "Proveedores de Tiles",

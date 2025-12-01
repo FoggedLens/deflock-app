@@ -225,7 +225,7 @@
     "queueCleared": "Queue cleared",
     "uploadQueueTitle": "Upload Queue ({} items)",
     "queueIsEmpty": "Queue is empty",
-    "cameraWithIndex": "Camera {}",
+    "itemWithIndex": "Item {}",
     "error": " (Error)",
     "completing": " (Completing...)",
     "destination": "Dest: {}",
@@ -235,7 +235,11 @@
     "attempts": "Attempts: {}",
     "uploadFailedRetry": "Upload failed. Tap retry to try again.",
     "retryUpload": "Retry upload",
-    "clearAll": "Clear All"
+    "clearAll": "Clear All",
+    "errorDetails": "Error Details",
+    "creatingChangeset": " (Creating changeset...)",
+    "uploading": " (Uploading...)",
+    "closingChangeset": " (Closing changeset...)"
   },
   "tileProviders": {
     "title": "Tile Providers",

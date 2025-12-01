@@ -225,7 +225,7 @@
     "queueCleared": "Coda pulita",
     "uploadQueueTitle": "Coda Upload ({} elementi)",
     "queueIsEmpty": "La coda è vuota",
-    "cameraWithIndex": "Telecamera {}",
+    "itemWithIndex": "Elemento {}",
     "error": " (Errore)",
     "completing": " (Completamento...)",
     "destination": "Dest: {}",
@@ -235,7 +235,10 @@
     "attempts": "Tentativi: {}",
     "uploadFailedRetry": "Upload fallito. Tocca riprova per tentare di nuovo.",
     "retryUpload": "Riprova upload",
-    "clearAll": "Pulisci Tutto"
+    "clearAll": "Pulisci Tutto",
+    "errorDetails": "Dettagli dell'Errore",
+    "uploading": " (Caricamento...)",
+    "closingChangeset": " (Chiusura changeset...)"
   },
   "tileProviders": {
     "title": "Fornitori di Tile",
