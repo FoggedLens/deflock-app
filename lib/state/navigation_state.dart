@@ -221,11 +221,11 @@ class NavigationState extends ChangeNotifier {
     _calculateRoute();
   }
   
-  /// Calculate route using OSRM
+  /// Calculate route using alprwatch
   void _calculateRoute() {
     if (_routeStart == null || _routeEnd == null) return;
     
-    debugPrint('[NavigationState] Calculating route with OSRM...');
+    debugPrint('[NavigationState] Calculating route with alprwatch...');
     _isCalculating = true;
     _routingError = null;
     notifyListeners();
@@ -233,7 +233,6 @@ class NavigationState extends ChangeNotifier {
     _routingService.calculateRoute(
       start: _routeStart!,
       end: _routeEnd!,
-      profile: 'driving', // Could make this configurable later
     ).then((routeResult) {
       if (!_isCalculating) return; // Canceled while calculating
       
@@ -243,7 +242,7 @@ class NavigationState extends ChangeNotifier {
       _showingOverview = true;
       _provisionalPinLocation = null; // Hide provisional pin
       
-      debugPrint('[NavigationState] OSRM route calculated: ${routeResult.toString()}');
+      debugPrint('[NavigationState] alprwatch route calculated: ${routeResult.toString()}');
       notifyListeners();
       
     }).catchError((error) {
