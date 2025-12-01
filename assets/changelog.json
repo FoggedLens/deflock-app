@@ -13,6 +13,7 @@
       "• IMPROVED: Real-time UI updates for all upload status changes, attempt counts, and time remaining (only shows countdown when changeset close has failed)",
       "• FIXED: Queue processing no longer gets stuck when individual uploads fail", 
       "• FIXED: Orphaned pending nodes - removing queue items or clearing the queue now properly removes temporary markers from the map",
+      "• IMPROVED: Removed placeholder FOV values from built-in profiles - FOV functionality remains available for custom profiles when actual device specifications are known",
       "• IMPROVED: Better debugging support throughout the upload pipeline for easier troubleshooting"
     ]
   },
