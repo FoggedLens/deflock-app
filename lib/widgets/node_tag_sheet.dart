@@ -11,8 +11,14 @@ import 'advanced_edit_options_sheet.dart';
 class NodeTagSheet extends StatelessWidget {
   final OsmNode node;
   final VoidCallback? onEditPressed;
+  final bool isNodeLimitActive;
 
-  const NodeTagSheet({super.key, required this.node, this.onEditPressed});
+  const NodeTagSheet({
+    super.key, 
+    required this.node, 
+    this.onEditPressed,
+    this.isNodeLimitActive = false,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -31,6 +37,20 @@ class NodeTagSheet extends StatelessWidget {
                            node.tags['_pending_deletion'] != 'true');
         
         void _openEditSheet() {
+          // Check if node limit is active and warn user
+          if (isNodeLimitActive) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                  locService.t('nodeLimitIndicator.editingDisabledMessage')
+                ),
+                duration: const Duration(seconds: 4),
+                behavior: SnackBarBehavior.floating,
+              ),
+            );
+            return;
+          }
+          
           if (onEditPressed != null) {
             onEditPressed!(); // Use callback if provided
           } else {

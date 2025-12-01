@@ -25,6 +25,7 @@ import 'map/camera_refresh_controller.dart';
 import 'map/gps_controller.dart';
 import 'map/suspected_location_markers.dart';
 import 'network_status_indicator.dart';
+import 'node_limit_indicator.dart';
 import 'provisional_pin.dart';
 import 'proximity_alert_banner.dart';
 import '../dev_config.dart';
@@ -44,6 +45,7 @@ class MapView extends StatefulWidget {
     this.onNodeTap,
     this.onSuspectedLocationTap,
     this.onSearchPressed,
+    this.onNodeLimitChanged,
   });
 
   final FollowMeMode followMeMode;
@@ -53,6 +55,7 @@ class MapView extends StatefulWidget {
   final void Function(OsmNode)? onNodeTap;
   final void Function(SuspectedLocation)? onSuspectedLocationTap;
   final VoidCallback? onSearchPressed;
+  final void Function(bool isLimited)? onNodeLimitChanged;
 
   @override
   State<MapView> createState() => MapViewState();
@@ -76,7 +79,8 @@ class MapViewState extends State<MapView> {
   // Track map center to clear queue on significant panning
   LatLng? _lastCenter;
   
-
+  // Track node limit state for parent notification
+  bool _lastNodeLimitState = false;
   
   // State for proximity alert banner
   bool _showProximityBanner = false;
@@ -156,7 +160,6 @@ class MapViewState extends State<MapView> {
       getNearbyNodes: () {
         if (mounted) {
           try {
-            final cameraProvider = context.read<CameraProviderWithCache>();
             LatLngBounds? mapBounds;
             try {
               mapBounds = _controller.mapController.camera.visibleBounds;
@@ -164,7 +167,7 @@ class MapViewState extends State<MapView> {
               return [];
             }
             return mapBounds != null 
-                ? cameraProvider.getCachedNodesForBounds(mapBounds)
+                ? CameraProviderWithCache.instance.getCachedNodesForBounds(mapBounds)
                 : [];
           } catch (e) {
             debugPrint('[MapView] Could not get nearby nodes: $e');
@@ -395,38 +398,70 @@ class MapViewState extends State<MapView> {
     // Edit sessions don't need to center - we're already centered from the node tap
     // SheetAwareMap handles the visual positioning
     
-    // Fetch cached cameras for current map bounds (using Consumer so overlays redraw instantly)
-    Widget cameraLayers = Consumer<CameraProviderWithCache>(
-      builder: (context, cameraProvider, child) {
-        // Get current zoom level and map bounds (shared by all logic)
-        double currentZoom = 15.0; // fallback
-        LatLngBounds? mapBounds;
-        try {
-          currentZoom = _controller.mapController.camera.zoom;
-          mapBounds = _controller.mapController.camera.visibleBounds;
-        } catch (_) {
-          // Controller not ready yet, use fallback values
-          mapBounds = null;
-        }
-        
-        final minZoom = _getMinZoomForNodes(context);
-        List<OsmNode> nodes;
-        
-        if (currentZoom >= minZoom) {
-          // Above minimum zoom - get cached nodes
-          nodes = (mapBounds != null)
-              ? cameraProvider.getCachedNodesForBounds(mapBounds)
-              : <OsmNode>[];
-        } else {
-          // Below minimum zoom - don't render any nodes
-          nodes = <OsmNode>[];
-        }
+    // Get current zoom level and map bounds (shared by all logic)
+    double currentZoom = 15.0; // fallback
+    LatLngBounds? mapBounds;
+    try {
+      currentZoom = _controller.mapController.camera.zoom;
+      mapBounds = _controller.mapController.camera.visibleBounds;
+    } catch (_) {
+      // Controller not ready yet, use fallback values
+      mapBounds = null;
+    }
+    
+    final minZoom = _getMinZoomForNodes(context);
+    List<OsmNode> allNodes;
+    List<OsmNode> nodesToRender;
+    bool isLimitActive = false;
+    
+    if (currentZoom >= minZoom) {
+      // Above minimum zoom - get cached nodes directly (no Provider needed)
+      allNodes = (mapBounds != null)
+          ? CameraProviderWithCache.instance.getCachedNodesForBounds(mapBounds)
+          : <OsmNode>[];
+      
+      // Filter out invalid coordinates before applying limit
+      final validNodes = allNodes.where((node) {
+        return (node.coord.latitude != 0 || node.coord.longitude != 0) &&
+               node.coord.latitude.abs() <= 90 && 
+               node.coord.longitude.abs() <= 180;
+      }).toList();
+      
+      // Apply rendering limit to prevent UI lag
+      final maxNodes = appState.maxCameras;
+      if (validNodes.length > maxNodes) {
+        nodesToRender = validNodes.take(maxNodes).toList();
+        isLimitActive = true;
+        debugPrint('[MapView] Node limit active: rendering ${nodesToRender.length} of ${validNodes.length} devices');
+      } else {
+        nodesToRender = validNodes;
+        isLimitActive = false;
+      }
+    } else {
+      // Below minimum zoom - don't render any nodes
+      allNodes = <OsmNode>[];
+      nodesToRender = <OsmNode>[];
+      isLimitActive = false;
+    }
+    
+    // Notify parent if limit state changed (for button disabling)
+    if (isLimitActive != _lastNodeLimitState) {
+      _lastNodeLimitState = isLimitActive;
+      // Schedule callback after build completes to avoid setState during build
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        widget.onNodeLimitChanged?.call(isLimitActive);
+      });
+    }
+    
+    // Build camera layers using the limited nodes
+    Widget cameraLayers = LayoutBuilder(
+      builder: (context, constraints) {
         
         // Determine if we should dim node markers (when suspected location is selected)
         final shouldDimNodes = appState.selectedSuspectedLocation != null;
         
         final markers = CameraMarkersBuilder.buildCameraMarkers(
-          cameras: nodes,
+          cameras: nodesToRender,
           mapController: _controller.mapController,
           userLocation: _gpsController.currentLocation,
           selectedNodeId: widget.selectedNodeId,
@@ -451,7 +486,7 @@ class MapViewState extends State<MapView> {
           // Filter out suspected locations that are too close to real nodes
           final filteredSuspectedLocations = _filterSuspectedLocationsByProximity(
             suspectedLocations: limitedSuspectedLocations,
-            realNodes: nodes,
+            realNodes: nodesToRender,
             minDistance: appState.suspectedLocationMinDistance,
           );
           
@@ -473,7 +508,7 @@ class MapViewState extends State<MapView> {
         }
 
         final overlays = DirectionConesBuilder.buildDirectionCones(
-          cameras: nodes,
+          cameras: nodesToRender,
           zoom: currentZoom,
           session: session,
           editSession: editSession,
@@ -496,7 +531,7 @@ class MapViewState extends State<MapView> {
         }
 
         // Build edit lines connecting original nodes to their edited positions
-        final editLines = _buildEditLines(nodes);
+        final editLines = _buildEditLines(nodesToRender);
 
         // Build center marker for add/edit sessions
         final centerMarkers = <Marker>[];
@@ -573,9 +608,30 @@ class MapViewState extends State<MapView> {
             if (editLines.isNotEmpty) PolylineLayer(polylines: editLines),
             if (routeLines.isNotEmpty) PolylineLayer(polylines: routeLines),
             MarkerLayer(markers: [...suspectedLocationMarkers, ...markers, ...centerMarkers]),
+            
+            // Node limit indicator (top-left) - shown when limit is active
+            Builder(
+              builder: (context) {
+                final appState = context.read<AppState>();
+                // Add search bar offset when search bar is visible
+                final searchBarOffset = (!appState.offlineMode && appState.isInSearchMode) ? 60.0 : 0.0;
+                
+                return NodeLimitIndicator(
+                  isActive: isLimitActive,
+                  renderedCount: nodesToRender.length,
+                  totalCount: isLimitActive ? allNodes.where((node) {
+                    return (node.coord.latitude != 0 || node.coord.longitude != 0) &&
+                           node.coord.latitude.abs() <= 90 && 
+                           node.coord.longitude.abs() <= 180;
+                  }).length : 0,
+                  top: 8.0 + searchBarOffset,
+                  left: 8.0,
+                );
+              },
+            ),
           ],
         );
-      }
+      },
     );
 
     return Stack(
@@ -728,7 +784,18 @@ class MapViewState extends State<MapView> {
 
         // Network status indicator (top-left) - conditionally shown
         if (appState.networkStatusIndicatorEnabled)
-          const NetworkStatusIndicator(),
+          Builder(
+            builder: (context) {
+              // Calculate position based on node limit indicator presence and search bar
+              final searchBarOffset = (!appState.offlineMode && appState.isInSearchMode) ? 60.0 : 0.0;
+              final nodeLimitOffset = isLimitActive ? 48.0 : 0.0; // Height of node limit indicator + spacing
+              
+              return NetworkStatusIndicator(
+                top: 8.0 + searchBarOffset + nodeLimitOffset,
+                left: 8.0,
+              );
+            },
+          ),
         
         // Proximity alert banner (top)
         ProximityAlertBanner(

@@ -225,7 +225,7 @@
     "queueCleared": "File vidée",
     "uploadQueueTitle": "File de Téléchargement ({} éléments)",
     "queueIsEmpty": "La file est vide",
-    "cameraWithIndex": "Caméra {}",
+    "itemWithIndex": "Élément {}",
     "error": " (Erreur)",
     "completing": " (Finalisation...)",
     "destination": "Dest: {}",
@@ -235,7 +235,10 @@
     "attempts": "Tentatives: {}",
     "uploadFailedRetry": "Téléchargement échoué. Appuyer pour réessayer.",
     "retryUpload": "Réessayer téléchargement",
-    "clearAll": "Tout Vider"
+    "clearAll": "Tout Vider",
+    "errorDetails": "Détails de l'Erreur",
+    "uploading": " (Téléchargement...)",
+    "closingChangeset": " (Fermeture du changeset...)"
   },
   "tileProviders": {
     "title": "Fournisseurs de Tuiles",
@@ -409,15 +412,16 @@
   },
   "networkStatus": {
     "showIndicator": "Afficher l'indicateur de statut réseau",
-    "showIndicatorSubtitle": "Afficher l'état de chargement et d'erreur réseau sur la carte",
-    "loading": "Chargement...",
-    "timedOut": "Temps dépassé",
-    "noData": "Aucune tuile ici",
-    "success": "Terminé",
-    "nodeLimitReached": "Limite affichée - augmenter dans les paramètres",
-    "tileProviderSlow": "Fournisseur de tuiles lent",
-    "nodeDataSlow": "Données de nœud lentes",
-    "networkIssues": "Problèmes réseau"
+    "showIndicatorSubtitle": "Afficher l'état de chargement et d'erreur des données de surveillance",
+    "loading": "Chargement des données de surveillance...",
+    "timedOut": "Demande expirée",
+    "noData": "Aucune donnée hors ligne",
+    "success": "Données de surveillance chargées",
+    "nodeDataSlow": "Données de surveillance lentes"
+  },
+  "nodeLimitIndicator": {
+    "message": "Affichage de {rendered} sur {total} appareils",
+    "editingDisabledMessage": "Trop d'appareils visibles pour éditer en toute sécurité. Zoomez davantage pour réduire le nombre d'appareils visibles, puis réessayez."
   },
   "navigation": {
     "searchLocation": "Rechercher lieu",

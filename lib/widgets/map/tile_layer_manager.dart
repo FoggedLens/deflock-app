@@ -3,12 +3,12 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 
 import '../../models/tile_provider.dart' as models;
-import '../../services/simple_tile_service.dart';
+import '../../services/deflock_tile_provider.dart';
 
 /// Manages tile layer creation, caching, and provider switching.
-/// Handles tile HTTP client lifecycle and cache invalidation.
+/// Uses DeFlock's custom tile provider for clean integration.
 class TileLayerManager {
-  late final SimpleTileHttpClient _tileHttpClient;
+  DeflockTileProvider? _tileProvider;
   int _mapRebuildKey = 0;
   String? _lastTileTypeId;
   bool? _lastOfflineMode;
@@ -18,12 +18,12 @@ class TileLayerManager {
 
   /// Initialize the tile layer manager
   void initialize() {
-    _tileHttpClient = SimpleTileHttpClient();
+    // Don't create tile provider here - create it fresh for each build
   }
 
   /// Dispose of resources
   void dispose() {
-    _tileHttpClient.close();
+    // No resources to dispose with the new tile provider
   }
 
   /// Check if cache should be cleared and increment rebuild key if needed.
@@ -46,6 +46,8 @@ class TileLayerManager {
     if (shouldClear) {
       // Force map rebuild with new key to bust flutter_map cache
       _mapRebuildKey++;
+      // Also force new tile provider instance to ensure fresh cache
+      _tileProvider = null;
       debugPrint('[TileLayerManager] *** CACHE CLEAR *** $reason changed - rebuilding map $_mapRebuildKey');
     }
 
@@ -57,38 +59,42 @@ class TileLayerManager {
 
   /// Clear the tile request queue (call after cache clear)
   void clearTileQueue() {
-    debugPrint('[TileLayerManager] Post-frame: Clearing tile request queue');
-    _tileHttpClient.clearTileQueue();
+    // With the new tile provider, clearing is handled by FlutterMap's internal cache
+    // We just need to increment the rebuild key to bust the cache
+    _mapRebuildKey++;
+    debugPrint('[TileLayerManager] Cache cleared - rebuilding map $_mapRebuildKey');
   }
 
   /// Clear tile queue immediately (for zoom changes, etc.)
   void clearTileQueueImmediate() {
-    _tileHttpClient.clearTileQueue();
+    // No immediate clearing needed with the new architecture
+    // FlutterMap handles this naturally
   }
   
   /// Clear only tiles that are no longer visible in the current bounds
   void clearStaleRequests({required LatLngBounds currentBounds}) {
-    _tileHttpClient.clearStaleRequests(currentBounds);
+    // No selective clearing needed with the new architecture  
+    // FlutterMap's internal caching is efficient enough
   }
 
   /// Build tile layer widget with current provider and type.
-  /// Uses fake domain that SimpleTileHttpClient can parse for cache separation.
+  /// Uses DeFlock's custom tile provider for clean integration with our offline/online system.
   Widget buildTileLayer({
     required models.TileProvider? selectedProvider,
     required models.TileType? selectedTileType,
   }) {
-    // Use fake domain with standard HTTPS scheme: https://tiles.local/provider/type/z/x/y
-    // This naturally separates cache entries by provider and type while being HTTP-compatible
-    final urlTemplate = 'https://tiles.local/${selectedProvider?.id ?? 'unknown'}/${selectedTileType?.id ?? 'unknown'}/{z}/{x}/{y}';
+    // Create a fresh tile provider instance if we don't have one or cache was cleared
+    _tileProvider ??= DeflockTileProvider();
+    
+    // Use provider/type info in URL template for FlutterMap's cache key generation
+    // This ensures different providers/types get different cache keys
+    final urlTemplate = '${selectedProvider?.id ?? 'unknown'}/${selectedTileType?.id ?? 'unknown'}/{z}/{x}/{y}';
     
     return TileLayer(
-      urlTemplate: urlTemplate,
+      urlTemplate: urlTemplate, // Critical for cache key generation
       userAgentPackageName: 'me.deflock.deflockapp',
       maxZoom: selectedTileType?.maxZoom?.toDouble() ?? 18.0,
-      tileProvider: NetworkTileProvider(
-        httpClient: _tileHttpClient,
-        // Enable flutter_map caching - cache busting handled by URL changes and FlutterMap key
-      ),
+      tileProvider: _tileProvider!,
     );
   }
 }

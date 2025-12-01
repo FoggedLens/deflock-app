@@ -225,7 +225,7 @@
     "queueCleared": "Coda pulita",
     "uploadQueueTitle": "Coda Upload ({} elementi)",
     "queueIsEmpty": "La coda è vuota",
-    "cameraWithIndex": "Telecamera {}",
+    "itemWithIndex": "Elemento {}",
     "error": " (Errore)",
     "completing": " (Completamento...)",
     "destination": "Dest: {}",
@@ -235,7 +235,10 @@
     "attempts": "Tentativi: {}",
     "uploadFailedRetry": "Upload fallito. Tocca riprova per tentare di nuovo.",
     "retryUpload": "Riprova upload",
-    "clearAll": "Pulisci Tutto"
+    "clearAll": "Pulisci Tutto",
+    "errorDetails": "Dettagli dell'Errore",
+    "uploading": " (Caricamento...)",
+    "closingChangeset": " (Chiusura changeset...)"
   },
   "tileProviders": {
     "title": "Fornitori di Tile",
@@ -409,15 +412,16 @@
   },
   "networkStatus": {
     "showIndicator": "Mostra indicatore di stato di rete",
-    "showIndicatorSubtitle": "Visualizza lo stato di caricamento e errori di rete sulla mappa",
-    "loading": "Caricamento...",
-    "timedOut": "Tempo scaduto",
-    "noData": "Nessuna tessera qui",
-    "success": "Fatto",
-    "nodeLimitReached": "Limite visualizzato - aumentare nelle impostazioni",
-    "tileProviderSlow": "Provider di tessere lento",
-    "nodeDataSlow": "Dati del nodo lenti",
-    "networkIssues": "Problemi di rete"
+    "showIndicatorSubtitle": "Visualizza lo stato di caricamento e errori dei dati di sorveglianza",
+    "loading": "Caricamento dati di sorveglianza...",
+    "timedOut": "Richiesta scaduta",
+    "noData": "Nessun dato offline",
+    "success": "Dati di sorveglianza caricati",
+    "nodeDataSlow": "Dati di sorveglianza lenti"
+  },
+  "nodeLimitIndicator": {
+    "message": "Mostra {rendered} di {total} dispositivi",
+    "editingDisabledMessage": "Troppi dispositivi visibili per modificare in sicurezza. Ingrandisci per ridurre il numero di dispositivi visibili, poi riprova."
   },
   "navigation": {
     "searchLocation": "Cerca posizione",

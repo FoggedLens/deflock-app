@@ -29,6 +29,21 @@ class OfflineAreaService {
   /// Check if any areas are currently downloading
   bool get hasActiveDownloads => _areas.any((area) => area.status == OfflineAreaStatus.downloading);
   
+  /// Fast check: do we have any completed offline areas for a specific provider/type?
+  /// This allows smart cache routing without expensive filesystem searches.
+  /// Safe to call before initialization - returns false if not yet initialized.
+  bool hasOfflineAreasForProvider(String providerId, String tileTypeId) {
+    if (!_initialized) {
+      return false; // No offline areas loaded yet
+    }
+    
+    return _areas.any((area) => 
+      area.status == OfflineAreaStatus.complete &&
+      area.tileProviderId == providerId &&
+      area.tileTypeId == tileTypeId
+    );
+  }
+  
   /// Cancel all active downloads (used when enabling offline mode)
   Future<void> cancelActiveDownloads() async {
     final activeAreas = _areas.where((area) => area.status == OfflineAreaStatus.downloading).toList();

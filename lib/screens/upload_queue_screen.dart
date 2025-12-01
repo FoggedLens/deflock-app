@@ -1,11 +1,33 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../app_state.dart';
+import '../models/pending_upload.dart';
 import '../services/localization_service.dart';
 import '../state/settings_state.dart';
 
 class UploadQueueScreen extends StatelessWidget {
   const UploadQueueScreen({super.key});
+
+  void _showErrorDialog(BuildContext context, PendingUpload upload, LocalizationService locService) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(locService.t('queue.errorDetails')),
+        content: SingleChildScrollView(
+          child: Text(
+            upload.errorMessage ?? 'Unknown error',
+            style: Theme.of(context).textTheme.bodyMedium,
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(locService.ok),
+          ),
+        ],
+      ),
+    );
+  }
 
   String _getUploadModeDisplayName(UploadMode mode) {
     final locService = LocalizationService.instance;
@@ -16,6 +38,39 @@ class UploadQueueScreen extends StatelessWidget {
         return locService.t('uploadMode.sandbox');
       case UploadMode.simulate:
         return locService.t('uploadMode.simulate');
+    }
+  }
+
+  String _getUploadStateText(PendingUpload upload, LocalizationService locService) {
+    switch (upload.uploadState) {
+      case UploadState.pending:
+        return upload.attempts > 0 ? ' (Retry ${upload.attempts + 1})' : '';
+      case UploadState.creatingChangeset:
+        return locService.t('queue.creatingChangeset');
+      case UploadState.uploading:
+        // Only show time remaining and attempt count if there have been node submission failures
+        if (upload.nodeSubmissionAttempts > 0) {
+          final timeLeft = upload.timeUntilAutoClose;
+          if (timeLeft != null && timeLeft.inMinutes > 0) {
+            return '${locService.t('queue.uploading')} (${upload.nodeSubmissionAttempts} attempts, ${timeLeft.inMinutes}m left)';
+          } else {
+            return '${locService.t('queue.uploading')} (${upload.nodeSubmissionAttempts} attempts)';
+          }
+        }
+        return locService.t('queue.uploading');
+      case UploadState.closingChangeset:
+        // Only show time remaining if we've had changeset close failures
+        if (upload.changesetCloseAttempts > 0) {
+          final timeLeft = upload.timeUntilAutoClose;
+          if (timeLeft != null && timeLeft.inMinutes > 0) {
+            return '${locService.t('queue.closingChangeset')} (${timeLeft.inMinutes}m left)';
+          }
+        }
+        return locService.t('queue.closingChangeset');
+      case UploadState.error:
+        return locService.t('queue.error');
+      case UploadState.complete:
+        return locService.t('queue.completing');
     }
   }
 
@@ -130,16 +185,23 @@ class UploadQueueScreen extends StatelessWidget {
                   return Card(
                     margin: const EdgeInsets.only(bottom: 8),
                     child: ListTile(
-                      leading: Icon(
-                        upload.error ? Icons.error : Icons.camera_alt,
-                        color: upload.error 
-                            ? Colors.red 
-                            : _getUploadModeColor(upload.uploadMode),
-                      ),
+                      leading: upload.uploadState == UploadState.error 
+                        ? GestureDetector(
+                            onTap: () {
+                              _showErrorDialog(context, upload, locService);
+                            },
+                            child: Icon(
+                              Icons.error,
+                              color: Colors.red,
+                            ),
+                          )
+                        : Icon(
+                            Icons.camera_alt,
+                            color: _getUploadModeColor(upload.uploadMode),
+                          ),
                       title: Text(
-                        locService.t('queue.cameraWithIndex', params: [(index + 1).toString()]) +
-                        (upload.error ? locService.t('queue.error') : "") +
-                        (upload.completing ? locService.t('queue.completing') : "")
+                        locService.t('queue.itemWithIndex', params: [(index + 1).toString()]) +
+                        _getUploadStateText(upload, locService)
                       ),
                       subtitle: Text(
                         locService.t('queue.destination', params: [_getUploadModeDisplayName(upload.uploadMode)]) + '\n' +
@@ -151,12 +213,12 @@ class UploadQueueScreen extends StatelessWidget {
                               : upload.direction.round().toString()
                         ]) + '\n' +
                         locService.t('queue.attempts', params: [upload.attempts.toString()]) +
-                        (upload.error ? "\n${locService.t('queue.uploadFailedRetry')}" : "")
+                        (upload.uploadState == UploadState.error ? "\n${locService.t('queue.uploadFailedRetry')}" : "")
                       ),
                       trailing: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          if (upload.error && !upload.completing)
+                          if (upload.uploadState == UploadState.error)
                             IconButton(
                               icon: const Icon(Icons.refresh),
                               color: Colors.orange,
@@ -165,7 +227,7 @@ class UploadQueueScreen extends StatelessWidget {
                                 appState.retryUpload(upload);
                               },
                             ),
-                          if (upload.completing)
+                          if (upload.uploadState == UploadState.complete)
                             const Icon(Icons.check_circle, color: Colors.green)
                           else
                             IconButton(

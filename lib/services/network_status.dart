@@ -3,8 +3,8 @@ import 'dart:async';
 
 import '../app_state.dart';
 
-enum NetworkIssueType { osmTiles, overpassApi, both }
-enum NetworkStatusType { waiting, issues, timedOut, noData, ready, success, nodeLimitReached }
+enum NetworkIssueType { overpassApi }
+enum NetworkStatusType { waiting, issues, timedOut, noData, ready, success }
 
 
 
@@ -12,30 +12,23 @@ class NetworkStatus extends ChangeNotifier {
   static final NetworkStatus instance = NetworkStatus._();
   NetworkStatus._();
 
-  bool _osmTilesHaveIssues = false;
   bool _overpassHasIssues = false;
   bool _isWaitingForData = false;
   bool _isTimedOut = false;
   bool _hasNoData = false;
   bool _hasSuccess = false;
   int _recentOfflineMisses = 0;
-  Timer? _osmRecoveryTimer;
   Timer? _overpassRecoveryTimer;
   Timer? _waitingTimer;
   Timer? _noDataResetTimer;
   Timer? _successResetTimer;
-  bool _nodeLimitReached = false;
-  Timer? _nodeLimitResetTimer;
-
   // Getters
-  bool get hasAnyIssues => _osmTilesHaveIssues || _overpassHasIssues;
-  bool get osmTilesHaveIssues => _osmTilesHaveIssues;
+  bool get hasAnyIssues => _overpassHasIssues;
   bool get overpassHasIssues => _overpassHasIssues;
   bool get isWaitingForData => _isWaitingForData;
   bool get isTimedOut => _isTimedOut;
   bool get hasNoData => _hasNoData;
   bool get hasSuccess => _hasSuccess;
-  bool get nodeLimitReached => _nodeLimitReached;
   
   NetworkStatusType get currentStatus {
     // Simple single-path status logic
@@ -44,32 +37,12 @@ class NetworkStatus extends ChangeNotifier {
     if (_isTimedOut) return NetworkStatusType.timedOut;
     if (_hasNoData) return NetworkStatusType.noData;
     if (_hasSuccess) return NetworkStatusType.success;
-    if (_nodeLimitReached) return NetworkStatusType.nodeLimitReached;
     return NetworkStatusType.ready;
   }
 
   NetworkIssueType? get currentIssueType {
-    if (_osmTilesHaveIssues && _overpassHasIssues) return NetworkIssueType.both;
-    if (_osmTilesHaveIssues) return NetworkIssueType.osmTiles;
     if (_overpassHasIssues) return NetworkIssueType.overpassApi;
     return null;
-  }
-
-  /// Report tile server issues (for any provider)
-  void reportOsmTileIssue() {
-    if (!_osmTilesHaveIssues) {
-      _osmTilesHaveIssues = true;
-      notifyListeners();
-      debugPrint('[NetworkStatus] Tile server issues detected');
-    }
-    
-    // Reset recovery timer - if we keep getting errors, keep showing indicator
-    _osmRecoveryTimer?.cancel();
-    _osmRecoveryTimer = Timer(const Duration(minutes: 2), () {
-      _osmTilesHaveIssues = false;
-      notifyListeners();
-      debugPrint('[NetworkStatus] Tile server issues cleared');
-    });
   }
 
   /// Report Overpass API issues
@@ -90,16 +63,6 @@ class NetworkStatus extends ChangeNotifier {
   }
 
   /// Report successful operations to potentially clear issues faster
-  void reportOsmTileSuccess() {
-    // Clear issues immediately on success (they were likely temporary)
-    if (_osmTilesHaveIssues) {
-      // Quietly clear - don't log routine success
-      _osmTilesHaveIssues = false;
-      _osmRecoveryTimer?.cancel();
-      notifyListeners();
-    }
-  }
-
   void reportOverpassSuccess() {
     if (_overpassHasIssues) {
       // Quietly clear - don't log routine success
@@ -176,17 +139,15 @@ class NetworkStatus extends ChangeNotifier {
 
   /// Clear waiting/timeout/no-data status (legacy method for compatibility)
   void clearWaiting() {
-    if (_isWaitingForData || _isTimedOut || _hasNoData || _hasSuccess || _nodeLimitReached) {
+    if (_isWaitingForData || _isTimedOut || _hasNoData || _hasSuccess) {
       _isWaitingForData = false;
       _isTimedOut = false;
       _hasNoData = false;
       _hasSuccess = false;
-      _nodeLimitReached = false;
       _recentOfflineMisses = 0;
       _waitingTimer?.cancel();
       _noDataResetTimer?.cancel();
       _successResetTimer?.cancel();
-      _nodeLimitResetTimer?.cancel();
       notifyListeners();
     }
   }
@@ -227,22 +188,6 @@ class NetworkStatus extends ChangeNotifier {
     debugPrint('[NetworkStatus] Network error occurred');
   }
   
-  /// Show notification that node display limit was reached
-  void reportNodeLimitReached(int totalNodes, int maxNodes) {
-    _nodeLimitReached = true;
-    notifyListeners();
-    debugPrint('[NetworkStatus] Node display limit reached: $totalNodes found, showing $maxNodes');
-    
-    // Auto-clear after 8 seconds
-    _nodeLimitResetTimer?.cancel();
-    _nodeLimitResetTimer = Timer(const Duration(seconds: 8), () {
-      if (_nodeLimitReached) {
-        _nodeLimitReached = false;
-        notifyListeners();
-      }
-    });
-  }
-
 
   
   /// Report that a tile was not available offline
@@ -271,12 +216,10 @@ class NetworkStatus extends ChangeNotifier {
 
   @override
   void dispose() {
-    _osmRecoveryTimer?.cancel();
     _overpassRecoveryTimer?.cancel();
     _waitingTimer?.cancel();
     _noDataResetTimer?.cancel();
     _successResetTimer?.cancel();
-    _nodeLimitResetTimer?.cancel();
     super.dispose();
   }
 }

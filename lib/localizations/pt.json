@@ -225,7 +225,7 @@
     "queueCleared": "Fila limpa",
     "uploadQueueTitle": "Fila de Upload ({} itens)",
     "queueIsEmpty": "A fila está vazia",
-    "cameraWithIndex": "Câmera {}",
+    "itemWithIndex": "Item {}",
     "error": " (Erro)",
     "completing": " (Completando...)",
     "destination": "Dest: {}",
@@ -235,7 +235,10 @@
     "attempts": "Tentativas: {}",
     "uploadFailedRetry": "Upload falhou. Toque em tentar novamente para tentar novamente.",
     "retryUpload": "Tentar upload novamente",
-    "clearAll": "Limpar Tudo"
+    "clearAll": "Limpar Tudo",
+    "errorDetails": "Detalhes do Erro",
+    "uploading": " (Enviando...)",
+    "closingChangeset": " (Fechando changeset...)"
   },
   "tileProviders": {
     "title": "Provedores de Tiles",
@@ -409,15 +412,16 @@
   },
   "networkStatus": {
     "showIndicator": "Exibir indicador de status de rede",
-    "showIndicatorSubtitle": "Mostrar status de carregamento e erro de rede no mapa",
-    "loading": "Carregando...",
-    "timedOut": "Tempo esgotado",
-    "noData": "Nenhum tile aqui",
-    "success": "Concluído",
-    "nodeLimitReached": "Limite exibido - aumentar nas configurações",
-    "tileProviderSlow": "Provedor de tiles lento",
-    "nodeDataSlow": "Dados do nó lentos",
-    "networkIssues": "Problemas de rede"
+    "showIndicatorSubtitle": "Mostrar status de carregamento e erro de dados de vigilância",
+    "loading": "Carregando dados de vigilância...",
+    "timedOut": "Solicitação expirada",
+    "noData": "Nenhum dado offline",
+    "success": "Dados de vigilância carregados",
+    "nodeDataSlow": "Dados de vigilância lentos"
+  },
+  "nodeLimitIndicator": {
+    "message": "Mostrando {rendered} de {total} dispositivos",
+    "editingDisabledMessage": "Muitos dispositivos visíveis para editar com segurança. Aproxime mais para reduzir o número de dispositivos visíveis, e tente novamente."
   },
   "navigation": {
     "searchLocation": "Buscar localização",

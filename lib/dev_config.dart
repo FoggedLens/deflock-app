@@ -53,11 +53,18 @@ double topPositionWithSafeArea(double baseTop, EdgeInsets safeArea) {
 const String kClientName = 'DeFlock';
 // Note: Version is now dynamically retrieved from VersionService
 
+// Upload and changeset configuration
+const Duration kUploadHttpTimeout = Duration(seconds: 30); // HTTP request timeout for uploads
+const Duration kChangesetCloseInitialRetryDelay = Duration(seconds: 10);
+const Duration kChangesetCloseMaxRetryDelay = Duration(minutes: 5);  // Cap at 5 minutes
+const Duration kChangesetAutoCloseTimeout = Duration(minutes: 59); // Give up and trust OSM auto-close
+const double kChangesetCloseBackoffMultiplier = 2.0;
+
 // Suspected locations CSV URL
 const String kSuspectedLocationsCsvUrl = 'https://alprwatch.org/suspected-locations/deflock-latest.csv';
 
 // Development/testing features - set to false for production builds
-const bool kEnableDevelopmentModes = false; // Set to false to hide sandbox/simulate modes and force production mode
+const bool kEnableDevelopmentModes = true; // Set to false to hide sandbox/simulate modes and force production mode
 
 // Navigation features - set to false to hide navigation UI elements while in development
 const bool kEnableNavigationFeatures = kEnableDevelopmentModes; // Hide navigation until fully implemented
@@ -125,11 +132,12 @@ const double kPinchMoveThreshold = 30.0; // How much drag required for two-finge
 const double kRotationThreshold = 6.0; // Degrees of rotation required before map actually rotates (Google Maps style)
 
 // Tile fetch configuration (brutalist approach: simple, configurable, unlimited retries)
-const int kTileFetchConcurrentThreads = 10;       // Number of simultaneous tile downloads
-const int kTileFetchInitialDelayMs = 200;         // Base delay for first retry (500ms)
-const double kTileFetchBackoffMultiplier = 1.5;   // Multiply delay by this each attempt
-const int kTileFetchMaxDelayMs = 5000;           // Cap delays at this value (10 seconds max)
-const int kTileFetchRandomJitterMs = 100;         // Random fuzz to add (0 to 250ms)
+const int kTileFetchConcurrentThreads = 8;          // Reduced from 10 to 8 for better cross-platform performance
+const int kTileFetchInitialDelayMs = 150;           // Reduced from 200ms for faster retries 
+const double kTileFetchBackoffMultiplier = 1.4;     // Slightly reduced for faster recovery
+const int kTileFetchMaxDelayMs = 4000;             // Reduced from 5000ms for faster max retry
+const int kTileFetchRandomJitterMs = 50;            // Reduced jitter for more predictable timing
+const int kTileFetchMaxQueueSize = 100;             // Reasonable queue size to prevent memory bloat
 // Note: Removed max attempts - tiles retry indefinitely until they succeed or are canceled
 
 // User download max zoom span (user can download up to kMaxUserDownloadZoomSpan zooms above min)
@@ -165,3 +173,4 @@ double getNodeRingThickness(BuildContext context) {
 //  return _kNodeRingThicknessBase * MediaQuery.of(context).devicePixelRatio;
   return _kNodeRingThicknessBase;
 }
+

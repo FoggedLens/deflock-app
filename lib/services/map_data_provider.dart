@@ -53,7 +53,7 @@ class MapDataProvider {
         bounds: bounds,
         profiles: profiles,
         uploadMode: uploadMode,
-        maxResults: AppState.instance.maxCameras,
+        maxResults: 0, // No limit - fetch all available data
       );
     }
 
@@ -76,7 +76,7 @@ class MapDataProvider {
         return fetchLocalNodes(
           bounds: bounds,
           profiles: profiles,
-          maxNodes: AppState.instance.maxCameras,
+          maxNodes: 0, // No limit - get all available data
         );
       }
     } else if (uploadMode == UploadMode.sandbox) {
@@ -86,7 +86,7 @@ class MapDataProvider {
         bounds: bounds,
         profiles: profiles,
         uploadMode: uploadMode,
-        maxResults: AppState.instance.maxCameras,
+        maxResults: 0, // No limit - fetch all available data
       );
     } else {
       // Production mode: use pre-fetch service for efficient area loading
@@ -116,13 +116,9 @@ class MapDataProvider {
         debugPrint('[MapDataProvider] Using existing fresh pre-fetched area cache');
       }
       
-      // Apply rendering limit and warn if nodes are being excluded
-      final maxNodes = AppState.instance.maxCameras;
-      if (localNodes.length > maxNodes) {
-        NetworkStatus.instance.reportNodeLimitReached(localNodes.length, maxNodes);
-      }
-      
-      return localNodes.take(maxNodes).toList();
+      // Return all local nodes without any rendering limit
+      // Rendering limits are applied at the UI layer
+      return localNodes;
     }
   }
 

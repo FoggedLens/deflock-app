@@ -16,7 +16,6 @@ import 'services/tile_preview_service.dart';
 import 'services/changelog_service.dart';
 import 'services/operator_profile_service.dart';
 import 'services/profile_service.dart';
-import 'widgets/camera_provider_with_cache.dart';
 import 'widgets/proximity_warning_dialog.dart';
 import 'dev_config.dart';
 import 'state/auth_state.dart';
@@ -437,7 +436,6 @@ class AppState extends ChangeNotifier {
   Future<void> setUploadMode(UploadMode mode) async {
     // Clear node cache when switching upload modes to prevent mixing production/sandbox data
     NodeCache.instance.clear();
-    CameraProviderWithCache.instance.notifyListeners();
     debugPrint('[AppState] Cleared node cache due to upload mode change');
     
     await _settingsState.setUploadMode(mode);
@@ -478,6 +476,14 @@ class AppState extends ChangeNotifier {
   /// Set network status indicator enabled/disabled
   Future<void> setNetworkStatusIndicatorEnabled(bool enabled) async {
     await _settingsState.setNetworkStatusIndicatorEnabled(enabled);
+  }
+
+  /// Migrate upload queue to new two-stage changeset system (v1.5.3)
+  Future<void> migrateUploadQueueToTwoStageSystem() async {
+    // Migration is handled automatically in PendingUpload.fromJson via _migrateFromLegacyFields
+    // This method triggers a queue reload to apply migrations
+    await _uploadQueueState.reloadQueue();
+    debugPrint('[AppState] Upload queue migration completed');
   }
 
   /// Set suspected location minimum distance from real nodes

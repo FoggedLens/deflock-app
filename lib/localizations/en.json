@@ -225,7 +225,7 @@
     "queueCleared": "Queue cleared",
     "uploadQueueTitle": "Upload Queue ({} items)",
     "queueIsEmpty": "Queue is empty",
-    "cameraWithIndex": "Camera {}",
+    "itemWithIndex": "Item {}",
     "error": " (Error)",
     "completing": " (Completing...)",
     "destination": "Dest: {}",
@@ -235,7 +235,11 @@
     "attempts": "Attempts: {}",
     "uploadFailedRetry": "Upload failed. Tap retry to try again.",
     "retryUpload": "Retry upload",
-    "clearAll": "Clear All"
+    "clearAll": "Clear All",
+    "errorDetails": "Error Details",
+    "creatingChangeset": " (Creating changeset...)",
+    "uploading": " (Uploading...)",
+    "closingChangeset": " (Closing changeset...)"
   },
   "tileProviders": {
     "title": "Tile Providers",
@@ -409,15 +413,16 @@
   },
   "networkStatus": {
     "showIndicator": "Show network status indicator",
-    "showIndicatorSubtitle": "Display network loading and error status on the map",
-    "loading": "Loading...",
-    "timedOut": "Timed out",
-    "noData": "No tiles here",
-    "success": "Done",
-    "nodeLimitReached": "Showing limit - increase in settings",
-    "tileProviderSlow": "Tile provider slow",
-    "nodeDataSlow": "Node data slow",
-    "networkIssues": "Network issues"
+    "showIndicatorSubtitle": "Display surveillance data loading and error status",
+    "loading": "Loading surveillance data...",
+    "timedOut": "Request timed out",
+    "noData": "No offline data",
+    "success": "Surveillance data loaded",
+    "nodeDataSlow": "Surveillance data slow"
+  },
+  "nodeLimitIndicator": {
+    "message": "Showing {rendered} of {total} devices",
+    "editingDisabledMessage": "Too many devices shown to safely edit. Zoom in further to reduce the number of visible devices, then try again."
   },
   "navigation": {
     "searchLocation": "Search Location",

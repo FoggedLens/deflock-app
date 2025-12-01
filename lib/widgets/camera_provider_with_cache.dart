@@ -20,7 +20,7 @@ class CameraProviderWithCache extends ChangeNotifier {
   Timer? _debounceTimer;
 
   /// Call this to get (quickly) all cached overlays for the given view.
-  /// Filters by currently enabled profiles.
+  /// Filters by currently enabled profiles only. Limiting is handled by MapView.
   List<OsmNode> getCachedNodesForBounds(LatLngBounds bounds) {
     final allNodes = NodeCache.instance.queryByBounds(bounds);
     final enabledProfiles = AppState.instance.enabledProfiles;

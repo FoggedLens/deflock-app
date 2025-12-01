@@ -13,7 +13,6 @@ import '../services/localization_service.dart';
 import '../widgets/add_node_sheet.dart';
 import '../widgets/edit_node_sheet.dart';
 import '../widgets/node_tag_sheet.dart';
-import '../widgets/camera_provider_with_cache.dart';
 import '../widgets/download_area_dialog.dart';
 import '../widgets/measured_sheet.dart';
 import '../widgets/navigation_sheet.dart';
@@ -48,6 +47,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   
   // Flag to prevent map bounce when transitioning from tag sheet to edit sheet
   bool _transitioningToEdit = false;
+  
+  // Track node limit state for button disabling
+  bool _isNodeLimitActive = false;
   
   // Track selected node for highlighting
   int? _selectedNodeId;
@@ -113,6 +115,22 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             LocalizationService.instance.t('editNode.zoomInRequiredMessage', 
               params: [kMinZoomForNodeEditingSheets.toString()])
           ),
+          duration: const Duration(seconds: 4),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
+    
+    // Check if node limit is active and warn user
+    if (_isNodeLimitActive) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            LocalizationService.instance.t('nodeLimitIndicator.editingDisabledMessage')
+          ),
+          duration: const Duration(seconds: 4),
+          behavior: SnackBarBehavior.floating,
         ),
       );
       return;
@@ -546,6 +564,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           },
           child: NodeTagSheet(
             node: node,
+            isNodeLimitActive: _isNodeLimitActive,
             onEditPressed: () {
               // Check minimum zoom level before starting edit session
               final currentZoom = _mapController.mapController.camera.zoom;
@@ -666,13 +685,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 ? _navigationSheetHeight
                 : _tagSheetHeight));
 
-    return MultiProvider(
-      providers: [
-        ChangeNotifierProvider<CameraProviderWithCache>(create: (_) => CameraProviderWithCache()),
-      ],
-      child: MediaQuery(
-        data: MediaQuery.of(context).copyWith(viewInsets: EdgeInsets.zero),
-        child: Scaffold(
+    return MediaQuery(
+      data: MediaQuery.of(context).copyWith(viewInsets: EdgeInsets.zero),
+      child: Scaffold(
         key: _scaffoldKey,
         appBar: AppBar(
           automaticallyImplyLeading: false, // Disable automatic back button
@@ -717,6 +732,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               onNodeTap: openNodeTagSheet,
               onSuspectedLocationTap: openSuspectedLocationSheet,
               onSearchPressed: _onNavigationButtonPressed,
+              onNodeLimitChanged: (isLimited) {
+                setState(() {
+                  _isNodeLimitActive = isLimited;
+                });
+              },
               onUserGesture: () {
                 if (appState.followMeMode != FollowMeMode.off) {
                   appState.setFollowMeMode(FollowMeMode.off);
@@ -827,7 +847,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             ),
           ],
         ),
-      ),
       ),
     );
   }

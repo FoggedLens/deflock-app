@@ -20,6 +20,45 @@ Future<List<OsmNode>> fetchOsmApiNodes({
 }) async {
   if (profiles.isEmpty) return [];
   
+  // Check if this is a user-initiated fetch (indicated by loading state)
+  final wasUserInitiated = NetworkStatus.instance.currentStatus == NetworkStatusType.waiting;
+  
+  try {
+    final nodes = await _fetchFromOsmApi(
+      bounds: bounds,
+      profiles: profiles,
+      uploadMode: uploadMode,
+      maxResults: maxResults,
+    );
+    
+    // Only report success at the top level if this was user-initiated
+    if (wasUserInitiated) {
+      NetworkStatus.instance.setSuccess();
+    }
+    
+    return nodes;
+  } catch (e) {
+    // Only report errors at the top level if this was user-initiated
+    if (wasUserInitiated) {
+      if (e.toString().contains('timeout') || e.toString().contains('timed out')) {
+        NetworkStatus.instance.setTimeoutError();
+      } else {
+        NetworkStatus.instance.setNetworkError();
+      }
+    }
+    
+    debugPrint('[fetchOsmApiNodes] OSM API operation failed: $e');
+    return [];
+  }
+}
+
+/// Internal method that performs the actual OSM API fetch.
+Future<List<OsmNode>> _fetchFromOsmApi({
+  required LatLngBounds bounds,
+  required List<NodeProfile> profiles,
+  UploadMode uploadMode = UploadMode.production,
+  required int maxResults,
+}) async {
   // Choose API endpoint based on upload mode
   final String apiHost = uploadMode == UploadMode.sandbox 
       ? 'api06.dev.openstreetmap.org'
@@ -41,8 +80,7 @@ Future<List<OsmNode>> fetchOsmApiNodes({
     
     if (response.statusCode != 200) {
       debugPrint('[fetchOsmApiNodes] OSM API error: ${response.statusCode} - ${response.body}');
-      NetworkStatus.instance.reportOverpassIssue(); // Reuse same status tracking
-      return [];
+      throw Exception('OSM API error: ${response.statusCode} - ${response.body}');
     }
     
     // Parse XML response
@@ -53,20 +91,14 @@ Future<List<OsmNode>> fetchOsmApiNodes({
       debugPrint('[fetchOsmApiNodes] Retrieved ${nodes.length} matching surveillance nodes');
     }
     
-    NetworkStatus.instance.reportOverpassSuccess(); // Reuse same status tracking
+    // Don't report success here - let the top level handle it
     return nodes;
     
   } catch (e) {
     debugPrint('[fetchOsmApiNodes] Exception: $e');
     
-    // Report network issues for connection errors
-    if (e.toString().contains('Connection refused') || 
-        e.toString().contains('Connection timed out') ||
-        e.toString().contains('Connection reset')) {
-      NetworkStatus.instance.reportOverpassIssue();
-    }
-    
-    return [];
+    // Don't report status here - let the top level handle it
+    throw e; // Re-throw to let caller handle
   }
 }
 

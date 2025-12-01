@@ -4,7 +4,14 @@ import '../services/network_status.dart';
 import '../services/localization_service.dart';
 
 class NetworkStatusIndicator extends StatelessWidget {
-  const NetworkStatusIndicator({super.key});
+  final double top;
+  final double left;
+  
+  const NetworkStatusIndicator({
+    super.key,
+    this.top = 56.0,
+    this.left = 8.0,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -44,28 +51,12 @@ class NetworkStatusIndicator extends StatelessWidget {
                 color = Colors.green;
                 break;
                 
-              case NetworkStatusType.nodeLimitReached:
-                message = locService.t('networkStatus.nodeLimitReached');
-                icon = Icons.visibility_off;
-                color = Colors.amber;
-                break;
-                
               case NetworkStatusType.issues:
                 switch (networkStatus.currentIssueType) {
-                  case NetworkIssueType.osmTiles:
-                    message = locService.t('networkStatus.tileProviderSlow');
-                    icon = Icons.map_outlined;
-                    color = Colors.orange;
-                    break;
                   case NetworkIssueType.overpassApi:
                     message = locService.t('networkStatus.nodeDataSlow');
                     icon = Icons.camera_alt_outlined;
                     color = Colors.orange;
-                    break;
-                  case NetworkIssueType.both:
-                    message = locService.t('networkStatus.networkIssues');
-                    icon = Icons.cloud_off_outlined;
-                    color = Colors.red;
                     break;
                   default:
                     return const SizedBox.shrink();
@@ -77,8 +68,8 @@ class NetworkStatusIndicator extends StatelessWidget {
             }
 
             return Positioned(
-              top: 8, // Position relative to the map area (not the screen)
-              left: 8,
+              top: top, // Position dynamically based on other indicators
+              left: left,
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(

@@ -52,7 +52,6 @@ class NodeProfile {
           requiresDirection: true,
           submittable: true,
           editable: true,
-          fov: 45.0, // Flock cameras typically have narrow FOV
         ),
         NodeProfile(
           id: 'builtin-motorola',
@@ -70,7 +69,6 @@ class NodeProfile {
           requiresDirection: true,
           submittable: true,
           editable: true,
-          fov: 60.0, // Motorola cameras typically have moderate FOV
         ),
         NodeProfile(
           id: 'builtin-genetec',
@@ -88,7 +86,6 @@ class NodeProfile {
           requiresDirection: true,
           submittable: true,
           editable: true,
-          fov: 50.0, // Genetec cameras typically have moderate FOV
         ),
         NodeProfile(
           id: 'builtin-leonardo',
@@ -106,7 +103,6 @@ class NodeProfile {
           requiresDirection: true,
           submittable: true,
           editable: true,
-          fov: 55.0, // Leonardo cameras typically have moderate FOV
         ),
         NodeProfile(
           id: 'builtin-neology',
@@ -156,7 +152,6 @@ class NodeProfile {
           requiresDirection: true,
           submittable: true,
           editable: true,
-          fov: 90.0, // Axis cameras can have wider FOV
         ),
         NodeProfile(
           id: 'builtin-generic-gunshot',
