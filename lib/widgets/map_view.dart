@@ -428,7 +428,7 @@ class MapViewState extends State<MapView> {
       }).toList();
       
       // Apply rendering limit to prevent UI lag
-      final maxNodes = appState.maxCameras;
+      final maxNodes = appState.maxNodes;
       if (validNodes.length > maxNodes) {
         nodesToRender = validNodes.take(maxNodes).toList();
         isLimitActive = true;
@@ -480,7 +480,7 @@ class MapViewState extends State<MapView> {
           );
           
           // Apply same node count limit as surveillance nodes
-          final maxNodes = appState.maxCameras;
+          final maxNodes = appState.maxNodes;
           final limitedSuspectedLocations = suspectedLocations.take(maxNodes).toList();
           
           // Filter out suspected locations that are too close to real nodes

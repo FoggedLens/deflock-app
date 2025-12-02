@@ -127,6 +127,9 @@ const double kNodeProximityWarningDistance = 15.0; // meters - distance threshol
 // Navigation route planning configuration
 const double kNavigationMinRouteDistance = 100.0; // meters - minimum distance between start and end points
 
+// Node display configuration
+const int kDefaultMaxNodes = 500; // Default maximum number of nodes to render on the map at once
+
 // Map interaction configuration
 const double kNodeDoubleTapZoomDelta = 1.0; // How much to zoom in when double-tapping nodes (was 1.0)
 const double kScrollWheelVelocity = 0.01; // Mouse scroll wheel zoom speed (default 0.005)

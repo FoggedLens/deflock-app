@@ -18,7 +18,7 @@ enum FollowMeMode {
 
 class SettingsState extends ChangeNotifier {
   static const String _offlineModePrefsKey = 'offline_mode';
-  static const String _maxCamerasPrefsKey = 'max_cameras';
+  static const String _maxNodesPrefsKey = 'max_nodes';
   static const String _uploadModePrefsKey = 'upload_mode';
   static const String _tileProvidersPrefsKey = 'tile_providers';
   static const String _selectedTileTypePrefsKey = 'selected_tile_type';
@@ -32,7 +32,7 @@ class SettingsState extends ChangeNotifier {
 
   bool _offlineMode = false;
   bool _pauseQueueProcessing = false;
-  int _maxCameras = 250;
+  int _maxNodes = kDefaultMaxNodes;
   UploadMode _uploadMode = kEnableDevelopmentModes ? UploadMode.simulate : UploadMode.production;
   FollowMeMode _followMeMode = FollowMeMode.follow;
   bool _proximityAlertsEnabled = false;
@@ -45,7 +45,7 @@ class SettingsState extends ChangeNotifier {
   // Getters
   bool get offlineMode => _offlineMode;
   bool get pauseQueueProcessing => _pauseQueueProcessing;
-  int get maxCameras => _maxCameras;
+  int get maxNodes => _maxNodes;
   UploadMode get uploadMode => _uploadMode;
   FollowMeMode get followMeMode => _followMeMode;
   bool get proximityAlertsEnabled => _proximityAlertsEnabled;
@@ -98,10 +98,8 @@ class SettingsState extends ChangeNotifier {
     // Load queue processing setting
     _pauseQueueProcessing = prefs.getBool(_pauseQueueProcessingPrefsKey) ?? false;
     
-    // Load max cameras
-    if (prefs.containsKey(_maxCamerasPrefsKey)) {
-      _maxCameras = prefs.getInt(_maxCamerasPrefsKey) ?? 250;
-    }
+    // Load max nodes
+    _maxNodes = prefs.getInt(_maxNodesPrefsKey) ?? kDefaultMaxNodes;
     
     // Load proximity alerts settings
     _proximityAlertsEnabled = prefs.getBool(_proximityAlertsEnabledPrefsKey) ?? false;
@@ -225,11 +223,11 @@ class SettingsState extends ChangeNotifier {
     notifyListeners();
   }
 
-  set maxCameras(int n) {
+  set maxNodes(int n) {
     if (n < 10) n = 10; // minimum
-    _maxCameras = n;
+    _maxNodes = n;
     SharedPreferences.getInstance().then((prefs) {
-      prefs.setInt(_maxCamerasPrefsKey, n);
+      prefs.setInt(_maxNodesPrefsKey, n);
     });
     notifyListeners();
   }

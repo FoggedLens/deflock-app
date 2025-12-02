@@ -16,7 +16,7 @@ class _MaxNodesSectionState extends State<MaxNodesSection> {
   @override
   void initState() {
     super.initState();
-    final maxNodes = context.read<AppState>().maxCameras;
+    final maxNodes = context.read<AppState>().maxNodes;
     _controller = TextEditingController(text: maxNodes.toString());
   }
 
@@ -33,7 +33,7 @@ class _MaxNodesSectionState extends State<MaxNodesSection> {
       builder: (context, child) {
         final locService = LocalizationService.instance;
         final appState = context.watch<AppState>();
-        final current = appState.maxCameras;
+        final current = appState.maxNodes;
         final showWarning = current > 1000;
         
         return Column(
@@ -79,8 +79,8 @@ class _MaxNodesSectionState extends State<MaxNodesSection> {
                   ),
                   onFieldSubmitted: (value) {
                     final n = int.tryParse(value) ?? 10;
-                    appState.maxCameras = n;
-                    _controller.text = appState.maxCameras.toString();
+                    appState.maxNodes = n;
+                    _controller.text = appState.maxNodes.toString();
                   },
                 ),
               ),

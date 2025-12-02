@@ -96,7 +96,7 @@ class MapDataProvider {
       final localNodes = await fetchLocalNodes(
         bounds: bounds,
         profiles: profiles,
-        maxNodes: AppState.instance.maxCameras,
+        maxNodes: AppState.instance.maxNodes,
       );
       
       // Check if we need to trigger a new pre-fetch (spatial or temporal)
@@ -123,7 +123,7 @@ class MapDataProvider {
   }
 
   /// Bulk/paged node fetch for offline downloads (handling paging, dedup, and Overpass retries)
-  /// Only use for offline area download, not for map browsing! Ignores maxCameras config.
+  /// Only use for offline area download, not for map browsing! Ignores maxNodes config.
   Future<List<OsmNode>> getAllNodesForDownload({
     required LatLngBounds bounds,
     required List<NodeProfile> profiles,

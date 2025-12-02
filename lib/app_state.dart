@@ -142,7 +142,7 @@ class AppState extends ChangeNotifier {
   // Settings state
   bool get offlineMode => _settingsState.offlineMode;
   bool get pauseQueueProcessing => _settingsState.pauseQueueProcessing;
-  int get maxCameras => _settingsState.maxCameras;
+  int get maxNodes => _settingsState.maxNodes;
   UploadMode get uploadMode => _settingsState.uploadMode;
   FollowMeMode get followMeMode => _settingsState.followMeMode;
 
@@ -567,8 +567,8 @@ class AppState extends ChangeNotifier {
     }
   }
 
-  set maxCameras(int n) {
-    _settingsState.maxCameras = n;
+  set maxNodes(int n) {
+    _settingsState.maxNodes = n;
   }
 
   Future<void> setUploadMode(UploadMode mode) async {
