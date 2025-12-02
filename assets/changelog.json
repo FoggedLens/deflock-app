@@ -4,7 +4,6 @@
       "• OSM message notifications - dot appears on Settings button and OSM Account section when you have unread messages on OpenStreetMap",
       "• Download area max zoom level is now limited to the currently selected tile provider's maximum zoom level",
       "• Navigation route planning now prevents selecting start and end locations that are too close together",
-      "• Max nodes setting now uses configurable default from dev_config.dart (250 nodes)",
       "• Cleaned up internal 'maxCameras' references to use 'maxNodes' terminology consistently"
     ]
   },

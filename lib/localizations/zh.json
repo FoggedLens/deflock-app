@@ -460,6 +460,7 @@
     "endSelect": "终点（选择）",
     "distance": "距离：{} 公里",
     "routeActive": "路线活跃",
+    "locationsTooClose": "起点和终点位置过于接近",
     "navigationSettings": "导航",
     "navigationSettingsSubtitle": "路线规划和回避设置",
     "avoidanceDistance": "回避距离",
