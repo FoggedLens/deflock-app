@@ -4,6 +4,8 @@ import 'package:http/http.dart' as http;
 import 'package:latlong2/latlong.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../app_state.dart';
+
 class RouteResult {
   final List<LatLng> waypoints;
   final double distanceMeters;
@@ -26,7 +28,7 @@ class RoutingService {
   static const String _userAgent = 'DeFlock/1.0 (OSM surveillance mapping app)';
   static const Duration _timeout = Duration(seconds: 15);
   
-  /// Calculate route between two points using alprwatch
+  // Calculate route between two points using alprwatch
   Future<RouteResult> calculateRoute({
     required LatLng start,
     required LatLng end,
@@ -35,6 +37,15 @@ class RoutingService {
 
     final prefs = await SharedPreferences.getInstance();
     final avoidance_distance = await prefs.getInt('navigation_avoidance_distance');
+
+    final enabled_profiles = AppState.instance.enabledProfiles.map((p) {
+      final full = p.toJson();
+      return {
+        'id': full['id'],
+        'name': full['name'],
+        'tags': full['tags'],
+      };
+    }).toList();
     
     final uri = Uri.parse('$_baseUrl');
     final params = {
@@ -47,16 +58,8 @@ class RoutingService {
         'latitude': end.latitude
       },
       'avoidance_distance': avoidance_distance,
-      'enabled_profiles': [ // revise to be dynamic based on user input
-        {
-          'id': 'generic-ALPR',
-          'name': 'ALPR',
-          'tags': {
-            'surveillance:type': 'ALPR'
-          }
-        }
-      ],
-      'show_exclusion_zone': false, // if true, returns a GeoJSON Feature MultiPolygon showing what areas are avoided in calculating the route
+      'enabled_profiles': enabled_profiles,
+      'show_exclusion_zone': false, // for debugging: if true, returns a GeoJSON Feature MultiPolygon showing what areas are avoided in calculating the route
     };
     
     debugPrint('[RoutingService] alprwatch request: $uri $params');
