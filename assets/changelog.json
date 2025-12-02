@@ -1,4 +1,10 @@
 {
+  "1.5.4": {
+    "content": [
+      "• FIXED: Download area max zoom level is now limited to the currently selected tile provider's maximum zoom level (e.g., OpenTopoMap limited to Z18, Bing Maps to Z20)",
+      "• IMPROVED: Download area dialog properly respects tile provider capabilities and prevents downloading tiles beyond what the provider supports"
+    ]
+  },
   "1.5.3": {
     "content": [
       "• MAJOR: Proper three-stage upload process - uploads now correctly track changeset creation, node operation, and changeset closing as separate steps",

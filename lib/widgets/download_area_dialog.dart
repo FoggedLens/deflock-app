@@ -59,10 +59,16 @@ class _DownloadAreaDialogState extends State<DownloadAreaDialog> {
     final minZoom = 1; // Always start from zoom 1 to show area overview when zoomed out
     final maxZoom = _zoom.toInt();
     
-    // Calculate maximum possible zoom based on tile count limit
+    // Calculate maximum possible zoom based on tile count limit and tile provider max zoom
     final maxPossibleZoom = _calculateMaxZoomForTileLimit(bounds, minZoom);
     
-    final nTiles = computeTileList(bounds, minZoom, maxZoom).length;
+    // Clamp current zoom to the effective maximum if it exceeds it
+    if (_zoom > maxPossibleZoom) {
+      _zoom = maxPossibleZoom.toDouble();
+    }
+    
+    final actualMaxZoom = _zoom.toInt();
+    final nTiles = computeTileList(bounds, minZoom, actualMaxZoom).length;
     final tileEstimateKb = _getTileEstimateKb();
     final totalMb = (nTiles * tileEstimateKb) / 1024.0;
     final roundedMb = (totalMb * 10).round() / 10; // Round to nearest tenth
@@ -76,15 +82,22 @@ class _DownloadAreaDialogState extends State<DownloadAreaDialog> {
   }
   
   /// Calculate the maximum zoom level that keeps tile count under the absolute limit
+  /// and respects the selected tile type's maximum zoom level
   int _calculateMaxZoomForTileLimit(LatLngBounds bounds, int minZoom) {
-    for (int zoom = minZoom; zoom <= kAbsoluteMaxZoom; zoom++) {
+    final appState = context.read<AppState>();
+    final selectedTileType = appState.selectedTileType;
+    
+    // Use tile type's max zoom if available, otherwise fall back to absolute max
+    final effectiveMaxZoom = selectedTileType?.maxZoom ?? kAbsoluteMaxZoom;
+    
+    for (int zoom = minZoom; zoom <= effectiveMaxZoom; zoom++) {
       final tileCount = computeTileList(bounds, minZoom, zoom).length;
       if (tileCount > kAbsoluteMaxTileCount) {
         // Return the previous zoom level that was still under the absolute limit
         return math.max(minZoom, zoom - 1);
       }
     }
-    return kAbsoluteMaxZoom;
+    return effectiveMaxZoom;
   }
 
   /// Get tile size estimate in KB, using preview tile data if available, otherwise fallback to constant
