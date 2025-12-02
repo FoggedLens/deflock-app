@@ -55,8 +55,11 @@ class OSMMessagesService {
       final messages = user['messages'];
       if (messages == null) return null;
       
-      // Get unread count
-      final unreadCount = messages['unread']?['count'] ?? 0;
+      // Get unread count from correct path: messages.received.unread
+      final received = messages['received'];
+      if (received == null) return null;
+      
+      final unreadCount = received['unread'] ?? 0;
       
       // Update cache
       _lastCheck = DateTime.now();

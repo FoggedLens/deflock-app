@@ -51,7 +51,7 @@ class AuthService {
     _helper = OAuth2Helper(
       client,
       clientId: clientId,
-      scopes: ['read_prefs', 'write_api'],
+      scopes: ['read_prefs', 'write_api', 'consume_messages'],
       enablePKCE: true,
       // tokenStorageKey: _tokenKey, // not supported by this package version
     );

@@ -215,7 +215,12 @@
     "currentDestinationSimulate": "Actuellement en : Mode simulation (pas de compte réel)",
     "viewMessages": "Voir les Messages sur OSM",
     "unreadMessagesCount": "Vous avez {} messages non lus",
-    "noUnreadMessages": "Aucun message non lu"
+    "noUnreadMessages": "Aucun message non lu",
+    "reauthRequired": "Actualiser l'Authentification",
+    "reauthExplanation": "Vous devez actualiser votre authentification pour recevoir des notifications de messages OSM via l'application.",
+    "reauthBenefit": "Cela activera les points de notification lorsque vous avez des messages non lus sur OpenStreetMap.",
+    "reauthNow": "Le Faire Maintenant",
+    "reauthLater": "Plus Tard"
   },
   "queue": {
     "title": "File de Téléchargement",

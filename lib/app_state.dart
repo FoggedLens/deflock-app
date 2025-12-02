@@ -1,6 +1,8 @@
 import 'dart:async';
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
+import 'package:http/http.dart' as http;
 import 'package:latlong2/latlong.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -18,6 +20,7 @@ import 'services/changelog_service.dart';
 import 'services/operator_profile_service.dart';
 import 'services/profile_service.dart';
 import 'widgets/proximity_warning_dialog.dart';
+import 'widgets/reauth_messages_dialog.dart';
 import 'dev_config.dart';
 import 'state/auth_state.dart';
 import 'state/messages_state.dart';
@@ -208,6 +211,13 @@ class AppState extends ChangeNotifier {
     await _uploadQueueState.init();
     await _authState.init(_settingsState.uploadMode);
     
+    // Check for messages on app launch if user is already logged in
+    if (isLoggedIn) {
+      checkMessages();
+    }
+    
+    // Note: Re-auth check will be triggered from home screen after init
+    
     // Initialize OfflineAreaService to ensure offline areas are loaded
     await OfflineAreaService().ensureInitialized();
     
@@ -283,6 +293,76 @@ class AppState extends ChangeNotifier {
   
   void clearMessages() {
     _messagesState.clearMessages();
+  }
+  
+  /// Check if the current OAuth token has required scopes for message notifications
+  /// Returns true if re-authentication is needed
+  Future<bool> needsReauthForMessages() async {
+    // Only check if logged in and not in simulate mode
+    if (!isLoggedIn || uploadMode == UploadMode.simulate) {
+      return false;
+    }
+    
+    final accessToken = await _authState.getAccessToken();
+    if (accessToken == null) return false;
+    
+    try {
+      // Try to fetch user details - this should include message data if scope is correct
+      final response = await http.get(
+        Uri.parse('${_getApiHost()}/api/0.6/user/details.json'),
+        headers: {'Authorization': 'Bearer $accessToken'},
+      );
+      
+      if (response.statusCode == 403) {
+        // Forbidden - likely missing scope
+        return true;
+      }
+      
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final messages = data['user']?['messages'];
+        // If messages field is missing, we might not have the right scope
+        return messages == null;
+      }
+      
+      return false;
+    } catch (e) {
+      // On error, assume no re-auth needed to avoid annoying users
+      return false;
+    }
+  }
+  
+  /// Show re-authentication dialog if needed
+  Future<void> checkAndPromptReauthForMessages(BuildContext context) async {
+    if (await needsReauthForMessages()) {
+      _showReauthDialog(context);
+    }
+  }
+  
+  void _showReauthDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => ReauthMessagesDialog(
+        onReauth: () {
+          // Navigate to OSM account page where user can re-authenticate
+          Navigator.of(context).pushNamed('/settings/osm-account');
+        },
+        onDismiss: () {
+          // Just dismiss - will show again on next app start or mode change
+        },
+      ),
+    );
+  }
+  
+  String _getApiHost() {
+    switch (uploadMode) {
+      case UploadMode.production:
+        return 'https://api.openstreetmap.org';
+      case UploadMode.sandbox:
+        return 'https://api06.dev.openstreetmap.org';
+      case UploadMode.simulate:
+        return 'https://api.openstreetmap.org';
+    }
   }
 
   // ---------- Profile Methods ----------
@@ -503,6 +583,8 @@ class AppState extends ChangeNotifier {
     if (isLoggedIn) {
       // Don't await - let it run in background
       checkMessages();
+      
+      // Note: Re-auth check will be triggered from the settings screen after mode change
     }
     
     _startUploader(); // Restart uploader with new mode

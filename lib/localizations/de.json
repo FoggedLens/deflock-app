@@ -183,7 +183,12 @@
     "currentDestinationSimulate": "Derzeit im: Simulationsmodus (kein echtes Konto)",
     "viewMessages": "Nachrichten auf OSM anzeigen",
     "unreadMessagesCount": "Sie haben {} ungelesene Nachrichten",
-    "noUnreadMessages": "Keine ungelesenen Nachrichten"
+    "noUnreadMessages": "Keine ungelesenen Nachrichten",
+    "reauthRequired": "Authentifizierung aktualisieren",
+    "reauthExplanation": "Sie müssen Ihre Authentifizierung aktualisieren, um OSM-Nachrichtenbenachrichtigungen über die App zu erhalten.",
+    "reauthBenefit": "Dies ermöglicht Benachrichtigungspunkte, wenn Sie ungelesene Nachrichten auf OpenStreetMap haben.",
+    "reauthNow": "Jetzt machen",
+    "reauthLater": "Später"
   },
   "queue": {
     "title": "Upload-Warteschlange",

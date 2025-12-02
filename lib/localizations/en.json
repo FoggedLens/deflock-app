@@ -215,7 +215,12 @@
     "currentDestinationSimulate": "Currently in: Simulate mode (no real account)",
     "viewMessages": "View Messages on OSM",
     "unreadMessagesCount": "You have {} unread messages",
-    "noUnreadMessages": "No unread messages"
+    "noUnreadMessages": "No unread messages",
+    "reauthRequired": "Refresh Authentication",
+    "reauthExplanation": "You must refresh your authentication to receive OSM message notifications through the app.",
+    "reauthBenefit": "This will enable notification dots when you have unread messages on OpenStreetMap.",
+    "reauthNow": "Do That Now",
+    "reauthLater": "Later"
   },
   "queue": {
     "title": "Upload Queue",

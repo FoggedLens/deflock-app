@@ -215,7 +215,12 @@
     "currentDestinationSimulate": "Actualmente en: Modo de simulación (sin cuenta real)",
     "viewMessages": "Ver Mensajes en OSM",
     "unreadMessagesCount": "Tienes {} mensajes sin leer",
-    "noUnreadMessages": "No hay mensajes sin leer"
+    "noUnreadMessages": "No hay mensajes sin leer",
+    "reauthRequired": "Actualizar Autenticación",
+    "reauthExplanation": "Debes actualizar tu autenticación para recibir notificaciones de mensajes OSM a través de la aplicación.",
+    "reauthBenefit": "Esto habilitará puntos de notificación cuando tengas mensajes sin leer en OpenStreetMap.",
+    "reauthNow": "Hazlo Ahora",
+    "reauthLater": "Más Tarde"
   },
   "queue": {
     "title": "Cola de Subida",

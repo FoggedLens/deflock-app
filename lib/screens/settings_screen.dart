@@ -120,7 +120,7 @@ class SettingsScreen extends StatelessWidget {
       leading: Stack(
         children: [
           const Icon(Icons.account_circle),
-          if (appState.hasUnreadMessages && appState.uploadMode != UploadMode.simulate)
+          if (appState.hasUnreadMessages)
             Positioned(
               right: 0,
               top: 0,

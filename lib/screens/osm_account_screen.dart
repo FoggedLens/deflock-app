@@ -239,8 +239,8 @@ class _OSMAccountScreenState extends State<OSMAccountScreen> {
                 ),
               ),
               
-              // Account deletion section - only show when logged in
-              if (appState.isLoggedIn) ...[
+              // Account deletion section - only show when logged in and not in simulate mode
+              if (appState.isLoggedIn && appState.uploadMode != UploadMode.simulate) ...[
                 const SizedBox(height: 16),
                 _buildAccountDeletionSection(context, appState),
               ],

@@ -38,7 +38,13 @@ class UploadModeSection extends StatelessWidget {
                   ),
                 ],
                 onChanged: (mode) {
-                  if (mode != null) appState.setUploadMode(mode);
+                  if (mode != null) {
+                    appState.setUploadMode(mode);
+                    // Check if re-authentication is needed after mode change
+                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                      appState.checkAndPromptReauthForMessages(context);
+                    });
+                  }
                 },
               ),
             ),

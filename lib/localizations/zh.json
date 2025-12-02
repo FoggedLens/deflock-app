@@ -215,7 +215,12 @@
     "currentDestinationSimulate": "当前处于：模拟模式（无真实账户）",
     "viewMessages": "在 OSM 上查看消息",
     "unreadMessagesCount": "您有 {} 条未读消息",
-    "noUnreadMessages": "没有未读消息"
+    "noUnreadMessages": "没有未读消息",
+    "reauthRequired": "刷新身份验证",
+    "reauthExplanation": "您必须刷新身份验证才能通过应用接收 OSM 消息通知。",
+    "reauthBenefit": "这将在您在 OpenStreetMap 上有未读消息时启用通知点。",
+    "reauthNow": "现在执行",
+    "reauthLater": "稍后"
   },
   "queue": {
     "title": "上传队列",

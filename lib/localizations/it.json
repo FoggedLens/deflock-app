@@ -215,7 +215,12 @@
     "currentDestinationSimulate": "Attualmente in: Modalità simulazione (nessun account reale)",
     "viewMessages": "Visualizza Messaggi su OSM",
     "unreadMessagesCount": "Hai {} messaggi non letti",
-    "noUnreadMessages": "Nessun messaggio non letto"
+    "noUnreadMessages": "Nessun messaggio non letto",
+    "reauthRequired": "Aggiorna Autenticazione",
+    "reauthExplanation": "Devi aggiornare la tua autenticazione per ricevere notifiche di messaggi OSM tramite l'app.",
+    "reauthBenefit": "Questo abiliterà i punti di notifica quando hai messaggi non letti su OpenStreetMap.",
+    "reauthNow": "Fallo Ora",
+    "reauthLater": "Più Tardi"
   },
   "queue": {
     "title": "Coda di Upload",

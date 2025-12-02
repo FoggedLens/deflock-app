@@ -673,7 +673,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     // Check for welcome/changelog popup after app is fully initialized
     if (appState.isInitialized && !_hasCheckedForPopup) {
       _hasCheckedForPopup = true;
-      WidgetsBinding.instance.addPostFrameCallback((_) => _checkForPopup());
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _checkForPopup();
+        // Check if re-authentication is needed for message notifications
+        appState.checkAndPromptReauthForMessages(context);
+      });
     }
 
     // Pass the active sheet height directly to the map
@@ -720,7 +724,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   icon: Stack(
                     children: [
                       const Icon(Icons.settings),
-                      if (appState.hasUnreadMessages && appState.uploadMode != UploadMode.simulate)
+                      if (appState.hasUnreadMessages)
                         Positioned(
                           right: 0,
                           top: 0,
