@@ -2,7 +2,9 @@
   "1.5.4": {
     "content": [
       "• FIXED: Download area max zoom level is now limited to the currently selected tile provider's maximum zoom level (e.g., OpenTopoMap limited to Z18, Bing Maps to Z20)",
-      "• IMPROVED: Download area dialog properly respects tile provider capabilities and prevents downloading tiles beyond what the provider supports"
+      "• IMPROVED: Download area dialog properly respects tile provider capabilities and prevents downloading tiles beyond what the provider supports",
+      "• NEW: Navigation route planning now prevents selecting start and end locations that are too close together (configurable minimum distance)",
+      "• IMPROVED: 'Select Location' button is disabled and shows warning message when route points are closer than 100 meters apart"
     ]
   },
   "1.5.3": {

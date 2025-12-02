@@ -107,7 +107,6 @@ cp lib/keys.dart.example lib/keys.dart
   - Manual cleanup (cognitive load for users)
   - Delete the old one (also wrong answer unless user chooses intentionally)
   - Give multiple of these options??
-- Nav start+end too close together error (warning + disable submit button?)
 - Persistent cache for MY submissions: assume submissions worked, cache,clean up when we see that node appear in overpass/OSM results or when older than 24h
 - Dropdown on "refine tags" page to select acceptable options for camera:mount= (is this a boolean property of a profile?)
 - Option to pull in profiles from NSI (man_made=surveillance only?)

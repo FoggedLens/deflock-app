@@ -460,6 +460,7 @@
     "endSelect": "Ende (auswählen)",
     "distance": "Entfernung: {} km",
     "routeActive": "Route aktiv",
+    "locationsTooClose": "Start- und Endpositionen sind zu nah beieinander",
     "navigationSettings": "Navigation",
     "navigationSettingsSubtitle": "Routenplanung und Vermeidungseinstellungen",
     "avoidanceDistance": "Vermeidungsabstand",

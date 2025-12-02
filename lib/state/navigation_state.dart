@@ -4,6 +4,7 @@ import 'package:latlong2/latlong.dart';
 import '../models/search_result.dart';
 import '../services/search_service.dart';
 import '../services/routing_service.dart';
+import '../dev_config.dart';
 
 /// Simplified navigation modes - brutalist approach
 enum AppNavigationMode {
@@ -74,6 +75,17 @@ class NavigationState extends ChangeNotifier {
   bool get showProvisionalPin => _provisionalPinLocation != null && (_mode == AppNavigationMode.search);
   bool get showSearchButton => _mode == AppNavigationMode.normal;
   bool get showRouteButton => _mode == AppNavigationMode.routeActive;
+  
+  /// Check if the start and end locations are too close together
+  bool get areRoutePointsTooClose {
+    if (!_isSettingSecondPoint || _provisionalPinLocation == null) return false;
+    
+    final firstPoint = _nextPointIsStart ? _routeEnd : _routeStart;
+    if (firstPoint == null) return false;
+    
+    final distance = const Distance().as(LengthUnit.Meter, firstPoint, _provisionalPinLocation!);
+    return distance < kNavigationMinRouteDistance;
+  }
   
   /// BRUTALIST: Single entry point to search mode
   void enterSearchMode(LatLng mapCenter) {

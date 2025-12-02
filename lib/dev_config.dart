@@ -124,6 +124,9 @@ const Duration kProximityAlertCooldown = Duration(minutes: 10); // Cooldown betw
 // Node proximity warning configuration (for new/edited nodes that are too close to existing ones)
 const double kNodeProximityWarningDistance = 15.0; // meters - distance threshold to show warning
 
+// Navigation route planning configuration
+const double kNavigationMinRouteDistance = 100.0; // meters - minimum distance between start and end points
+
 // Map interaction configuration
 const double kNodeDoubleTapZoomDelta = 1.0; // How much to zoom in when double-tapping nodes (was 1.0)
 const double kScrollWheelVelocity = 0.01; // Mouse scroll wheel zoom speed (default 0.005)

@@ -460,6 +460,7 @@
     "endSelect": "Fin (sélectionner)",
     "distance": "Distance: {} km",
     "routeActive": "Itinéraire actif",
+    "locationsTooClose": "Les emplacements de départ et d'arrivée sont trop proches",
     "navigationSettings": "Navigation",
     "navigationSettingsSubtitle": "Paramètres de planification d'itinéraire et d'évitement",
     "avoidanceDistance": "Distance d'évitement",

@@ -460,6 +460,7 @@
     "endSelect": "End (select)",
     "distance": "Distance: {} km",
     "routeActive": "Route active",
+    "locationsTooClose": "Start and end locations are too close together",
     "navigationSettings": "Navigation",
     "navigationSettingsSubtitle": "Route planning and avoidance settings",
     "avoidanceDistance": "Avoidance Distance",

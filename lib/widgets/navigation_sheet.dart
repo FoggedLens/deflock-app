@@ -159,10 +159,38 @@ class NavigationSheet extends StatelessWidget {
                 ),
                 const SizedBox(height: 16),
                 
+                // Show warning message if locations are too close
+                if (appState.areRoutePointsTooClose) ...[
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.orange.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: Colors.orange.withOpacity(0.3)),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(Icons.warning, color: Colors.orange[700], size: 20),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            LocalizationService.instance.t('navigation.locationsTooClose'),
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.orange[700],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                ],
+                
                 ElevatedButton.icon(
                   icon: const Icon(Icons.check),
                   label: Text(LocalizationService.instance.t('navigation.selectLocation')),
-                  onPressed: () {
+                  onPressed: appState.areRoutePointsTooClose ? null : () {
                     debugPrint('[NavigationSheet] Select Location button pressed');
                     appState.selectSecondRoutePoint();
                   },
