@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../app_state.dart';
 import '../services/localization_service.dart';
 import '../services/version_service.dart';
 import '../dev_config.dart';
@@ -23,13 +25,7 @@ class SettingsScreen extends StatelessWidget {
           ),
           children: [
             // OpenStreetMap Account
-            _buildNavigationTile(
-              context,
-              icon: Icons.account_circle,
-              title: locService.t('auth.osmAccountTitle'),
-              subtitle: locService.t('auth.osmAccountSubtitle'),
-              onTap: () => Navigator.pushNamed(context, '/settings/osm-account'),
-            ),
+            _buildOSMAccountTile(context, locService),
             const Divider(),
             
             // Upload Queue
@@ -114,6 +110,35 @@ class SettingsScreen extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildOSMAccountTile(BuildContext context, LocalizationService locService) {
+    final appState = context.watch<AppState>();
+    
+    return ListTile(
+      leading: Stack(
+        children: [
+          const Icon(Icons.account_circle),
+          if (appState.hasUnreadMessages && appState.uploadMode != UploadMode.simulate)
+            Positioned(
+              right: 0,
+              top: 0,
+              child: Container(
+                width: 10,
+                height: 10,
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.error,
+                  shape: BoxShape.circle,
+                ),
+              ),
+            ),
+        ],
+      ),
+      title: Text(locService.t('auth.osmAccountTitle')),
+      subtitle: Text(locService.t('auth.osmAccountSubtitle')),
+      trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+      onTap: () => Navigator.pushNamed(context, '/settings/osm-account'),
     );
   }
 

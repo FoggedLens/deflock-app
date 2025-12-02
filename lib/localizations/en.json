@@ -207,7 +207,15 @@
     "deleteAccountSubtitle": "Manage your OpenStreetMap account",
     "deleteAccountExplanation": "To delete your OpenStreetMap account, you'll need to visit the OpenStreetMap website. This will permanently remove your OSM account and all associated data.",
     "deleteAccountWarning": "Warning: This action cannot be undone and will permanently delete your OSM account.",
-    "goToOSM": "Go to OpenStreetMap"
+    "goToOSM": "Go to OpenStreetMap",
+    "accountManagement": "Account Management",
+    "accountManagementDescription": "To delete your OpenStreetMap account, you'll need to visit the appropriate OpenStreetMap website. This will permanently remove your account and all associated data.",
+    "currentDestinationProduction": "Currently connected to: Production OpenStreetMap",
+    "currentDestinationSandbox": "Currently connected to: Sandbox OpenStreetMap",
+    "currentDestinationSimulate": "Currently in: Simulate mode (no real account)",
+    "viewMessages": "View Messages on OSM",
+    "unreadMessagesCount": "You have {} unread messages",
+    "noUnreadMessages": "No unread messages"
   },
   "queue": {
     "title": "Upload Queue",

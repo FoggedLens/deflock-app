@@ -207,7 +207,15 @@
     "deleteAccountSubtitle": "管理您的 OpenStreetMap 账户",
     "deleteAccountExplanation": "要删除您的 OpenStreetMap 账户，您需要访问 OpenStreetMap 网站。这将永久删除您的 OSM 账户和所有相关数据。",
     "deleteAccountWarning": "警告：此操作无法撤销，将永久删除您的 OSM 账户。",
-    "goToOSM": "前往 OpenStreetMap"
+    "goToOSM": "前往 OpenStreetMap",
+    "accountManagement": "账户管理",
+    "accountManagementDescription": "要删除您的 OpenStreetMap 账户，您需要访问相应的 OpenStreetMap 网站。这将永久删除您的账户和所有相关数据。",
+    "currentDestinationProduction": "当前连接到：生产环境 OpenStreetMap",
+    "currentDestinationSandbox": "当前连接到：沙盒环境 OpenStreetMap",
+    "currentDestinationSimulate": "当前处于：模拟模式（无真实账户）",
+    "viewMessages": "在 OSM 上查看消息",
+    "unreadMessagesCount": "您有 {} 条未读消息",
+    "noUnreadMessages": "没有未读消息"
   },
   "queue": {
     "title": "上传队列",
@@ -237,6 +245,7 @@
     "retryUpload": "重试上传",
     "clearAll": "全部清空",
     "errorDetails": "错误详情",
+    "creatingChangeset": " (创建变更集...)",
     "uploading": " (上传中...)",
     "closingChangeset": " (关闭变更集...)"
   },

@@ -98,8 +98,6 @@ cp lib/keys.dart.example lib/keys.dart
 ## Roadmap
 
 ### Needed Bugfixes
-- Messages notification
-- Move "delete OSM acct" button to OSM page
 - Remove potentially wrong FOVs from default profiles
 - Download area zoom goes too far
 - Update node cache to reflect cleared queue entries

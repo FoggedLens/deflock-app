@@ -175,7 +175,15 @@
     "deleteAccountSubtitle": "Ihr OpenStreetMap-Konto verwalten",
     "deleteAccountExplanation": "Um Ihr OpenStreetMap-Konto zu löschen, müssen Sie die OpenStreetMap-Website besuchen. Dies entfernt dauerhaft Ihr OSM-Konto und alle zugehörigen Daten.",
     "deleteAccountWarning": "Warnung: Diese Aktion kann nicht rückgängig gemacht werden und löscht Ihr OSM-Konto dauerhaft.",
-    "goToOSM": "Zu OpenStreetMap gehen"
+    "goToOSM": "Zu OpenStreetMap gehen",
+    "accountManagement": "Kontoverwaltung",
+    "accountManagementDescription": "Um Ihr OpenStreetMap-Konto zu löschen, müssen Sie die entsprechende OpenStreetMap-Website besuchen. Dadurch werden Ihr Konto und alle zugehörigen Daten dauerhaft gelöscht.",
+    "currentDestinationProduction": "Derzeit verbunden mit: Produktions-OpenStreetMap",
+    "currentDestinationSandbox": "Derzeit verbunden mit: Sandbox-OpenStreetMap",
+    "currentDestinationSimulate": "Derzeit im: Simulationsmodus (kein echtes Konto)",
+    "viewMessages": "Nachrichten auf OSM anzeigen",
+    "unreadMessagesCount": "Sie haben {} ungelesene Nachrichten",
+    "noUnreadMessages": "Keine ungelesenen Nachrichten"
   },
   "queue": {
     "title": "Upload-Warteschlange",
@@ -205,6 +213,7 @@
     "retryUpload": "Upload wiederholen",
     "clearAll": "Alle Löschen",
     "errorDetails": "Fehlerdetails",
+    "creatingChangeset": " (Changeset erstellen...)",
     "uploading": " (Uploading...)",
     "closingChangeset": " (Changeset schließen...)"
   },

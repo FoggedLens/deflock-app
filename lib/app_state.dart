@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:latlong2/latlong.dart';
@@ -19,6 +20,7 @@ import 'services/profile_service.dart';
 import 'widgets/proximity_warning_dialog.dart';
 import 'dev_config.dart';
 import 'state/auth_state.dart';
+import 'state/messages_state.dart';
 import 'state/navigation_state.dart';
 import 'state/operator_profile_state.dart';
 import 'state/profile_state.dart';
@@ -39,6 +41,7 @@ class AppState extends ChangeNotifier {
   
   // State modules
   late final AuthState _authState;
+  late final MessagesState _messagesState;
   late final NavigationState _navigationState;
   late final OperatorProfileState _operatorProfileState;
   late final ProfileState _profileState;
@@ -49,10 +52,12 @@ class AppState extends ChangeNotifier {
   late final UploadQueueState _uploadQueueState;
 
   bool _isInitialized = false;
+  Timer? _messageCheckTimer;
 
   AppState() {
     instance = this;
     _authState = AuthState();
+    _messagesState = MessagesState();
     _navigationState = NavigationState();
     _operatorProfileState = OperatorProfileState();
     _profileState = ProfileState();
@@ -64,6 +69,7 @@ class AppState extends ChangeNotifier {
     
     // Set up state change listeners
     _authState.addListener(_onStateChanged);
+    _messagesState.addListener(_onStateChanged);
     _navigationState.addListener(_onStateChanged);
     _operatorProfileState.addListener(_onStateChanged);
     _profileState.addListener(_onStateChanged);
@@ -141,6 +147,11 @@ class AppState extends ChangeNotifier {
   bool get networkStatusIndicatorEnabled => _settingsState.networkStatusIndicatorEnabled;
   int get suspectedLocationMinDistance => _settingsState.suspectedLocationMinDistance;
   
+  // Messages state
+  int? get unreadMessageCount => _messagesState.unreadCount;
+  bool get hasUnreadMessages => _messagesState.hasUnreadMessages;
+  bool get isCheckingMessages => _messagesState.isChecking;
+  
   // Tile provider state
   List<TileProvider> get tileProviders => _settingsState.tileProviders;
   TileType? get selectedTileType => _settingsState.selectedTileType;
@@ -204,16 +215,40 @@ class AppState extends ChangeNotifier {
     _startUploader();
     
     _isInitialized = true;
+    
+    // Start periodic message checking
+    _startMessageCheckTimer();
+    
     notifyListeners();
+  }
+  
+  void _startMessageCheckTimer() {
+    _messageCheckTimer?.cancel();
+    
+    // Check messages every 10 minutes when logged in
+    _messageCheckTimer = Timer.periodic(
+      const Duration(minutes: 10),
+      (timer) {
+        if (isLoggedIn) {
+          checkMessages();
+        }
+      },
+    );
   }
 
   // ---------- Auth Methods ----------
   Future<void> login() async {
     await _authState.login();
+    // Check for messages after successful login
+    if (isLoggedIn) {
+      checkMessages();
+    }
   }
 
   Future<void> logout() async {
     await _authState.logout();
+    // Clear message state when logging out
+    clearMessages();
   }
 
   Future<void> refreshAuthState() async {
@@ -222,10 +257,32 @@ class AppState extends ChangeNotifier {
 
   Future<void> forceLogin() async {
     await _authState.forceLogin();
+    // Check for messages after successful login
+    if (isLoggedIn) {
+      checkMessages();
+    }
   }
 
   Future<bool> validateToken() async {
     return await _authState.validateToken();
+  }
+  
+  // ---------- Messages Methods ----------
+  Future<void> checkMessages({bool forceRefresh = false}) async {
+    final accessToken = await _authState.getAccessToken();
+    await _messagesState.checkMessages(
+      accessToken: accessToken,
+      uploadMode: uploadMode,
+      forceRefresh: forceRefresh,
+    );
+  }
+  
+  String getMessagesUrl() {
+    return _messagesState.getMessagesUrl(uploadMode);
+  }
+  
+  void clearMessages() {
+    _messagesState.clearMessages();
   }
 
   // ---------- Profile Methods ----------
@@ -440,6 +497,14 @@ class AppState extends ChangeNotifier {
     
     await _settingsState.setUploadMode(mode);
     await _authState.onUploadModeChanged(mode);
+    
+    // Clear and re-check messages for new mode
+    clearMessages();
+    if (isLoggedIn) {
+      // Don't await - let it run in background
+      checkMessages();
+    }
+    
     _startUploader(); // Restart uploader with new mode
   }
 
@@ -557,7 +622,9 @@ class AppState extends ChangeNotifier {
 
   @override
   void dispose() {
+    _messageCheckTimer?.cancel();
     _authState.removeListener(_onStateChanged);
+    _messagesState.removeListener(_onStateChanged);
     _navigationState.removeListener(_onStateChanged);
     _operatorProfileState.removeListener(_onStateChanged);
     _profileState.removeListener(_onStateChanged);

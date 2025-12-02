@@ -207,7 +207,15 @@
     "deleteAccountSubtitle": "Gestiona tu cuenta de OpenStreetMap",
     "deleteAccountExplanation": "Para eliminar tu cuenta de OpenStreetMap, necesitarás visitar el sitio web de OpenStreetMap. Esto eliminará permanentemente tu cuenta OSM y todos los datos asociados.",
     "deleteAccountWarning": "Advertencia: Esta acción no se puede deshacer y eliminará permanentemente tu cuenta OSM.",
-    "goToOSM": "Ir a OpenStreetMap"
+    "goToOSM": "Ir a OpenStreetMap",
+    "accountManagement": "Gestión de Cuenta",
+    "accountManagementDescription": "Para eliminar su cuenta de OpenStreetMap, debe visitar el sitio web de OpenStreetMap correspondiente. Esto eliminará permanentemente su cuenta y todos los datos asociados.",
+    "currentDestinationProduction": "Actualmente conectado a: OpenStreetMap de Producción",
+    "currentDestinationSandbox": "Actualmente conectado a: OpenStreetMap Sandbox",
+    "currentDestinationSimulate": "Actualmente en: Modo de simulación (sin cuenta real)",
+    "viewMessages": "Ver Mensajes en OSM",
+    "unreadMessagesCount": "Tienes {} mensajes sin leer",
+    "noUnreadMessages": "No hay mensajes sin leer"
   },
   "queue": {
     "title": "Cola de Subida",
@@ -237,6 +245,7 @@
     "retryUpload": "Reintentar subida",
     "clearAll": "Limpiar Todo",
     "errorDetails": "Detalles del Error",
+    "creatingChangeset": " (Creando changeset...)",
     "uploading": " (Subiendo...)",
     "closingChangeset": " (Cerrando changeset...)"
   },

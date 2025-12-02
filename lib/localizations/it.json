@@ -207,7 +207,15 @@
     "deleteAccountSubtitle": "Gestisci il tuo account OpenStreetMap",
     "deleteAccountExplanation": "Per eliminare il tuo account OpenStreetMap, dovrai visitare il sito web di OpenStreetMap. Questo rimuoverà permanentemente il tuo account OSM e tutti i dati associati.",
     "deleteAccountWarning": "Attenzione: Questa azione non può essere annullata e eliminerà permanentemente il tuo account OSM.",
-    "goToOSM": "Vai a OpenStreetMap"
+    "goToOSM": "Vai a OpenStreetMap",
+    "accountManagement": "Gestione Account",
+    "accountManagementDescription": "Per eliminare il tuo account OpenStreetMap, devi visitare il sito web OpenStreetMap appropriato. Questo rimuoverà permanentemente il tuo account e tutti i dati associati.",
+    "currentDestinationProduction": "Attualmente connesso a: OpenStreetMap di Produzione",
+    "currentDestinationSandbox": "Attualmente connesso a: OpenStreetMap Sandbox",
+    "currentDestinationSimulate": "Attualmente in: Modalità simulazione (nessun account reale)",
+    "viewMessages": "Visualizza Messaggi su OSM",
+    "unreadMessagesCount": "Hai {} messaggi non letti",
+    "noUnreadMessages": "Nessun messaggio non letto"
   },
   "queue": {
     "title": "Coda di Upload",
@@ -237,6 +245,7 @@
     "retryUpload": "Riprova upload",
     "clearAll": "Pulisci Tutto",
     "errorDetails": "Dettagli dell'Errore",
+    "creatingChangeset": " (Creazione changeset...)",
     "uploading": " (Caricamento...)",
     "closingChangeset": " (Chiusura changeset...)"
   },

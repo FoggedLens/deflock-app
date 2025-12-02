@@ -207,7 +207,15 @@
     "deleteAccountSubtitle": "Gérez votre compte OpenStreetMap",
     "deleteAccountExplanation": "Pour supprimer votre compte OpenStreetMap, vous devrez visiter le site web OpenStreetMap. Cela supprimera définitivement votre compte OSM et toutes les données associées.",
     "deleteAccountWarning": "Attention : Cette action ne peut pas être annulée et supprimera définitivement votre compte OSM.",
-    "goToOSM": "Aller à OpenStreetMap"
+    "goToOSM": "Aller à OpenStreetMap",
+    "accountManagement": "Gestion de Compte",
+    "accountManagementDescription": "Pour supprimer votre compte OpenStreetMap, vous devez visiter le site Web OpenStreetMap approprié. Cela supprimera définitivement votre compte et toutes les données associées.",
+    "currentDestinationProduction": "Actuellement connecté à : OpenStreetMap de Production",
+    "currentDestinationSandbox": "Actuellement connecté à : OpenStreetMap Sandbox",
+    "currentDestinationSimulate": "Actuellement en : Mode simulation (pas de compte réel)",
+    "viewMessages": "Voir les Messages sur OSM",
+    "unreadMessagesCount": "Vous avez {} messages non lus",
+    "noUnreadMessages": "Aucun message non lu"
   },
   "queue": {
     "title": "File de Téléchargement",
@@ -237,6 +245,7 @@
     "retryUpload": "Réessayer téléchargement",
     "clearAll": "Tout Vider",
     "errorDetails": "Détails de l'Erreur",
+    "creatingChangeset": " (Création du changeset...)",
     "uploading": " (Téléchargement...)",
     "closingChangeset": " (Fermeture du changeset...)"
   },

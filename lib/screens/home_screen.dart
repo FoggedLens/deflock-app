@@ -713,11 +713,31 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             ),
             AnimatedBuilder(
               animation: LocalizationService.instance,
-              builder: (context, child) => IconButton(
-                tooltip: LocalizationService.instance.settings,
-                icon: const Icon(Icons.settings),
-                onPressed: () => Navigator.pushNamed(context, '/settings'),
-              ),
+              builder: (context, child) {
+                final appState = context.watch<AppState>();
+                return IconButton(
+                  tooltip: LocalizationService.instance.settings,
+                  icon: Stack(
+                    children: [
+                      const Icon(Icons.settings),
+                      if (appState.hasUnreadMessages && appState.uploadMode != UploadMode.simulate)
+                        Positioned(
+                          right: 0,
+                          top: 0,
+                          child: Container(
+                            width: 10,
+                            height: 10,
+                            decoration: BoxDecoration(
+                              color: Theme.of(context).colorScheme.error,
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                  onPressed: () => Navigator.pushNamed(context, '/settings'),
+                );
+              },
             ),
           ],
         ),
