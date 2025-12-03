@@ -227,6 +227,12 @@ The previous implementation conflated changeset creation + node operation as one
 **Why immediate visual feedback:**
 Users expect instant response to their actions. By immediately updating the cache with temporary markers (e.g., `_pending_deletion`), the UI stays responsive while the actual API calls happen in background.
 
+**Queue persistence & cache synchronization (v1.5.4+):**
+- **Startup repopulation**: Queue initialization now repopulates cache with pending nodes, ensuring visual continuity after app restarts
+- **Specific node cleanup**: Each upload stores a `tempNodeId` for precise removal, preventing accidental cleanup of other pending nodes at the same location
+- **Proximity awareness**: Proximity warnings now consider pending nodes to prevent duplicate submissions at the same location
+- **Processing status UI**: Upload queue screen shows clear indicators when processing is paused due to offline mode or user settings
+
 ### 4. Cache & Visual States
 
 **Node visual states:**

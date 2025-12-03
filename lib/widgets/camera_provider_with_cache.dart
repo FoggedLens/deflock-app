@@ -67,10 +67,31 @@ class CameraProviderWithCache extends ChangeNotifier {
     });
   }
 
-  /// Optionally: clear the cache (could be used for testing/dev)
+  /// Clear the cache and repopulate with pending nodes from upload queue
   void clearCache() {
     NodeCache.instance.clear();
+    // Repopulate with pending nodes from upload queue if available
+    _repopulatePendingNodesAfterClear();
     notifyListeners();
+  }
+
+  /// Repopulate pending nodes after cache clear
+  void _repopulatePendingNodesAfterClear() {
+    // We need access to the upload queue state, but we don't have direct access here
+    // Instead, we'll trigger a callback that the app state can handle
+    // For now, let's use a more direct approach through a global service access
+    // This could be refactored to use proper dependency injection later
+    Future.microtask(() {
+      // This will be called from app state when cache clears happen
+      _onCacheCleared?.call();
+    });
+  }
+
+  VoidCallback? _onCacheCleared;
+
+  /// Set callback for when cache is cleared (used by app state to repopulate pending nodes)
+  void setOnCacheClearedCallback(VoidCallback? callback) {
+    _onCacheCleared = callback;
   }
 
   /// Force refresh the display (useful when filters change but cache doesn't)

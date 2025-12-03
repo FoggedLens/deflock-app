@@ -114,6 +114,23 @@ class NodeCache {
       print('[NodeCache] Removed ${nodesToRemove.length} temp nodes at coordinate ${coord.latitude}, ${coord.longitude}');
     }
   }
+
+  /// Remove a specific temporary node by its ID (for queue item-specific cleanup)
+  void removeTempNodeById(int tempNodeId) {
+    if (tempNodeId >= 0) {
+      print('[NodeCache] Warning: Attempted to remove non-temp node ID $tempNodeId');
+      return;
+    }
+    
+    if (_nodes.remove(tempNodeId) != null) {
+      print('[NodeCache] Removed specific temp node $tempNodeId from cache');
+    }
+  }
+
+  /// Get a specific node by ID (returns null if not found)
+  OsmNode? getNodeById(int nodeId) {
+    return _nodes[nodeId];
+  }
   
   /// Check if two coordinates match within tolerance
   bool _coordsMatch(LatLng coord1, LatLng coord2, double tolerance) {
@@ -123,6 +140,7 @@ class NodeCache {
 
   /// Find nodes within the specified distance (in meters) of the given coordinate
   /// Excludes nodes with the excludeNodeId (useful when checking proximity for edited nodes)
+  /// Includes pending nodes to warn about potential duplicates
   List<OsmNode> findNodesWithinDistance(LatLng coord, double distanceMeters, {int? excludeNodeId}) {
     final nearbyNodes = <OsmNode>[];
     
@@ -132,11 +150,9 @@ class NodeCache {
         continue;
       }
       
-      // Skip temporary nodes (negative IDs) with pending upload/edit/deletion markers
-      if (node.id < 0 && (
-          node.tags.containsKey('_pending_upload') ||
-          node.tags.containsKey('_pending_edit') ||
-          node.tags.containsKey('_pending_deletion'))) {
+      // Include all nodes (real and pending) to catch potential duplicates
+      // Only skip nodes marked for deletion since they won't actually exist after processing
+      if (node.tags.containsKey('_pending_deletion')) {
         continue;
       }
       

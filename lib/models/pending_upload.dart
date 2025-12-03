@@ -25,6 +25,7 @@ class PendingUpload {
   final UploadOperation operation; // Type of operation: create, modify, or delete
   final int? originalNodeId; // If this is modify/delete, the ID of the original OSM node
   int? submittedNodeId; // The actual node ID returned by OSM after successful submission
+  int? tempNodeId; // ID of temporary node created in cache (for specific cleanup)
   int attempts;
   bool error; // DEPRECATED: Use uploadState instead
   String? errorMessage; // Detailed error message for debugging
@@ -46,6 +47,7 @@ class PendingUpload {
     required this.operation,
     this.originalNodeId,
     this.submittedNodeId,
+    this.tempNodeId,
     this.attempts = 0,
     this.error = false,
     this.errorMessage,
@@ -255,6 +257,7 @@ class PendingUpload {
         'operation': operation.index,
         'originalNodeId': originalNodeId,
         'submittedNodeId': submittedNodeId,
+        'tempNodeId': tempNodeId,
         'attempts': attempts,
         'error': error,
         'errorMessage': errorMessage,
@@ -285,6 +288,7 @@ class PendingUpload {
             : (j['originalNodeId'] != null ? UploadOperation.modify : UploadOperation.create), // Legacy compatibility
         originalNodeId: j['originalNodeId'],
         submittedNodeId: j['submittedNodeId'],
+        tempNodeId: j['tempNodeId'],
         attempts: j['attempts'] ?? 0,
         error: j['error'] ?? false,
         errorMessage: j['errorMessage'], // Can be null for legacy entries

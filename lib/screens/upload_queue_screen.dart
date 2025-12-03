@@ -93,6 +93,9 @@ class UploadQueueScreen extends StatelessWidget {
         final locService = LocalizationService.instance;
         final appState = context.watch<AppState>();
         
+        // Check if queue processing is paused
+        final isQueuePaused = appState.offlineMode || appState.pauseQueueProcessing;
+        
         return Scaffold(
           appBar: AppBar(
             title: Text(locService.t('queue.title')),
@@ -105,6 +108,46 @@ class UploadQueueScreen extends StatelessWidget {
               16 + MediaQuery.of(context).padding.bottom,
             ),
             children: [
+              // Queue processing status indicator
+              if (isQueuePaused && appState.pendingCount > 0)
+                Container(
+                  margin: const EdgeInsets.only(bottom: 16),
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.orange.withOpacity(0.1),
+                    border: Border.all(color: Colors.orange.withOpacity(0.3)),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.pause_circle_outline, color: Colors.orange),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              locService.t('queue.processingPaused'),
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.orange,
+                              ),
+                            ),
+                            Text(
+                              appState.offlineMode 
+                                  ? locService.t('queue.pausedDueToOffline')
+                                  : locService.t('queue.pausedByUser'),
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.orange.shade700,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               // Clear Upload Queue button - always visible
               SizedBox(
                 width: double.infinity,

@@ -184,7 +184,8 @@
     "simulate": "Simuler",
     "productionDescription": "Télécharger vers la base de données OSM en direct (visible pour tous les utilisateurs)",
     "sandboxDescription": "Les téléchargements vont vers le Sandbox OSM (sûr pour les tests, réinitialisé régulièrement).",
-    "simulateDescription": "Simuler les téléchargements (ne contacte pas les serveurs OSM)"
+    "simulateDescription": "Simuler les téléchargements (ne contacte pas les serveurs OSM)",
+    "cannotChangeWithQueue": "Impossible de changer la destination de téléversement tant que {} éléments sont en file d'attente. Videz d'abord la file d'attente."
   },
   "auth": {
     "osmAccountTitle": "Compte OpenStreetMap",
@@ -252,7 +253,10 @@
     "errorDetails": "Détails de l'Erreur",
     "creatingChangeset": " (Création du changeset...)",
     "uploading": " (Téléchargement...)",
-    "closingChangeset": " (Fermeture du changeset...)"
+    "closingChangeset": " (Fermeture du changeset...)",
+    "processingPaused": "Traitement de la File d'Attente Interrompu",
+    "pausedDueToOffline": "Le traitement des téléversements est interrompu car le mode hors ligne est activé.",
+    "pausedByUser": "Le traitement des téléversements est interrompu manuellement."
   },
   "tileProviders": {
     "title": "Fournisseurs de Tuiles",

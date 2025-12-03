@@ -21,9 +21,100 @@ class UploadQueueState extends ChangeNotifier {
   int get pendingCount => _queue.length;
   List<PendingUpload> get pendingUploads => List.unmodifiable(_queue);
 
-  // Initialize by loading queue from storage
+  // Initialize by loading queue from storage and repopulate cache with pending nodes
   Future<void> init() async {
     await _loadQueue();
+    print('[UploadQueue] Loaded ${_queue.length} items from storage');
+    _repopulateCacheFromQueue();
+  }
+
+  // Repopulate the cache with pending nodes from the queue on startup
+  void _repopulateCacheFromQueue() {
+    print('[UploadQueue] Repopulating cache from ${_queue.length} queue items');
+    final nodesToAdd = <OsmNode>[];
+    
+    for (final upload in _queue) {
+      // Skip completed uploads - they should already be in OSM and will be fetched normally
+      if (upload.isComplete) {
+        print('[UploadQueue] Skipping completed upload at ${upload.coord}');
+        continue;
+      }
+      
+      print('[UploadQueue] Processing ${upload.operation} upload at ${upload.coord}');
+      
+      if (upload.isDeletion) {
+        // For deletions: mark the original node as pending deletion if it exists in cache
+        if (upload.originalNodeId != null) {
+          final existingNode = NodeCache.instance.getNodeById(upload.originalNodeId!);
+          if (existingNode != null) {
+            final deletionTags = Map<String, String>.from(existingNode.tags);
+            deletionTags['_pending_deletion'] = 'true';
+            
+            final nodeWithDeletionTag = OsmNode(
+              id: upload.originalNodeId!,
+              coord: existingNode.coord,
+              tags: deletionTags,
+            );
+            nodesToAdd.add(nodeWithDeletionTag);
+          }
+        }
+      } else {
+        // For creates, edits, and extracts: recreate temp node if needed
+        // Generate new temp ID if not already stored (for backward compatibility)
+        final tempId = upload.tempNodeId ?? -DateTime.now().millisecondsSinceEpoch - _queue.indexOf(upload);
+        
+        final tags = upload.getCombinedTags();
+        tags['_pending_upload'] = 'true';
+        tags['_temp_id'] = tempId.toString();
+        
+        // Store temp ID for future cleanup if not already set
+        if (upload.tempNodeId == null) {
+          upload.tempNodeId = tempId;
+        }
+        
+        if (upload.isEdit) {
+          // For edits: also mark original with _pending_edit if it exists
+          if (upload.originalNodeId != null) {
+            final existingOriginal = NodeCache.instance.getNodeById(upload.originalNodeId!);
+            if (existingOriginal != null) {
+              final originalTags = Map<String, String>.from(existingOriginal.tags);
+              originalTags['_pending_edit'] = 'true';
+              
+              final originalWithEdit = OsmNode(
+                id: upload.originalNodeId!,
+                coord: existingOriginal.coord,
+                tags: originalTags,
+              );
+              nodesToAdd.add(originalWithEdit);
+            }
+          }
+          
+          // Add connection line marker
+          tags['_original_node_id'] = upload.originalNodeId.toString();
+        } else if (upload.operation == UploadOperation.extract) {
+          // For extracts: add connection line marker
+          tags['_original_node_id'] = upload.originalNodeId.toString();
+        }
+        
+        final tempNode = OsmNode(
+          id: tempId,
+          coord: upload.coord,
+          tags: tags,
+        );
+        nodesToAdd.add(tempNode);
+      }
+    }
+    
+    if (nodesToAdd.isNotEmpty) {
+      NodeCache.instance.addOrUpdate(nodesToAdd);
+      print('[UploadQueue] Repopulated cache with ${nodesToAdd.length} pending nodes from queue');
+      
+      // Save queue if we updated any temp IDs for backward compatibility
+      _saveQueue();
+      
+      // Notify node provider to update the map
+      CameraProviderWithCache.instance.notifyListeners();
+    }
   }
 
   // Add a completed session to the upload queue
@@ -46,6 +137,10 @@ class UploadQueueState extends ChangeNotifier {
     final tempId = -DateTime.now().millisecondsSinceEpoch;
     final tags = upload.getCombinedTags();
     tags['_pending_upload'] = 'true'; // Mark as pending for potential UI distinction
+    tags['_temp_id'] = tempId.toString(); // Store temp ID for specific removal
+    
+    // Store the temp ID in the upload for cleanup purposes
+    upload.tempNodeId = tempId;
     
     final tempNode = OsmNode(
       id: tempId,
@@ -100,6 +195,10 @@ class UploadQueueState extends ChangeNotifier {
       final extractedTags = upload.getCombinedTags();
       extractedTags['_pending_upload'] = 'true'; // Mark as pending upload
       extractedTags['_original_node_id'] = session.originalNode.id.toString(); // Track original for line drawing
+      extractedTags['_temp_id'] = tempId.toString(); // Store temp ID for specific removal
+      
+      // Store the temp ID in the upload for cleanup purposes
+      upload.tempNodeId = tempId;
       
       final extractedNode = OsmNode(
         id: tempId,
@@ -125,6 +224,10 @@ class UploadQueueState extends ChangeNotifier {
       final editedTags = upload.getCombinedTags();
       editedTags['_pending_upload'] = 'true'; // Mark as pending upload
       editedTags['_original_node_id'] = session.originalNode.id.toString(); // Track original for line drawing
+      editedTags['_temp_id'] = tempId.toString(); // Store temp ID for specific removal
+      
+      // Store the temp ID in the upload for cleanup purposes
+      upload.tempNodeId = tempId;
       
       final editedNode = OsmNode(
         id: tempId,
@@ -548,8 +651,10 @@ class UploadQueueState extends ChangeNotifier {
     // Add/update the cache with the real node
     NodeCache.instance.addOrUpdate([realNode]);
     
-    // Clean up any temp nodes at the same coordinate
-    NodeCache.instance.removeTempNodesByCoordinate(item.coord);
+    // Clean up the specific temp node for this upload
+    if (item.tempNodeId != null) {
+      NodeCache.instance.removeTempNodeById(item.tempNodeId!);
+    }
     
     // For modify operations, clean up the original node's _pending_edit marker
     // For extract operations, we don't modify the original node so leave it unchanged
@@ -609,17 +714,23 @@ class UploadQueueState extends ChangeNotifier {
         NodeCache.instance.removePendingDeletionMarker(upload.originalNodeId!);
       }
     } else if (upload.isEdit) {
-      // For edits: remove both the temp node and the _pending_edit marker from original
-      NodeCache.instance.removeTempNodesByCoordinate(upload.coord);
+      // For edits: remove the specific temp node and the _pending_edit marker from original
+      if (upload.tempNodeId != null) {
+        NodeCache.instance.removeTempNodeById(upload.tempNodeId!);
+      }
       if (upload.originalNodeId != null) {
         NodeCache.instance.removePendingEditMarker(upload.originalNodeId!);
       }
     } else if (upload.operation == UploadOperation.extract) {
-      // For extracts: remove the temp node (leave original unchanged)
-      NodeCache.instance.removeTempNodesByCoordinate(upload.coord);
+      // For extracts: remove the specific temp node (leave original unchanged)
+      if (upload.tempNodeId != null) {
+        NodeCache.instance.removeTempNodeById(upload.tempNodeId!);
+      }
     } else {
-      // For creates: remove the temp node
-      NodeCache.instance.removeTempNodesByCoordinate(upload.coord);
+      // For creates: remove the specific temp node
+      if (upload.tempNodeId != null) {
+        NodeCache.instance.removeTempNodeById(upload.tempNodeId!);
+      }
     }
   }
 
@@ -644,6 +755,11 @@ class UploadQueueState extends ChangeNotifier {
   Future<void> reloadQueue() async {
     await _loadQueue();
     notifyListeners();
+  }
+
+  // Public method to manually trigger cache repopulation (useful for debugging or after cache clears)
+  void repopulateCacheFromQueue() {
+    _repopulateCacheFromQueue();
   }
 
   @override

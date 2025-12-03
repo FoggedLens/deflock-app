@@ -184,7 +184,8 @@
     "simulate": "Simulate",
     "productionDescription": "Upload to the live OSM database (visible to all users)",
     "sandboxDescription": "Uploads go to the OSM Sandbox (safe for testing, resets regularly).",
-    "simulateDescription": "Simulate uploads (does not contact OSM servers)"
+    "simulateDescription": "Simulate uploads (does not contact OSM servers)",
+    "cannotChangeWithQueue": "Cannot change upload destination while {} items are in queue. Clear queue first."
   },
   "auth": {
     "osmAccountTitle": "OpenStreetMap Account",
@@ -252,7 +253,10 @@
     "errorDetails": "Error Details",
     "creatingChangeset": " (Creating changeset...)",
     "uploading": " (Uploading...)",
-    "closingChangeset": " (Closing changeset...)"
+    "closingChangeset": " (Closing changeset...)",
+    "processingPaused": "Queue Processing Paused",
+    "pausedDueToOffline": "Upload processing is paused because offline mode is enabled.",
+    "pausedByUser": "Upload processing is manually paused."
   },
   "tileProviders": {
     "title": "Tile Providers",

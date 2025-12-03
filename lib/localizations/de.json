@@ -152,7 +152,8 @@
     "simulate": "Simulieren",
     "productionDescription": "Hochladen in die Live-OSM-Datenbank (für alle Benutzer sichtbar)",
     "sandboxDescription": "Uploads gehen an die OSM Sandbox (sicher zum Testen, wird regelmäßig zurückgesetzt).",
-    "simulateDescription": "Uploads simulieren (kontaktiert OSM-Server nicht)"
+    "simulateDescription": "Uploads simulieren (kontaktiert OSM-Server nicht)",
+    "cannotChangeWithQueue": "Upload-Ziel kann nicht geändert werden, während {} Elemente in der Warteschlange sind. Warteschlange zuerst leeren."
   },
   "auth": {
     "osmAccountTitle": "OpenStreetMap-Konto",
@@ -220,7 +221,10 @@
     "errorDetails": "Fehlerdetails",
     "creatingChangeset": " (Changeset erstellen...)",
     "uploading": " (Uploading...)",
-    "closingChangeset": " (Changeset schließen...)"
+    "closingChangeset": " (Changeset schließen...)",
+    "processingPaused": "Warteschlangenverarbeitung pausiert",
+    "pausedDueToOffline": "Upload-Verarbeitung ist pausiert, da der Offline-Modus aktiviert ist.",
+    "pausedByUser": "Upload-Verarbeitung ist manuell pausiert."
   },
   "tileProviders": {
     "title": "Kachel-Anbieter",

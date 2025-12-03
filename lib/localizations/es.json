@@ -184,7 +184,8 @@
     "simulate": "Simular",
     "productionDescription": "Subir a la base de datos OSM en vivo (visible para todos los usuarios)",
     "sandboxDescription": "Las subidas van al Sandbox de OSM (seguro para pruebas, se reinicia regularmente).",
-    "simulateDescription": "Simular subidas (no contacta servidores OSM)"
+    "simulateDescription": "Simular subidas (no contacta servidores OSM)",
+    "cannotChangeWithQueue": "No se puede cambiar el destino de subida mientras hay {} elementos en cola. Limpie la cola primero."
   },
   "auth": {
     "osmAccountTitle": "Cuenta de OpenStreetMap",
@@ -252,7 +253,10 @@
     "errorDetails": "Detalles del Error",
     "creatingChangeset": " (Creando changeset...)",
     "uploading": " (Subiendo...)",
-    "closingChangeset": " (Cerrando changeset...)"
+    "closingChangeset": " (Cerrando changeset...)",
+    "processingPaused": "Procesamiento de Cola Pausado",
+    "pausedDueToOffline": "El procesamiento de subida está pausado porque el modo sin conexión está habilitado.",
+    "pausedByUser": "El procesamiento de subida está pausado manualmente."
   },
   "tileProviders": {
     "title": "Proveedores de Tiles",

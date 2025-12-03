@@ -184,7 +184,8 @@
     "simulate": "Simular",
     "productionDescription": "Enviar para o banco de dados OSM ao vivo (visível para todos os usuários)",
     "sandboxDescription": "Uploads vão para o Sandbox OSM (seguro para testes, redefine regularmente).",
-    "simulateDescription": "Simular uploads (não contacta servidores OSM)"
+    "simulateDescription": "Simular uploads (não contacta servidores OSM)",
+    "cannotChangeWithQueue": "Não é possível alterar o destino de upload enquanto {} itens estão na fila. Limpe a fila primeiro."
   },
   "auth": {
     "osmAccountTitle": "Conta OpenStreetMap",
@@ -252,7 +253,10 @@
     "errorDetails": "Detalhes do Erro",
     "creatingChangeset": " (Criando changeset...)",
     "uploading": " (Enviando...)",
-    "closingChangeset": " (Fechando changeset...)"
+    "closingChangeset": " (Fechando changeset...)",
+    "processingPaused": "Processamento da Fila Pausado",
+    "pausedDueToOffline": "O processamento de upload está pausado porque o modo offline está habilitado.",
+    "pausedByUser": "O processamento de upload está pausado manualmente."
   },
   "tileProviders": {
     "title": "Provedores de Tiles",

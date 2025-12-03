@@ -2,9 +2,13 @@
   "1.5.4": {
     "content": [
       "• OSM message notifications - dot appears on Settings button and OSM Account section when you have unread messages on OpenStreetMap",
-      "• Download area max zoom level is now limited to the currently selected tile provider's maximum zoom level",
+      "• Download area max zoom level is now limited to the currently selected tile provider's maximum zoom level", 
       "• Navigation route planning now prevents selecting start and end locations that are too close together",
-      "• Cleaned up internal 'maxCameras' references to use 'maxNodes' terminology consistently"
+      "• Cleaned up internal 'maxCameras' references to use 'maxNodes' terminology consistently",
+      "• FIXED: Proximity warnings now consider pending nodes - prevents submitting multiple nodes at the same location without warning",
+      "• FIXED: Deleting queue items now only removes that specific item, not all pending nodes at the same location",
+      "• FIXED: Pending nodes now reappear on the map after app restart - queue items repopulate the visual cache on startup",
+      "• NEW: Upload queue screen shows when processing is paused (offline mode or manually paused)"
     ]
   },
   "1.5.3": {

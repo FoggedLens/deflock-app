@@ -37,7 +37,7 @@ class UploadModeSection extends StatelessWidget {
                     child: Text(locService.t('uploadMode.simulate')),
                   ),
                 ],
-                onChanged: (mode) {
+                onChanged: appState.pendingCount > 0 ? null : (mode) {
                   if (mode != null) {
                     appState.setUploadMode(mode);
                     // Check if re-authentication is needed after mode change
@@ -50,27 +50,65 @@ class UploadModeSection extends StatelessWidget {
             ),
             Padding(
               padding: const EdgeInsets.only(left: 56, top: 2, right: 16, bottom: 12),
-              child: Builder(
-                builder: (context) {
-                  switch (appState.uploadMode) {
-                    case UploadMode.production:
-                      return Text(
-                        locService.t('uploadMode.productionDescription'), 
-                        style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7))
-                      );
-                    case UploadMode.sandbox:
-                      return Text(
-                        locService.t('uploadMode.sandboxDescription'),
-                        style: const TextStyle(fontSize: 12, color: Colors.orange),
-                      );
-                    case UploadMode.simulate:
-                    default:
-                      return Text(
-                        locService.t('uploadMode.simulateDescription'), 
-                        style: const TextStyle(fontSize: 12, color: Colors.deepPurple)
-                      );
-                  }
-                },
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Upload mode restriction message when queue has items
+                  if (appState.pendingCount > 0) ...[
+                    Row(
+                      children: [
+                        const Icon(Icons.info_outline, color: Colors.orange, size: 16),
+                        const SizedBox(width: 6),
+                        Expanded(
+                          child: Text(
+                            locService.t('uploadMode.cannotChangeWithQueue', params: [appState.pendingCount.toString()]),
+                            style: const TextStyle(fontSize: 12, color: Colors.orange),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 6),
+                  ],
+                  
+                  // Normal upload mode description
+                  Builder(
+                    builder: (context) {
+                      switch (appState.uploadMode) {
+                        case UploadMode.production:
+                          return Text(
+                            locService.t('uploadMode.productionDescription'), 
+                            style: TextStyle(
+                              fontSize: 12, 
+                              color: appState.pendingCount > 0 
+                                ? Theme.of(context).disabledColor
+                                : Theme.of(context).colorScheme.onSurface.withOpacity(0.7)
+                            )
+                          );
+                        case UploadMode.sandbox:
+                          return Text(
+                            locService.t('uploadMode.sandboxDescription'),
+                            style: TextStyle(
+                              fontSize: 12, 
+                              color: appState.pendingCount > 0 
+                                ? Theme.of(context).disabledColor
+                                : Colors.orange
+                            ),
+                          );
+                        case UploadMode.simulate:
+                        default:
+                          return Text(
+                            locService.t('uploadMode.simulateDescription'), 
+                            style: TextStyle(
+                              fontSize: 12, 
+                              color: appState.pendingCount > 0 
+                                ? Theme.of(context).disabledColor
+                                : Colors.deepPurple
+                            )
+                          );
+                      }
+                    },
+                  ),
+                ],
               ),
             ),
           ],

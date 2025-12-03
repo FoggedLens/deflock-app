@@ -184,7 +184,8 @@
     "simulate": "模拟",
     "productionDescription": "上传到实时 OSM 数据库（对所有用户可见）",
     "sandboxDescription": "上传到 OSM 沙盒（测试安全，定期重置）。",
-    "simulateDescription": "模拟上传（不联系 OSM 服务器）"
+    "simulateDescription": "模拟上传（不联系 OSM 服务器）",
+    "cannotChangeWithQueue": "队列中有 {} 个项目时无法更改上传目标。请先清空队列。"
   },
   "auth": {
     "osmAccountTitle": "OpenStreetMap 账户",
@@ -252,7 +253,10 @@
     "errorDetails": "错误详情",
     "creatingChangeset": " (创建变更集...)",
     "uploading": " (上传中...)",
-    "closingChangeset": " (关闭变更集...)"
+    "closingChangeset": " (关闭变更集...)",
+    "processingPaused": "队列处理已暂停",
+    "pausedDueToOffline": "因为离线模式已启用，上传处理已暂停。",
+    "pausedByUser": "上传处理已手动暂停。"
   },
   "tileProviders": {
     "title": "瓦片提供商",
