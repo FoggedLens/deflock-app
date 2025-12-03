@@ -10,7 +10,7 @@ import '../../state/session_state.dart';
 import '../../dev_config.dart';
 import '../camera_icon.dart';
 import '../provisional_pin.dart';
-import 'camera_markers.dart';
+import 'node_markers.dart';
 import 'suspected_location_markers.dart';
 
 /// Enumeration for different pin types in navigation
@@ -65,8 +65,8 @@ class MarkerLayerBuilder {
         // Determine if we should dim node markers (when suspected location is selected)
         final shouldDimNodes = appState.selectedSuspectedLocation != null;
         
-        final markers = CameraMarkersBuilder.buildCameraMarkers(
-          cameras: nodesToRender,
+        final markers = NodeMarkersBuilder.buildNodeMarkers(
+          nodes: nodesToRender,
           mapController: mapController.mapController,
           userLocation: userLocation,
           selectedNodeId: selectedNodeId,

@@ -10,7 +10,7 @@ import '../dev_config.dart';
 import 'map_data_submodules/nodes_from_overpass.dart';
 import 'node_cache.dart';
 import 'network_status.dart';
-import '../widgets/camera_provider_with_cache.dart';
+import '../widgets/node_provider_with_cache.dart';
 
 /// Manages pre-fetching larger areas to reduce Overpass API calls.
 /// Uses zoom level 10 areas and automatically splits if hitting node limits.
@@ -143,7 +143,7 @@ class PrefetchAreaService {
       // We just need to handle the successful result here
       
       // Notify UI that cache has been updated with fresh data
-      CameraProviderWithCache.instance.refreshDisplay();
+      NodeProviderWithCache.instance.refreshDisplay();
       
     } catch (e) {
       debugPrint('[PrefetchAreaService] Pre-fetch failed: $e');

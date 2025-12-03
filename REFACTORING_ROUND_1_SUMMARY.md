@@ -10,6 +10,14 @@ Successfully refactored the largest file in the codebase (MapView, 880 lines) by
 - **Total new code**: 4 new focused manager classes (351 lines total)
 - **Net complexity reduction**: Converted monolithic widget into clean orchestrator + specialized managers
 
+### Step 1.5: Terminology Update (Camera → Node)
+- **Renamed 3 core files** to use "node" instead of "camera" terminology
+- **Updated all class names** to reflect current multi-device scope (not just cameras)
+- **Updated all method names** and comments for consistency
+- **Updated all imports/references** across the entire codebase
+- **Benefits**: Consistent terminology that reflects the app's expansion beyond just cameras to all surveillance devices
+=======
+
 ### New Manager Classes Created
 
 #### 1. MapDataManager (`lib/widgets/map/map_data_manager.dart`) - 92 lines
@@ -158,9 +166,20 @@ Expected reduction: ~400-500 lines
 - `lib/widgets/map/map_interaction_manager.dart`
 - `lib/widgets/map/marker_layer_builder.dart`
 - `lib/widgets/map/overlay_layer_builder.dart`
+- `lib/widgets/node_provider_with_cache.dart` (renamed from camera_provider_with_cache.dart)
+- `lib/widgets/map/node_refresh_controller.dart` (renamed from camera_refresh_controller.dart)
+- `lib/widgets/map/node_markers.dart` (renamed from camera_markers.dart)
 
 ### Modified Files
 - `lib/widgets/map_view.dart` (880 → 572 lines)
+- `lib/app_state.dart` (updated imports and references)
+- `lib/state/upload_queue_state.dart` (updated all references)
+- `lib/services/prefetch_area_service.dart` (updated references)
+
+### Removed Files
+- `lib/widgets/camera_provider_with_cache.dart` (renamed to node_provider_with_cache.dart)
+- `lib/widgets/map/camera_refresh_controller.dart` (renamed to node_refresh_controller.dart)  
+- `lib/widgets/map/camera_markers.dart` (renamed to node_markers.dart)
 
 ### Total Impact
 - **Lines removed**: 308 from MapView

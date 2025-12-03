@@ -6,31 +6,31 @@ import 'package:latlong2/latlong.dart';
 import '../../models/node_profile.dart';
 import '../../app_state.dart' show UploadMode;
 import '../../services/prefetch_area_service.dart';
-import '../camera_provider_with_cache.dart';
+import '../node_provider_with_cache.dart';
 import '../../dev_config.dart';
 
-/// Manages camera data refreshing, profile change detection, and camera cache operations.
-/// Handles debounced camera fetching and profile-based cache invalidation.
-class CameraRefreshController {
-  late final CameraProviderWithCache _cameraProvider;
+/// Manages node data refreshing, profile change detection, and node cache operations.
+/// Handles debounced node fetching and profile-based cache invalidation.
+class NodeRefreshController {
+  late final NodeProviderWithCache _nodeProvider;
   List<NodeProfile>? _lastEnabledProfiles;
-  VoidCallback? _onCamerasUpdated;
+  VoidCallback? _onNodesUpdated;
 
-  /// Initialize the camera refresh controller
-  void initialize({required VoidCallback onCamerasUpdated}) {
-    _cameraProvider = CameraProviderWithCache.instance;
-    _onCamerasUpdated = onCamerasUpdated;
-    _cameraProvider.addListener(_onCamerasUpdated!);
+  /// Initialize the node refresh controller
+  void initialize({required VoidCallback onNodesUpdated}) {
+    _nodeProvider = NodeProviderWithCache.instance;
+    _onNodesUpdated = onNodesUpdated;
+    _nodeProvider.addListener(_onNodesUpdated!);
   }
 
   /// Dispose of resources and listeners
   void dispose() {
-    if (_onCamerasUpdated != null) {
-      _cameraProvider.removeListener(_onCamerasUpdated!);
+    if (_onNodesUpdated != null) {
+      _nodeProvider.removeListener(_onNodesUpdated!);
     }
   }
 
-  /// Check if camera profiles changed and handle cache clearing if needed.
+  /// Check if node profiles changed and handle cache clearing if needed.
   /// Returns true if profiles changed (triggering a refresh).
   bool checkAndHandleProfileChanges({
     required List<NodeProfile> currentEnabledProfiles,
@@ -42,13 +42,13 @@ class CameraRefreshController {
       
       // Handle profile change with cache clearing and refresh
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        // Clear camera cache to ensure fresh data for new profile combination
-        _cameraProvider.clearCache();
+        // Clear node cache to ensure fresh data for new profile combination
+        _nodeProvider.clearCache();
         // Clear pre-fetch area since profiles changed
         PrefetchAreaService().clearPreFetchedArea();
         // Force display refresh first (for immediate UI update)
-        _cameraProvider.refreshDisplay();
-        // Notify that profiles changed (triggers camera refresh)
+        _nodeProvider.refreshDisplay();
+        // Notify that profiles changed (triggers node refresh)
         onProfilesChanged();
       });
       
@@ -57,8 +57,8 @@ class CameraRefreshController {
     return false;
   }
 
-  /// Refresh cameras from provider for the current map view
-  void refreshCamerasFromProvider({
+  /// Refresh nodes from provider for the current map view
+  void refreshNodesFromProvider({
     required AnimatedMapController controller,
     required List<NodeProfile> enabledProfiles,
     required UploadMode uploadMode,
@@ -85,15 +85,15 @@ class CameraRefreshController {
       return;
     }
     
-    _cameraProvider.fetchAndUpdate(
+    _nodeProvider.fetchAndUpdate(
       bounds: bounds,
       profiles: enabledProfiles,
       uploadMode: uploadMode,
     );
   }
 
-  /// Get the camera provider instance for external access
-  CameraProviderWithCache get cameraProvider => _cameraProvider;
+  /// Get the node provider instance for external access
+  NodeProviderWithCache get nodeProvider => _nodeProvider;
 
   /// Helper to check if two profile lists are equal by comparing IDs
   bool _profileListsEqual(List<NodeProfile> list1, List<NodeProfile> list2) {

@@ -9,7 +9,7 @@ import '../models/osm_node.dart';
 import '../models/node_profile.dart';
 import '../services/node_cache.dart';
 import '../services/uploader.dart';
-import '../widgets/camera_provider_with_cache.dart';
+import '../widgets/node_provider_with_cache.dart';
 import 'settings_state.dart';
 import 'session_state.dart';
 
@@ -113,7 +113,7 @@ class UploadQueueState extends ChangeNotifier {
       _saveQueue();
       
       // Notify node provider to update the map
-      CameraProviderWithCache.instance.notifyListeners();
+      NodeProviderWithCache.instance.notifyListeners();
     }
   }
 
@@ -150,7 +150,7 @@ class UploadQueueState extends ChangeNotifier {
     
     NodeCache.instance.addOrUpdate([tempNode]);
     // Notify node provider to update the map
-    CameraProviderWithCache.instance.notifyListeners();
+    NodeProviderWithCache.instance.notifyListeners();
     
     notifyListeners();
   }
@@ -238,7 +238,7 @@ class UploadQueueState extends ChangeNotifier {
       NodeCache.instance.addOrUpdate([originalNode, editedNode]);
     }
     // Notify node provider to update the map
-    CameraProviderWithCache.instance.notifyListeners();
+    NodeProviderWithCache.instance.notifyListeners();
     
     notifyListeners();
   }
@@ -269,7 +269,7 @@ class UploadQueueState extends ChangeNotifier {
     
     NodeCache.instance.addOrUpdate([nodeWithDeletionTag]);
     // Notify node provider to update the map
-    CameraProviderWithCache.instance.notifyListeners();
+    NodeProviderWithCache.instance.notifyListeners();
     
     notifyListeners();
   }
@@ -284,7 +284,7 @@ class UploadQueueState extends ChangeNotifier {
     _saveQueue();
     
     // Notify node provider to update the map
-    CameraProviderWithCache.instance.notifyListeners();
+    NodeProviderWithCache.instance.notifyListeners();
     notifyListeners();
   }
   
@@ -296,7 +296,7 @@ class UploadQueueState extends ChangeNotifier {
     _saveQueue();
     
     // Notify node provider to update the map
-    CameraProviderWithCache.instance.notifyListeners();
+    NodeProviderWithCache.instance.notifyListeners();
     notifyListeners();
   }
 
@@ -665,7 +665,7 @@ class UploadQueueState extends ChangeNotifier {
     }
     
     // Notify node provider to update the map
-    CameraProviderWithCache.instance.notifyListeners();
+    NodeProviderWithCache.instance.notifyListeners();
   }
 
   // Handle successful deletion by removing the node from cache
@@ -675,7 +675,7 @@ class UploadQueueState extends ChangeNotifier {
       NodeCache.instance.removeNodeById(item.originalNodeId!);
       
       // Notify node provider to update the map
-      CameraProviderWithCache.instance.notifyListeners();
+      NodeProviderWithCache.instance.notifyListeners();
     }
   }
 

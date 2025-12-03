@@ -18,7 +18,7 @@ import 'services/node_cache.dart';
 import 'services/tile_preview_service.dart';
 import 'services/changelog_service.dart';
 import 'services/operator_profile_service.dart';
-import 'widgets/camera_provider_with_cache.dart';
+import 'widgets/node_provider_with_cache.dart';
 import 'services/profile_service.dart';
 import 'widgets/proximity_warning_dialog.dart';
 import 'widgets/reauth_messages_dialog.dart';
@@ -214,7 +214,7 @@ class AppState extends ChangeNotifier {
     await _authState.init(_settingsState.uploadMode);
     
     // Set up callback to repopulate pending nodes after cache clears
-    CameraProviderWithCache.instance.setOnCacheClearedCallback(() {
+    NodeProviderWithCache.instance.setOnCacheClearedCallback(() {
       _uploadQueueState.repopulateCacheFromQueue();
     });
     

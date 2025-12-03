@@ -12,10 +12,10 @@ import '../app_state.dart';
 
 /// Provides surveillance nodes for a map view, using an in-memory cache and optionally
 /// merging in new results from Overpass via MapDataProvider when not offline.
-class CameraProviderWithCache extends ChangeNotifier {
-  static final CameraProviderWithCache instance = CameraProviderWithCache._internal();
-  factory CameraProviderWithCache() => instance;
-  CameraProviderWithCache._internal();
+class NodeProviderWithCache extends ChangeNotifier {
+  static final NodeProviderWithCache instance = NodeProviderWithCache._internal();
+  factory NodeProviderWithCache() => instance;
+  NodeProviderWithCache._internal();
 
   Timer? _debounceTimer;
 
@@ -61,7 +61,7 @@ class CameraProviderWithCache extends ChangeNotifier {
           notifyListeners();
         }
       } catch (e) {
-        debugPrint('[CameraProviderWithCache] Node fetch failed: $e');
+        debugPrint('[NodeProviderWithCache] Node fetch failed: $e');
         // Cache already holds whatever is available for the view
       }
     });

@@ -14,11 +14,11 @@ import '../models/suspected_location.dart';
 import '../models/tile_provider.dart';
 import '../state/session_state.dart';
 import 'debouncer.dart';
-import 'camera_provider_with_cache.dart';
+import 'node_provider_with_cache.dart';
 import 'map/map_overlays.dart';
 import 'map/map_position_manager.dart';
 import 'map/tile_layer_manager.dart';
-import 'map/camera_refresh_controller.dart';
+import 'map/node_refresh_controller.dart';
 import 'map/gps_controller.dart';
 import 'map/map_data_manager.dart';
 import 'map/map_interaction_manager.dart';
@@ -69,7 +69,7 @@ class MapViewState extends State<MapView> {
 
   late final MapPositionManager _positionManager;
   late final TileLayerManager _tileManager;
-  late final CameraRefreshController _cameraController;
+  late final NodeRefreshController _nodeController;
   late final GpsController _gpsController;
   late final MapDataManager _dataManager;
   late final MapInteractionManager _interactionManager;
@@ -93,8 +93,8 @@ class MapViewState extends State<MapView> {
     _positionManager = MapPositionManager();
     _tileManager = TileLayerManager();
     _tileManager.initialize();
-    _cameraController = CameraRefreshController();
-    _cameraController.initialize(onCamerasUpdated: _onNodesUpdated);
+    _nodeController = NodeRefreshController();
+    _nodeController.initialize(onNodesUpdated: _onNodesUpdated);
     _gpsController = GpsController();
     _dataManager = MapDataManager();
     _interactionManager = MapInteractionManager();
@@ -167,7 +167,7 @@ class MapViewState extends State<MapView> {
               return [];
             }
             return mapBounds != null 
-                ? CameraProviderWithCache.instance.getCachedNodesForBounds(mapBounds)
+                ? NodeProviderWithCache.instance.getCachedNodesForBounds(mapBounds)
                 : [];
           } catch (e) {
             debugPrint('[MapView] Could not get nearby nodes: $e');
@@ -209,7 +209,7 @@ class MapViewState extends State<MapView> {
     _cameraDebounce.dispose();
     _tileDebounce.dispose();
     _mapPositionDebounce.dispose();
-    _cameraController.dispose();
+    _nodeController.dispose();
     _tileManager.dispose();
     _gpsController.dispose();
     PrefetchAreaService().dispose();
@@ -241,7 +241,7 @@ class MapViewState extends State<MapView> {
 
   void _refreshNodesFromProvider() {
     final appState = context.read<AppState>();
-    _cameraController.refreshCamerasFromProvider(
+    _nodeController.refreshNodesFromProvider(
       controller: _controller,
       enabledProfiles: appState.enabledProfiles,
       uploadMode: appState.uploadMode,
@@ -273,8 +273,8 @@ class MapViewState extends State<MapView> {
     final session = appState.session;
     final editSession = appState.editSession;
 
-    // Check if enabled profiles changed and refresh cameras if needed
-    _cameraController.checkAndHandleProfileChanges(
+    // Check if enabled profiles changed and refresh nodes if needed
+    _nodeController.checkAndHandleProfileChanges(
       currentEnabledProfiles: appState.enabledProfiles,
       onProfilesChanged: _refreshNodesFromProvider,
     );

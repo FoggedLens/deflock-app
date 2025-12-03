@@ -8,13 +8,13 @@ import '../../models/osm_node.dart';
 import '../node_tag_sheet.dart';
 import '../camera_icon.dart';
 
-/// Smart marker widget for camera with single/double tap distinction
-class CameraMapMarker extends StatefulWidget {
+/// Smart marker widget for surveillance node with single/double tap distinction
+class NodeMapMarker extends StatefulWidget {
   final OsmNode node;
   final MapController mapController;
   final void Function(OsmNode)? onNodeTap;
   
-  const CameraMapMarker({
+  const NodeMapMarker({
     required this.node, 
     required this.mapController, 
     this.onNodeTap,
@@ -22,10 +22,10 @@ class CameraMapMarker extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  State<CameraMapMarker> createState() => _CameraMapMarkerState();
+  State<NodeMapMarker> createState() => _NodeMapMarkerState();
 }
 
-class _CameraMapMarkerState extends State<CameraMapMarker> {
+class _NodeMapMarkerState extends State<NodeMapMarker> {
   Timer? _tapTimer;
   // From dev_config.dart for build-time parameters
   static const Duration tapTimeout = kMarkerTapTimeout;
@@ -60,7 +60,7 @@ class _CameraMapMarkerState extends State<CameraMapMarker> {
 
   @override
   Widget build(BuildContext context) {
-    // Check camera state
+    // Check node state
     final isPendingUpload = widget.node.tags.containsKey('_pending_upload') && 
                            widget.node.tags['_pending_upload'] == 'true';
     final isPendingEdit = widget.node.tags.containsKey('_pending_edit') && 
@@ -87,10 +87,10 @@ class _CameraMapMarkerState extends State<CameraMapMarker> {
   }
 }
 
-/// Helper class to build marker layers for cameras and user location
-class CameraMarkersBuilder {
-  static List<Marker> buildCameraMarkers({
-    required List<OsmNode> cameras,
+/// Helper class to build marker layers for surveillance nodes and user location
+class NodeMarkersBuilder {
+  static List<Marker> buildNodeMarkers({
+    required List<OsmNode> nodes,
     required MapController mapController,
     LatLng? userLocation,
     int? selectedNodeId,
@@ -98,9 +98,9 @@ class CameraMarkersBuilder {
     bool shouldDim = false,
   }) {
     final markers = <Marker>[
-      // Camera markers
-      ...cameras
-        .where(_isValidCameraCoordinate)
+      // Node markers
+      ...nodes
+        .where(_isValidNodeCoordinate)
         .map((n) {
           // Check if this node should be highlighted (selected) or dimmed
           final isSelected = selectedNodeId == n.id;
@@ -112,7 +112,7 @@ class CameraMarkersBuilder {
             height: kNodeIconDiameter,
             child: Opacity(
               opacity: shouldDimNode ? 0.5 : 1.0,
-              child: CameraMapMarker(
+              child: NodeMapMarker(
                 node: n, 
                 mapController: mapController,
                 onNodeTap: onNodeTap,
@@ -134,7 +134,7 @@ class CameraMarkersBuilder {
     return markers;
   }
 
-  static bool _isValidCameraCoordinate(OsmNode node) {
+  static bool _isValidNodeCoordinate(OsmNode node) {
     return (node.coord.latitude != 0 || node.coord.longitude != 0) &&
            node.coord.latitude.abs() <= 90 && 
            node.coord.longitude.abs() <= 180;

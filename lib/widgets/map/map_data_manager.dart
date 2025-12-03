@@ -5,7 +5,7 @@ import 'package:latlong2/latlong.dart';
 
 import '../../models/osm_node.dart';
 import '../../app_state.dart';
-import '../camera_provider_with_cache.dart';
+import '../node_provider_with_cache.dart';
 import '../../dev_config.dart';
 
 /// Manages data fetching, filtering, and node limit logic for the map.
@@ -41,7 +41,7 @@ class MapDataManager {
     if (currentZoom >= minZoom) {
       // Above minimum zoom - get cached nodes directly (no Provider needed)
       allNodes = (mapBounds != null)
-          ? CameraProviderWithCache.instance.getCachedNodesForBounds(mapBounds)
+          ? NodeProviderWithCache.instance.getCachedNodesForBounds(mapBounds)
           : <OsmNode>[];
       
       // Filter out invalid coordinates before applying limit
