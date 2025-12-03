@@ -567,6 +567,5 @@ class MapViewState extends State<MapView> {
       ],
     );
   }
-
 }
 

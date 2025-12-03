@@ -24,6 +24,9 @@ import '../models/osm_node.dart';
 import '../models/suspected_location.dart';
 import '../models/search_result.dart';
 import '../services/changelog_service.dart';
+import 'coordinators/sheet_coordinator.dart';
+import 'coordinators/navigation_coordinator.dart';
+import 'coordinators/map_interaction_handler.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -36,17 +39,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final GlobalKey<MapViewState> _mapViewKey = GlobalKey<MapViewState>();
   late final AnimatedMapController _mapController;
-  bool _editSheetShown = false;
-  bool _navigationSheetShown = false;
   
-  // Track sheet heights for map positioning
-  double _addSheetHeight = 0.0;
-  double _editSheetHeight = 0.0;
-  double _tagSheetHeight = 0.0;
-  double _navigationSheetHeight = 0.0;
-  
-  // Flag to prevent map bounce when transitioning from tag sheet to edit sheet
-  bool _transitioningToEdit = false;
+  // Coordinators for managing different aspects of the home screen
+  late final SheetCoordinator _sheetCoordinator;
+  late final NavigationCoordinator _navigationCoordinator;
+  late final MapInteractionHandler _mapInteractionHandler;
   
   // Track node limit state for button disabling
   bool _isNodeLimitActive = false;
@@ -61,6 +58,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   void initState() {
     super.initState();
     _mapController = AnimatedMapController(vsync: this);
+    _sheetCoordinator = SheetCoordinator();
+    _navigationCoordinator = NavigationCoordinator();
+    _mapInteractionHandler = MapInteractionHandler();
   }
 
   @override
@@ -104,104 +104,18 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   }
 
   void _openAddNodeSheet() {
-    final appState = context.read<AppState>();
-    
-    // Check minimum zoom level before opening sheet
-    final currentZoom = _mapController.mapController.camera.zoom;
-    if (currentZoom < kMinZoomForNodeEditingSheets) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            LocalizationService.instance.t('editNode.zoomInRequiredMessage', 
-              params: [kMinZoomForNodeEditingSheets.toString()])
-          ),
-          duration: const Duration(seconds: 4),
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
-      return;
-    }
-    
-    // Check if node limit is active and warn user
-    if (_isNodeLimitActive) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            LocalizationService.instance.t('nodeLimitIndicator.editingDisabledMessage')
-          ),
-          duration: const Duration(seconds: 4),
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
-      return;
-    }
-    
-    // Disable follow-me when adding a camera so the map doesn't jump around
-    appState.setFollowMeMode(FollowMeMode.off);
-    
-    appState.startAddSession();
-    final session = appState.session!;          // guaranteed non‑null now
-
-    final controller = _scaffoldKey.currentState!.showBottomSheet(
-      (ctx) => Padding(
-        padding: EdgeInsets.only(
-          bottom: MediaQuery.of(context).padding.bottom, // Only safe area, no keyboard
-        ),
-        child: MeasuredSheet(
-          onHeightChanged: (height) {
-            setState(() {
-              _addSheetHeight = height + MediaQuery.of(context).padding.bottom;
-            });
-          },
-          child: AddNodeSheet(session: session),
-        ),
-      ),
+    _sheetCoordinator.openAddNodeSheet(
+      context: context,
+      scaffoldKey: _scaffoldKey,
+      mapController: _mapController,
+      isNodeLimitActive: _isNodeLimitActive,
+      onStateChanged: () => setState(() {}),
     );
-    
-    // Reset height when sheet is dismissed
-    controller.closed.then((_) {
-      setState(() {
-        _addSheetHeight = 0.0;
-      });
-      
-      // Handle dismissal by canceling session if still active
-      final appState = context.read<AppState>();
-      if (appState.session != null) {
-        debugPrint('[HomeScreen] AddNodeSheet dismissed - canceling session');
-        appState.cancelSession();
-      }
-    });
   }
 
   void _openEditNodeSheet() {
-    final appState = context.read<AppState>();
-    // Disable follow-me when editing a camera so the map doesn't jump around
-    appState.setFollowMeMode(FollowMeMode.off);
-    
-    final session = appState.editSession!;     // should be non-null when this is called
-    
-    // Center map on the node being edited (same animation as openNodeTagSheet)
-    try {
-      _mapController.animateTo(
-        dest: session.originalNode.coord,
-        zoom: _mapController.mapController.camera.zoom,
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeOut,
-      );
-    } catch (_) {
-      // Map controller not ready, fallback to immediate move
-      try {
-        _mapController.mapController.move(session.originalNode.coord, _mapController.mapController.camera.zoom);
-      } catch (_) {
-        // Controller really not ready, skip centering
-      }
-    }
-    
-    // Set transition flag to prevent map bounce
-    _transitioningToEdit = true;
-    
     // Close any existing tag sheet first
-    if (_tagSheetHeight > 0) {
+    if (_sheetCoordinator.tagSheetHeight > 0) {
       Navigator.of(context).pop();
     }
 
@@ -209,84 +123,31 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     Future.delayed(const Duration(milliseconds: 150), () {
       if (!mounted) return;
       
-      final controller = _scaffoldKey.currentState!.showBottomSheet(
-        (ctx) => Padding(
-          padding: EdgeInsets.only(
-            bottom: MediaQuery.of(context).padding.bottom, // Only safe area, no keyboard
-          ),
-          child: MeasuredSheet(
-            onHeightChanged: (height) {
-              setState(() {
-                _editSheetHeight = height + MediaQuery.of(context).padding.bottom;
-                // Clear transition flag and reset tag sheet height once edit sheet starts sizing
-                if (height > 0 && _transitioningToEdit) {
-                  _transitioningToEdit = false;
-                  _tagSheetHeight = 0.0; // Now safe to reset
-                  _selectedNodeId = null; // Clear selection when moving to edit
-                }
-              });
-            },
-            child: EditNodeSheet(session: session),
-          ),
-        ),
+      _sheetCoordinator.openEditNodeSheet(
+        context: context,
+        scaffoldKey: _scaffoldKey,
+        mapController: _mapController,
+        onStateChanged: () {
+          setState(() {
+            // Clear tag sheet height and selected node when transitioning
+            if (_sheetCoordinator.editSheetHeight > 0 && _sheetCoordinator.transitioningToEdit) {
+              _sheetCoordinator.resetTagSheetHeight(() {});
+              _selectedNodeId = null; // Clear selection when moving to edit
+            }
+          });
+        },
       );
-      
-      // Reset height when sheet is dismissed
-      controller.closed.then((_) {
-        setState(() {
-          _editSheetHeight = 0.0;
-          _transitioningToEdit = false;
-        });
-        
-        // Handle dismissal by canceling edit session if still active
-        final appState = context.read<AppState>();
-        if (appState.editSession != null) {
-          debugPrint('[HomeScreen] EditNodeSheet dismissed - canceling edit session');
-          appState.cancelEditSession();
-        }
-      });
     });
   }
 
   void _openNavigationSheet() {
-    final controller = _scaffoldKey.currentState!.showBottomSheet(
-      (ctx) => Padding(
-        padding: EdgeInsets.only(
-          bottom: MediaQuery.of(context).padding.bottom, // Only safe area, no keyboard
-        ),
-        child: MeasuredSheet(
-          onHeightChanged: (height) {
-            setState(() {
-              _navigationSheetHeight = height + MediaQuery.of(context).padding.bottom;
-            });
-          },
-          child: NavigationSheet(
-            onStartRoute: _onStartRoute,
-            onResumeRoute: _onResumeRoute,
-          ),
-        ),
-      ),
+    _sheetCoordinator.openNavigationSheet(
+      context: context,
+      scaffoldKey: _scaffoldKey,
+      onStateChanged: () => setState(() {}),
+      onStartRoute: _onStartRoute,
+      onResumeRoute: _onResumeRoute,
     );
-    
-    // Reset height when sheet is dismissed
-    controller.closed.then((_) {
-      setState(() {
-        _navigationSheetHeight = 0.0;
-      });
-      
-      // Handle different dismissal scenarios
-      final appState = context.read<AppState>();
-      
-      if (appState.isSettingSecondPoint) {
-        // If user dismisses sheet while setting second point, cancel everything
-        debugPrint('[HomeScreen] Sheet dismissed during second point selection - canceling navigation');
-        appState.cancelNavigation();
-      } else if (appState.isInRouteMode && appState.showingOverview) {
-        // If we're in route active mode and showing overview, just hide the overview
-        debugPrint('[HomeScreen] Sheet dismissed during route overview - hiding overview');
-        appState.hideRouteOverview();
-      }
-    });
   }
 
   // Check for and display welcome/changelog popup
@@ -349,28 +210,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   }
 
   void _onStartRoute() {
-    final appState = context.read<AppState>();
-    
-    // Get user location and check if we should auto-enable follow-me
-    LatLng? userLocation;
-    bool enableFollowMe = false;
-    
-    try {
-      userLocation = _mapViewKey.currentState?.getUserLocation();
-      if (userLocation != null && appState.shouldAutoEnableFollowMe(userLocation)) {
-        debugPrint('[HomeScreen] Auto-enabling follow-me mode - user within 1km of start');
-        appState.setFollowMeMode(FollowMeMode.follow);
-        enableFollowMe = true;
-      }
-    } catch (e) {
-      debugPrint('[HomeScreen] Could not get user location for auto follow-me: $e');
-    }
-    
-    // Start the route
-    appState.startRoute();
-    
-    // Zoom to level 14 and center appropriately
-    _zoomAndCenterForRoute(enableFollowMe, userLocation, appState.routeStart);
+    _navigationCoordinator.startRoute(
+      context: context,
+      mapController: _mapController,
+      mapViewKey: _mapViewKey,
+    );
   }
   
   void _zoomAndCenterForRoute(bool followMeEnabled, LatLng? userLocation, LatLng? routeStart) {
@@ -403,153 +247,50 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   }
   
   void _onResumeRoute() {
-    final appState = context.read<AppState>();
-    
-    // Hide the overview
-    appState.hideRouteOverview();
-    
-    // Zoom and center for resumed route
-    // For resume, we always center on user if GPS is available, otherwise start pin
-    LatLng? userLocation;
-    try {
-      userLocation = _mapViewKey.currentState?.getUserLocation();
-    } catch (e) {
-      debugPrint('[HomeScreen] Could not get user location for route resume: $e');
-    }
-    
-    _zoomAndCenterForRoute(
-      appState.followMeMode != FollowMeMode.off, // Use current follow-me state
-      userLocation, 
-      appState.routeStart
+    _navigationCoordinator.resumeRoute(
+      context: context,
+      mapController: _mapController,
+      mapViewKey: _mapViewKey,
     );
   }
   
-  void _zoomToShowFullRoute(AppState appState) {
-    if (appState.routeStart == null || appState.routeEnd == null) return;
-    
-    try {
-      // Calculate the bounds of the route
-      final start = appState.routeStart!;
-      final end = appState.routeEnd!;
-      
-      // Find the center point between start and end
-      final centerLat = (start.latitude + end.latitude) / 2;
-      final centerLng = (start.longitude + end.longitude) / 2;
-      final center = LatLng(centerLat, centerLng);
-      
-      // Calculate distance between points to determine appropriate zoom
-      final distance = const Distance().as(LengthUnit.Meter, start, end);
-      double zoom;
-      if (distance < 500) {
-        zoom = 16.0;
-      } else if (distance < 2000) {
-        zoom = 14.0;
-      } else if (distance < 10000) {
-        zoom = 12.0;
-      } else {
-        zoom = 10.0;
-      }
-      
-      debugPrint('[HomeScreen] Zooming to show full route - distance: ${distance.toStringAsFixed(0)}m, zoom: $zoom');
-      
-      _mapController.animateTo(
-        dest: center,
-        zoom: zoom,
-        duration: const Duration(milliseconds: 800),
-        curve: Curves.easeInOut,
-      );
-    } catch (e) {
-      debugPrint('[HomeScreen] Could not zoom to show full route: $e');
-    }
-  }
+
 
   void _onNavigationButtonPressed() {
     final appState = context.read<AppState>();
     
-    debugPrint('[HomeScreen] Navigation button pressed - showRouteButton: ${appState.showRouteButton}, navigationMode: ${appState.navigationMode}');
-    
     if (appState.showRouteButton) {
       // Route button - show route overview and zoom to show route
-      debugPrint('[HomeScreen] Showing route overview');
       appState.showRouteOverview();
-      
-      // Zoom out a bit to show the full route when viewing overview
-      _zoomToShowFullRoute(appState);
+      _navigationCoordinator.zoomToShowFullRoute(
+        appState: appState,
+        mapController: _mapController,
+      );
     } else {
-      // Search button
-      if (appState.offlineMode) {
-        // Show offline snackbar instead of entering search mode
-        debugPrint('[HomeScreen] Search disabled - offline mode');
-        ScaffoldMessenger.of(context).clearSnackBars();
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Search not available while offline'),
-            duration: const Duration(seconds: 3),
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
-      } else {
-        // Enter search mode normally
-        debugPrint('[HomeScreen] Entering search mode');
-        try {
-          final mapCenter = _mapController.mapController.camera.center;
-          debugPrint('[HomeScreen] Map center: $mapCenter');
-          appState.enterSearchMode(mapCenter);
-        } catch (e) {
-          // Controller not ready, use fallback location
-          debugPrint('[HomeScreen] Map controller not ready: $e, using fallback');
-          appState.enterSearchMode(LatLng(37.7749, -122.4194));
-        }
-      }
+      // Search/navigation button - delegate to coordinator
+      _navigationCoordinator.handleNavigationButtonPress(
+        context: context,
+        mapController: _mapController,
+      );
     }
   }
 
   void _onSearchResultSelected(SearchResult result) {
-    final appState = context.read<AppState>();
-    
-    // Update navigation state with selected result
-    appState.selectSearchResult(result);
-    
-    // Jump to the search result location
-    try {
-      _mapController.animateTo(
-        dest: result.coordinates,
-        zoom: 16.0, // Good zoom level for viewing the area
-        duration: const Duration(milliseconds: 500),
-        curve: Curves.easeOut,
-      );
-    } catch (_) {
-      // Map controller not ready, fallback to immediate move
-      try {
-        _mapController.mapController.move(result.coordinates, 16.0);
-      } catch (_) {
-        debugPrint('[HomeScreen] Could not move to search result: ${result.coordinates}');
-      }
-    }
+    _mapInteractionHandler.handleSearchResultSelection(
+      context: context,
+      result: result,
+      mapController: _mapController,
+    );
   }
 
   void openNodeTagSheet(OsmNode node) {
-    setState(() {
-      _selectedNodeId = node.id; // Track selected node for highlighting
-    });
-    
-    // Start smooth centering animation simultaneously with sheet opening
-    // Use the same duration as SheetAwareMap (300ms) for coordinated animation
-    try {
-      _mapController.animateTo(
-        dest: node.coord,
-        zoom: _mapController.mapController.camera.zoom,
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeOut,
-      );
-    } catch (_) {
-      // Map controller not ready, fallback to immediate move
-      try {
-        _mapController.mapController.move(node.coord, _mapController.mapController.camera.zoom);
-      } catch (_) {
-        // Controller really not ready, skip centering
-      }
-    }
+    // Handle the map interaction (centering and follow-me disable)
+    _mapInteractionHandler.handleNodeTap(
+      context: context,
+      node: node,
+      mapController: _mapController,
+      onSelectedNodeChanged: (id) => setState(() => _selectedNodeId = id),
+    );
     
     final controller = _scaffoldKey.currentState!.showBottomSheet(
       (ctx) => Padding(
@@ -558,9 +299,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         ),
         child: MeasuredSheet(
           onHeightChanged: (height) {
-            setState(() {
-              _tagSheetHeight = height + MediaQuery.of(context).padding.bottom;
-            });
+            _sheetCoordinator.updateTagSheetHeight(
+              height + MediaQuery.of(context).padding.bottom,
+              () => setState(() {}),
+            );
           },
           child: NodeTagSheet(
             node: node,
@@ -591,36 +333,21 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     
     // Reset height and selection when sheet is dismissed (unless transitioning to edit)
     controller.closed.then((_) {
-      if (!_transitioningToEdit) {
-        setState(() {
-          _tagSheetHeight = 0.0;
-          _selectedNodeId = null; // Clear selection
-        });
+      if (!_sheetCoordinator.transitioningToEdit) {
+        _sheetCoordinator.resetTagSheetHeight(() => setState(() {}));
+        setState(() => _selectedNodeId = null);
       }
       // If transitioning to edit, keep the height until edit sheet takes over
     });
   }
 
   void openSuspectedLocationSheet(SuspectedLocation location) {
-    final appState = context.read<AppState>();
-    appState.selectSuspectedLocation(location);
-    
-    // Start smooth centering animation simultaneously with sheet opening
-    try {
-      _mapController.animateTo(
-        dest: location.centroid,
-        zoom: _mapController.mapController.camera.zoom,
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeOut,
-      );
-    } catch (_) {
-      // Map controller not ready, fallback to immediate move
-      try {
-        _mapController.mapController.move(location.centroid, _mapController.mapController.camera.zoom);
-      } catch (_) {
-        // Controller really not ready, skip centering
-      }
-    }
+    // Handle the map interaction (centering and selection)
+    _mapInteractionHandler.handleSuspectedLocationTap(
+      context: context,
+      location: location,
+      mapController: _mapController,
+    );
     
     final controller = _scaffoldKey.currentState!.showBottomSheet(
       (ctx) => Padding(
@@ -629,9 +356,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         ),
         child: MeasuredSheet(
           onHeightChanged: (height) {
-            setState(() {
-              _tagSheetHeight = height + MediaQuery.of(context).padding.bottom;
-            });
+            _sheetCoordinator.updateTagSheetHeight(
+              height + MediaQuery.of(context).padding.bottom,
+              () => setState(() {}),
+            );
           },
           child: SuspectedLocationSheet(location: location),
         ),
@@ -640,10 +368,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     
     // Reset height and clear selection when sheet is dismissed
     controller.closed.then((_) {
-      setState(() {
-        _tagSheetHeight = 0.0;
-      });
-      appState.clearSuspectedLocationSelection();
+      _sheetCoordinator.resetTagSheetHeight(() => setState(() {}));
+      context.read<AppState>().clearSuspectedLocationSelection();
     });
   }
 
@@ -652,21 +378,21 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     final appState = context.watch<AppState>();
 
     // Auto-open edit sheet when edit session starts
-    if (appState.editSession != null && !_editSheetShown) {
-      _editSheetShown = true;
+    if (appState.editSession != null && !_sheetCoordinator.editSheetShown) {
+      _sheetCoordinator.setEditSheetShown(true);
       WidgetsBinding.instance.addPostFrameCallback((_) => _openEditNodeSheet());
     } else if (appState.editSession == null) {
-      _editSheetShown = false;
+      _sheetCoordinator.setEditSheetShown(false);
     }
 
     // Auto-open navigation sheet when needed - simplified logic (only in dev mode)
     if (kEnableNavigationFeatures) {
       final shouldShowNavSheet = appState.isInSearchMode || appState.showingOverview;
-      if (shouldShowNavSheet && !_navigationSheetShown) {
-        _navigationSheetShown = true;
+      if (shouldShowNavSheet && !_sheetCoordinator.navigationSheetShown) {
+        _sheetCoordinator.setNavigationSheetShown(true);
         WidgetsBinding.instance.addPostFrameCallback((_) => _openNavigationSheet());
       } else if (!shouldShowNavSheet) {
-        _navigationSheetShown = false;
+        _sheetCoordinator.setNavigationSheetShown(false);
       }
     }
 
@@ -681,13 +407,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     }
 
     // Pass the active sheet height directly to the map
-    final activeSheetHeight = _addSheetHeight > 0 
-        ? _addSheetHeight 
-        : (_editSheetHeight > 0 
-            ? _editSheetHeight 
-            : (_navigationSheetHeight > 0
-                ? _navigationSheetHeight
-                : _tagSheetHeight));
+    final activeSheetHeight = _sheetCoordinator.activeSheetHeight;
 
     return MediaQuery(
       data: MediaQuery.of(context).copyWith(viewInsets: EdgeInsets.zero),
@@ -762,6 +482,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 });
               },
               onUserGesture: () {
+                _mapInteractionHandler.handleUserGesture(
+                  context: context,
+                  onSelectedNodeChanged: (id) => setState(() => _selectedNodeId = id),
+                );
                 if (appState.followMeMode != FollowMeMode.off) {
                   appState.setFollowMeMode(FollowMeMode.off);
                 }

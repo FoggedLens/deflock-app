@@ -1,4 +1,4 @@
-# Refactoring Round 1: MapView Extraction - v1.6.0
+# Refactoring Rounds 1 & 2 Complete - v1.6.0
 
 ## Overview
 Successfully refactored the largest file in the codebase (MapView, 880 lines) by extracting specialized manager classes with clear separation of concerns. This follows the "brutalist code" philosophy of the project - simple, explicit, and maintainable.
@@ -150,14 +150,65 @@ class MapDataResult {
 - **Clean error handling**: Each manager handles its own error cases
 - **Memory management**: No memory leaks from manager lifecycle
 
-## Next Steps (Round 2: HomeScreen)
+## Round 2 Results: HomeScreen Extraction
 
-The next largest file to refactor is HomeScreen (878 lines). Planned extractions:
-1. **SheetCoordinator** - All sheet height tracking and management
-2. **NavigationCoordinator** - Route planning and navigation logic  
-3. **MapInteractionHandler** - Node/location tap handling
+Successfully completed HomeScreen refactoring (878 → 604 lines, **31% reduction**):
 
-Expected reduction: ~400-500 lines
+### New Coordinator Classes Created
+
+#### 5. SheetCoordinator (`lib/screens/coordinators/sheet_coordinator.dart`) - 189 lines
+**Responsibility**: All bottom sheet operations including opening, closing, height tracking
+- `openAddNodeSheet()`, `openEditNodeSheet()`, `openNavigationSheet()` - Sheet lifecycle management
+- Height tracking and active sheet calculation
+- Sheet state management (edit/navigation shown flags)
+- Sheet transition coordination (prevents map bounce)
+
+#### 6. NavigationCoordinator (`lib/screens/coordinators/navigation_coordinator.dart`) - 124 lines  
+**Responsibility**: Route planning, navigation, and map centering/zoom logic
+- `startRoute()`, `resumeRoute()` - Route lifecycle with auto follow-me detection
+- `handleNavigationButtonPress()` - Search mode and route overview toggling
+- `zoomToShowFullRoute()` - Intelligent route visualization
+- Map centering logic based on GPS availability and user proximity
+
+#### 7. MapInteractionHandler (`lib/screens/coordinators/map_interaction_handler.dart`) - 84 lines
+**Responsibility**: Map interaction events including node taps and search result selection
+- `handleNodeTap()` - Node selection with highlighting and centering
+- `handleSuspectedLocationTap()` - Suspected location interaction  
+- `handleSearchResultSelection()` - Search result processing with map animation
+- `handleUserGesture()` - Selection clearing on user interaction
+
+### Round 2 Benefits
+- **HomeScreen reduced**: 878 lines → 604 lines (**31% reduction, -274 lines**)
+- **Clear coordinator separation**: Each coordinator handles one domain (sheets, navigation, interactions)
+- **Simplified HomeScreen**: Now primarily orchestrates coordinators rather than implementing logic
+- **Better testability**: Coordinators can be unit tested independently
+- **Enhanced maintainability**: Feature additions have clear homes in appropriate coordinators
+
+## Combined Results (Both Rounds)
+
+### Total Impact
+- **MapView**: 880 → 572 lines (**-308 lines**)
+- **HomeScreen**: 878 → 604 lines (**-274 lines**)  
+- **Total reduction**: **582 lines** removed from the two largest files
+- **New focused classes**: 7 manager/coordinator classes with clear responsibilities
+- **Net code increase**: 947 lines added across all new classes
+- **Overall impact**: +365 lines total, but dramatically improved organization and maintainability
+
+### Architectural Transformation
+- **Before**: Two monolithic files handling multiple concerns each
+- **After**: Clean orchestrator pattern with focused managers/coordinators
+- **Maintainability**: Exponentially improved due to separation of concerns
+- **Testability**: Each manager/coordinator can be independently tested
+- **Feature Development**: Clear homes for new functionality
+
+## Next Phase: AppState (Optional Round 3)
+
+The third largest file is AppState (729 lines). If desired, could extract:
+1. **SessionCoordinator** - Add/edit session management
+2. **NavigationStateCoordinator** - Search and route state management  
+3. **DataCoordinator** - Upload queue and node operations
+
+Expected reduction: ~300-400 lines, but AppState is already well-organized as the central state provider.
 
 ## Files Modified
 
