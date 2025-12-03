@@ -15,18 +15,17 @@ import '../models/tile_provider.dart';
 import '../state/session_state.dart';
 import 'debouncer.dart';
 import 'camera_provider_with_cache.dart';
-import 'camera_icon.dart';
-import 'map/camera_markers.dart';
-import 'map/direction_cones.dart';
 import 'map/map_overlays.dart';
 import 'map/map_position_manager.dart';
 import 'map/tile_layer_manager.dart';
 import 'map/camera_refresh_controller.dart';
 import 'map/gps_controller.dart';
-import 'map/suspected_location_markers.dart';
+import 'map/map_data_manager.dart';
+import 'map/map_interaction_manager.dart';
+import 'map/marker_layer_builder.dart';
+import 'map/overlay_layer_builder.dart';
 import 'network_status_indicator.dart';
 import 'node_limit_indicator.dart';
-import 'provisional_pin.dart';
 import 'proximity_alert_banner.dart';
 import '../dev_config.dart';
 import '../app_state.dart' show FollowMeMode;
@@ -72,15 +71,14 @@ class MapViewState extends State<MapView> {
   late final TileLayerManager _tileManager;
   late final CameraRefreshController _cameraController;
   late final GpsController _gpsController;
+  late final MapDataManager _dataManager;
+  late final MapInteractionManager _interactionManager;
   
   // Track zoom to clear queue on zoom changes
   double? _lastZoom;
   
   // Track map center to clear queue on significant panning
   LatLng? _lastCenter;
-  
-  // Track node limit state for parent notification
-  bool _lastNodeLimitState = false;
   
   // State for proximity alert banner
   bool _showProximityBanner = false;
@@ -98,6 +96,8 @@ class MapViewState extends State<MapView> {
     _cameraController = CameraRefreshController();
     _cameraController.initialize(onCamerasUpdated: _onNodesUpdated);
     _gpsController = GpsController();
+    _dataManager = MapDataManager();
+    _interactionManager = MapInteractionManager();
     
     // Initialize proximity alert service
     ProximityAlertService().initialize(
@@ -236,88 +236,7 @@ class MapViewState extends State<MapView> {
   static Future<void> clearStoredMapPosition() => 
       MapPositionManager.clearStoredMapPosition();
 
-  /// Get minimum zoom level for node fetching based on upload mode
-  int _getMinZoomForNodes(BuildContext context) {
-    final appState = context.read<AppState>();
-    final uploadMode = appState.uploadMode;
-    
-    // OSM API (sandbox mode) needs higher zoom level due to bbox size limits
-    if (uploadMode == UploadMode.sandbox) {
-      return kOsmApiMinZoomLevel;
-    } else {
-      return kNodeMinZoomLevel;
-    }
-  }
 
-  /// Check if the map has moved significantly enough to cancel stale tile requests.
-  /// Uses a simple distance threshold - roughly equivalent to 1/4 screen width at zoom 15.
-  bool _mapMovedSignificantly(LatLng? newCenter, LatLng? oldCenter) {
-    if (newCenter == null || oldCenter == null) return false;
-    
-    // Calculate approximate distance in meters (rough calculation for performance)
-    final latDiff = (newCenter.latitude - oldCenter.latitude).abs();
-    final lngDiff = (newCenter.longitude - oldCenter.longitude).abs();
-    
-    // Threshold: ~500 meters (roughly 1/4 screen at zoom 15)
-    // This prevents excessive cancellations on small movements while catching real pans
-    const double significantMovementThreshold = 0.005; // degrees (~500m at equator)
-    
-    return latDiff > significantMovementThreshold || lngDiff > significantMovementThreshold;
-  }
-
-  /// Get interaction options for the map based on whether we're editing a constrained node.
-  /// Allows zoom and rotation but disables all forms of panning for constrained nodes unless extract is enabled.
-  InteractionOptions _getInteractionOptions(EditNodeSession? editSession) {
-    // Check if we're editing a constrained node that's not being extracted
-    if (editSession?.originalNode.isConstrained == true && editSession?.extractFromWay != true) {
-      // Constrained node (not extracting): only allow pinch zoom and rotation, disable ALL panning
-      return const InteractionOptions(
-        enableMultiFingerGestureRace: true,
-        flags: InteractiveFlag.pinchZoom | InteractiveFlag.rotate,
-        scrollWheelVelocity: kScrollWheelVelocity,
-        pinchZoomThreshold: kPinchZoomThreshold,
-        pinchMoveThreshold: kPinchMoveThreshold,
-      );
-    }
-    
-    // Normal case: all interactions allowed with gesture race to prevent accidental rotation during zoom
-    return const InteractionOptions(
-      enableMultiFingerGestureRace: true,
-      flags: InteractiveFlag.doubleTapDragZoom |
-          InteractiveFlag.doubleTapZoom |
-          InteractiveFlag.drag |
-          InteractiveFlag.flingAnimation |
-          InteractiveFlag.pinchZoom |
-          InteractiveFlag.rotate |
-          InteractiveFlag.scrollWheelZoom,
-      scrollWheelVelocity: kScrollWheelVelocity,
-      pinchZoomThreshold: kPinchZoomThreshold,
-      pinchMoveThreshold: kPinchMoveThreshold,
-    );
-  }
-
-  /// Show zoom warning if user is below minimum zoom level
-  void _showZoomWarningIfNeeded(BuildContext context, double currentZoom, int minZoom) {
-    // Only show warning once per zoom level to avoid spam
-    if (currentZoom.floor() == (minZoom - 1)) {
-      final appState = context.read<AppState>();
-      final uploadMode = appState.uploadMode;
-      
-      final message = uploadMode == UploadMode.sandbox 
-          ? 'Zoom to level $minZoom or higher to see nodes in sandbox mode (OSM API bbox limit)'
-          : 'Zoom to level $minZoom or higher to see surveillance nodes';
-      
-      // Show a brief snackbar
-      ScaffoldMessenger.of(context).clearSnackBars();
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(message),
-          duration: const Duration(seconds: 4),
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
-    }
-  }
 
 
   void _refreshNodesFromProvider() {
@@ -409,205 +328,48 @@ class MapViewState extends State<MapView> {
       mapBounds = null;
     }
     
-    final minZoom = _getMinZoomForNodes(context);
-    List<OsmNode> allNodes;
-    List<OsmNode> nodesToRender;
-    bool isLimitActive = false;
-    
-    if (currentZoom >= minZoom) {
-      // Above minimum zoom - get cached nodes directly (no Provider needed)
-      allNodes = (mapBounds != null)
-          ? CameraProviderWithCache.instance.getCachedNodesForBounds(mapBounds)
-          : <OsmNode>[];
-      
-      // Filter out invalid coordinates before applying limit
-      final validNodes = allNodes.where((node) {
-        return (node.coord.latitude != 0 || node.coord.longitude != 0) &&
-               node.coord.latitude.abs() <= 90 && 
-               node.coord.longitude.abs() <= 180;
-      }).toList();
-      
-      // Apply rendering limit to prevent UI lag
-      final maxNodes = appState.maxNodes;
-      if (validNodes.length > maxNodes) {
-        nodesToRender = validNodes.take(maxNodes).toList();
-        isLimitActive = true;
-        debugPrint('[MapView] Node limit active: rendering ${nodesToRender.length} of ${validNodes.length} devices');
-      } else {
-        nodesToRender = validNodes;
-        isLimitActive = false;
-      }
-    } else {
-      // Below minimum zoom - don't render any nodes
-      allNodes = <OsmNode>[];
-      nodesToRender = <OsmNode>[];
-      isLimitActive = false;
-    }
-    
-    // Notify parent if limit state changed (for button disabling)
-    if (isLimitActive != _lastNodeLimitState) {
-      _lastNodeLimitState = isLimitActive;
-      // Schedule callback after build completes to avoid setState during build
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        widget.onNodeLimitChanged?.call(isLimitActive);
-      });
-    }
+    // Get node data using the data manager
+    final nodeData = _dataManager.getNodesForRendering(
+      currentZoom: currentZoom,
+      mapBounds: mapBounds,
+      uploadMode: appState.uploadMode,
+      maxNodes: appState.maxNodes,
+      onNodeLimitChanged: widget.onNodeLimitChanged,
+    );
     
     // Build camera layers using the limited nodes
     Widget cameraLayers = LayoutBuilder(
       builder: (context, constraints) {
         
-        // Determine if we should dim node markers (when suspected location is selected)
-        final shouldDimNodes = appState.selectedSuspectedLocation != null;
-        
-        final markers = CameraMarkersBuilder.buildCameraMarkers(
-          cameras: nodesToRender,
-          mapController: _controller.mapController,
-          userLocation: _gpsController.currentLocation,
-          selectedNodeId: widget.selectedNodeId,
-          onNodeTap: widget.onNodeTap,
-          shouldDim: shouldDimNodes,
-        );
-
-        // Build suspected location markers (respect same zoom and count limits as nodes)
-        final suspectedLocationMarkers = <Marker>[];
-        if (appState.suspectedLocationsEnabled && mapBounds != null && currentZoom >= minZoom) {
-          final suspectedLocations = appState.getSuspectedLocationsInBounds(
-            north: mapBounds.north,
-            south: mapBounds.south,
-            east: mapBounds.east,
-            west: mapBounds.west,
-          );
-          
-          // Apply same node count limit as surveillance nodes
-          final maxNodes = appState.maxNodes;
-          final limitedSuspectedLocations = suspectedLocations.take(maxNodes).toList();
-          
-          // Filter out suspected locations that are too close to real nodes
-          final filteredSuspectedLocations = _filterSuspectedLocationsByProximity(
-            suspectedLocations: limitedSuspectedLocations,
-            realNodes: nodesToRender,
-            minDistance: appState.suspectedLocationMinDistance,
-          );
-          
-          suspectedLocationMarkers.addAll(
-            SuspectedLocationMarkersBuilder.buildSuspectedLocationMarkers(
-              locations: filteredSuspectedLocations,
-              mapController: _controller.mapController,
-              selectedLocationId: appState.selectedSuspectedLocation?.ticketNo,
-              onLocationTap: widget.onSuspectedLocationTap,
-            ),
-          );
-        }
-
-        // Get current zoom level for direction cones (already have currentZoom)
-        try {
-          currentZoom = _controller.mapController.camera.zoom;
-        } catch (_) {
-          // Controller not ready yet, use fallback
-        }
-
-        final overlays = DirectionConesBuilder.buildDirectionCones(
-          cameras: nodesToRender,
-          zoom: currentZoom,
+        // Build all marker layers
+        final markerLayer = MarkerLayerBuilder.buildMarkerLayers(
+          nodesToRender: nodeData.nodesToRender,
+          mapController: _controller,
+          appState: appState,
           session: session,
           editSession: editSession,
+          selectedNodeId: widget.selectedNodeId,
+          userLocation: _gpsController.currentLocation,
+          currentZoom: currentZoom,
+          mapBounds: mapBounds,
+          onNodeTap: widget.onNodeTap,
+          onSuspectedLocationTap: widget.onSuspectedLocationTap,
+        );
+
+        // Build all overlay layers
+        final overlayLayers = OverlayLayerBuilder.buildOverlayLayers(
+          nodesToRender: nodeData.nodesToRender,
+          currentZoom: currentZoom,
+          session: session,
+          editSession: editSession,
+          appState: appState,
           context: context,
         );
 
-        // Add suspected location bounds if one is selected
-        if (appState.selectedSuspectedLocation != null) {
-          final selectedLocation = appState.selectedSuspectedLocation!;
-          if (selectedLocation.bounds.isNotEmpty) {
-            overlays.add(
-              Polygon(
-                points: selectedLocation.bounds,
-                color: Colors.orange.withOpacity(0.3),
-                borderColor: Colors.orange,
-                borderStrokeWidth: 2.0,
-              ),
-            );
-          }
-        }
-
-        // Build edit lines connecting original nodes to their edited positions
-        final editLines = _buildEditLines(nodesToRender);
-
-        // Build center marker for add/edit sessions
-        final centerMarkers = <Marker>[];
-        if (session != null || editSession != null) {
-          try {
-            final center = _controller.mapController.camera.center;
-            centerMarkers.add(
-              Marker(
-                point: center,
-                width: kNodeIconDiameter,
-                height: kNodeIconDiameter,
-                child: CameraIcon(
-                  type: editSession != null ? CameraIconType.editing : CameraIconType.mock,
-                ),
-              ),
-            );
-          } catch (_) {
-            // Controller not ready yet
-          }
-        }
-
-        // Build provisional pin for navigation/search mode
-        if (appState.showProvisionalPin && appState.provisionalPinLocation != null) {
-          centerMarkers.add(
-            Marker(
-              point: appState.provisionalPinLocation!,
-              width: 32.0,
-              height: 32.0,
-              child: const ProvisionalPin(),
-            ),
-          );
-        }
-
-        // Build start/end pins for route visualization
-        if (appState.showingOverview || appState.isInRouteMode || appState.isSettingSecondPoint) {
-          if (appState.routeStart != null) {
-            centerMarkers.add(
-              Marker(
-                point: appState.routeStart!,
-                width: 32.0,
-                height: 32.0,
-                child: const LocationPin(type: PinType.start),
-              ),
-            );
-          }
-          if (appState.routeEnd != null) {
-            centerMarkers.add(
-              Marker(
-                point: appState.routeEnd!,
-                width: 32.0,
-                height: 32.0,
-                child: const LocationPin(type: PinType.end),
-              ),
-            );
-          }
-        }
-
-        // Build route path visualization
-        final routeLines = <Polyline>[];
-        if (appState.routePath != null && appState.routePath!.length > 1) {
-          // Show route line during overview or active route
-          if (appState.showingOverview || appState.isInRouteMode) {
-            routeLines.add(Polyline(
-              points: appState.routePath!,
-              color: Colors.blue,
-              strokeWidth: 4.0,
-            ));
-          }
-        }
-
         return Stack(
           children: [
-            PolygonLayer(polygons: overlays),
-            if (editLines.isNotEmpty) PolylineLayer(polylines: editLines),
-            if (routeLines.isNotEmpty) PolylineLayer(polylines: routeLines),
-            MarkerLayer(markers: [...suspectedLocationMarkers, ...markers, ...centerMarkers]),
+            ...overlayLayers,
+            markerLayer,
             
             // Node limit indicator (top-left) - shown when limit is active
             Builder(
@@ -617,13 +379,9 @@ class MapViewState extends State<MapView> {
                 final searchBarOffset = (!appState.offlineMode && appState.isInSearchMode) ? 60.0 : 0.0;
                 
                 return NodeLimitIndicator(
-                  isActive: isLimitActive,
-                  renderedCount: nodesToRender.length,
-                  totalCount: isLimitActive ? allNodes.where((node) {
-                    return (node.coord.latitude != 0 || node.coord.longitude != 0) &&
-                           node.coord.latitude.abs() <= 90 && 
-                           node.coord.longitude.abs() <= 180;
-                  }).length : 0,
+                  isActive: nodeData.isLimitActive,
+                  renderedCount: nodeData.nodesToRender.length,
+                  totalCount: nodeData.validNodesCount,
                   top: 8.0 + searchBarOffset,
                   left: 8.0,
                 );
@@ -646,7 +404,7 @@ class MapViewState extends State<MapView> {
             initialZoom: _positionManager.initialZoom ?? 15,
             minZoom: 1.0,
             maxZoom: (appState.selectedTileType?.maxZoom ?? 18).toDouble(),
-            interactionOptions: _getInteractionOptions(editSession),
+            interactionOptions: _interactionManager.getInteractionOptions(editSession),
             onPositionChanged: (pos, gesture) {
               setState(() {}); // Instant UI update for zoom, etc.
               if (gesture) {
@@ -711,7 +469,7 @@ class MapViewState extends State<MapView> {
               final currentTileLevel = currentZoom.round();
               final lastTileLevel = _lastZoom?.round();
               final tileLevelChanged = lastTileLevel != null && currentTileLevel != lastTileLevel;
-              final centerMoved = _mapMovedSignificantly(currentCenter, _lastCenter);
+              final centerMoved = _interactionManager.mapMovedSignificantly(currentCenter, _lastCenter);
               
               if (tileLevelChanged || centerMoved) {
                 _tileDebounce(() {
@@ -735,13 +493,13 @@ class MapViewState extends State<MapView> {
               });
               
               // Request more nodes on any map movement/zoom at valid zoom level (slower debounce)
-              final minZoom = _getMinZoomForNodes(context);
+              final minZoom = _dataManager.getMinZoomForNodes(appState.uploadMode);
               if (pos.zoom >= minZoom) {
                 _cameraDebounce(_refreshNodesFromProvider);
               } else {
                 // Skip nodes at low zoom - no loading state needed
                 // Show zoom warning if needed
-                _showZoomWarningIfNeeded(context, pos.zoom, minZoom);
+                _dataManager.showZoomWarningIfNeeded(context, pos.zoom, appState.uploadMode);
               }
             },
           ),
@@ -788,7 +546,7 @@ class MapViewState extends State<MapView> {
             builder: (context) {
               // Calculate position based on node limit indicator presence and search bar
               final searchBarOffset = (!appState.offlineMode && appState.isInSearchMode) ? 60.0 : 0.0;
-              final nodeLimitOffset = isLimitActive ? 48.0 : 0.0; // Height of node limit indicator + spacing
+              final nodeLimitOffset = nodeData.isLimitActive ? 48.0 : 0.0; // Height of node limit indicator + spacing
               
               return NetworkStatusIndicator(
                 top: 8.0 + searchBarOffset + nodeLimitOffset,
@@ -810,71 +568,5 @@ class MapViewState extends State<MapView> {
     );
   }
 
-  /// Build polylines connecting original cameras to their edited positions
-  List<Polyline> _buildEditLines(List<OsmNode> nodes) {
-    final lines = <Polyline>[];
-    
-    // Create a lookup map of original node IDs to their coordinates
-    final originalNodes = <int, LatLng>{};
-    for (final node in nodes) {
-      if (node.tags['_pending_edit'] == 'true') {
-        originalNodes[node.id] = node.coord;
-      }
-    }
-    
-    // Find edited nodes and draw lines to their originals
-    for (final node in nodes) {
-      final originalIdStr = node.tags['_original_node_id'];
-      if (originalIdStr != null && node.tags['_pending_upload'] == 'true') {
-        final originalId = int.tryParse(originalIdStr);
-        final originalCoord = originalId != null ? originalNodes[originalId] : null;
-        
-        if (originalCoord != null) {
-          lines.add(Polyline(
-            points: [originalCoord, node.coord],
-            color: kNodeRingColorPending,
-            strokeWidth: 3.0,
-          ));
-        }
-      }
-    }
-    
-    return lines;
-  }
-
-  /// Filter suspected locations that are too close to real nodes
-  List<SuspectedLocation> _filterSuspectedLocationsByProximity({
-    required List<SuspectedLocation> suspectedLocations,
-    required List<OsmNode> realNodes,
-    required int minDistance, // in meters
-  }) {
-    if (minDistance <= 0) return suspectedLocations;
-    
-    const distance = Distance();
-    final filteredLocations = <SuspectedLocation>[];
-    
-    for (final suspected in suspectedLocations) {
-      bool tooClose = false;
-      
-      for (final realNode in realNodes) {
-        final distanceMeters = distance.as(
-          LengthUnit.Meter,
-          suspected.centroid,
-          realNode.coord,
-        );
-        
-        if (distanceMeters < minDistance) {
-          tooClose = true;
-          break;
-        }
-      }
-      
-      if (!tooClose) {
-        filteredLocations.add(suspected);
-      }
-    }
-    
-    return filteredLocations;
-  }
 }
 
