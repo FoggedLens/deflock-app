@@ -1,4 +1,10 @@
 {
+  "1.6.1": {
+    "content": [
+      "• IMPROVED: Navigation route calculation timeout increased from 15 to 30 seconds - better success rate for complex routes in dense areas",
+      "• TECHNICAL: Route timeout is now configurable in dev_config for easier future adjustments"
+    ]
+  },
   "1.6.0": {
     "content": [
       "• Internal code organization improvements - better separation of concerns for improved maintainability",

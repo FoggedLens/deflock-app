@@ -60,6 +60,9 @@ const Duration kChangesetCloseMaxRetryDelay = Duration(minutes: 5);  // Cap at 5
 const Duration kChangesetAutoCloseTimeout = Duration(minutes: 59); // Give up and trust OSM auto-close
 const double kChangesetCloseBackoffMultiplier = 2.0;
 
+// Navigation routing configuration
+const Duration kNavigationRoutingTimeout = Duration(seconds: 30); // HTTP timeout for routing requests
+
 // Suspected locations CSV URL
 const String kSuspectedLocationsCsvUrl = 'https://alprwatch.org/suspected-locations/deflock-latest.csv';
 

@@ -5,6 +5,7 @@ import 'package:latlong2/latlong.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../app_state.dart';
+import '../dev_config.dart';
 
 class RouteResult {
   final List<LatLng> waypoints;
@@ -26,7 +27,6 @@ class RouteResult {
 class RoutingService {
   static const String _baseUrl = 'https://alprwatch.org/api/v1/deflock/directions';
   static const String _userAgent = 'DeFlock/1.0 (OSM surveillance mapping app)';
-  static const Duration _timeout = Duration(seconds: 15);
   
   // Calculate route between two points using alprwatch
   Future<RouteResult> calculateRoute({
@@ -72,7 +72,7 @@ class RoutingService {
           'Content-Type': 'application/json'
         },
         body: json.encode(params)
-      ).timeout(_timeout);
+      ).timeout(kNavigationRoutingTimeout);
 
       if (response.statusCode != 200) {
         throw RoutingException('HTTP ${response.statusCode}: ${response.reasonPhrase}');
