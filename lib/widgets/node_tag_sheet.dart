@@ -36,6 +36,10 @@ class NodeTagSheet extends StatelessWidget {
                           (!node.tags.containsKey('_pending_deletion') || 
                            node.tags['_pending_deletion'] != 'true');
         
+        // Check if this is a real OSM node (not pending) - for "View on OSM" button
+        final isRealOSMNode = !node.tags.containsKey('_pending_upload') &&
+                              node.id > 0; // Real OSM nodes have positive IDs
+        
         void _openEditSheet() {
           // Check if node limit is active and warn user
           if (isNodeLimitActive) {
@@ -195,12 +199,14 @@ class NodeTagSheet extends StatelessWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
-                    TextButton.icon(
-                      onPressed: () => _viewOnOSM(),
-                      icon: const Icon(Icons.open_in_new, size: 16),
-                      label: Text(locService.t('actions.viewOnOSM')),
-                    ),
-                    const SizedBox(width: 8),
+                    if (isRealOSMNode) ...[
+                      TextButton.icon(
+                        onPressed: () => _viewOnOSM(),
+                        icon: const Icon(Icons.open_in_new, size: 16),
+                        label: Text(locService.t('actions.viewOnOSM')),
+                      ),
+                      const SizedBox(width: 8),
+                    ],
                     if (isEditable) ...[
                       OutlinedButton.icon(
                         onPressed: _openAdvancedEdit,
