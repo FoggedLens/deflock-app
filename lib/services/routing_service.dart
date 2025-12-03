@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:latlong2/latlong.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class RouteResult {
   final List<LatLng> waypoints;
@@ -31,6 +32,9 @@ class RoutingService {
     required LatLng end,
   }) async {
     debugPrint('[RoutingService] Calculating route from $start to $end');
+
+    final prefs = await SharedPreferences.getInstance();
+    final avoidance_distance = await prefs.getInt('navigation_avoidance_distance');
     
     final uri = Uri.parse('$_baseUrl');
     final params = {
@@ -42,6 +46,7 @@ class RoutingService {
         'longitude': end.longitude,
         'latitude': end.latitude
       },
+      'avoidance_distance': avoidance_distance,
       'enabled_profiles': [ // revise to be dynamic based on user input
         {
           'id': 'generic-ALPR',
@@ -50,7 +55,8 @@ class RoutingService {
             'surveillance:type': 'ALPR'
           }
         }
-      ]
+      ],
+      'show_exclusion_zone': false, // if true, returns a GeoJSON Feature MultiPolygon showing what areas are avoided in calculating the route
     };
     
     debugPrint('[RoutingService] alprwatch request: $uri $params');

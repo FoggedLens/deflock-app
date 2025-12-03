@@ -224,7 +224,7 @@ class NavigationState extends ChangeNotifier {
   /// Calculate route using alprwatch
   void _calculateRoute() {
     if (_routeStart == null || _routeEnd == null) return;
-    
+
     debugPrint('[NavigationState] Calculating route with alprwatch...');
     _isCalculating = true;
     _routingError = null;

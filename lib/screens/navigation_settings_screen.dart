@@ -8,6 +8,7 @@ class NavigationSettingsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final appState = context.watch<AppState>();
     final locService = LocalizationService.instance;
     
     return AnimatedBuilder(
@@ -26,48 +27,28 @@ class NavigationSettingsScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Coming soon message
-              Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Icon(Icons.info_outline, color: Colors.blue),
-                          const SizedBox(width: 8),
-                          Text(
-                            'Navigation Features',
-                            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        'Navigation and routing settings will be available here. Coming soon:\n\n'
-                        '• Surveillance avoidance distance\n'
-                        '• Route planning preferences\n'
-                        '• Search history management\n'
-                        '• Distance units (metric/imperial)',
-                        style: Theme.of(context).textTheme.bodyMedium,
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              
-              const SizedBox(height: 24),
-              
-              // Placeholder settings (disabled for now)
-              _buildDisabledSetting(
-                context,
-                icon: Icons.warning_outlined,
-                title: locService.t('navigation.avoidanceDistance'),
-                subtitle: locService.t('navigation.avoidanceDistanceSubtitle'),
-                value: '100 ${locService.t('navigation.meters')}',
+              ListTile(
+                leading: const Icon(Icons.social_distance),
+                title: Text(locService.t('navigation.avoidanceDistance')),
+                subtitle: Text(locService.t('navigation.avoidanceDistanceSubtitle')),
+                trailing: SizedBox(
+                  width: 80,
+                  child: TextFormField(
+                    initialValue: appState.navigationAvoidanceDistance.toString(),
+                    keyboardType: const TextInputType.numberWithOptions(signed: false, decimal: false),
+                    textInputAction: TextInputAction.done,
+                    decoration: const InputDecoration(
+                      isDense: true,
+                      contentPadding: EdgeInsets.symmetric(vertical: 6, horizontal: 8),
+                      border: OutlineInputBorder(),
+                      suffixText: 'm',
+                    ),
+                    onFieldSubmitted: (value) {
+                      final distance = int.tryParse(value) ?? 250;
+                      appState.setNavigationAvoidanceDistance(distance.clamp(0, 2000));
+                    }
+                  )
+                )
               ),
               
               const Divider(),

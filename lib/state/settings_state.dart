@@ -29,6 +29,7 @@ class SettingsState extends ChangeNotifier {
   static const String _networkStatusIndicatorEnabledPrefsKey = 'network_status_indicator_enabled';
   static const String _suspectedLocationMinDistancePrefsKey = 'suspected_location_min_distance';
   static const String _pauseQueueProcessingPrefsKey = 'pause_queue_processing';
+  static const String _navigationAvoidanceDistancePrefsKey = 'navigation_avoidance_distance';
 
   bool _offlineMode = false;
   bool _pauseQueueProcessing = false;
@@ -41,6 +42,7 @@ class SettingsState extends ChangeNotifier {
   int _suspectedLocationMinDistance = 100; // meters
   List<TileProvider> _tileProviders = [];
   String _selectedTileTypeId = '';
+  int _navigationAvoidanceDistance = 250; // meters
 
   // Getters
   bool get offlineMode => _offlineMode;
@@ -54,6 +56,7 @@ class SettingsState extends ChangeNotifier {
   int get suspectedLocationMinDistance => _suspectedLocationMinDistance;
   List<TileProvider> get tileProviders => List.unmodifiable(_tileProviders);
   String get selectedTileTypeId => _selectedTileTypeId;
+  int get navigationAvoidanceDistance => _navigationAvoidanceDistance;
   
   /// Get the currently selected tile type
   TileType? get selectedTileType {
@@ -100,6 +103,11 @@ class SettingsState extends ChangeNotifier {
     
     // Load max nodes
     _maxNodes = prefs.getInt(_maxNodesPrefsKey) ?? kDefaultMaxNodes;
+
+    // Load navigation avoidance distance
+    if (prefs.containsKey(_navigationAvoidanceDistancePrefsKey)) {
+      _navigationAvoidanceDistance = prefs.getInt(_navigationAvoidanceDistancePrefsKey) ?? 250;
+    }
     
     // Load proximity alerts settings
     _proximityAlertsEnabled = prefs.getBool(_proximityAlertsEnabledPrefsKey) ?? false;
@@ -347,6 +355,16 @@ class SettingsState extends ChangeNotifier {
       _suspectedLocationMinDistance = distance;
       final prefs = await SharedPreferences.getInstance();
       await prefs.setInt(_suspectedLocationMinDistancePrefsKey, distance);
+      notifyListeners();
+    }
+  }
+
+  // Set distance for avoidance of nodes during navigation
+  Future<void> setNavigationAvoidanceDistance(int distance) async {
+    if (_navigationAvoidanceDistance != distance) {
+      _navigationAvoidanceDistance = distance;
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setInt(_navigationAvoidanceDistancePrefsKey, distance);
       notifyListeners();
     }
   }
