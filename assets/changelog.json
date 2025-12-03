@@ -3,8 +3,7 @@
     "content": [
       "• Internal code organization improvements - better separation of concerns for improved maintainability",
       "• Extracted specialized manager classes for map data, interactions, sheets, and navigation",
-      "• Improved code modularity while preserving all existing functionality",
-      "• Enhanced developer experience for future feature development"
+      "• Improved code modularity while preserving all existing functionality"
     ]
   },
   "1.5.4": {
