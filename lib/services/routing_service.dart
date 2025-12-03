@@ -84,9 +84,8 @@ class RoutingService {
       // Check alprwatch response status
       final ok = data['ok'] as bool? ?? false;
       if ( ! ok ) {
-        final code = data['error']['code'] as String? ?? 'Unknown routing error code';
-        final message = data['error']['message'] as String? ?? 'Unknown routing error';
-        throw RoutingException('alprwatch error ($code): $message');
+        final message = data['error'] as String? ?? 'Unknown routing error';
+        throw RoutingException('alprwatch error: $message');
       }
       
       final route = data['result']['route'] as Map<String, dynamic>?;
