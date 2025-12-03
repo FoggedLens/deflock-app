@@ -122,6 +122,7 @@ class AppState extends ChangeNotifier {
   // Navigation search state
   bool get isNavigationSearchLoading => _navigationState.isSearchLoading;
   List<SearchResult> get navigationSearchResults => _navigationState.searchResults;
+  int get navigationAvoidanceDistance => _settingsState.navigationAvoidanceDistance;
   
   // Profile state
   List<NodeProfile> get profiles => _profileState.profiles;
@@ -644,6 +645,11 @@ class AppState extends ChangeNotifier {
   Future<void> setSuspectedLocationMinDistance(int distance) async {
     await _settingsState.setSuspectedLocationMinDistance(distance);
   }
+
+  /// Set navigation avoidance distance
+  Future<void> setNavigationAvoidanceDistance(int distance) async {
+    await _settingsState.setNavigationAvoidanceDistance(distance);
+  } 
 
   // ---------- Queue Methods ----------
   void clearQueue() {

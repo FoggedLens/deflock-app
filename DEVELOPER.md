@@ -488,8 +488,7 @@ The major performance issue was discovered to be double caching with expensive o
 
 **Current state:**
 - **Search functionality**: Fully implemented and active
-- **Basic routing**: Complete but disabled pending API integration
-- **Avoidance routing**: Awaiting alprwatch.org/directions API
+- **Avoidance routing**: Fully implemented and active
 - **Offline routing**: Requires vector map tiles
 
 **Architecture:**

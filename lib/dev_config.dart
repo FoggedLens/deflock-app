@@ -77,6 +77,7 @@ const bool kEnableNodeExtraction = false; // Set to true to enable extract from 
 
 /// Navigation availability: only dev builds, and only when online
 bool enableNavigationFeatures({required bool offlineMode}) {
+  return true;
   if (!kEnableDevelopmentModes) {
     return false; // Release builds: never allow navigation
   } else {

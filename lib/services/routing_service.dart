@@ -2,6 +2,9 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:latlong2/latlong.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+import '../app_state.dart';
 
 class RouteResult {
   final List<LatLng> waypoints;
@@ -21,72 +24,85 @@ class RouteResult {
 }
 
 class RoutingService {
-  static const String _baseUrl = 'https://router.project-osrm.org';
+  static const String _baseUrl = 'https://alprwatch.org/api/v1/deflock/directions';
   static const String _userAgent = 'DeFlock/1.0 (OSM surveillance mapping app)';
   static const Duration _timeout = Duration(seconds: 15);
   
-  /// Calculate route between two points using OSRM
+  // Calculate route between two points using alprwatch
   Future<RouteResult> calculateRoute({
     required LatLng start,
     required LatLng end,
-    String profile = 'driving', // driving, walking, cycling
   }) async {
     debugPrint('[RoutingService] Calculating route from $start to $end');
+
+    final prefs = await SharedPreferences.getInstance();
+    final avoidance_distance = await prefs.getInt('navigation_avoidance_distance');
+
+    final enabled_profiles = AppState.instance.enabledProfiles.map((p) {
+      final full = p.toJson();
+      return {
+        'id': full['id'],
+        'name': full['name'],
+        'tags': full['tags'],
+      };
+    }).toList();
     
-    // OSRM uses lng,lat order (opposite of LatLng)
-    final startCoord = '${start.longitude},${start.latitude}';
-    final endCoord = '${end.longitude},${end.latitude}';
+    final uri = Uri.parse('$_baseUrl');
+    final params = {
+      'start': {
+        'longitude': start.longitude,
+        'latitude': start.latitude
+      },
+      'end': {
+        'longitude': end.longitude,
+        'latitude': end.latitude
+      },
+      'avoidance_distance': avoidance_distance,
+      'enabled_profiles': enabled_profiles,
+      'show_exclusion_zone': false, // for debugging: if true, returns a GeoJSON Feature MultiPolygon showing what areas are avoided in calculating the route
+    };
     
-    final uri = Uri.parse('$_baseUrl/route/v1/$profile/$startCoord;$endCoord')
-        .replace(queryParameters: {
-      'overview': 'full', // Get full geometry
-      'geometries': 'polyline', // Use polyline encoding (more compact)
-      'steps': 'false', // Don't need turn-by-turn for now
-    });
-    
-    debugPrint('[RoutingService] OSRM request: $uri');
+    debugPrint('[RoutingService] alprwatch request: $uri $params');
     
     try {
-      final response = await http.get(
+      final response = await http.post(
         uri,
         headers: {
           'User-Agent': _userAgent,
+          'Content-Type': 'application/json'
         },
+        body: json.encode(params)
       ).timeout(_timeout);
-      
+
       if (response.statusCode != 200) {
         throw RoutingException('HTTP ${response.statusCode}: ${response.reasonPhrase}');
       }
       
       final data = json.decode(response.body) as Map<String, dynamic>;
+      debugPrint('[RoutingService] alprwatch response data: $data');
       
-      // Check OSRM response status
-      final code = data['code'] as String?;
-      if (code != 'Ok') {
-        final message = data['message'] as String? ?? 'Unknown routing error';
-        throw RoutingException('OSRM error ($code): $message');
+      // Check alprwatch response status
+      final ok = data['ok'] as bool? ?? false;
+      if ( ! ok ) {
+        final message = data['error'] as String? ?? 'Unknown routing error';
+        throw RoutingException('alprwatch error: $message');
       }
       
-      final routes = data['routes'] as List<dynamic>?;
-      if (routes == null || routes.isEmpty) {
+      final route = data['result']['route'] as Map<String, dynamic>?;
+      if (route == null) {
         throw RoutingException('No route found between these points');
       }
-      
-      final route = routes[0] as Map<String, dynamic>;
-      final geometry = route['geometry'] as String?;
+     
+      final waypoints = (route['coordinates'] as List<dynamic>?)
+        ?.map((inner) {
+          final pair = inner as List<dynamic>;
+          if (pair.length != 2) return null;
+          final lng = (pair[0] as num).toDouble();
+          final lat = (pair[1] as num).toDouble();
+          return LatLng(lat, lng);
+      }).whereType<LatLng>().toList() ?? []; 
       final distance = (route['distance'] as num?)?.toDouble() ?? 0.0;
       final duration = (route['duration'] as num?)?.toDouble() ?? 0.0;
-      
-      if (geometry == null) {
-        throw RoutingException('Route geometry missing from response');
-      }
-      
-      // Decode polyline geometry to waypoints
-      final waypoints = _decodePolyline(geometry);
-      
-      if (waypoints.isEmpty) {
-        throw RoutingException('Failed to decode route geometry');
-      }
       
       final result = RouteResult(
         waypoints: waypoints,
@@ -104,52 +120,6 @@ class RoutingService {
       } else {
         throw RoutingException('Network error: $e');
       }
-    }
-  }
-  
-  /// Decode OSRM polyline geometry to LatLng waypoints
-  List<LatLng> _decodePolyline(String encoded) {
-    try {
-      final List<LatLng> points = [];
-      int index = 0;
-      int lat = 0;
-      int lng = 0;
-      
-      while (index < encoded.length) {
-        int b;
-        int shift = 0;
-        int result = 0;
-        
-        // Decode latitude
-        do {
-          b = encoded.codeUnitAt(index++) - 63;
-          result |= (b & 0x1f) << shift;
-          shift += 5;
-        } while (b >= 0x20);
-        
-        final deltaLat = ((result & 1) != 0 ? ~(result >> 1) : (result >> 1));
-        lat += deltaLat;
-        
-        shift = 0;
-        result = 0;
-        
-        // Decode longitude
-        do {
-          b = encoded.codeUnitAt(index++) - 63;
-          result |= (b & 0x1f) << shift;
-          shift += 5;
-        } while (b >= 0x20);
-        
-        final deltaLng = ((result & 1) != 0 ? ~(result >> 1) : (result >> 1));
-        lng += deltaLng;
-        
-        points.add(LatLng(lat / 1E5, lng / 1E5));
-      }
-      
-      return points;
-    } catch (e) {
-      debugPrint('[RoutingService] Manual polyline decoding failed: $e');
-      return [];
     }
   }
 }
