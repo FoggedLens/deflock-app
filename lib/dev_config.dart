@@ -67,7 +67,7 @@ const String kSuspectedLocationsCsvUrl = 'https://alprwatch.org/suspected-locati
 const bool kEnableDevelopmentModes = false; // Set to false to hide sandbox/simulate modes and force production mode
 
 // Navigation features - set to false to hide navigation UI elements while in development
-const bool kEnableNavigationFeatures = kEnableDevelopmentModes; // Hide navigation until fully implemented
+const bool kEnableNavigationFeatures = true; // Hide navigation until fully implemented
 
 // Node editing features - set to false to temporarily disable editing
 const bool kEnableNodeEdits = true; // Set to false to temporarily disable node editing
@@ -77,12 +77,7 @@ const bool kEnableNodeExtraction = false; // Set to true to enable extract from 
 
 /// Navigation availability: only dev builds, and only when online
 bool enableNavigationFeatures({required bool offlineMode}) {
-  return true;
-  if (!kEnableDevelopmentModes) {
-    return false; // Release builds: never allow navigation
-  } else {
-    return !offlineMode; // Dev builds: only when online
-  }
+  return kEnableNavigationFeatures && !offlineMode;
 }
 
 // Marker/node interaction
