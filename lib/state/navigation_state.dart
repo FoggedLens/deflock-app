@@ -207,8 +207,15 @@ class NavigationState extends ChangeNotifier {
       _routeEndAddress = _provisionalPinAddress;
     }
     
+    // BRUTALIST FIX: Set calculating state BEFORE clearing isSettingSecondPoint
+    // to prevent UI from briefly showing route buttons again
     _isSettingSecondPoint = false;
+    _isCalculating = true;
     _routingError = null; // Clear any previous errors
+    
+    // Notify listeners immediately to update UI before async calculation starts
+    notifyListeners();
+    
     _calculateRoute();
   }
   

@@ -1,4 +1,10 @@
 {
+  "1.6.3": {
+    "content": [
+      "• Fixed navigation sheet button flow - route to/from buttons no longer reappear after selecting second location",
+      "• Added cancel button when selecting second route point for easier exit from route planning"
+    ]
+  },
   "1.6.2": {
     "content": [
       "• Improved node rendering bounds - nodes appear slightly before sliding into view and stay visible until just after sliding out, eliminating edge blinking",

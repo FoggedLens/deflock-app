@@ -93,8 +93,14 @@ class NavigationSheet extends StatelessWidget {
             children: [
               _buildDragHandle(),
               
-              // SEARCH MODE: Initial location with route options
-              if (navigationMode == AppNavigationMode.search && !appState.isSettingSecondPoint && !appState.isCalculating && !appState.showingOverview && provisionalLocation != null) ...[
+              // SEARCH MODE: Initial location with route options (only when no route points are set yet)
+              if (navigationMode == AppNavigationMode.search && 
+                  !appState.isSettingSecondPoint && 
+                  !appState.isCalculating && 
+                  !appState.showingOverview && 
+                  provisionalLocation != null &&
+                  appState.routeStart == null && 
+                  appState.routeEnd == null) ...[
                 _buildLocationInfo(
                   label: LocalizationService.instance.t('navigation.location'),
                   coordinates: provisionalLocation,
@@ -185,13 +191,27 @@ class NavigationSheet extends StatelessWidget {
                   const SizedBox(height: 16),
                 ],
                 
-                ElevatedButton.icon(
-                  icon: const Icon(Icons.check),
-                  label: Text(LocalizationService.instance.t('navigation.selectLocation')),
-                  onPressed: appState.areRoutePointsTooClose ? null : () {
-                    debugPrint('[NavigationSheet] Select Location button pressed');
-                    appState.selectSecondRoutePoint();
-                  },
+                Row(
+                  children: [
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        icon: const Icon(Icons.check),
+                        label: Text(LocalizationService.instance.t('navigation.selectLocation')),
+                        onPressed: appState.areRoutePointsTooClose ? null : () {
+                          debugPrint('[NavigationSheet] Select Location button pressed');
+                          appState.selectSecondRoutePoint();
+                        },
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        icon: const Icon(Icons.close),
+                        label: Text(LocalizationService.instance.t('actions.cancel')),
+                        onPressed: () => appState.cancelNavigation(),
+                      ),
+                    ),
+                  ],
                 ),
               ],
 
