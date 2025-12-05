@@ -3,12 +3,14 @@ import 'package:flutter_map_animations/flutter_map_animations.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:provider/provider.dart';
 
-import '../../app_state.dart';
+import '../../app_state.dart' show AppState, FollowMeMode;
 import '../../widgets/map_view.dart';
+import '../../dev_config.dart';
 
 /// Coordinates all navigation and routing functionality including route planning,
 /// map centering, zoom management, and route visualization.
 class NavigationCoordinator {
+  FollowMeMode? _previousFollowMeMode; // Track follow-me mode before overview
 
   /// Start a route with automatic follow-me detection and appropriate centering
   void startRoute({
@@ -56,8 +58,7 @@ class NavigationCoordinator {
     // Hide the overview
     appState.hideRouteOverview();
     
-    // Zoom and center for resumed route
-    // For resume, we always center on user if GPS is available, otherwise start pin
+    // Get user location to determine centering and follow-me behavior
     LatLng? userLocation;
     try {
       userLocation = mapViewKey?.currentState?.getUserLocation();
@@ -65,12 +66,53 @@ class NavigationCoordinator {
       debugPrint('[NavigationCoordinator] Could not get user location for route resume: $e');
     }
     
-    _zoomAndCenterForRoute(
-      mapController: mapController,
-      followMeEnabled: appState.followMeMode != FollowMeMode.off, // Use current follow-me state
-      userLocation: userLocation,
-      routeStart: appState.routeStart,
-    );
+    // Determine if user is near the route path
+    bool isNearRoute = false;
+    if (userLocation != null && appState.routePath != null) {
+      isNearRoute = _isUserNearRoute(userLocation, appState.routePath!);
+    }
+    
+    // Choose center point and follow-me behavior
+    LatLng centerPoint;
+    bool shouldEnableFollowMe = false;
+    
+    if (isNearRoute && userLocation != null) {
+      // User is near route - center on GPS and enable follow-me
+      centerPoint = userLocation;
+      shouldEnableFollowMe = true;
+      debugPrint('[NavigationCoordinator] User near route - centering on GPS with follow-me');
+    } else {
+      // User far from route or no GPS - center on route start
+      centerPoint = appState.routeStart ?? userLocation ?? LatLng(0, 0);
+      shouldEnableFollowMe = false;
+      debugPrint('[NavigationCoordinator] User far from route - centering on start without follow-me');
+    }
+    
+    // Apply the centering and zoom
+    try {
+      mapController.animateTo(
+        dest: centerPoint,
+        zoom: kResumeNavigationZoomLevel,
+        duration: const Duration(milliseconds: 800),
+        curve: Curves.easeOut,
+      );
+    } catch (e) {
+      debugPrint('[NavigationCoordinator] Could not animate to resume location: $e');
+    }
+    
+    // Set follow-me mode based on proximity
+    if (shouldEnableFollowMe) {
+      // Restore previous follow-me mode if user is near route
+      final modeToRestore = _previousFollowMeMode ?? FollowMeMode.follow;
+      appState.setFollowMeMode(modeToRestore);
+      debugPrint('[NavigationCoordinator] Restored follow-me mode: $modeToRestore');
+    } else {
+      // Keep follow-me off if user is far from route
+      debugPrint('[NavigationCoordinator] Keeping follow-me off - user far from route');
+    }
+    
+    // Clear stored follow-me mode
+    _previousFollowMeMode = null;
   }
 
   /// Handle navigation button press with route overview logic
@@ -82,6 +124,9 @@ class NavigationCoordinator {
     
     if (appState.showRouteButton) {
       // Route button - show route overview and zoom to show route
+      // Store current follow-me mode and disable it to prevent unexpected map jumps during overview
+      _previousFollowMeMode = appState.followMeMode;
+      appState.setFollowMeMode(FollowMeMode.off);
       appState.showRouteOverview();
       zoomToShowFullRoute(appState: appState, mapController: mapController);
     } else {
@@ -144,6 +189,20 @@ class NavigationCoordinator {
     } catch (e) {
       debugPrint('[NavigationCoordinator] Could not zoom to show full route: $e');
     }
+  }
+
+  /// Check if user location is near the route path
+  bool _isUserNearRoute(LatLng userLocation, List<LatLng> routePath) {
+    if (routePath.isEmpty) return false;
+    
+    // Check distance to each point in the route path
+    for (final routePoint in routePath) {
+      final distance = const Distance().as(LengthUnit.Meter, userLocation, routePoint);
+      if (distance <= kRouteProximityThresholdMeters) {
+        return true;
+      }
+    }
+    return false;
   }
 
   /// Internal method to zoom and center for route start/resume

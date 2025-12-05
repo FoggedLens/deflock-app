@@ -291,7 +291,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       mapController: _mapController,
       onSelectedNodeChanged: (id) => setState(() => _selectedNodeId = id),
     );
-    
+
     final controller = _scaffoldKey.currentState!.showBottomSheet(
       (ctx) => Padding(
         padding: EdgeInsets.only(
@@ -348,7 +348,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       location: location,
       mapController: _mapController,
     );
-    
+
     final controller = _scaffoldKey.currentState!.showBottomSheet(
       (ctx) => Padding(
         padding: EdgeInsets.only(

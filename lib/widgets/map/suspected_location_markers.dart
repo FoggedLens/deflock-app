@@ -13,11 +13,13 @@ class SuspectedLocationMapMarker extends StatefulWidget {
   final SuspectedLocation location;
   final MapController mapController;
   final void Function(SuspectedLocation)? onLocationTap;
+  final bool enabled;
   
   const SuspectedLocationMapMarker({
     required this.location, 
     required this.mapController, 
     this.onLocationTap,
+    this.enabled = true,
     Key? key,
   }) : super(key: key);
 
@@ -31,6 +33,8 @@ class _SuspectedLocationMapMarkerState extends State<SuspectedLocationMapMarker>
   static const Duration tapTimeout = kMarkerTapTimeout;
 
   void _onTap() {
+    if (!widget.enabled) return; // Don't respond to taps when disabled
+    
     _tapTimer = Timer(tapTimeout, () {
       // Use callback if provided, otherwise fallback to direct modal
       if (widget.onLocationTap != null) {
@@ -46,6 +50,8 @@ class _SuspectedLocationMapMarkerState extends State<SuspectedLocationMapMarker>
   }
 
   void _onDoubleTap() {
+    if (!widget.enabled) return; // Don't respond to double taps when disabled
+    
     _tapTimer?.cancel();
     widget.mapController.move(widget.location.centroid, widget.mapController.camera.zoom + kNodeDoubleTapZoomDelta);
   }
@@ -73,6 +79,8 @@ class SuspectedLocationMarkersBuilder {
     required MapController mapController,
     String? selectedLocationId,
     void Function(SuspectedLocation)? onLocationTap,
+    bool shouldDimAll = false,
+    bool enabled = true,
   }) {
     final markers = <Marker>[];
     
@@ -81,7 +89,7 @@ class SuspectedLocationMarkersBuilder {
       
       // Check if this location should be highlighted (selected) or dimmed
       final isSelected = selectedLocationId == location.ticketNo;
-      final shouldDim = selectedLocationId != null && !isSelected;
+      final shouldDim = shouldDimAll || (selectedLocationId != null && !isSelected);
       
       markers.add(
         Marker(
@@ -94,6 +102,7 @@ class SuspectedLocationMarkersBuilder {
               location: location, 
               mapController: mapController,
               onLocationTap: onLocationTap,
+              enabled: enabled,
             ),
           ),
         ),

@@ -62,16 +62,22 @@ class MarkerLayerBuilder {
     return LayoutBuilder(
       builder: (context, constraints) {
         
-        // Determine if we should dim node markers (when suspected location is selected)
-        final shouldDimNodes = appState.selectedSuspectedLocation != null;
+        // Determine if nodes should be dimmed and/or disabled
+        final shouldDimNodes = appState.selectedSuspectedLocation != null ||
+                               appState.isInSearchMode ||
+                               appState.showingOverview;
+        
+        // Disable node interactions when navigation is in conflicting state
+        final shouldDisableNodeTaps = appState.isInSearchMode || appState.showingOverview;
         
         final markers = NodeMarkersBuilder.buildNodeMarkers(
           nodes: nodesToRender,
           mapController: mapController.mapController,
           userLocation: userLocation,
           selectedNodeId: selectedNodeId,
-          onNodeTap: onNodeTap,
+          onNodeTap: onNodeTap, // Keep the original callback
           shouldDim: shouldDimNodes,
+          enabled: !shouldDisableNodeTaps, // Use enabled parameter instead
         );
 
         // Build suspected location markers (respect same zoom and count limits as nodes)
@@ -101,7 +107,9 @@ class MarkerLayerBuilder {
               locations: filteredSuspectedLocations,
               mapController: mapController.mapController,
               selectedLocationId: appState.selectedSuspectedLocation?.ticketNo,
-              onLocationTap: onSuspectedLocationTap,
+              onLocationTap: onSuspectedLocationTap, // Keep the original callback
+              shouldDimAll: shouldDisableNodeTaps,
+              enabled: !shouldDisableNodeTaps, // Use enabled parameter instead
             ),
           );
         }

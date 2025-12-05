@@ -13,11 +13,13 @@ class NodeMapMarker extends StatefulWidget {
   final OsmNode node;
   final MapController mapController;
   final void Function(OsmNode)? onNodeTap;
+  final bool enabled;
   
   const NodeMapMarker({
     required this.node, 
     required this.mapController, 
     this.onNodeTap,
+    this.enabled = true,
     Key? key,
   }) : super(key: key);
 
@@ -31,6 +33,8 @@ class _NodeMapMarkerState extends State<NodeMapMarker> {
   static const Duration tapTimeout = kMarkerTapTimeout;
 
   void _onTap() {
+    if (!widget.enabled) return; // Don't respond to taps when disabled
+    
     _tapTimer = Timer(tapTimeout, () {
       // Don't center immediately - let the sheet opening handle the coordinated animation
       
@@ -48,6 +52,8 @@ class _NodeMapMarkerState extends State<NodeMapMarker> {
   }
 
   void _onDoubleTap() {
+    if (!widget.enabled) return; // Don't respond to double taps when disabled
+    
     _tapTimer?.cancel();
     widget.mapController.move(widget.node.coord, widget.mapController.camera.zoom + kNodeDoubleTapZoomDelta);
   }
@@ -96,6 +102,7 @@ class NodeMarkersBuilder {
     int? selectedNodeId,
     void Function(OsmNode)? onNodeTap,
     bool shouldDim = false,
+    bool enabled = true,
   }) {
     final markers = <Marker>[
       // Node markers
@@ -116,6 +123,7 @@ class NodeMarkersBuilder {
                 node: n, 
                 mapController: mapController,
                 onNodeTap: onNodeTap,
+                enabled: enabled,
               ),
             ),
           );

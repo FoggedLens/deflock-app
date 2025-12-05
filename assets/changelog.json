@@ -1,4 +1,12 @@
 {
+  "1.6.2": {
+    "content": [
+      "• Improved node rendering bounds - nodes appear slightly before sliding into view and stay visible until just after sliding out, eliminating edge blinking",
+      "• Navigation interaction conflict prevention - nodes and suspected locations are now dimmed and non-clickable during route planning and route overview to prevent state conflicts",
+      "• Enhanced route overview behavior - follow-me is automatically disabled when opening overview and intelligently restored when resuming based on proximity to route",
+      "• Smart route resume - centers on GPS location with follow-me if near route, or route start without follow-me if far away, with configurable proximity threshold"
+    ]
+  },
   "1.6.1": {
     "content": [
       "• Navigation route calculation timeout increased from 15 to 30 seconds - better success rate for complex routes in dense areas",

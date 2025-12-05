@@ -24,6 +24,21 @@ class MapDataManager {
     }
   }
 
+  /// Expand bounds by the given multiplier, maintaining center point.
+  /// Used to expand rendering bounds to prevent nodes blinking at screen edges.
+  LatLngBounds _expandBounds(LatLngBounds bounds, double multiplier) {
+    final centerLat = (bounds.north + bounds.south) / 2;
+    final centerLng = (bounds.east + bounds.west) / 2;
+
+    final latSpan = (bounds.north - bounds.south) * multiplier / 2;
+    final lngSpan = (bounds.east - bounds.west) * multiplier / 2;
+
+    return LatLngBounds(
+      LatLng(centerLat - latSpan, centerLng - lngSpan),
+      LatLng(centerLat + latSpan, centerLng + lngSpan),
+    );
+  }
+
   /// Get nodes to render based on current map state
   /// Returns a MapDataResult containing all relevant node data and limit state
   MapDataResult getNodesForRendering({
@@ -39,10 +54,13 @@ class MapDataManager {
     bool isLimitActive = false;
     
     if (currentZoom >= minZoom) {
-      // Above minimum zoom - get cached nodes directly (no Provider needed)
-      allNodes = (mapBounds != null)
-          ? NodeProviderWithCache.instance.getCachedNodesForBounds(mapBounds)
-          : <OsmNode>[];
+      // Above minimum zoom - get cached nodes with expanded bounds to prevent edge blinking
+      if (mapBounds != null) {
+        final expandedBounds = _expandBounds(mapBounds, kNodeRenderingBoundsExpansion);
+        allNodes = NodeProviderWithCache.instance.getCachedNodesForBounds(expandedBounds);
+      } else {
+        allNodes = <OsmNode>[];
+      }
       
       // Filter out invalid coordinates before applying limit
       final validNodes = allNodes.where((node) {
