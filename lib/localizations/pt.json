@@ -85,7 +85,7 @@
     "aboutSubtitle": "Informações do aplicativo e créditos",
     "languageSubtitle": "Escolha seu idioma preferido",
     "maxNodes": "Máx. de nós desenhados",
-    "maxNodesSubtitle": "Definir um limite superior para o número de nós no mapa (padrão: 250).",
+    "maxNodesSubtitle": "Definir um limite superior para o número de nós no mapa.",
     "maxNodesWarning": "Você provavelmente não quer fazer isso a menos que tenha certeza absoluta de que tem uma boa razão para isso.",
     "offlineMode": "Modo Offline",
     "offlineModeSubtitle": "Desabilitar todas as requisições de rede exceto para áreas locais/offline.",

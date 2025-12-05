@@ -85,7 +85,7 @@
     "aboutSubtitle": "Informazioni sull'applicazione e crediti",
     "languageSubtitle": "Scegli la tua lingua preferita",
     "maxNodes": "Max nodi disegnati",
-    "maxNodesSubtitle": "Imposta un limite superiore per il numero di nodi sulla mappa (predefinito: 250).",
+    "maxNodesSubtitle": "Imposta un limite superiore per il numero di nodi sulla mappa.",
     "maxNodesWarning": "Probabilmente non vuoi farlo a meno che non sei assolutamente sicuro di avere una buona ragione per farlo.",
     "offlineMode": "Modalità Offline",
     "offlineModeSubtitle": "Disabilita tutte le richieste di rete tranne per aree locali/offline.",

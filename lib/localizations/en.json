@@ -85,7 +85,7 @@
     "aboutSubtitle": "App information and credits",
     "languageSubtitle": "Choose your preferred language",
     "maxNodes": "Max nodes drawn",
-    "maxNodesSubtitle": "Set an upper limit for the number of nodes on the map (default: 250).",
+    "maxNodesSubtitle": "Set an upper limit for the number of nodes on the map.",
     "maxNodesWarning": "You probably don't want to do that unless you are absolutely sure you have a good reason for it.",
     "offlineMode": "Offline Mode",
     "offlineModeSubtitle": "Disable all network requests except for local/offline areas.",

@@ -85,7 +85,7 @@
     "aboutSubtitle": "应用程序信息和鸣谢",
     "languageSubtitle": "选择您的首选语言",
     "maxNodes": "最大节点绘制数",
-    "maxNodesSubtitle": "设置地图上节点数量的上限（默认：250）。",
+    "maxNodesSubtitle": "设置地图上节点数量的上限。",
     "maxNodesWarning": "除非您确定有充分的理由，否则您可能不想这样做。",
     "offlineMode": "离线模式",
     "offlineModeSubtitle": "禁用除本地/离线区域外的所有网络请求。",

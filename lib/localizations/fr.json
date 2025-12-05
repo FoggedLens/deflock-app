@@ -85,7 +85,7 @@
     "aboutSubtitle": "Informations sur l'application et crédits",
     "languageSubtitle": "Choisissez votre langue préférée",
     "maxNodes": "Max. nœuds dessinés",
-    "maxNodesSubtitle": "Définir une limite supérieure pour le nombre de nœuds sur la carte (par défaut: 250).",
+    "maxNodesSubtitle": "Définir une limite supérieure pour le nombre de nœuds sur la carte.",
     "maxNodesWarning": "Vous ne voulez probablement pas faire cela à moins d'être absolument sûr d'avoir une bonne raison de le faire.",
     "offlineMode": "Mode Hors Ligne",
     "offlineModeSubtitle": "Désactiver toutes les requêtes réseau sauf pour les zones locales/hors ligne.",
