@@ -385,14 +385,20 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       _sheetCoordinator.setEditSheetShown(false);
     }
 
-    // Auto-open navigation sheet when needed - simplified logic (only in dev mode)
+    // Auto-open navigation sheet when needed - only when online and in nav features mode
     if (kEnableNavigationFeatures) {
-      final shouldShowNavSheet = appState.isInSearchMode || appState.showingOverview;
+      final shouldShowNavSheet = !appState.offlineMode && (appState.isInSearchMode || appState.showingOverview);
       if (shouldShowNavSheet && !_sheetCoordinator.navigationSheetShown) {
         _sheetCoordinator.setNavigationSheetShown(true);
         WidgetsBinding.instance.addPostFrameCallback((_) => _openNavigationSheet());
-      } else if (!shouldShowNavSheet) {
+      } else if (!shouldShowNavSheet && _sheetCoordinator.navigationSheetShown) {
         _sheetCoordinator.setNavigationSheetShown(false);
+        // When sheet should close (including going offline), clean up navigation state
+        if (appState.offlineMode) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            appState.cancelNavigation();
+          });
+        }
       }
     }
 
@@ -491,8 +497,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 }
               },
             ),
-            // Search bar (slides in when in search mode) - only online since search doesn't work offline
-            if (!appState.offlineMode && appState.isInSearchMode) 
+            // Search bar (slides in when in search mode)
+            if (appState.isInSearchMode) 
               Positioned(
                 top: 0,
                 left: 0,

@@ -101,32 +101,30 @@ class NavigationSheet extends StatelessWidget {
                   address: provisionalAddress,
                 ),
                 const SizedBox(height: 16),
-                // Only show routing buttons if navigation features are enabled
-                if (enableNavigationFeatures(offlineMode: appState.offlineMode)) ...[
-                  Row(
-                    children: [
-                        Expanded(
-                          child: ElevatedButton.icon(
-                            icon: const Icon(Icons.directions),
-                            label: Text(LocalizationService.instance.t('navigation.routeTo')),
-                            onPressed: () {
-                              appState.startRoutePlanning(thisLocationIsStart: false);
-                            },
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: ElevatedButton.icon(
-                            icon: const Icon(Icons.my_location),
-                            label: Text(LocalizationService.instance.t('navigation.routeFrom')),
-                            onPressed: () {
-                              appState.startRoutePlanning(thisLocationIsStart: true);
-                            },
-                          ),
-                        ),
-                    ],
-                  ),
-                ],
+                // Show routing buttons (sheet only opens when online, so always available)
+                Row(
+                  children: [
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        icon: const Icon(Icons.directions),
+                        label: Text(LocalizationService.instance.t('navigation.routeTo')),
+                        onPressed: () {
+                          appState.startRoutePlanning(thisLocationIsStart: false);
+                        },
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        icon: const Icon(Icons.my_location),
+                        label: Text(LocalizationService.instance.t('navigation.routeFrom')),
+                        onPressed: () {
+                          appState.startRoutePlanning(thisLocationIsStart: true);
+                        },
+                      ),
+                    ),
+                  ],
+                ),
               ],
 
               // SETTING SECOND POINT: Show both points and select button
