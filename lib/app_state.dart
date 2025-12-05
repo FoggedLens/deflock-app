@@ -175,7 +175,22 @@ class AppState extends ChangeNotifier {
   bool get suspectedLocationsLoading => _suspectedLocationState.isLoading;
   DateTime? get suspectedLocationsLastFetch => _suspectedLocationState.lastFetchTime;
 
+  // Track previous offline mode to detect changes
+  bool? _previousOfflineMode;
+
   void _onStateChanged() {
+    // Check if offline mode changed
+    final currentOfflineMode = _settingsState.offlineMode;
+    if (_previousOfflineMode != null && _previousOfflineMode != currentOfflineMode) {
+      // Offline mode changed
+      if (currentOfflineMode) {
+        // Went offline - cancel any active navigation/search
+        debugPrint('[AppState] Went offline - canceling navigation');
+        _navigationState.cancelNavigation();
+      }
+    }
+    _previousOfflineMode = currentOfflineMode;
+    
     notifyListeners();
   }
 
@@ -183,6 +198,9 @@ class AppState extends ChangeNotifier {
   Future<void> _init() async {
     // Initialize all state modules
     await _settingsState.init();
+    
+    // Initialize offline mode tracking
+    _previousOfflineMode = _settingsState.offlineMode;
     
     // Initialize changelog service
     await ChangelogService().init();
