@@ -101,12 +101,7 @@ cp lib/keys.dart.example lib/keys.dart
 - Are offline areas preferred for fast loading even when online? Check working.
 
 ### Current Development
-- Decide what to do for extracting nodes attached to a way/relation:
-  - Auto extract (how?)
-  - Leave it alone (wrong answer unless user chooses intentionally)
-  - Manual cleanup (cognitive load for users)
-  - Delete the old one (also wrong answer unless user chooses intentionally)
-  - Give multiple of these options??
+- Optional reason message when deleting
 - Dropdown on "refine tags" page to select acceptable options for camera:mount= (is this a boolean property of a profile?)
 - Option to pull in profiles from NSI (man_made=surveillance only?)
 
@@ -127,6 +122,12 @@ cp lib/keys.dart.example lib/keys.dart
 - Grab the full latest database for each profile just like for suspected locations (instead of overpass)
 - Optional custom icons for profiles to aid identification
 - Custom device providers and OSM/Overpass alternatives
+- Offer options for extracting nodes which are attached to a way/relation:
+  - Auto extract (how?)
+  - Leave it alone (wrong answer unless user chooses intentionally)
+  - Manual cleanup (cognitive load for users)
+  - Delete the old one (also wrong answer unless user chooses intentionally)
+  - Give multiple of these options??
 
 ---
 
