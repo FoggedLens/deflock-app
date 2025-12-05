@@ -159,7 +159,7 @@ class MapOverlays extends StatelessWidget {
                 children: [
                   // Search/Navigation button - show search button always, show route button only in dev mode when online
                   if (onSearchPressed != null) ...[
-                    if (appState.showSearchButton || (enableNavigationFeatures(offlineMode: appState.offlineMode) && appState.showRouteButton)) ...[
+                    if ((!appState.offlineMode && appState.showSearchButton) || appState.showRouteButton) ...[
                       FloatingActionButton(
                         mini: true,
                         heroTag: "search_nav",

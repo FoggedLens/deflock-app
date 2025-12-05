@@ -80,12 +80,12 @@ class NavigationCoordinator {
   }) {
     final appState = context.read<AppState>();
     
-    if (appState.isInRouteMode) {
-      // Show route overview (zoom out to show full route)
+    if (appState.showRouteButton) {
+      // Route button - show route overview and zoom to show route
       appState.showRouteOverview();
       zoomToShowFullRoute(appState: appState, mapController: mapController);
     } else {
-      // Not in route - handle based on current state
+      // Search button - toggle search mode
       if (appState.isInSearchMode) {
         // Exit search mode
         appState.clearSearchResults();
