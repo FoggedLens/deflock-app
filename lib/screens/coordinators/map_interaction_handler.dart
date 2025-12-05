@@ -38,8 +38,7 @@ class MapInteractionHandler {
       debugPrint('[MapInteractionHandler] Could not center map on node: $e');
     }
     
-    // Start edit session for the node
-    appState.startEditSession(node);
+    // Note: Edit session is NOT started here - only when user explicitly presses Edit button
   }
 
   /// Handle suspected location tap with selection and highlighting
