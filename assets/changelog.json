@@ -1,4 +1,10 @@
 {
+  "1.7.0": {
+    "content": [
+      "• NEW: Distance display when selecting second navigation point - shows distance from first location in real-time",
+      "• NEW: Long distance warning - routes over 30km display a warning about potential timeouts with a note that improvements are coming"
+    ]
+  },
   "1.6.3": {
     "content": [
       "• Fixed navigation sheet button flow - route to/from buttons no longer reappear after selecting second location",

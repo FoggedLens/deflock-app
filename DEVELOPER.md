@@ -484,17 +484,25 @@ The major performance issue was discovered to be double caching with expensive o
 - **Smart queue management**: Drops oldest requests when queue fills up
 - **Reduced concurrent connections**: 8 threads instead of 10 for better stability across platforms
 
-### 14. Navigation & Routing (Implemented, Awaiting Integration)
+### 14. Navigation & Routing (Implemented and Active)
 
 **Current state:**
 - **Search functionality**: Fully implemented and active
 - **Avoidance routing**: Fully implemented and active
+- **Distance feedback**: Shows real-time distance when selecting second route point
+- **Long distance warnings**: Alerts users when routes may timeout (configurable threshold)
 - **Offline routing**: Requires vector map tiles
 
 **Architecture:**
 - NavigationState manages routing computation and turn-by-turn instructions
 - RoutingService handles API communication and route calculation
 - SearchService provides location lookup and geocoding
+
+**Distance warning system (v1.7.0):**
+- **Real-time distance display**: Shows distance from first to second point during selection
+- **Configurable threshold**: `kNavigationDistanceWarningThreshold` in dev_config (default 30km)
+- **User feedback**: Warning message about potential timeouts for long routes
+- **Brutalist approach**: Simple distance calculation using existing `Distance()` utility
 
 ---
 

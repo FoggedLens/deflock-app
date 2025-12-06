@@ -128,6 +128,7 @@ const double kNodeProximityWarningDistance = 15.0; // meters - distance threshol
 
 // Navigation route planning configuration
 const double kNavigationMinRouteDistance = 100.0; // meters - minimum distance between start and end points
+const double kNavigationDistanceWarningThreshold = 20000.0; // meters - distance threshold for timeout warning (30km)
 
 // Node display configuration
 const int kDefaultMaxNodes = 500; // Default maximum number of nodes to render on the map at once

@@ -87,6 +87,24 @@ class NavigationState extends ChangeNotifier {
     return distance < kNavigationMinRouteDistance;
   }
   
+  /// Get distance from first navigation point to provisional location during second point selection
+  double? get distanceFromFirstPoint {
+    if (!_isSettingSecondPoint || _provisionalPinLocation == null) return null;
+    
+    final firstPoint = _nextPointIsStart ? _routeEnd : _routeStart;
+    if (firstPoint == null) return null;
+    
+    return const Distance().as(LengthUnit.Meter, firstPoint, _provisionalPinLocation!);
+  }
+  
+  /// Check if distance between points would likely cause timeout issues
+  bool get distanceExceedsWarningThreshold {
+    final distance = distanceFromFirstPoint;
+    if (distance == null) return false;
+    
+    return distance > kNavigationDistanceWarningThreshold;
+  }
+  
   /// BRUTALIST: Single entry point to search mode
   void enterSearchMode(LatLng mapCenter) {
     debugPrint('[NavigationState] enterSearchMode - current mode: $_mode');

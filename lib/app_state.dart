@@ -114,6 +114,8 @@ class AppState extends ChangeNotifier {
   bool get settingRouteStart => _navigationState.settingRouteStart;
   bool get isSettingSecondPoint => _navigationState.isSettingSecondPoint;
   bool get areRoutePointsTooClose => _navigationState.areRoutePointsTooClose;
+  double? get distanceFromFirstPoint => _navigationState.distanceFromFirstPoint;
+  bool get distanceExceedsWarningThreshold => _navigationState.distanceExceedsWarningThreshold;
   bool get isCalculating => _navigationState.isCalculating;
   bool get showingOverview => _navigationState.showingOverview;
   String? get routingError => _navigationState.routingError;

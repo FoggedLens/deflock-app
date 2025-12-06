@@ -161,7 +161,50 @@ class NavigationSheet extends StatelessWidget {
                   coordinates: provisionalLocation,
                   address: provisionalAddress,
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 8),
+                
+                // Show distance from first point
+                if (appState.distanceFromFirstPoint != null) ...[
+                  Text(
+                    'Distance: ${(appState.distanceFromFirstPoint! / 1000).toStringAsFixed(1)} km',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.grey[600],
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                ],
+                
+                // Show distance warning if threshold exceeded
+                if (appState.distanceExceedsWarningThreshold) ...[
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.amber.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: Colors.amber.withOpacity(0.3)),
+                    ),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Icon(Icons.warning_amber, color: Colors.amber[700], size: 20),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            'Trips longer than ${(kNavigationDistanceWarningThreshold / 1000).toStringAsFixed(0)} km are likely to time out. We are working to improve this; stay tuned.',
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.amber[700],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                ],
+                
                 
                 // Show warning message if locations are too close
                 if (appState.areRoutePointsTooClose) ...[
