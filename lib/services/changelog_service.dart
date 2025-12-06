@@ -1,9 +1,11 @@
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'version_service.dart';
 import '../app_state.dart';
+import '../migrations.dart';
 
 /// Service for managing changelog data and first launch detection
 class ChangelogService {
@@ -207,6 +209,10 @@ class ChangelogService {
       versionsNeedingMigration.add('1.5.3');
     }
     
+    if (needsMigration(lastSeenVersion, currentVersion, '1.6.3')) {
+      versionsNeedingMigration.add('1.6.3');
+    }
+    
     // Future versions can be added here
     // if (needsMigration(lastSeenVersion, currentVersion, '2.0.0')) {
     //   versionsNeedingMigration.add('2.0.0');
@@ -262,31 +268,9 @@ class ChangelogService {
   bool get isInitialized => _initialized;
 
   /// Run a specific migration by version number
-  Future<void> runMigration(String version, AppState appState) async {
+  Future<void> runMigration(String version, AppState appState, BuildContext? context) async {
     debugPrint('[ChangelogService] Running $version migration');
-    
-    switch (version) {
-      case '1.3.1':
-        // Enable network status indicator for all existing users
-        await appState.setNetworkStatusIndicatorEnabled(true);
-        debugPrint('[ChangelogService] 1.3.1 migration completed: enabled network status indicator');
-        break;
-        
-      case '1.5.3':
-        // Migrate upload queue to new two-stage changeset system
-        await appState.migrateUploadQueueToTwoStageSystem();
-        debugPrint('[ChangelogService] 1.5.3 migration completed: migrated upload queue to two-stage system');
-        break;
-        
-      // Future migrations can be added here
-      // case '2.0.0':
-      //   await appState.doSomethingNew();
-      //   debugPrint('[ChangelogService] 2.0.0 migration completed');
-      //   break;
-      
-      default:
-        debugPrint('[ChangelogService] Unknown migration version: $version');
-    }
+    await OneTimeMigrations.runMigration(version, appState, context);
   }
 
   /// Check if a migration should run

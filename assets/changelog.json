@@ -2,7 +2,8 @@
   "1.6.3": {
     "content": [
       "• Fixed navigation sheet button flow - route to/from buttons no longer reappear after selecting second location",
-      "• Added cancel button when selecting second route point for easier exit from route planning"
+      "• Added cancel button when selecting second route point for easier exit from route planning",
+      "• Removed placeholder FOV values from built-in device profiles - improves data quality for submissions"
     ]
   },
   "1.6.2": {

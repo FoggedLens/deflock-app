@@ -160,7 +160,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       // Run any needed migrations first
       final versionsNeedingMigration = await ChangelogService().getVersionsNeedingMigration();
       for (final version in versionsNeedingMigration) {
-        await ChangelogService().runMigration(version, appState);
+        await ChangelogService().runMigration(version, appState, context);
       }
       
       // Determine what popup to show
