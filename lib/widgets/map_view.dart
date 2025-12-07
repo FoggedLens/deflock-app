@@ -4,7 +4,7 @@ import 'package:flutter_map_animations/flutter_map_animations.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:provider/provider.dart';
 
-import '../app_state.dart';
+import '../app_state.dart' show AppState, FollowMeMode, UploadMode;
 import '../services/offline_area_service.dart';
 import '../services/network_status.dart';
 import '../services/prefetch_area_service.dart';
@@ -28,7 +28,6 @@ import 'network_status_indicator.dart';
 import 'node_limit_indicator.dart';
 import 'proximity_alert_banner.dart';
 import '../dev_config.dart';
-import '../app_state.dart' show FollowMeMode;
 import '../services/proximity_alert_service.dart';
 import 'sheet_aware_map.dart';
 
@@ -249,6 +248,11 @@ class MapViewState extends State<MapView> {
     );
   }
 
+  /// Calculate search bar offset for screen-positioned indicators
+  double _calculateScreenIndicatorSearchOffset(AppState appState) {
+    return (!appState.offlineMode && appState.isInSearchMode) ? 60.0 : 0.0;
+  }
+
 
   @override
   void didUpdateWidget(covariant MapView oldWidget) {
@@ -370,23 +374,6 @@ class MapViewState extends State<MapView> {
           children: [
             ...overlayLayers,
             markerLayer,
-            
-            // Node limit indicator (top-left) - shown when limit is active
-            Builder(
-              builder: (context) {
-                final appState = context.read<AppState>();
-                // Add search bar offset when search bar is visible
-                final searchBarOffset = (!appState.offlineMode && appState.isInSearchMode) ? 60.0 : 0.0;
-                
-                return NodeLimitIndicator(
-                  isActive: nodeData.isLimitActive,
-                  renderedCount: nodeData.nodesToRender.length,
-                  totalCount: nodeData.validNodesCount,
-                  top: 8.0 + searchBarOffset,
-                  left: 8.0,
-                );
-              },
-            ),
           ],
         );
       },
@@ -540,12 +527,28 @@ class MapViewState extends State<MapView> {
           onSearchPressed: widget.onSearchPressed,
         ),
 
+        // Node limit indicator (top-left) - shown when limit is active
+        Builder(
+          builder: (context) {
+            final appState = context.watch<AppState>();
+            final searchBarOffset = _calculateScreenIndicatorSearchOffset(appState);
+            
+            return NodeLimitIndicator(
+              isActive: nodeData.isLimitActive,
+              renderedCount: nodeData.nodesToRender.length,
+              totalCount: nodeData.validNodesCount,
+              top: 8.0 + searchBarOffset,
+              left: 8.0,
+            );
+          },
+        ),
+
         // Network status indicator (top-left) - conditionally shown
         if (appState.networkStatusIndicatorEnabled)
           Builder(
             builder: (context) {
-              // Calculate position based on node limit indicator presence and search bar
-              final searchBarOffset = (!appState.offlineMode && appState.isInSearchMode) ? 60.0 : 0.0;
+              final appState = context.watch<AppState>();
+              final searchBarOffset = _calculateScreenIndicatorSearchOffset(appState);
               final nodeLimitOffset = nodeData.isLimitActive ? 48.0 : 0.0; // Height of node limit indicator + spacing
               
               return NetworkStatusIndicator(

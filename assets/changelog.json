@@ -1,4 +1,10 @@
 {
+  "1.8.3": {
+    "content": [
+      "• Fixed node limit indicator disappearing when navigation sheet opens during search/routing",
+      "• Improved indicator architecture - moved node limit indicator to screen coordinates for consistency with other UI overlays"
+    ]
+  },
   "1.8.2": {
     "content": [
       "• Fixed map positioning for node tags and suspected location sheets - map now correctly centers above sheet when opened",
