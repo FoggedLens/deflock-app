@@ -301,7 +301,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           bottom: MediaQuery.of(context).padding.bottom, // Only safe area, no keyboard
         ),
         child: MeasuredSheet(
-          debugLabel: 'NodeTag',
           onHeightChanged: (height) {
             _sheetCoordinator.updateTagSheetHeight(
               height + MediaQuery.of(context).padding.bottom,
@@ -359,7 +358,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           bottom: MediaQuery.of(context).padding.bottom, // Only safe area, no keyboard
         ),
         child: MeasuredSheet(
-          debugLabel: 'SuspectedLocation',
           onHeightChanged: (height) {
             _sheetCoordinator.updateTagSheetHeight(
               height + MediaQuery.of(context).padding.bottom,
