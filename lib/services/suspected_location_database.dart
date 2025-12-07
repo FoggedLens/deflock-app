@@ -73,9 +73,17 @@ class SuspectedLocationDatabase {
       )
     ''');
 
-    // Create spatial index for efficient bounds queries
+    // Create spatial indexes for efficient bounds queries
+    // Separate indexes for lat and lng for better query optimization
     await db.execute('''
-      CREATE INDEX idx_centroid ON $_tableName ($_columnCentroidLat, $_columnCentroidLng)
+      CREATE INDEX idx_lat ON $_tableName ($_columnCentroidLat)
+    ''');
+    await db.execute('''
+      CREATE INDEX idx_lng ON $_tableName ($_columnCentroidLng)
+    ''');
+    // Composite index for combined lat/lng queries
+    await db.execute('''
+      CREATE INDEX idx_lat_lng ON $_tableName ($_columnCentroidLat, $_columnCentroidLng)
     ''');
 
     // Metadata table for tracking last fetch time and other info
@@ -111,6 +119,7 @@ class SuspectedLocationDatabase {
       debugPrint('[SuspectedLocationDatabase] Clearing all data...');
       
       // Drop and recreate tables (simpler than DELETE for large datasets)
+      // Indexes are automatically dropped with tables
       await db.execute('DROP TABLE IF EXISTS $_tableName');
       await db.execute('DROP TABLE IF EXISTS $_metaTableName');
       await _createTables(db, _dbVersion);

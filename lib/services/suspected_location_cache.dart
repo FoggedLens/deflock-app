@@ -12,12 +12,11 @@ class SuspectedLocationCache extends ChangeNotifier {
   SuspectedLocationCache._();
 
   final SuspectedLocationDatabase _database = SuspectedLocationDatabase();
-  final Map<String, List<SuspectedLocation>> _boundsCache = {};
   
-  // Add a synchronous cache for UI responsiveness
-  // This holds recently fetched bounds data to support synchronous API calls
-  final Map<String, List<SuspectedLocation>> _syncCache = {};
-  final Set<String> _pendingQueries = {};
+  // Simple cache: just hold the currently visible locations
+  List<SuspectedLocation> _currentLocations = [];
+  String? _currentBoundsKey;
+  bool _isLoading = false;
   
   /// Get suspected locations within specific bounds (async version)
   Future<List<SuspectedLocation>> getLocationsForBounds(LatLngBounds bounds) async {
@@ -25,30 +24,20 @@ class SuspectedLocationCache extends ChangeNotifier {
       return [];
     }
     
-    final boundsKey = '${bounds.north.toStringAsFixed(4)},${bounds.south.toStringAsFixed(4)},${bounds.east.toStringAsFixed(4)},${bounds.west.toStringAsFixed(4)}';
+    final boundsKey = _getBoundsKey(bounds);
     
-    // Check cache first
-    if (_boundsCache.containsKey(boundsKey)) {
-      return _boundsCache[boundsKey]!;
+    // If this is the same bounds we're already showing, return current cache
+    if (boundsKey == _currentBoundsKey) {
+      return _currentLocations;
     }
     
     try {
       // Query database for locations in bounds
       final locations = await _database.getLocationsInBounds(bounds);
       
-      // Cache the result in both caches
-      _boundsCache[boundsKey] = locations;
-      _syncCache[boundsKey] = locations;
-      
-      // Limit cache sizes to prevent memory issues
-      if (_boundsCache.length > 100) {
-        final oldestKey = _boundsCache.keys.first;
-        _boundsCache.remove(oldestKey);
-      }
-      if (_syncCache.length > 50) {
-        final oldestKey = _syncCache.keys.first;
-        _syncCache.remove(oldestKey);
-      }
+      // Update cache
+      _currentLocations = locations;
+      _currentBoundsKey = boundsKey;
       
       return locations;
     } catch (e) {
@@ -58,54 +47,50 @@ class SuspectedLocationCache extends ChangeNotifier {
   }
   
   /// Get suspected locations within specific bounds (synchronous version for UI)
-  /// This returns cached data immediately and triggers async fetch if needed
+  /// Returns current cache immediately, triggers async update if bounds changed
   List<SuspectedLocation> getLocationsForBoundsSync(LatLngBounds bounds) {
     if (!SuspectedLocationService().isEnabled) {
       return [];
     }
     
-    final boundsKey = '${bounds.north.toStringAsFixed(4)},${bounds.south.toStringAsFixed(4)},${bounds.east.toStringAsFixed(4)},${bounds.west.toStringAsFixed(4)}';
+    final boundsKey = _getBoundsKey(bounds);
     
-    // Return sync cache immediately if available
-    if (_syncCache.containsKey(boundsKey)) {
-      return _syncCache[boundsKey]!;
+    // If bounds haven't changed, return current cache immediately
+    if (boundsKey == _currentBoundsKey) {
+      return _currentLocations;
     }
     
-    // If not cached and not already being fetched, trigger async fetch
-    if (!_pendingQueries.contains(boundsKey)) {
-      _pendingQueries.add(boundsKey);
-      _fetchAndCacheAsync(bounds, boundsKey);
+    // Bounds changed - trigger async update but keep showing current cache
+    if (!_isLoading) {
+      _isLoading = true;
+      _updateCacheAsync(bounds, boundsKey);
     }
     
-    // Return empty list immediately (will be updated when async fetch completes)
-    return [];
+    // Return current cache (keeps suspected locations visible during map movement)
+    return _currentLocations;
   }
   
-  /// Async fetch and cache helper
-  void _fetchAndCacheAsync(LatLngBounds bounds, String boundsKey) async {
+  /// Simple async update - no complex caching, just swap when done
+  void _updateCacheAsync(LatLngBounds bounds, String boundsKey) async {
     try {
       final locations = await _database.getLocationsInBounds(bounds);
       
-      _syncCache[boundsKey] = locations;
-      _boundsCache[boundsKey] = locations;
-      
-      // Limit cache sizes
-      if (_syncCache.length > 50) {
-        final oldestKey = _syncCache.keys.first;
-        _syncCache.remove(oldestKey);
+      // Only update if this is still the most recent request
+      if (boundsKey == _getBoundsKey(bounds) || _currentBoundsKey == null) {
+        _currentLocations = locations;
+        _currentBoundsKey = boundsKey;
+        notifyListeners(); // Trigger UI update
       }
-      if (_boundsCache.length > 100) {
-        final oldestKey = _boundsCache.keys.first;
-        _boundsCache.remove(oldestKey);
-      }
-      
-      // Notify listeners to trigger UI rebuild
-      notifyListeners();
     } catch (e) {
-      debugPrint('[SuspectedLocationCache] Error in async fetch: $e');
+      debugPrint('[SuspectedLocationCache] Error updating cache: $e');
     } finally {
-      _pendingQueries.remove(boundsKey);
+      _isLoading = false;
     }
+  }
+  
+  /// Generate cache key for bounds
+  String _getBoundsKey(LatLngBounds bounds) {
+    return '${bounds.north.toStringAsFixed(4)},${bounds.south.toStringAsFixed(4)},${bounds.east.toStringAsFixed(4)},${bounds.west.toStringAsFixed(4)}';
   }
   
   /// Initialize the cache (ensures database is ready)
@@ -126,10 +111,10 @@ class SuspectedLocationCache extends ChangeNotifier {
     try {
       debugPrint('[SuspectedLocationCache] Processing ${rawData.length} raw entries...');
       
-      // Clear all caches since data will change
-      _boundsCache.clear();
-      _syncCache.clear();
-      _pendingQueries.clear();
+      // Clear cache since data will change
+      _currentLocations = [];
+      _currentBoundsKey = null;
+      _isLoading = false;
       
       // Insert data into database in batch
       await _database.insertBatch(rawData, fetchTime);
@@ -146,9 +131,9 @@ class SuspectedLocationCache extends ChangeNotifier {
   
   /// Clear all cached data
   Future<void> clear() async {
-    _boundsCache.clear();
-    _syncCache.clear();
-    _pendingQueries.clear();
+    _currentLocations = [];
+    _currentBoundsKey = null;
+    _isLoading = false;
     await _database.clearAllData();
     notifyListeners();
   }
