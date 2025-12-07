@@ -175,6 +175,7 @@ class AppState extends ChangeNotifier {
   SuspectedLocation? get selectedSuspectedLocation => _suspectedLocationState.selectedLocation;
   bool get suspectedLocationsEnabled => _suspectedLocationState.isEnabled;
   bool get suspectedLocationsLoading => _suspectedLocationState.isLoading;
+  double? get suspectedLocationsDownloadProgress => _suspectedLocationState.downloadProgress;
   Future<DateTime?> get suspectedLocationsLastFetch => _suspectedLocationState.lastFetchTime;
 
   void _onStateChanged() {

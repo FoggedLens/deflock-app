@@ -12,6 +12,7 @@ class SuspectedLocationsSection extends StatefulWidget {
 
 class _SuspectedLocationsSectionState extends State<SuspectedLocationsSection> {
   DateTime? _lastFetch;
+  bool _wasLoading = false;
 
   @override
   void initState() {
@@ -38,8 +39,26 @@ class _SuspectedLocationsSectionState extends State<SuspectedLocationsSection> {
         final appState = context.watch<AppState>();
         final isEnabled = appState.suspectedLocationsEnabled;
         final isLoading = appState.suspectedLocationsLoading;
+        final downloadProgress = appState.suspectedLocationsDownloadProgress;
+        
+        // Check if loading just finished and reload last fetch time
+        if (_wasLoading && !isLoading) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            _loadLastFetch();
+          });
+        }
+        _wasLoading = isLoading;
         
         String getLastFetchText() {
+          // Show status during loading
+          if (isLoading) {
+            if (downloadProgress != null) {
+              return 'Downloading data... (this may take a few minutes)';
+            } else {
+              return 'Processing data...';
+            }
+          }
+          
           if (_lastFetch == null) {
             return locService.t('suspectedLocations.neverFetched');
           } else {
@@ -112,10 +131,31 @@ class _SuspectedLocationsSectionState extends State<SuspectedLocationsSection> {
                 title: Text(locService.t('suspectedLocations.lastUpdated')),
                 subtitle: Text(getLastFetchText()),
                 trailing: isLoading
-                    ? const SizedBox(
-                        width: 24,
+                    ? SizedBox(
+                        width: 80,
                         height: 24,
-                        child: CircularProgressIndicator(strokeWidth: 2),
+                        child: downloadProgress != null
+                            ? Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  LinearProgressIndicator(
+                                    value: downloadProgress,
+                                    backgroundColor: Colors.grey[300],
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    '${(downloadProgress * 100).toInt()}%',
+                                    style: Theme.of(context).textTheme.bodySmall,
+                                  ),
+                                ],
+                              )
+                            : const Center(
+                                child: SizedBox(
+                                  width: 24,
+                                  height: 24,
+                                  child: CircularProgressIndicator(strokeWidth: 2),
+                                ),
+                              ),
                       )
                     : IconButton(
                         icon: const Icon(Icons.refresh),

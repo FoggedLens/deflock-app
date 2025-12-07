@@ -8,6 +8,7 @@ class SuspectedLocationState extends ChangeNotifier {
   
   SuspectedLocation? _selectedLocation;
   bool _isLoading = false;
+  double? _downloadProgress; // 0.0 to 1.0, null when not downloading
 
   /// Currently selected suspected location (for detail view)
   SuspectedLocation? get selectedLocation => _selectedLocation;
@@ -47,6 +48,9 @@ class SuspectedLocationState extends ChangeNotifier {
 
   /// Whether currently loading data
   bool get isLoading => _isLoading;
+  
+  /// Download progress (0.0 to 1.0), null when not downloading
+  double? get downloadProgress => _downloadProgress;
 
   /// Last time data was fetched
   Future<DateTime?> get lastFetchTime => _service.lastFetchTime;
@@ -72,13 +76,15 @@ class SuspectedLocationState extends ChangeNotifier {
   /// Manually refresh the data (force refresh)
   Future<bool> refreshData() async {
     _isLoading = true;
+    _downloadProgress = null;
     notifyListeners();
     
     try {
-      final success = await _service.forceRefresh();
+      final success = await _service.forceRefresh(onProgress: _updateDownloadProgress);
       return success;
     } finally {
       _isLoading = false;
+      _downloadProgress = null;
       notifyListeners();
     }
   }
@@ -86,15 +92,23 @@ class SuspectedLocationState extends ChangeNotifier {
   /// Internal method to fetch data if needed with loading state management
   Future<bool> _fetchData() async {
     _isLoading = true;
+    _downloadProgress = null;
     notifyListeners();
     
     try {
-      final success = await _service.fetchDataIfNeeded();
+      final success = await _service.fetchDataIfNeeded(onProgress: _updateDownloadProgress);
       return success;
     } finally {
       _isLoading = false;
+      _downloadProgress = null;
       notifyListeners();
     }
+  }
+  
+  /// Update download progress
+  void _updateDownloadProgress(double progress) {
+    _downloadProgress = progress;
+    notifyListeners();
   }
 
   /// Select a suspected location for detail view

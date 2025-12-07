@@ -66,17 +66,17 @@ class SuspectedLocationService {
   Future<DateTime?> get lastFetch => _cache.lastFetchTime;
 
   /// Fetch data if needed (for enabling suspected locations when no data exists)
-  Future<bool> fetchDataIfNeeded() async {
+  Future<bool> fetchDataIfNeeded({void Function(double)? onProgress}) async {
     if (!(await _shouldRefresh())) {
       debugPrint('[SuspectedLocationService] Data is fresh, skipping fetch');
       return true; // Already have fresh data
     }
-    return await _fetchData();
+    return await _fetchData(onProgress: onProgress);
   }
 
   /// Force refresh the data (for manual refresh button)
-  Future<bool> forceRefresh() async {
-    return await _fetchData();
+  Future<bool> forceRefresh({void Function(double)? onProgress}) async {
+    return await _fetchData(onProgress: onProgress);
   }
 
   /// Check if data should be refreshed
@@ -102,7 +102,7 @@ class SuspectedLocationService {
   }
 
   /// Fetch data from the CSV URL
-  Future<bool> _fetchData() async {
+  Future<bool> _fetchData({void Function(double)? onProgress}) async {
     const maxRetries = 3;
     
     for (int attempt = 1; attempt <= maxRetries; attempt++) {
@@ -112,23 +112,52 @@ class SuspectedLocationService {
           debugPrint('[SuspectedLocationService] This may take up to ${_timeout.inMinutes} minutes for large datasets...');
         }
         
-        final response = await http.get(
-          Uri.parse(kSuspectedLocationsCsvUrl),
-          headers: {
-            'User-Agent': 'DeFlock/1.0 (OSM surveillance mapping app)',
-          },
-        ).timeout(_timeout);
-      
-        if (response.statusCode != 200) {
-          debugPrint('[SuspectedLocationService] HTTP error ${response.statusCode}');
-          throw Exception('HTTP ${response.statusCode}');
+        // Use streaming download for progress tracking
+        final request = http.Request('GET', Uri.parse(kSuspectedLocationsCsvUrl));
+        request.headers['User-Agent'] = 'DeFlock/1.0 (OSM surveillance mapping app)';
+        
+        final client = http.Client();
+        final streamedResponse = await client.send(request).timeout(_timeout);
+        
+        if (streamedResponse.statusCode != 200) {
+          debugPrint('[SuspectedLocationService] HTTP error ${streamedResponse.statusCode}');
+          client.close();
+          throw Exception('HTTP ${streamedResponse.statusCode}');
         }
         
-        final responseSize = response.contentLength ?? response.bodyBytes.length;
-        debugPrint('[SuspectedLocationService] Downloaded ${responseSize} bytes, parsing CSV...');
+        final contentLength = streamedResponse.contentLength;
+        debugPrint('[SuspectedLocationService] Starting download of ${contentLength != null ? '$contentLength bytes' : 'unknown size'}...');
+        
+        // Download with progress tracking
+        final chunks = <List<int>>[];
+        int downloadedBytes = 0;
+        
+        await for (final chunk in streamedResponse.stream) {
+          chunks.add(chunk);
+          downloadedBytes += chunk.length;
+          
+          // Report progress if we know the total size
+          if (contentLength != null && onProgress != null) {
+            try {
+              final progress = downloadedBytes / contentLength;
+              onProgress(progress.clamp(0.0, 1.0));
+            } catch (e) {
+              // Don't let progress callback errors break the download
+              debugPrint('[SuspectedLocationService] Progress callback error: $e');
+            }
+          }
+        }
+        
+        client.close();
+        
+        // Combine chunks into single response body
+        final bodyBytes = chunks.expand((chunk) => chunk).toList();
+        final responseBody = String.fromCharCodes(bodyBytes);
+        
+        debugPrint('[SuspectedLocationService] Downloaded $downloadedBytes bytes, parsing CSV...');
         
         // Parse CSV with proper field separator and quote handling
-        final csvData = await compute(_parseCSV, response.body);
+        final csvData = await compute(_parseCSV, responseBody);
         debugPrint('[SuspectedLocationService] Parsed ${csvData.length} rows from CSV');
         
         if (csvData.isEmpty) {
