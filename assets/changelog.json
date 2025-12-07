@@ -1,4 +1,12 @@
 {
+  "1.8.0": {
+    "content": [
+      "• IMPROVED: Suspected locations now use database storage instead of loading 100MB+ CSV into memory",
+      "• Better performance and reduced memory usage when loading suspected location data",
+      "• Faster app startup when suspected locations are enabled",
+      "• Automatic migration of existing suspected location data to new storage format"
+    ]
+  },
   "1.7.0": {
     "content": [
       "• NEW: Distance display when selecting second navigation point - shows distance from first location in real-time",

@@ -175,7 +175,7 @@ class AppState extends ChangeNotifier {
   SuspectedLocation? get selectedSuspectedLocation => _suspectedLocationState.selectedLocation;
   bool get suspectedLocationsEnabled => _suspectedLocationState.isEnabled;
   bool get suspectedLocationsLoading => _suspectedLocationState.isLoading;
-  DateTime? get suspectedLocationsLastFetch => _suspectedLocationState.lastFetchTime;
+  Future<DateTime?> get suspectedLocationsLastFetch => _suspectedLocationState.lastFetchTime;
 
   void _onStateChanged() {
     notifyListeners();
@@ -675,6 +675,10 @@ class AppState extends ChangeNotifier {
     return await _suspectedLocationState.refreshData();
   }
 
+  Future<void> reinitSuspectedLocations() async {
+    await _suspectedLocationState.init(offlineMode: _settingsState.offlineMode);
+  }
+
   void selectSuspectedLocation(SuspectedLocation location) {
     _suspectedLocationState.selectLocation(location);
   }
@@ -683,13 +687,27 @@ class AppState extends ChangeNotifier {
     _suspectedLocationState.clearSelection();
   }
 
-  List<SuspectedLocation> getSuspectedLocationsInBounds({
+  Future<List<SuspectedLocation>> getSuspectedLocationsInBounds({
+    required double north,
+    required double south,
+    required double east,
+    required double west,
+  }) async {
+    return await _suspectedLocationState.getLocationsInBounds(
+      north: north,
+      south: south,
+      east: east,
+      west: west,
+    );
+  }
+  
+  List<SuspectedLocation> getSuspectedLocationsInBoundsSync({
     required double north,
     required double south,
     required double east,
     required double west,
   }) {
-    return _suspectedLocationState.getLocationsInBounds(
+    return _suspectedLocationState.getLocationsInBoundsSync(
       north: north,
       south: south,
       east: east,

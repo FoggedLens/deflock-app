@@ -18,13 +18,13 @@ class SuspectedLocationService {
 
   static const String _prefsKeyEnabled = 'suspected_locations_enabled';
   static const Duration _maxAge = Duration(days: 7);
-  static const Duration _timeout = Duration(seconds: 30);
+  static const Duration _timeout = Duration(minutes: 5); // Increased for large CSV files (100MB+)
   
   final SuspectedLocationCache _cache = SuspectedLocationCache();
   bool _isEnabled = false;
 
   /// Get last fetch time
-  DateTime? get lastFetchTime => _cache.lastFetchTime;
+  Future<DateTime?> get lastFetchTime => _cache.lastFetchTime;
 
   /// Check if suspected locations are enabled
   bool get isEnabled => _isEnabled;
@@ -37,11 +37,12 @@ class SuspectedLocationService {
     await _cache.loadFromStorage();
     
     // Only auto-fetch if enabled, data is stale or missing, and we are not offline
-    if (_isEnabled && _shouldRefresh() && !offlineMode) {
+    if (_isEnabled && (await _shouldRefresh()) && !offlineMode) {
       debugPrint('[SuspectedLocationService] Auto-refreshing CSV data on startup (older than $_maxAge or missing)');
       await _fetchData();
-    } else if (_isEnabled && _shouldRefresh() && offlineMode) {
-      debugPrint('[SuspectedLocationService] Skipping auto-refresh due to offline mode - data is ${_cache.lastFetchTime != null ? 'outdated' : 'missing'}');
+    } else if (_isEnabled && (await _shouldRefresh()) && offlineMode) {
+      final lastFetch = await _cache.lastFetchTime;
+      debugPrint('[SuspectedLocationService] Skipping auto-refresh due to offline mode - data is ${lastFetch != null ? 'outdated' : 'missing'}');
     }
   }
 
@@ -53,20 +54,20 @@ class SuspectedLocationService {
     
     // If disabling, clear the cache
     if (!enabled) {
-      _cache.clear();
+      await _cache.clear();
     }
     // Note: If enabling and no data, the state layer will call fetchDataIfNeeded()
   }
 
   /// Check if cache has any data
-  bool get hasData => _cache.hasData;
+  Future<bool> get hasData => _cache.hasData;
 
   /// Get last fetch time  
-  DateTime? get lastFetch => _cache.lastFetchTime;
+  Future<DateTime?> get lastFetch => _cache.lastFetchTime;
 
   /// Fetch data if needed (for enabling suspected locations when no data exists)
   Future<bool> fetchDataIfNeeded() async {
-    if (!_shouldRefresh()) {
+    if (!(await _shouldRefresh())) {
       debugPrint('[SuspectedLocationService] Data is fresh, skipping fetch');
       return true; // Already have fresh data
     }
@@ -79,10 +80,11 @@ class SuspectedLocationService {
   }
 
   /// Check if data should be refreshed
-  bool _shouldRefresh() {
-    if (!_cache.hasData) return true;
-    if (_cache.lastFetchTime == null) return true;
-    return DateTime.now().difference(_cache.lastFetchTime!) > _maxAge;
+  Future<bool> _shouldRefresh() async {
+    if (!(await _cache.hasData)) return true;
+    final lastFetch = await _cache.lastFetchTime;
+    if (lastFetch == null) return true;
+    return DateTime.now().difference(lastFetch) > _maxAge;
   }
 
   /// Load settings from shared preferences
@@ -101,109 +103,144 @@ class SuspectedLocationService {
 
   /// Fetch data from the CSV URL
   Future<bool> _fetchData() async {
-    try {
-      debugPrint('[SuspectedLocationService] Fetching CSV data from $kSuspectedLocationsCsvUrl');
+    const maxRetries = 3;
+    
+    for (int attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        debugPrint('[SuspectedLocationService] Fetching CSV data from $kSuspectedLocationsCsvUrl (attempt $attempt/$maxRetries)');
+        if (attempt == 1) {
+          debugPrint('[SuspectedLocationService] This may take up to ${_timeout.inMinutes} minutes for large datasets...');
+        }
+        
+        final response = await http.get(
+          Uri.parse(kSuspectedLocationsCsvUrl),
+          headers: {
+            'User-Agent': 'DeFlock/1.0 (OSM surveillance mapping app)',
+          },
+        ).timeout(_timeout);
       
-      final response = await http.get(
-        Uri.parse(kSuspectedLocationsCsvUrl),
-        headers: {
-          'User-Agent': 'DeFlock/1.0 (OSM surveillance mapping app)',
-        },
-      ).timeout(_timeout);
+        if (response.statusCode != 200) {
+          debugPrint('[SuspectedLocationService] HTTP error ${response.statusCode}');
+          throw Exception('HTTP ${response.statusCode}');
+        }
+        
+        final responseSize = response.contentLength ?? response.bodyBytes.length;
+        debugPrint('[SuspectedLocationService] Downloaded ${responseSize} bytes, parsing CSV...');
+        
+        // Parse CSV with proper field separator and quote handling
+        final csvData = await compute(_parseCSV, response.body);
+        debugPrint('[SuspectedLocationService] Parsed ${csvData.length} rows from CSV');
+        
+        if (csvData.isEmpty) {
+          debugPrint('[SuspectedLocationService] Empty CSV data');
+          throw Exception('Empty CSV data');
+        }
+        
+        // First row should be headers
+        final headers = csvData.first.map((h) => h.toString().toLowerCase()).toList();
+        debugPrint('[SuspectedLocationService] Headers: $headers');
+        final dataRows = csvData.skip(1);
+        debugPrint('[SuspectedLocationService] Data rows count: ${dataRows.length}');
+        
+        // Find required column indices - we only need ticket_no and location
+        final ticketNoIndex = headers.indexOf('ticket_no');
+        final locationIndex = headers.indexOf('location');
+        
+        debugPrint('[SuspectedLocationService] Column indices - ticket_no: $ticketNoIndex, location: $locationIndex');
+        
+        if (ticketNoIndex == -1 || locationIndex == -1) {
+          debugPrint('[SuspectedLocationService] Required columns not found in CSV. Headers: $headers');
+          throw Exception('Required columns not found in CSV');
+        }
       
-      if (response.statusCode != 200) {
-        debugPrint('[SuspectedLocationService] HTTP error ${response.statusCode}');
-        return false;
-      }
-      
-      // Parse CSV with proper field separator and quote handling
-      final csvData = await compute(_parseCSV, response.body);
-      debugPrint('[SuspectedLocationService] Parsed ${csvData.length} rows from CSV');
-      
-      if (csvData.isEmpty) {
-        debugPrint('[SuspectedLocationService] Empty CSV data');
-        return false;
-      }
-      
-      // First row should be headers
-      final headers = csvData.first.map((h) => h.toString().toLowerCase()).toList();
-      debugPrint('[SuspectedLocationService] Headers: $headers');
-      final dataRows = csvData.skip(1);
-      debugPrint('[SuspectedLocationService] Data rows count: ${dataRows.length}');
-      
-      // Find required column indices - we only need ticket_no and location
-      final ticketNoIndex = headers.indexOf('ticket_no');
-      final locationIndex = headers.indexOf('location');
-      
-      debugPrint('[SuspectedLocationService] Column indices - ticket_no: $ticketNoIndex, location: $locationIndex');
-      
-      if (ticketNoIndex == -1 || locationIndex == -1) {
-        debugPrint('[SuspectedLocationService] Required columns not found in CSV. Headers: $headers');
-        return false;
-      }
-      
-      // Parse rows and store all data dynamically
-      final List<Map<String, dynamic>> rawDataList = [];
-      int rowIndex = 0;
-      int validRows = 0;
-      for (final row in dataRows) {
-        rowIndex++;
-        try {
-          final Map<String, dynamic> rowData = {};
-          
-          // Store all columns dynamically
-          for (int i = 0; i < headers.length && i < row.length; i++) {
-            final headerName = headers[i];
-            final cellValue = row[i];
-            if (cellValue != null) {
-              rowData[headerName] = cellValue;
+        
+        // Parse rows and store all data dynamically
+        final List<Map<String, dynamic>> rawDataList = [];
+        int rowIndex = 0;
+        int validRows = 0;
+        for (final row in dataRows) {
+          rowIndex++;
+          try {
+            final Map<String, dynamic> rowData = {};
+            
+            // Store all columns dynamically
+            for (int i = 0; i < headers.length && i < row.length; i++) {
+              final headerName = headers[i];
+              final cellValue = row[i];
+              if (cellValue != null) {
+                rowData[headerName] = cellValue;
+              }
             }
+            
+            // Basic validation - must have ticket_no and location
+            if (rowData['ticket_no']?.toString().isNotEmpty == true && 
+                rowData['location']?.toString().isNotEmpty == true) {
+              rawDataList.add(rowData);
+              validRows++;
+            }
+            
+          } catch (e, stackTrace) {
+            // Skip rows that can't be parsed
+            debugPrint('[SuspectedLocationService] Error parsing row $rowIndex: $e');
+            continue;
           }
-          
-          // Basic validation - must have ticket_no and location
-          if (rowData['ticket_no']?.toString().isNotEmpty == true && 
-              rowData['location']?.toString().isNotEmpty == true) {
-            rawDataList.add(rowData);
-            validRows++;
-          }
-          
-        } catch (e, stackTrace) {
-          // Skip rows that can't be parsed
-          debugPrint('[SuspectedLocationService] Error parsing row $rowIndex: $e');
-          continue;
+        }
+        
+        debugPrint('[SuspectedLocationService] Parsed $validRows valid rows from ${dataRows.length} total rows');
+        
+        final fetchTime = DateTime.now();
+        
+        // Process raw data and save (calculates centroids once)
+        await _cache.processAndSave(rawDataList, fetchTime);
+        
+        debugPrint('[SuspectedLocationService] Successfully fetched and stored $validRows valid raw entries (${rawDataList.length} total)');
+        return true;
+      } catch (e, stackTrace) {
+        debugPrint('[SuspectedLocationService] Attempt $attempt failed: $e');
+        
+        if (attempt == maxRetries) {
+          debugPrint('[SuspectedLocationService] All $maxRetries attempts failed');
+          debugPrint('[SuspectedLocationService] Stack trace: $stackTrace');
+          return false;
+        } else {
+          // Wait before retrying (exponential backoff)
+          final delay = Duration(seconds: attempt * 10);
+          debugPrint('[SuspectedLocationService] Retrying in ${delay.inSeconds} seconds...');
+          await Future.delayed(delay);
         }
       }
-      
-      debugPrint('[SuspectedLocationService] Parsed $validRows valid rows from ${dataRows.length} total rows');
-      
-      final fetchTime = DateTime.now();
-      
-      // Process raw data and save (calculates centroids once)
-      await _cache.processAndSave(rawDataList, fetchTime);
-      
-      debugPrint('[SuspectedLocationService] Successfully fetched and stored $validRows valid raw entries (${rawDataList.length} total)');
-      return true;
-      
-    } catch (e, stackTrace) {
-      debugPrint('[SuspectedLocationService] Error fetching data: $e');
-      debugPrint('[SuspectedLocationService] Stack trace: $stackTrace');
-      return false;
     }
+    
+    return false; // Should never reach here
   }
 
-  /// Get suspected locations within a bounding box
-  List<SuspectedLocation> getLocationsInBounds({
+  /// Get suspected locations within a bounding box (async)
+  Future<List<SuspectedLocation>> getLocationsInBounds({
+    required double north,
+    required double south,
+    required double east,
+    required double west,
+  }) async {
+    return await _cache.getLocationsForBounds(LatLngBounds(
+      LatLng(north, west),
+      LatLng(south, east),
+    ));
+  }
+  
+  /// Get suspected locations within a bounding box (sync, for UI)
+  List<SuspectedLocation> getLocationsInBoundsSync({
     required double north,
     required double south,
     required double east,
     required double west,
   }) {
-    return _cache.getLocationsForBounds(LatLngBounds(
+    return _cache.getLocationsForBoundsSync(LatLngBounds(
       LatLng(north, west),
       LatLng(south, east),
     ));
   }
 }
+
 
 /// Simple CSV parser for compute() - must be top-level function
 List<List<dynamic>> _parseCSV(String csvBody) {

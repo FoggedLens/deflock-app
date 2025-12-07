@@ -84,7 +84,7 @@ class MarkerLayerBuilder {
         final suspectedLocationMarkers = <Marker>[];
         if (appState.suspectedLocationsEnabled && mapBounds != null && 
             currentZoom >= (appState.uploadMode == UploadMode.sandbox ? kOsmApiMinZoomLevel : kNodeMinZoomLevel)) {
-          final suspectedLocations = appState.getSuspectedLocationsInBounds(
+          final suspectedLocations = appState.getSuspectedLocationsInBoundsSync(
             north: mapBounds.north,
             south: mapBounds.south,
             east: mapBounds.east,

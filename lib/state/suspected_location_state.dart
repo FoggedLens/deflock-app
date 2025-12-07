@@ -12,14 +12,29 @@ class SuspectedLocationState extends ChangeNotifier {
   /// Currently selected suspected location (for detail view)
   SuspectedLocation? get selectedLocation => _selectedLocation;
 
-  /// Get suspected locations in bounds (this should be called by the map view)
-  List<SuspectedLocation> getLocationsInBounds({
+  /// Get suspected locations in bounds (async)
+  Future<List<SuspectedLocation>> getLocationsInBounds({
+    required double north,
+    required double south,
+    required double east,
+    required double west,
+  }) async {
+    return await _service.getLocationsInBounds(
+      north: north,
+      south: south,
+      east: east,
+      west: west,
+    );
+  }
+  
+  /// Get suspected locations in bounds (sync, for UI)
+  List<SuspectedLocation> getLocationsInBoundsSync({
     required double north,
     required double south,
     required double east,
     required double west,
   }) {
-    return _service.getLocationsInBounds(
+    return _service.getLocationsInBoundsSync(
       north: north,
       south: south,
       east: east,
@@ -34,7 +49,7 @@ class SuspectedLocationState extends ChangeNotifier {
   bool get isLoading => _isLoading;
 
   /// Last time data was fetched
-  DateTime? get lastFetchTime => _service.lastFetchTime;
+  Future<DateTime?> get lastFetchTime => _service.lastFetchTime;
 
   /// Initialize the state
   Future<void> init({bool offlineMode = false}) async {
@@ -47,7 +62,7 @@ class SuspectedLocationState extends ChangeNotifier {
     await _service.setEnabled(enabled);
     
     // If enabling and no data exists, fetch it now
-    if (enabled && !_service.hasData) {
+    if (enabled && !(await _service.hasData)) {
       await _fetchData();
     }
     

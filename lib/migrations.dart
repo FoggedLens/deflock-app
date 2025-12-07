@@ -1,8 +1,11 @@
+import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'app_state.dart';
 import 'services/profile_service.dart';
+import 'services/suspected_location_cache.dart';
 import 'widgets/nuclear_reset_dialog.dart';
 
 /// One-time migrations that run when users upgrade to specific versions.
@@ -42,6 +45,61 @@ class OneTimeMigrations {
     debugPrint('[Migration] 1.6.3 completed: cleared FOV values from built-in profiles');
   }
 
+  /// Migrate suspected locations from SharedPreferences to SQLite (v1.8.0)
+  static Future<void> migrate_1_8_0(AppState appState) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      
+      // Legacy SharedPreferences keys
+      const legacyProcessedDataKey = 'suspected_locations_processed_data';
+      const legacyLastFetchKey = 'suspected_locations_last_fetch';
+      
+      // Check if we have legacy data
+      final legacyData = prefs.getString(legacyProcessedDataKey);
+      final legacyLastFetch = prefs.getInt(legacyLastFetchKey);
+      
+      if (legacyData != null && legacyLastFetch != null) {
+        debugPrint('[Migration] 1.8.0: Found legacy suspected location data, migrating to database...');
+        
+        // Parse legacy processed data format
+        final List<dynamic> legacyProcessedList = jsonDecode(legacyData);
+        final List<Map<String, dynamic>> rawDataList = [];
+        
+        for (final entry in legacyProcessedList) {
+          if (entry is Map<String, dynamic> && entry['rawData'] != null) {
+            rawDataList.add(Map<String, dynamic>.from(entry['rawData']));
+          }
+        }
+        
+        if (rawDataList.isNotEmpty) {
+          final fetchTime = DateTime.fromMillisecondsSinceEpoch(legacyLastFetch);
+          
+          // Get the cache instance and migrate data
+          final cache = SuspectedLocationCache();
+          await cache.loadFromStorage(); // Initialize database
+          await cache.processAndSave(rawDataList, fetchTime);
+          
+          debugPrint('[Migration] 1.8.0: Migrated ${rawDataList.length} entries from legacy storage');
+        }
+        
+        // Clean up legacy data after successful migration
+        await prefs.remove(legacyProcessedDataKey);
+        await prefs.remove(legacyLastFetchKey);
+        
+        debugPrint('[Migration] 1.8.0: Legacy data cleanup completed');
+      }
+      
+      // Ensure suspected locations are reinitialized with new system
+      await appState.reinitSuspectedLocations();
+      
+      debugPrint('[Migration] 1.8.0 completed: migrated suspected locations to SQLite database');
+    } catch (e) {
+      debugPrint('[Migration] 1.8.0 ERROR: Failed to migrate suspected locations: $e');
+      // Don't rethrow - migration failure shouldn't break the app
+      // The new system will work fine, users just lose their cached data
+    }
+  }
+
   /// Get the migration function for a specific version
   static Future<void> Function(AppState)? getMigrationForVersion(String version) {
     switch (version) {
@@ -51,6 +109,8 @@ class OneTimeMigrations {
         return migrate_1_5_3;
       case '1.6.3':
         return migrate_1_6_3;
+      case '1.8.0':
+        return migrate_1_8_0;
       default:
         return null;
     }

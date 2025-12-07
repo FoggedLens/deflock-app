@@ -1,7 +1,7 @@
 name: deflockapp
 description: Map public surveillance infrastructure with OpenStreetMap
 publish_to: "none"
-version: 1.7.0+30   # The thing after the + is the version code, incremented with each release
+version: 1.8.0+31   # The thing after the + is the version code, incremented with each release
 
 environment:
   sdk: ">=3.5.0 <4.0.0"   # oauth2_client 4.x needs Dart 3.5+
@@ -30,6 +30,8 @@ dependencies:
 
   # Persistence
   shared_preferences: ^2.2.2
+  sqflite: ^2.4.1
+  path: ^1.8.3
   uuid: ^4.0.0
   package_info_plus: ^8.0.0
   csv: ^6.0.0

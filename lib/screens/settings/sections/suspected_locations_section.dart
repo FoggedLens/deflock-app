@@ -3,8 +3,31 @@ import 'package:provider/provider.dart';
 import '../../../app_state.dart';
 import '../../../services/localization_service.dart';
 
-class SuspectedLocationsSection extends StatelessWidget {
+class SuspectedLocationsSection extends StatefulWidget {
   const SuspectedLocationsSection({super.key});
+
+  @override
+  State<SuspectedLocationsSection> createState() => _SuspectedLocationsSectionState();
+}
+
+class _SuspectedLocationsSectionState extends State<SuspectedLocationsSection> {
+  DateTime? _lastFetch;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadLastFetch();
+  }
+
+  void _loadLastFetch() async {
+    final appState = context.read<AppState>();
+    final lastFetch = await appState.suspectedLocationsLastFetch;
+    if (mounted) {
+      setState(() {
+        _lastFetch = lastFetch;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -15,14 +38,13 @@ class SuspectedLocationsSection extends StatelessWidget {
         final appState = context.watch<AppState>();
         final isEnabled = appState.suspectedLocationsEnabled;
         final isLoading = appState.suspectedLocationsLoading;
-        final lastFetch = appState.suspectedLocationsLastFetch;
         
         String getLastFetchText() {
-          if (lastFetch == null) {
+          if (_lastFetch == null) {
             return locService.t('suspectedLocations.neverFetched');
           } else {
             final now = DateTime.now();
-            final diff = now.difference(lastFetch);
+            final diff = now.difference(_lastFetch!);
             if (diff.inDays > 0) {
               return locService.t('suspectedLocations.daysAgo', params: [diff.inDays.toString()]);
             } else if (diff.inHours > 0) {
@@ -41,6 +63,11 @@ class SuspectedLocationsSection extends StatelessWidget {
           // Use the inline loading indicator by calling refreshSuspectedLocations
           // The loading state will be managed by suspected location state
           final success = await appState.refreshSuspectedLocations();
+          
+          // Refresh the last fetch time after successful refresh
+          if (success) {
+            _loadLastFetch();
+          }
           
           // Show result snackbar
           if (context.mounted) {
