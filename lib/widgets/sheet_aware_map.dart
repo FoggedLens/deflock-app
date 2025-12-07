@@ -29,6 +29,8 @@ class SheetAwareMap extends StatelessWidget {
         // Use the actual available height from constraints, not full screen height
         final availableHeight = constraints.maxHeight;
         
+
+        
         return Stack(
           children: [
             AnimatedPositioned(

@@ -42,6 +42,9 @@ class _NodeMapMarkerState extends State<NodeMapMarker> {
       if (widget.onNodeTap != null) {
         widget.onNodeTap!(widget.node);
       } else {
+        // Fallback: This should not happen if callbacks are properly provided,
+        // but if it does, at least open the sheet (without map coordination)
+        debugPrint('[NodeMapMarker] Warning: onNodeTap callback not provided, using fallback');
         showModalBottomSheet(
           context: context,
           builder: (_) => NodeTagSheet(node: widget.node),

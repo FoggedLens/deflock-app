@@ -37,10 +37,17 @@ class SheetCoordinator {
 
   /// Get the currently active sheet height for map positioning
   double get activeSheetHeight {
-    if (_addSheetHeight > 0) return _addSheetHeight;
-    if (_editSheetHeight > 0) return _editSheetHeight;
-    if (_navigationSheetHeight > 0) return _navigationSheetHeight;
-    return _tagSheetHeight;
+    final height = _addSheetHeight > 0 ? _addSheetHeight :
+                   _editSheetHeight > 0 ? _editSheetHeight :
+                   _navigationSheetHeight > 0 ? _navigationSheetHeight :
+                   _tagSheetHeight;
+    
+    // Add debug logging to help troubleshoot sheet height coordination
+    if (height > 0) {
+      debugPrint('[SheetCoordinator] Active sheet height: $height (add: $_addSheetHeight, edit: $_editSheetHeight, nav: $_navigationSheetHeight, tag: $_tagSheetHeight)');
+    }
+    
+    return height;
   }
 
   /// Update sheet state tracking
@@ -100,6 +107,7 @@ class SheetCoordinator {
           bottom: MediaQuery.of(context).padding.bottom, // Only safe area, no keyboard
         ),
         child: MeasuredSheet(
+          debugLabel: 'AddNode',
           onHeightChanged: (height) {
             _addSheetHeight = height + MediaQuery.of(context).padding.bottom;
             onStateChanged();
@@ -163,6 +171,7 @@ class SheetCoordinator {
           bottom: MediaQuery.of(context).viewInsets.bottom + MediaQuery.of(context).padding.bottom,
         ),
         child: MeasuredSheet(
+          debugLabel: 'EditNode',
           onHeightChanged: (height) {
             final fullHeight = height + MediaQuery.of(context).viewInsets.bottom + MediaQuery.of(context).padding.bottom;
             _editSheetHeight = fullHeight;
@@ -202,6 +211,7 @@ class SheetCoordinator {
           bottom: MediaQuery.of(context).viewInsets.bottom + MediaQuery.of(context).padding.bottom,
         ),
         child: MeasuredSheet(
+          debugLabel: 'Navigation',
           onHeightChanged: (height) {
             final fullHeight = height + MediaQuery.of(context).viewInsets.bottom + MediaQuery.of(context).padding.bottom;
             _navigationSheetHeight = fullHeight;
@@ -239,12 +249,14 @@ class SheetCoordinator {
 
   /// Update tag sheet height (called externally)
   void updateTagSheetHeight(double height, VoidCallback onStateChanged) {
+    debugPrint('[SheetCoordinator] Updating tag sheet height: $_tagSheetHeight -> $height');
     _tagSheetHeight = height;
     onStateChanged();
   }
 
   /// Reset tag sheet height
   void resetTagSheetHeight(VoidCallback onStateChanged) {
+    debugPrint('[SheetCoordinator] Resetting tag sheet height from: $_tagSheetHeight');
     _tagSheetHeight = 0.0;
     onStateChanged();
   }

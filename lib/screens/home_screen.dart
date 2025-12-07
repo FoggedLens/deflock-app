@@ -114,6 +114,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   }
 
   void _openEditNodeSheet() {
+    // Set transition flag BEFORE closing tag sheet to prevent map bounce
+    _sheetCoordinator.setTransitioningToEdit(true);
+    
     // Close any existing tag sheet first
     if (_sheetCoordinator.tagSheetHeight > 0) {
       Navigator.of(context).pop();
@@ -298,6 +301,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           bottom: MediaQuery.of(context).padding.bottom, // Only safe area, no keyboard
         ),
         child: MeasuredSheet(
+          debugLabel: 'NodeTag',
           onHeightChanged: (height) {
             _sheetCoordinator.updateTagSheetHeight(
               height + MediaQuery.of(context).padding.bottom,
@@ -355,6 +359,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           bottom: MediaQuery.of(context).padding.bottom, // Only safe area, no keyboard
         ),
         child: MeasuredSheet(
+          debugLabel: 'SuspectedLocation',
           onHeightChanged: (height) {
             _sheetCoordinator.updateTagSheetHeight(
               height + MediaQuery.of(context).padding.bottom,

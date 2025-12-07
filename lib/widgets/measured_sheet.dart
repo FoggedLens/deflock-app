@@ -4,11 +4,13 @@ import 'package:flutter/material.dart';
 class MeasuredSheet extends StatefulWidget {
   final Widget child;
   final ValueChanged<double> onHeightChanged;
+  final String? debugLabel; // Add debug label for troubleshooting
   
   const MeasuredSheet({
     super.key,
     required this.child,
     required this.onHeightChanged,
+    this.debugLabel,
   });
 
   @override
@@ -32,7 +34,16 @@ class _MeasuredSheetState extends State<MeasuredSheet> {
       final height = renderBox.size.height;
       if (height != _lastHeight) {
         _lastHeight = height;
+        // Add debug logging to help troubleshoot height measurement issues
+        if (widget.debugLabel != null) {
+          debugPrint('[MeasuredSheet-${widget.debugLabel}] Height changed: $_lastHeight -> $height');
+        }
         widget.onHeightChanged(height);
+      }
+    } else {
+      // Add debug logging for measurement failures
+      if (widget.debugLabel != null) {
+        debugPrint('[MeasuredSheet-${widget.debugLabel}] Failed to measure height: renderBox is null');
       }
     }
   }

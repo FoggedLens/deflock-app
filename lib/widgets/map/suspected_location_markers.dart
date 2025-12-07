@@ -40,6 +40,9 @@ class _SuspectedLocationMapMarkerState extends State<SuspectedLocationMapMarker>
       if (widget.onLocationTap != null) {
         widget.onLocationTap!(widget.location);
       } else {
+        // Fallback: This should not happen if callbacks are properly provided,
+        // but if it does, at least open the sheet (without map coordination)
+        debugPrint('[SuspectedLocationMapMarker] Warning: onLocationTap callback not provided, using fallback');
         showModalBottomSheet(
           context: context,
           builder: (_) => SuspectedLocationSheet(location: widget.location),

@@ -1,4 +1,11 @@
 {
+  "1.8.2": {
+    "content": [
+      "• Fixed map positioning for node tags and suspected location sheets - map now correctly centers above sheet when opened",
+      "• Improved sheet transition coordination - prevents map bounce when transitioning from tag sheet to edit sheet",
+      "• Enhanced debugging for sheet height measurement and coordination"
+    ]
+  },
   "1.8.0": {
     "content": [
       "• Better performance and reduced memory usage when using suspected location data by using a database"
