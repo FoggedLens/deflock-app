@@ -368,7 +368,12 @@
     "additionalTagsTitle": "Zusätzliche Tags",
     "noTagsDefinedForProfile": "Keine Tags für dieses Betreiber-Profil definiert.",
     "noOperatorProfiles": "Keine Betreiber-Profile definiert",
-    "noOperatorProfilesMessage": "Erstellen Sie Betreiber-Profile in den Einstellungen, um zusätzliche Tags auf Ihre Knoten-Übertragungen anzuwenden."
+    "noOperatorProfilesMessage": "Erstellen Sie Betreiber-Profile in den Einstellungen, um zusätzliche Tags auf Ihre Knoten-Übertragungen anzuwenden.",
+    "profileTags": "Profil-Tags",
+    "profileTagsDescription": "Geben Sie Werte für Tags an, die verfeinert werden müssen:",
+    "selectValue": "Wert auswählen...",
+    "noValue": "(Kein Wert)",
+    "noSuggestions": "Keine Vorschläge verfügbar"
   },
   "layerSelector": {
     "cannotChangeTileTypes": "Kachel-Typen können während des Herunterladens von Offline-Bereichen nicht geändert werden",

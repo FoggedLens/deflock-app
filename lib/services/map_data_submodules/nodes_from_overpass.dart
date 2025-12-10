@@ -197,8 +197,9 @@ Future<List<OsmNode>> _fetchSingleOverpassQuery({
 String _buildOverpassQuery(LatLngBounds bounds, List<NodeProfile> profiles, int maxResults) {
   // Build node clauses for each profile
   final nodeClauses = profiles.map((profile) {
-    // Convert profile tags to Overpass filter format
+    // Convert profile tags to Overpass filter format, excluding empty values
     final tagFilters = profile.tags.entries
+        .where((entry) => entry.value.trim().isNotEmpty) // Skip empty values
         .map((entry) => '["${entry.key}"="${entry.value}"]')
         .join();
     

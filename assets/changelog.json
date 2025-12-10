@@ -1,4 +1,12 @@
 {
+  "2.1.0": {
+    "content": [
+      "• Profile tag refinement system - any profile tag with an empty value now shows a dropdown in refine tags",
+      "• OSM Name Suggestion Index (NSI) integration - shows most commonly used tag values from TagInfo API, both when creating/editing profiles and refining tags",
+      "• FIXED: Can now remove FOV values from profiles",
+      "• FIXED: Profile deletion while add/edit sheets are open no longer causes a crash"
+    ]
+  },
   "1.8.3": {
     "content": [
       "• Fixed node limit indicator disappearing when navigation sheet opens during search/routing",

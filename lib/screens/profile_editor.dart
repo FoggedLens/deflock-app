@@ -5,6 +5,7 @@ import 'package:uuid/uuid.dart';
 import '../models/node_profile.dart';
 import '../app_state.dart';
 import '../services/localization_service.dart';
+import '../widgets/nsi_tag_value_field.dart';
 
 class ProfileEditor extends StatefulWidget {
   const ProfileEditor({super.key, required this.profile});
@@ -175,17 +176,15 @@ class _ProfileEditorState extends State<ProfileEditor> {
             const SizedBox(width: 8),
             Expanded(
               flex: 3,
-              child: TextField(
-                decoration: InputDecoration(
-                  hintText: locService.t('profileEditor.valueHint'),
-                  border: const OutlineInputBorder(),
-                  isDense: true,
-                ),
-                controller: valueController,
+              child: NSITagValueField(
+                key: ValueKey('${_tags[i].key}_$i'), // Rebuild when key changes
+                tagKey: _tags[i].key,
+                initialValue: _tags[i].value,
+                hintText: locService.t('profileEditor.valueHint'),
                 readOnly: !widget.profile.editable,
                 onChanged: !widget.profile.editable 
-                    ? null 
-                    : (v) => _tags[i] = MapEntry(_tags[i].key, v),
+                    ? (v) {} // No-op when read-only
+                    : (v) => setState(() => _tags[i] = MapEntry(_tags[i].key, v)),
               ),
             ),
             if (widget.profile.editable)
@@ -231,8 +230,8 @@ class _ProfileEditorState extends State<ProfileEditor> {
     
     final tagMap = <String, String>{};
     for (final e in _tags) {
-      if (e.key.trim().isEmpty || e.value.trim().isEmpty) continue;
-      tagMap[e.key.trim()] = e.value.trim();
+      if (e.key.trim().isEmpty) continue; // Skip only if key is empty
+      tagMap[e.key.trim()] = e.value.trim(); // Allow empty values for refinement
     }
     
     if (tagMap.isEmpty) {

@@ -400,7 +400,12 @@
     "additionalTagsTitle": "Etiquetas Adicionales",
     "noTagsDefinedForProfile": "No hay etiquetas definidas para este perfil de operador.",
     "noOperatorProfiles": "No hay perfiles de operador definidos",
-    "noOperatorProfilesMessage": "Cree perfiles de operador en Configuración para aplicar etiquetas adicionales a sus envíos de nodos."
+    "noOperatorProfilesMessage": "Cree perfiles de operador en Configuración para aplicar etiquetas adicionales a sus envíos de nodos.",
+    "profileTags": "Etiquetas de Perfil",
+    "profileTagsDescription": "Especifique valores para etiquetas que necesitan refinamiento:",
+    "selectValue": "Seleccionar un valor...",
+    "noValue": "(Sin valor)",
+    "noSuggestions": "No hay sugerencias disponibles"
   },
   "layerSelector": {
     "cannotChangeTileTypes": "No se pueden cambiar los tipos de teselas mientras se descargan áreas sin conexión",

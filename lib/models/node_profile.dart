@@ -30,6 +30,7 @@ class NodeProfile {
           tags: const {
             'man_made': 'surveillance',
             'surveillance:type': 'ALPR',
+            'camera:mount': '', // Empty value for refinement
           },
           builtin: true,
           requiresDirection: true,
@@ -45,6 +46,7 @@ class NodeProfile {
             'surveillance:type': 'ALPR',
             'surveillance:zone': 'traffic',
             'camera:type': 'fixed',
+            'camera:mount': '', // Empty value for refinement
             'manufacturer': 'Flock Safety',
             'manufacturer:wikidata': 'Q108485435',
           },
@@ -62,6 +64,7 @@ class NodeProfile {
             'surveillance:type': 'ALPR',
             'surveillance:zone': 'traffic',
             'camera:type': 'fixed',
+            'camera:mount': '', // Empty value for refinement
             'manufacturer': 'Motorola Solutions',
             'manufacturer:wikidata': 'Q634815',
           },
@@ -79,6 +82,8 @@ class NodeProfile {
             'surveillance:type': 'ALPR',
             'surveillance:zone': 'traffic',
             'camera:type': 'fixed',
+            'camera:mount': '', // Empty for refinement
+            'surveillance:brand': '', // Empty for refinement  
             'manufacturer': 'Genetec',
             'manufacturer:wikidata': 'Q30295174',
           },

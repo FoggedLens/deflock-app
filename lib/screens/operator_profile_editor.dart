@@ -5,6 +5,7 @@ import 'package:uuid/uuid.dart';
 import '../models/operator_profile.dart';
 import '../app_state.dart';
 import '../services/localization_service.dart';
+import '../widgets/nsi_tag_value_field.dart';
 
 class OperatorProfileEditor extends StatefulWidget {
   const OperatorProfileEditor({super.key, required this.profile});
@@ -123,14 +124,12 @@ class _OperatorProfileEditorState extends State<OperatorProfileEditor> {
             const SizedBox(width: 8),
             Expanded(
               flex: 3,
-              child: TextField(
-                decoration: InputDecoration(
-                  hintText: locService.t('profileEditor.valueHint'),
-                  border: const OutlineInputBorder(),
-                  isDense: true,
-                ),
-                controller: valueController,
-                onChanged: (v) => _tags[i] = MapEntry(_tags[i].key, v),
+              child: NSITagValueField(
+                key: ValueKey('${_tags[i].key}_$i'), // Rebuild when key changes
+                tagKey: _tags[i].key,
+                initialValue: _tags[i].value,
+                hintText: locService.t('profileEditor.valueHint'),
+                onChanged: (v) => setState(() => _tags[i] = MapEntry(_tags[i].key, v)),
               ),
             ),
             IconButton(
@@ -155,8 +154,8 @@ class _OperatorProfileEditorState extends State<OperatorProfileEditor> {
     
     final tagMap = <String, String>{};
     for (final e in _tags) {
-      if (e.key.trim().isEmpty || e.value.trim().isEmpty) continue;
-      tagMap[e.key.trim()] = e.value.trim();
+      if (e.key.trim().isEmpty) continue; // Skip only if key is empty
+      tagMap[e.key.trim()] = e.value.trim(); // Allow empty values for refinement
     }
     
     final newProfile = widget.profile.copyWith(

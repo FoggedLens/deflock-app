@@ -400,7 +400,12 @@
     "additionalTagsTitle": "Additional Tags",
     "noTagsDefinedForProfile": "No tags defined for this operator profile.",
     "noOperatorProfiles": "No operator profiles defined",
-    "noOperatorProfilesMessage": "Create operator profiles in Settings to apply additional tags to your node submissions."
+    "noOperatorProfilesMessage": "Create operator profiles in Settings to apply additional tags to your node submissions.",
+    "profileTags": "Profile Tags",
+    "profileTagsDescription": "Complete these optional tag values for more detailed submissions:",
+    "selectValue": "Select value...",
+    "noValue": "(leave empty)",
+    "noSuggestions": "No suggestions available"
   },
   "layerSelector": {
     "cannotChangeTileTypes": "Cannot change tile types while downloading offline areas",

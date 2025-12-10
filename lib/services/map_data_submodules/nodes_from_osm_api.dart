@@ -202,7 +202,11 @@ bool _nodeMatchesProfiles(Map<String, String> nodeTags, List<NodeProfile> profil
 /// Check if a node's tags match a specific profile
 bool _nodeMatchesProfile(Map<String, String> nodeTags, NodeProfile profile) {
   // All profile tags must be present in the node for it to match
+  // Skip empty values as they are for refinement purposes only
   for (final entry in profile.tags.entries) {
+    if (entry.value.trim().isEmpty) {
+      continue; // Skip empty values - they don't need to match anything
+    }
     if (nodeTags[entry.key] != entry.value) {
       return false;
     }

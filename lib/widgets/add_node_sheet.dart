@@ -227,17 +227,22 @@ class AddNodeSheet extends StatelessWidget {
             session.profile!.isSubmittable;
         
         void _openRefineTags() async {
-          final result = await Navigator.push<OperatorProfile?>(
+          final result = await Navigator.push<RefineTagsResult?>(
             context,
             MaterialPageRoute(
               builder: (context) => RefineTagsSheet(
                 selectedOperatorProfile: session.operatorProfile,
+                selectedProfile: session.profile,
+                currentRefinedTags: session.refinedTags,
               ),
               fullscreenDialog: true,
             ),
           );
-          if (result != session.operatorProfile) {
-            appState.updateSession(operatorProfile: result);
+          if (result != null) {
+            appState.updateSession(
+              operatorProfile: result.operatorProfile,
+              refinedTags: result.refinedTags,
+            );
           }
         }
 

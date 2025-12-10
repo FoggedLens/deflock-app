@@ -12,14 +12,17 @@ class AddNodeSession {
   LatLng? target;
   List<double> directions;          // All directions [90, 180, 270]
   int currentDirectionIndex;        // Which direction we're editing (e.g. 1 = editing the 180°)
+  Map<String, String> refinedTags;  // User-selected values for empty profile tags
   
   AddNodeSession({
     this.profile, 
     double initialDirection = 0,
     this.operatorProfile,
     this.target,
+    Map<String, String>? refinedTags,
   }) : directions = [initialDirection],
-       currentDirectionIndex = 0;
+       currentDirectionIndex = 0,
+       refinedTags = refinedTags ?? {};
   
   // Slider always shows the current direction being edited
   double get directionDegrees => directions[currentDirectionIndex];
@@ -35,6 +38,7 @@ class EditNodeSession {
   List<double> directions;          // All directions [90, 180, 270]
   int currentDirectionIndex;        // Which direction we're editing (e.g. 1 = editing the 180°)
   bool extractFromWay; // True if user wants to extract this constrained node
+  Map<String, String> refinedTags;  // User-selected values for empty profile tags
   
   EditNodeSession({
     required this.originalNode,
@@ -42,8 +46,10 @@ class EditNodeSession {
     required double initialDirection,
     required this.target,
     this.extractFromWay = false,
+    Map<String, String>? refinedTags,
   }) : directions = [initialDirection],
-       currentDirectionIndex = 0;
+       currentDirectionIndex = 0,
+       refinedTags = refinedTags ?? {};
   
   // Slider always shows the current direction being edited
   double get directionDegrees => directions[currentDirectionIndex];
@@ -112,6 +118,7 @@ class SessionState extends ChangeNotifier {
     NodeProfile? profile,
     OperatorProfile? operatorProfile,
     LatLng? target,
+    Map<String, String>? refinedTags,
   }) {
     if (_session == null) return;
 
@@ -132,6 +139,10 @@ class SessionState extends ChangeNotifier {
       _session!.target = target;
       dirty = true;
     }
+    if (refinedTags != null) {
+      _session!.refinedTags = Map<String, String>.from(refinedTags);
+      dirty = true;
+    }
     if (dirty) notifyListeners();
   }
 
@@ -141,6 +152,7 @@ class SessionState extends ChangeNotifier {
     OperatorProfile? operatorProfile,
     LatLng? target,
     bool? extractFromWay,
+    Map<String, String>? refinedTags,
   }) {
     if (_editSession == null) return;
 
@@ -172,6 +184,10 @@ class SessionState extends ChangeNotifier {
         snapBackRequired = true;
         snapBackTarget = _editSession!.originalNode.coord;
       }
+      dirty = true;
+    }
+    if (refinedTags != null) {
+      _editSession!.refinedTags = Map<String, String>.from(refinedTags);
       dirty = true;
     }
     

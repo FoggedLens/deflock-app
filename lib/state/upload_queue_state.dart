@@ -124,6 +124,7 @@ class UploadQueueState extends ChangeNotifier {
       direction: _formatDirectionsForSubmission(session.directions, session.profile),
       profile: session.profile!,  // Safe to use ! because commitSession() checks for null
       operatorProfile: session.operatorProfile,
+      refinedTags: session.refinedTags,
       uploadMode: uploadMode,
       operation: UploadOperation.create,
     );
@@ -180,6 +181,7 @@ class UploadQueueState extends ChangeNotifier {
       direction: _formatDirectionsForSubmission(session.directions, session.profile),
       profile: session.profile!,  // Safe to use ! because commitEditSession() checks for null
       operatorProfile: session.operatorProfile,
+      refinedTags: session.refinedTags,
       uploadMode: uploadMode,
       operation: operation,
       originalNodeId: session.originalNode.id, // Track which node we're editing

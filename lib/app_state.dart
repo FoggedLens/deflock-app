@@ -208,6 +208,9 @@ class AppState extends ChangeNotifier {
     await _operatorProfileState.init(addDefaults: shouldAddOperatorDefaults);
     await _profileState.init(addDefaults: shouldAddNodeDefaults);
     
+    // Set up callback to clear stale sessions when profiles are deleted
+    _profileState.setProfileDeletedCallback(_onProfileDeleted);
+    
     // Mark defaults as initialized if this was first launch
     if (isFirstLaunch) {
       await prefs.setBool(firstLaunchKey, true);
@@ -388,6 +391,19 @@ class AppState extends ChangeNotifier {
   void deleteProfile(NodeProfile p) {
     _profileState.deleteProfile(p);
   }
+  
+  // Callback when a profile is deleted - clear any stale session references
+  void _onProfileDeleted(NodeProfile deletedProfile) {
+    // Clear add session if it references the deleted profile
+    if (_sessionState.session?.profile?.id == deletedProfile.id) {
+      cancelSession();
+    }
+    
+    // Clear edit session if it references the deleted profile  
+    if (_sessionState.editSession?.profile?.id == deletedProfile.id) {
+      cancelEditSession();
+    }
+  }
 
   // ---------- Operator Profile Methods ----------
   void addOrUpdateOperatorProfile(OperatorProfile p) {
@@ -412,12 +428,14 @@ class AppState extends ChangeNotifier {
     NodeProfile? profile,
     OperatorProfile? operatorProfile,
     LatLng? target,
+    Map<String, String>? refinedTags,
   }) {
     _sessionState.updateSession(
       directionDeg: directionDeg,
       profile: profile,
       operatorProfile: operatorProfile,
       target: target,
+      refinedTags: refinedTags,
     );
   }
 
@@ -427,6 +445,7 @@ class AppState extends ChangeNotifier {
     OperatorProfile? operatorProfile,
     LatLng? target,
     bool? extractFromWay,
+    Map<String, String>? refinedTags,
   }) {
     _sessionState.updateEditSession(
       directionDeg: directionDeg,
@@ -434,6 +453,7 @@ class AppState extends ChangeNotifier {
       operatorProfile: operatorProfile,
       target: target,
       extractFromWay: extractFromWay,
+      refinedTags: refinedTags,
     );
   }
   

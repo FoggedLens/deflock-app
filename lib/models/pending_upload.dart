@@ -21,6 +21,7 @@ class PendingUpload {
   final dynamic direction; // Can be double or String for multiple directions
   final NodeProfile? profile;
   final OperatorProfile? operatorProfile;
+  final Map<String, String> refinedTags; // User-selected values for empty profile tags
   final UploadMode uploadMode; // Capture upload destination when queued
   final UploadOperation operation; // Type of operation: create, modify, or delete
   final int? originalNodeId; // If this is modify/delete, the ID of the original OSM node
@@ -43,6 +44,7 @@ class PendingUpload {
     required this.direction,
     this.profile,
     this.operatorProfile,
+    Map<String, String>? refinedTags,
     required this.uploadMode,
     required this.operation,
     this.originalNodeId,
@@ -59,7 +61,8 @@ class PendingUpload {
     this.lastChangesetCloseAttemptAt,
     this.nodeSubmissionAttempts = 0,
     this.lastNodeSubmissionAttemptAt,
-  }) : assert(
+  }) : refinedTags = refinedTags ?? {},
+       assert(
          (operation == UploadOperation.create && originalNodeId == null) ||
          (operation == UploadOperation.create) || (originalNodeId != null),
          'originalNodeId must be null for create operations and non-null for modify/delete/extract operations'
@@ -219,7 +222,7 @@ class PendingUpload {
     return DateTime.now().isAfter(nextRetryTime);
   }
 
-  // Get combined tags from node profile and operator profile
+  // Get combined tags from node profile, operator profile, and refined tags
   Map<String, String> getCombinedTags() {
     // Deletions don't need tags
     if (operation == UploadOperation.delete || profile == null) {
@@ -227,6 +230,14 @@ class PendingUpload {
     }
     
     final tags = Map<String, String>.from(profile!.tags);
+    
+    // Apply refined tags (these fill in empty values from the profile)
+    for (final entry in refinedTags.entries) {
+      // Only apply refined tags if the profile tag value is empty
+      if (tags.containsKey(entry.key) && tags[entry.key]?.trim().isEmpty == true) {
+        tags[entry.key] = entry.value;
+      }
+    }
     
     // Add operator profile tags (they override node profile tags if there are conflicts)
     if (operatorProfile != null) {
@@ -244,6 +255,10 @@ class PendingUpload {
       }
     }
     
+    // Filter out any tags that are still empty after refinement
+    // Empty tags in profiles are fine for refinement UI, but shouldn't be submitted to OSM
+    tags.removeWhere((key, value) => value.trim().isEmpty);
+    
     return tags;
   }
 
@@ -253,6 +268,7 @@ class PendingUpload {
         'dir': direction,
         'profile': profile?.toJson(),
         'operatorProfile': operatorProfile?.toJson(),
+        'refinedTags': refinedTags,
         'uploadMode': uploadMode.index,
         'operation': operation.index,
         'originalNodeId': originalNodeId,
@@ -280,6 +296,9 @@ class PendingUpload {
         operatorProfile: j['operatorProfile'] != null
             ? OperatorProfile.fromJson(j['operatorProfile'])
             : null,
+        refinedTags: j['refinedTags'] != null 
+            ? Map<String, String>.from(j['refinedTags'])
+            : {}, // Default empty map for legacy entries
         uploadMode: j['uploadMode'] != null 
             ? UploadMode.values[j['uploadMode']] 
             : UploadMode.production, // Default for legacy entries

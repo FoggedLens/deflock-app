@@ -100,6 +100,21 @@ class OneTimeMigrations {
     }
   }
 
+  /// Clear any active sessions to reset refined tags system (v2.1.0)
+  static Future<void> migrate_2_1_0(AppState appState) async {
+    try {
+      // Clear any existing sessions since they won't have refinedTags field
+      // This is simpler and safer than trying to migrate session data
+      appState.cancelSession();
+      appState.cancelEditSession();
+      
+      debugPrint('[Migration] 2.1.0 completed: cleared sessions for refined tags system');
+    } catch (e) {
+      debugPrint('[Migration] 2.1.0 ERROR: Failed to clear sessions: $e');
+      // Don't rethrow - this is non-critical
+    }
+  }
+
   /// Get the migration function for a specific version
   static Future<void> Function(AppState)? getMigrationForVersion(String version) {
     switch (version) {
@@ -111,6 +126,8 @@ class OneTimeMigrations {
         return migrate_1_6_3;
       case '1.8.0':
         return migrate_1_8_0;
+      case '2.1.0':
+        return migrate_2_1_0;
       default:
         return null;
     }

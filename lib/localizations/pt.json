@@ -400,7 +400,12 @@
     "additionalTagsTitle": "Tags Adicionais",
     "noTagsDefinedForProfile": "Nenhuma tag definida para este perfil de operador.",
     "noOperatorProfiles": "Nenhum perfil de operador definido",
-    "noOperatorProfilesMessage": "Crie perfis de operador nas Configurações para aplicar tags adicionais aos seus envios de nós."
+    "noOperatorProfilesMessage": "Crie perfis de operador nas Configurações para aplicar tags adicionais aos seus envios de nós.",
+    "profileTags": "Tags do Perfil",
+    "profileTagsDescription": "Especifique valores para tags que precisam de refinamento:",
+    "selectValue": "Selecionar um valor...",
+    "noValue": "(Sem valor)",
+    "noSuggestions": "Nenhuma sugestão disponível"
   },
   "layerSelector": {
     "cannotChangeTileTypes": "Não é possível alterar tipos de tiles durante o download de áreas offline",

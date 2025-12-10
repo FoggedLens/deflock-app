@@ -400,7 +400,12 @@
     "additionalTagsTitle": "Étiquettes Supplémentaires",
     "noTagsDefinedForProfile": "Aucune étiquette définie pour ce profil d'opérateur.",
     "noOperatorProfiles": "Aucun profil d'opérateur défini",
-    "noOperatorProfilesMessage": "Créez des profils d'opérateur dans les Paramètres pour appliquer des étiquettes supplémentaires à vos soumissions de nœuds."
+    "noOperatorProfilesMessage": "Créez des profils d'opérateur dans les Paramètres pour appliquer des étiquettes supplémentaires à vos soumissions de nœuds.",
+    "profileTags": "Étiquettes de Profil",
+    "profileTagsDescription": "Spécifiez des valeurs pour les étiquettes qui nécessitent un raffinement :",
+    "selectValue": "Sélectionner une valeur...",
+    "noValue": "(Aucune valeur)",
+    "noSuggestions": "Aucune suggestion disponible"
   },
   "layerSelector": {
     "cannotChangeTileTypes": "Impossible de changer les types de tuiles pendant le téléchargement des zones hors ligne",

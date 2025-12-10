@@ -102,7 +102,6 @@ cp lib/keys.dart.example lib/keys.dart
 
 ### Current Development
 - Optional reason message when deleting
-- Dropdown on "refine tags" page to select acceptable options for camera:mount= (is this a boolean property of a profile?)
 - Option to pull in profiles from NSI (man_made=surveillance only?)
 
 ### On Pause

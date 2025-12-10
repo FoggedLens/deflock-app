@@ -400,7 +400,12 @@
     "additionalTagsTitle": "额外标签",
     "noTagsDefinedForProfile": "此运营商配置文件未定义标签。",
     "noOperatorProfiles": "未定义运营商配置文件",
-    "noOperatorProfilesMessage": "在设置中创建运营商配置文件，以将额外标签应用于您的节点提交。"
+    "noOperatorProfilesMessage": "在设置中创建运营商配置文件，以将额外标签应用于您的节点提交。",
+    "profileTags": "配置文件标签",
+    "profileTagsDescription": "为需要细化的标签指定值：",
+    "selectValue": "选择值...",
+    "noValue": "(无值)",
+    "noSuggestions": "无建议可用"
   },
   "layerSelector": {
     "cannotChangeTileTypes": "在下载离线区域时无法更改瓦片类型",

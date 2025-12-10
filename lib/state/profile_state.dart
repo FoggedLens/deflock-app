@@ -9,6 +9,13 @@ class ProfileState extends ChangeNotifier {
 
   final List<NodeProfile> _profiles = [];
   final Set<NodeProfile> _enabled = {};
+  
+  // Callback for when a profile is deleted (used to clear stale sessions)
+  void Function(NodeProfile)? _onProfileDeleted;
+  
+  void setProfileDeletedCallback(void Function(NodeProfile) callback) {
+    _onProfileDeleted = callback;
+  }
 
   // Getters
   List<NodeProfile> get profiles => List.unmodifiable(_profiles);
@@ -78,6 +85,10 @@ class ProfileState extends ChangeNotifier {
     }
     _saveEnabledProfiles();
     ProfileService().save(_profiles);
+    
+    // Notify about profile deletion so other parts can clean up
+    _onProfileDeleted?.call(p);
+    
     notifyListeners();
   }
 
