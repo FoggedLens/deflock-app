@@ -102,11 +102,11 @@ cp lib/keys.dart.example lib/keys.dart
 
 ### Current Development
 - Optional reason message when deleting
-- Option to pull in profiles from NSI (man_made=surveillance only?)
+- Option to import profiles from deflock identify page?
 
 ### On Pause
-- Import/Export map providers
-- Clean cache when nodes have disappeared / been deleted by others / queue item was deleted
+- Import/Export map providers, profiles
+- Clean cache when nodes have been deleted by others
 - Improve offline area node refresh live display
 
 ### Future Features & Wishlist
