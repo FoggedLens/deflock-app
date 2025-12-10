@@ -284,13 +284,21 @@ These are internal app tags, not OSM tags. The underscore prefix makes this expl
 - **Rate limiting**: Extended backoff (30s), no splitting (would make it worse)
 - **Surgical detection**: Only splits on actual limit errors, not network issues
 
-**Query optimization:**
+**Query optimization & deduplication:**
 - **Pre-fetch limit**: 4x user's display limit (e.g., 1000 nodes for 250 display limit)
+- **Profile deduplication**: Automatically removes redundant profiles from queries using subsumption analysis
 - **User-initiated detection**: Only reports loading status for user-facing operations  
 - **Background operations**: Pre-fetch runs silently, doesn't trigger loading states
 
+**Profile subsumption optimization (v2.1.1+):**
+To reduce Overpass query complexity, profiles are deduplicated before query generation:
+- **Subsumption rule**: Profile A subsumes profile B if all of A's non-empty tags exist in B with identical values
+- **Example**: `Generic ALPR` (tags: `man_made=surveillance, surveillance:type=ALPR`) subsumes `Flock` (same tags + `manufacturer=Flock Safety`)
+- **Result**: Default profile set reduces from ~11 to ~2 query clauses (Generic ALPR + Generic Gunshot)
+- **UI unchanged**: All enabled profiles still used for post-query filtering and display matching
+
 **Why this approach:**
-Dense urban areas (SF, NYC) with many profiles enabled can easily exceed both 50k node limits and 25s timeouts. Splitting reduces query complexity while surgical error detection avoids unnecessary API load from network issues.
+Dense urban areas (SF, NYC) with many profiles enabled can easily exceed both 50k node limits and 25s timeouts. Profile deduplication reduces query complexity by ~80% for default setups, while automatic splitting handles remaining edge cases. Surgical error detection avoids unnecessary API load from network issues.
 
 ### 6. Uploader Service Architecture (Refactored v1.5.3)
 

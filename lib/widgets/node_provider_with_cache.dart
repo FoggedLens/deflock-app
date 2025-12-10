@@ -29,6 +29,8 @@ class NodeProviderWithCache extends ChangeNotifier {
     if (enabledProfiles.isEmpty) return [];
     
     // Filter nodes to only show those matching enabled profiles
+    // Note: This uses ALL enabled profiles for filtering, even though Overpass queries
+    // may be deduplicated for efficiency (broader profiles capture nodes for specific ones)
     return allNodes.where((node) {
       return _matchesAnyProfile(node, enabledProfiles);
     }).toList();
@@ -107,9 +109,12 @@ class NodeProviderWithCache extends ChangeNotifier {
     return false;
   }
 
-  /// Check if a node matches a specific profile (all profile tags must match)
+  /// Check if a node matches a specific profile (all non-empty profile tags must match)
   bool _nodeMatchesProfile(OsmNode node, NodeProfile profile) {
     for (final entry in profile.tags.entries) {
+      // Skip empty values - they are used for refinement UI, not matching
+      if (entry.value.trim().isEmpty) continue;
+      
       if (node.tags[entry.key] != entry.value) return false;
     }
     return true;

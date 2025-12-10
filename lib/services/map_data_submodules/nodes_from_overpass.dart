@@ -195,8 +195,18 @@ Future<List<OsmNode>> _fetchSingleOverpassQuery({
 /// Builds an Overpass API query for surveillance nodes matching the given profiles within bounds.
 /// Also fetches ways and relations that reference these nodes to determine constraint status.
 String _buildOverpassQuery(LatLngBounds bounds, List<NodeProfile> profiles, int maxResults) {
-  // Build node clauses for each profile
-  final nodeClauses = profiles.map((profile) {
+  // Deduplicate profiles to reduce query complexity - broader profiles subsume more specific ones
+  final deduplicatedProfiles = _deduplicateProfilesForQuery(profiles);
+  
+  // Safety check: if deduplication removed all profiles (edge case), fall back to original list
+  final profilesToQuery = deduplicatedProfiles.isNotEmpty ? deduplicatedProfiles : profiles;
+  
+  if (deduplicatedProfiles.length < profiles.length) {
+    debugPrint('[Overpass] Deduplicated ${profiles.length} profiles to ${deduplicatedProfiles.length} for query efficiency');
+  }
+  
+  // Build node clauses for deduplicated profiles only
+  final nodeClauses = profilesToQuery.map((profile) {
     // Convert profile tags to Overpass filter format, excluding empty values
     final tagFilters = profile.tags.entries
         .where((entry) => entry.value.trim().isNotEmpty) // Skip empty values
@@ -219,6 +229,68 @@ out body ${maxResults > 0 ? maxResults : ''};
 );
 out meta;
 ''';
+}
+
+/// Deduplicate profiles for Overpass queries by removing profiles that are subsumed by others.
+/// A profile A subsumes profile B if all of A's non-empty tags exist in B with identical values.
+/// This optimization reduces query complexity while returning the same nodes (since broader 
+/// profiles capture all nodes that more specific profiles would).
+List<NodeProfile> _deduplicateProfilesForQuery(List<NodeProfile> profiles) {
+  if (profiles.length <= 1) return profiles;
+  
+  final result = <NodeProfile>[];
+  
+  for (final candidate in profiles) {
+    // Skip profiles that only have empty tags - they would match everything and break queries
+    final candidateNonEmptyTags = candidate.tags.entries
+        .where((entry) => entry.value.trim().isNotEmpty)
+        .toList();
+    
+    if (candidateNonEmptyTags.isEmpty) continue;
+    
+    // Check if any existing profile in our result subsumes this candidate
+    bool isSubsumed = false;
+    for (final existing in result) {
+      if (_profileSubsumes(existing, candidate)) {
+        isSubsumed = true;
+        break;
+      }
+    }
+    
+    if (!isSubsumed) {
+      // This candidate is not subsumed, so add it
+      // But first, remove any existing profiles that this candidate subsumes
+      result.removeWhere((existing) => _profileSubsumes(candidate, existing));
+      result.add(candidate);
+    }
+  }
+  
+  return result;
+}
+
+/// Check if broaderProfile subsumes specificProfile.
+/// Returns true if all non-empty tags in broaderProfile exist in specificProfile with identical values.
+bool _profileSubsumes(NodeProfile broaderProfile, NodeProfile specificProfile) {
+  // Get non-empty tags from both profiles
+  final broaderTags = Map.fromEntries(
+    broaderProfile.tags.entries.where((entry) => entry.value.trim().isNotEmpty)
+  );
+  final specificTags = Map.fromEntries(
+    specificProfile.tags.entries.where((entry) => entry.value.trim().isNotEmpty)
+  );
+  
+  // If broader has no non-empty tags, it doesn't subsume anything (would match everything)
+  if (broaderTags.isEmpty) return false;
+  
+  // If broader has more non-empty tags than specific, it can't subsume
+  if (broaderTags.length > specificTags.length) return false;
+  
+  // Check if all broader tags exist in specific with same values
+  for (final entry in broaderTags.entries) {
+    if (specificTags[entry.key] != entry.value) return false;
+  }
+  
+  return true;
 }
 
 /// Split a LatLngBounds into 4 quadrants (NW, NE, SW, SE).
