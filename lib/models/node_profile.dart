@@ -30,7 +30,6 @@ class NodeProfile {
           tags: const {
             'man_made': 'surveillance',
             'surveillance:type': 'ALPR',
-            'camera:mount': '', // Empty value for refinement
           },
           builtin: true,
           requiresDirection: true,
@@ -82,8 +81,7 @@ class NodeProfile {
             'surveillance:type': 'ALPR',
             'surveillance:zone': 'traffic',
             'camera:type': 'fixed',
-            'camera:mount': '', // Empty for refinement
-            'surveillance:brand': '', // Empty for refinement  
+            'camera:mount': '', // Empty value for refinement
             'manufacturer': 'Genetec',
             'manufacturer:wikidata': 'Q30295174',
           },
@@ -101,6 +99,7 @@ class NodeProfile {
             'surveillance:type': 'ALPR',
             'surveillance:zone': 'traffic',
             'camera:type': 'fixed',
+            'camera:mount': '', // Empty value for refinement
             'manufacturer': 'Leonardo',
             'manufacturer:wikidata': 'Q910379',
           },
@@ -118,6 +117,7 @@ class NodeProfile {
             'surveillance:type': 'ALPR',
             'surveillance:zone': 'traffic',
             'camera:type': 'fixed',
+            'camera:mount': '', // Empty value for refinement
             'manufacturer': 'Neology, Inc.',
           },
           builtin: true,
@@ -134,6 +134,7 @@ class NodeProfile {
             'surveillance:type': 'ALPR',
             'surveillance:zone': 'traffic',
             'camera:type': 'fixed',
+            'camera:mount': '', // Empty value for refinement
             'manufacturer': 'Rekor',
           },
           builtin: true,
@@ -150,6 +151,7 @@ class NodeProfile {
             'surveillance:type': 'ALPR',
             'surveillance:zone': 'traffic',
             'camera:type': 'fixed',
+            'camera:mount': '', // Empty value for refinement
             'manufacturer': 'Axis Communications',
             'manufacturer:wikidata': 'Q2347731',
           },
