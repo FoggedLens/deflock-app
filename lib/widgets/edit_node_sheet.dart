@@ -51,9 +51,7 @@ class _EditNodeSheetState extends State<EditNodeSheet> {
   }
 
   void _hideTutorial() {
-    debugPrint('[EditNodeSheet] Tutorial completion callback triggered');
     if (mounted && _showTutorial) {
-      debugPrint('[EditNodeSheet] Hiding tutorial overlay');
       setState(() {
         _showTutorial = false;
       });

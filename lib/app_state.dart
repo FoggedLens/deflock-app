@@ -478,15 +478,12 @@ class AppState extends ChangeNotifier {
 
   // Positioning tutorial methods
   void registerTutorialCallback(VoidCallback onComplete) {
-    debugPrint('[AppState] Registering tutorial callback');
     _tutorialCompletionCallback = onComplete;
     // Record the starting position when tutorial begins
     if (session?.target != null) {
       _tutorialStartPosition = session!.target;
-      debugPrint('[AppState] Tutorial start position (add): ${_tutorialStartPosition}');
     } else if (editSession?.target != null) {
       _tutorialStartPosition = editSession!.target;
-      debugPrint('[AppState] Tutorial start position (edit): ${_tutorialStartPosition}');
     }
   }
 
@@ -502,10 +499,7 @@ class AppState extends ChangeNotifier {
     final distance = Distance();
     final distanceMoved = distance.as(LengthUnit.Meter, _tutorialStartPosition!, newPosition);
     
-    debugPrint('[AppState] Tutorial movement check: ${distanceMoved.toStringAsFixed(2)}m (need ${kPositioningTutorialMinMovementMeters}m)');
-    
     if (distanceMoved >= kPositioningTutorialMinMovementMeters) {
-      debugPrint('[AppState] Tutorial completed! Calling callback and marking as complete');
       // Tutorial completed! Mark as complete and notify callback immediately
       final callback = _tutorialCompletionCallback;
       clearTutorialCallback();

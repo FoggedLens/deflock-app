@@ -66,9 +66,7 @@ class _AddNodeSheetState extends State<AddNodeSheet> {
   }
 
   void _hideTutorial() {
-    debugPrint('[AddNodeSheet] Tutorial completion callback triggered');
     if (mounted && _showTutorial) {
-      debugPrint('[AddNodeSheet] Hiding tutorial overlay');
       setState(() {
         _showTutorial = false;
       });
