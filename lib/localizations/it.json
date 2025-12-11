@@ -37,6 +37,11 @@
     "dontShowAgain": "Non mostrare più questa guida",
     "gotIt": "Capito!"
   },
+  "positioningTutorial": {
+    "title": "Affinare la Posizione",
+    "instructions": "Trascina la mappa per posizionare il marcatore del dispositivo precisamente sopra la posizione del dispositivo di sorveglianza.",
+    "hint": "Puoi ingrandire per una maggiore precisione prima di posizionare."
+  },
   "actions": {
     "tagNode": "Nuovo Nodo",
     "download": "Scarica",

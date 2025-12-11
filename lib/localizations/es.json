@@ -37,6 +37,11 @@
     "dontShowAgain": "No mostrar esta guía otra vez",
     "gotIt": "¡Entendido!"
   },
+  "positioningTutorial": {
+    "title": "Refinar Ubicación",
+    "instructions": "Arrastra el mapa para posicionar el marcador del dispositivo con precisión sobre la ubicación del dispositivo de vigilancia.",
+    "hint": "Puedes acercar el zoom para obtener mejor precisión antes de posicionar."
+  },
   "actions": {
     "tagNode": "Nuevo Nodo",
     "download": "Descargar",

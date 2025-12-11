@@ -37,6 +37,11 @@
     "dontShowAgain": "不再显示此指南",
     "gotIt": "明白了！"
   },
+  "positioningTutorial": {
+    "title": "精确定位",
+    "instructions": "拖动地图将设备标记精确定位在监控设备的位置上。",
+    "hint": "您可以在定位前放大地图以获得更高的精度。"
+  },
   "actions": {
     "tagNode": "新建节点",
     "download": "下载",

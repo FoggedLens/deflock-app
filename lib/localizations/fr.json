@@ -37,6 +37,11 @@
     "dontShowAgain": "Ne plus afficher ce guide",
     "gotIt": "Compris !"
   },
+  "positioningTutorial": {
+    "title": "Affiner la Position",
+    "instructions": "Faites glisser la carte pour positionner le marqueur de l'appareil précisément au-dessus de l'emplacement du dispositif de surveillance.",
+    "hint": "Vous pouvez zoomer pour une meilleure précision avant de positionner."
+  },
   "actions": {
     "tagNode": "Nouveau Nœud",
     "download": "Télécharger",

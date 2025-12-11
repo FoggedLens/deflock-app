@@ -13,11 +13,65 @@ import 'refine_tags_sheet.dart';
 import 'advanced_edit_options_sheet.dart';
 import 'proximity_warning_dialog.dart';
 import 'submission_guide_dialog.dart';
+import 'positioning_tutorial_overlay.dart';
 
-class EditNodeSheet extends StatelessWidget {
+class EditNodeSheet extends StatefulWidget {
   const EditNodeSheet({super.key, required this.session});
 
   final EditNodeSession session;
+
+  @override
+  State<EditNodeSheet> createState() => _EditNodeSheetState();
+}
+
+class _EditNodeSheetState extends State<EditNodeSheet> {
+  bool _showTutorial = false;
+  bool _isCheckingTutorial = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkTutorialStatus();
+  }
+
+  Future<void> _checkTutorialStatus() async {
+    final hasCompleted = await ChangelogService().hasCompletedPositioningTutorial();
+    if (mounted) {
+      setState(() {
+        _showTutorial = !hasCompleted;
+        _isCheckingTutorial = false;
+      });
+      
+      // If tutorial should be shown, register callback with AppState
+      if (_showTutorial) {
+        final appState = context.read<AppState>();
+        appState.registerTutorialCallback(_hideTutorial);
+      }
+    }
+  }
+
+  void _hideTutorial() {
+    debugPrint('[EditNodeSheet] Tutorial completion callback triggered');
+    if (mounted && _showTutorial) {
+      debugPrint('[EditNodeSheet] Hiding tutorial overlay');
+      setState(() {
+        _showTutorial = false;
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    // Clear tutorial callback when widget is disposed
+    if (_showTutorial) {
+      try {
+        context.read<AppState>().clearTutorialCallback();
+      } catch (e) {
+        // Context might be unavailable during disposal, ignore
+      }
+    }
+    super.dispose();
+  }
 
   void _checkProximityAndCommit(BuildContext context, AppState appState, LocalizationService locService) {
     _checkSubmissionGuideAndProceed(context, appState, locService);
@@ -43,9 +97,9 @@ class EditNodeSheet extends StatelessWidget {
   void _checkProximityOnly(BuildContext context, AppState appState, LocalizationService locService) {
     // Check for nearby nodes within the configured distance, excluding the node being edited
     final nearbyNodes = NodeCache.instance.findNodesWithinDistance(
-      session.target, 
+      widget.session.target, 
       kNodeProximityWarningDistance,
-      excludeNodeId: session.originalNode.id,
+      excludeNodeId: widget.session.originalNode.id,
     );
     
     if (nearbyNodes.isNotEmpty) {
@@ -217,6 +271,7 @@ class EditNodeSheet extends StatelessWidget {
           Navigator.pop(context);
         }
 
+        final session = widget.session;
         final submittableProfiles = appState.enabledProfiles.where((p) => p.isSubmittable).toList();
         final isSandboxMode = appState.uploadMode == UploadMode.sandbox;
         final allowSubmit = kEnableNodeEdits && 
@@ -245,7 +300,11 @@ class EditNodeSheet extends StatelessWidget {
           }
         }
 
-        return Column(
+        return Stack(
+          clipBehavior: Clip.none,
+          fit: StackFit.loose,
+          children: [
+            Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               const SizedBox(height: 12),
@@ -447,6 +506,14 @@ class EditNodeSheet extends StatelessWidget {
               ),
               const SizedBox(height: 20),
             ],
+            ),
+
+            // Tutorial overlay - show only if tutorial should be shown and we're done checking
+            if (!_isCheckingTutorial && _showTutorial)
+              Positioned.fill(
+                child: PositioningTutorialOverlay(),
+              ),
+          ],
         );
       },
     );
@@ -456,7 +523,7 @@ class EditNodeSheet extends StatelessWidget {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      builder: (context) => AdvancedEditOptionsSheet(node: session.originalNode),
+      builder: (context) => AdvancedEditOptionsSheet(node: widget.session.originalNode),
     );
   }
 }

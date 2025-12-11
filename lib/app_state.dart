@@ -56,6 +56,10 @@ class AppState extends ChangeNotifier {
   late final UploadQueueState _uploadQueueState;
 
   bool _isInitialized = false;
+  
+  // Positioning tutorial state
+  LatLng? _tutorialStartPosition; // Track where the tutorial started
+  VoidCallback? _tutorialCompletionCallback; // Callback when tutorial is completed
   Timer? _messageCheckTimer;
 
   AppState() {
@@ -437,6 +441,11 @@ class AppState extends ChangeNotifier {
       target: target,
       refinedTags: refinedTags,
     );
+    
+    // Check tutorial completion if position changed
+    if (target != null) {
+      _checkTutorialCompletion(target);
+    }
   }
 
   void updateEditSession({
@@ -455,11 +464,56 @@ class AppState extends ChangeNotifier {
       extractFromWay: extractFromWay,
       refinedTags: refinedTags,
     );
+    
+    // Check tutorial completion if position changed
+    if (target != null) {
+      _checkTutorialCompletion(target);
+    }
   }
   
   // For map view to check for pending snap backs
   LatLng? consumePendingSnapBack() {
     return _sessionState.consumePendingSnapBack();
+  }
+
+  // Positioning tutorial methods
+  void registerTutorialCallback(VoidCallback onComplete) {
+    debugPrint('[AppState] Registering tutorial callback');
+    _tutorialCompletionCallback = onComplete;
+    // Record the starting position when tutorial begins
+    if (session?.target != null) {
+      _tutorialStartPosition = session!.target;
+      debugPrint('[AppState] Tutorial start position (add): ${_tutorialStartPosition}');
+    } else if (editSession?.target != null) {
+      _tutorialStartPosition = editSession!.target;
+      debugPrint('[AppState] Tutorial start position (edit): ${_tutorialStartPosition}');
+    }
+  }
+
+  void clearTutorialCallback() {
+    _tutorialCompletionCallback = null;
+    _tutorialStartPosition = null;
+  }
+
+  void _checkTutorialCompletion(LatLng newPosition) {
+    if (_tutorialCompletionCallback == null || _tutorialStartPosition == null) return;
+    
+    // Calculate distance moved
+    final distance = Distance();
+    final distanceMoved = distance.as(LengthUnit.Meter, _tutorialStartPosition!, newPosition);
+    
+    debugPrint('[AppState] Tutorial movement check: ${distanceMoved.toStringAsFixed(2)}m (need ${kPositioningTutorialMinMovementMeters}m)');
+    
+    if (distanceMoved >= kPositioningTutorialMinMovementMeters) {
+      debugPrint('[AppState] Tutorial completed! Calling callback and marking as complete');
+      // Tutorial completed! Mark as complete and notify callback immediately
+      final callback = _tutorialCompletionCallback;
+      clearTutorialCallback();
+      callback?.call();
+      
+      // Mark as complete in background (don't await to avoid delays)
+      ChangelogService().markPositioningTutorialCompleted();
+    }
   }
 
   void addDirection() {

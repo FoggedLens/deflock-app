@@ -1,4 +1,10 @@
 {
+  "2.1.2": {
+    "content": [
+      "• New positioning tutorial - first-time users must drag the map to refine location when creating or editing nodes, helping ensure accurate positioning",
+      "• Tutorial automatically dismisses after moving the map at least 1 meter and never shows again"
+    ]
+  },
   "2.1.0": {
     "content": [
       "• Profile tag refinement system - any profile tag with an empty value now shows a dropdown in refine tags",

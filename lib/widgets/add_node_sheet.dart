@@ -11,11 +11,82 @@ import '../services/changelog_service.dart';
 import 'refine_tags_sheet.dart';
 import 'proximity_warning_dialog.dart';
 import 'submission_guide_dialog.dart';
+import 'positioning_tutorial_overlay.dart';
 
-class AddNodeSheet extends StatelessWidget {
+class AddNodeSheet extends StatefulWidget {
   const AddNodeSheet({super.key, required this.session});
 
   final AddNodeSession session;
+
+  @override
+  State<AddNodeSheet> createState() => _AddNodeSheetState();
+}
+
+class _AddNodeSheetState extends State<AddNodeSheet> {
+  bool _showTutorial = false;
+  bool _isCheckingTutorial = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkTutorialStatus();
+  }
+
+  Future<void> _checkTutorialStatus() async {
+    final hasCompleted = await ChangelogService().hasCompletedPositioningTutorial();
+    if (mounted) {
+      setState(() {
+        _showTutorial = !hasCompleted;
+        _isCheckingTutorial = false;
+      });
+      
+      // If tutorial should be shown, register callback with AppState
+      if (_showTutorial) {
+        final appState = context.read<AppState>();
+        appState.registerTutorialCallback(_hideTutorial);
+      }
+    }
+  }
+
+  /// Listen for tutorial completion from AppState
+  void _onTutorialCompleted() {
+    _hideTutorial();
+  }
+
+  /// Also check periodically if tutorial was completed by another sheet
+  void _recheckTutorialStatus() async {
+    if (_showTutorial) {
+      final hasCompleted = await ChangelogService().hasCompletedPositioningTutorial();
+      if (hasCompleted && mounted) {
+        setState(() {
+          _showTutorial = false;
+        });
+      }
+    }
+  }
+
+  void _hideTutorial() {
+    debugPrint('[AddNodeSheet] Tutorial completion callback triggered');
+    if (mounted && _showTutorial) {
+      debugPrint('[AddNodeSheet] Hiding tutorial overlay');
+      setState(() {
+        _showTutorial = false;
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    // Clear tutorial callback when widget is disposed
+    if (_showTutorial) {
+      try {
+        context.read<AppState>().clearTutorialCallback();
+      } catch (e) {
+        // Context might be unavailable during disposal, ignore
+      }
+    }
+    super.dispose();
+  }
 
   void _checkProximityAndCommit(BuildContext context, AppState appState, LocalizationService locService) {
     _checkSubmissionGuideAndProceed(context, appState, locService);
@@ -40,14 +111,14 @@ class AddNodeSheet extends StatelessWidget {
 
   void _checkProximityOnly(BuildContext context, AppState appState, LocalizationService locService) {
     // Only check proximity if we have a target location
-    if (session.target == null) {
+    if (widget.session.target == null) {
       _commitWithoutCheck(context, appState, locService);
       return;
     }
     
     // Check for nearby nodes within the configured distance
     final nearbyNodes = NodeCache.instance.findNodesWithinDistance(
-      session.target!, 
+      widget.session.target!, 
       kNodeProximityWarningDistance,
     );
     
@@ -220,6 +291,7 @@ class AddNodeSheet extends StatelessWidget {
           Navigator.pop(context);
         }
 
+        final session = widget.session;
         final submittableProfiles = appState.enabledProfiles.where((p) => p.isSubmittable).toList();
         final allowSubmit = appState.isLoggedIn && 
             submittableProfiles.isNotEmpty && 
@@ -246,7 +318,11 @@ class AddNodeSheet extends StatelessWidget {
           }
         }
 
-        return Column(
+        return Stack(
+          clipBehavior: Clip.none,
+          fit: StackFit.loose,
+          children: [
+            Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               const SizedBox(height: 12),
@@ -374,6 +450,14 @@ class AddNodeSheet extends StatelessWidget {
               ),
               const SizedBox(height: 20),
             ],
+            ),
+            
+            // Tutorial overlay - show only if tutorial should be shown and we're done checking
+            if (!_isCheckingTutorial && _showTutorial)
+              Positioned.fill(
+                child: PositioningTutorialOverlay(),
+              ),
+          ],
         );
       },
     );

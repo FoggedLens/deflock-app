@@ -126,6 +126,10 @@ const Duration kProximityAlertCooldown = Duration(minutes: 10); // Cooldown betw
 // Node proximity warning configuration (for new/edited nodes that are too close to existing ones)
 const double kNodeProximityWarningDistance = 15.0; // meters - distance threshold to show warning
 
+// Positioning tutorial configuration
+const double kPositioningTutorialBlurSigma = 3.0; // Blur strength for sheet overlay
+const double kPositioningTutorialMinMovementMeters = 1.0; // Minimum map movement to complete tutorial
+
 // Navigation route planning configuration
 const double kNavigationMinRouteDistance = 100.0; // meters - minimum distance between start and end points
 const double kNavigationDistanceWarningThreshold = 20000.0; // meters - distance threshold for timeout warning (30km)

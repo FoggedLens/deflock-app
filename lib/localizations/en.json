@@ -37,6 +37,11 @@
     "dontShowAgain": "Don't show this guide again",
     "gotIt": "Got It!"
   },
+  "positioningTutorial": {
+    "title": "Refine Your Location",
+    "instructions": "Drag the map to position the device marker precisely over the surveillance device's location.",
+    "hint": "You can zoom in for better accuracy before positioning."
+  },
   "actions": {
     "tagNode": "New Node",
     "download": "Download",

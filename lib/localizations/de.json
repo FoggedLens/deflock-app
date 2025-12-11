@@ -446,6 +446,11 @@
     "dontShowAgain": "Diese Anleitung nicht mehr anzeigen",
     "gotIt": "Verstanden!"
   },
+  "positioningTutorial": {
+    "title": "Position verfeinern",
+    "instructions": "Ziehen Sie die Karte, um die Geräte-Markierung präzise über dem Standort des Überwachungsgeräts zu positionieren.",
+    "hint": "Sie können für bessere Genauigkeit vor der Positionierung hineinzoomen."
+  },
   "navigation": {
     "searchLocation": "Ort suchen",
     "searchPlaceholder": "Orte oder Koordinaten suchen...",
