@@ -98,27 +98,25 @@ cp lib/keys.dart.example lib/keys.dart
 ## Roadmap
 
 ### Needed Bugfixes
+- Clean cache when nodes have been deleted by others
 - Are offline areas preferred for fast loading even when online? Check working.
 
 ### Current Development
-- Optional reason message when deleting
-- Option to import profiles from deflock identify page?
+- Import/Export map providers, profiles (profiles from deflock identify page?)
 
 ### On Pause
-- Import/Export map providers, profiles
-- Clean cache when nodes have been deleted by others
-- Improve offline area node refresh live display
+- Offline navigation (pending vector map tiles)
 
 ### Future Features & Wishlist
-- Update offline area nodes while browsing?
-- Offline navigation (pending vector map tiles)
-- Android Auto / CarPlay
+- Optional reason message when deleting
+- Update offline area data while browsing?
 
 ### Maybes
 - Yellow ring for devices missing specific tag details
-- "Cache accumulating" offline area
-- "Offline areas" as tile provider
-- Grab the full latest database for each profile just like for suspected locations (instead of overpass)
+- Android Auto / CarPlay
+- "Cache accumulating" offline area?
+- "Offline areas" as tile provider?
+- Grab the full latest database for each profile just like for suspected locations (instead of overpass)?
 - Optional custom icons for profiles to aid identification
 - Custom device providers and OSM/Overpass alternatives
 - Offer options for extracting nodes which are attached to a way/relation:
