@@ -44,6 +44,7 @@ class MapView extends StatefulWidget {
     this.onSuspectedLocationTap,
     this.onSearchPressed,
     this.onNodeLimitChanged,
+    this.onLocationStatusChanged,
   });
 
   final FollowMeMode followMeMode;
@@ -54,6 +55,7 @@ class MapView extends StatefulWidget {
   final void Function(SuspectedLocation)? onSuspectedLocationTap;
   final VoidCallback? onSearchPressed;
   final void Function(bool isLimited)? onNodeLimitChanged;
+  final VoidCallback? onLocationStatusChanged;
 
   @override
   State<MapView> createState() => MapViewState();
@@ -121,7 +123,10 @@ class MapViewState extends State<MapView> {
     _gpsController.initializeWithCallback(
       followMeMode: widget.followMeMode,
       controller: _controller,
-      onLocationUpdated: () => setState(() {}),
+      onLocationUpdated: () {
+        setState(() {});
+        widget.onLocationStatusChanged?.call(); // Notify parent about location status change
+      },
       getCurrentFollowMeMode: () {
         // Use mounted check to avoid calling context when widget is disposed
         if (mounted) {
@@ -230,6 +235,9 @@ class MapViewState extends State<MapView> {
   LatLng? getUserLocation() {
     return _gpsController.currentLocation;
   }
+  
+  /// Whether we currently have a valid GPS location
+  bool get hasLocation => _gpsController.hasLocation;
 
   /// Expose static methods from MapPositionManager for external access
   static Future<void> clearStoredMapPosition() => 

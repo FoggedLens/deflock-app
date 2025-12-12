@@ -15,29 +15,91 @@ import '../../models/node_profile.dart';
 class GpsController {
   StreamSubscription<Position>? _positionSub;
   LatLng? _currentLatLng;
+  bool _hasLocation = false;
+  Timer? _retryTimer;
 
   /// Get the current GPS location (if available)
   LatLng? get currentLocation => _currentLatLng;
+  
+  /// Whether we currently have a valid GPS location
+  bool get hasLocation => _hasLocation;
 
   /// Initialize GPS location tracking
   Future<void> initializeLocation() async {
-    final perm = await Geolocator.requestPermission();
-    if (perm == LocationPermission.denied ||
-        perm == LocationPermission.deniedForever) {
-      debugPrint('[GpsController] Location permission denied');
+    // Check if location services are enabled first
+    bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      debugPrint('[GpsController] Location services disabled');
+      _hasLocation = false;
+      _scheduleRetry();
       return;
     }
 
-    _positionSub = Geolocator.getPositionStream().listen((Position position) {
-      final latLng = LatLng(position.latitude, position.longitude);
-      _currentLatLng = latLng;
-      debugPrint('[GpsController] GPS position updated: ${latLng.latitude}, ${latLng.longitude}');
-    });
+    final perm = await Geolocator.requestPermission();
+    debugPrint('[GpsController] Location permission result: $perm');
+    
+    if (perm == LocationPermission.denied ||
+        perm == LocationPermission.deniedForever) {
+      debugPrint('[GpsController] Precise location permission denied, trying approximate location');
+      
+      // Try approximate location as fallback
+      try {
+        await Geolocator.getCurrentPosition(
+          desiredAccuracy: LocationAccuracy.low,
+          timeLimit: const Duration(seconds: 10),
+        );
+        debugPrint('[GpsController] Approximate location available, proceeding with location stream');
+        // If we got here, approximate location works, continue with stream setup below
+      } catch (e) {
+        debugPrint('[GpsController] Approximate location also unavailable: $e');
+        _hasLocation = false;
+        _scheduleRetry();
+        return;
+      }
+    } else if (perm == LocationPermission.whileInUse || perm == LocationPermission.always) {
+      debugPrint('[GpsController] Location permission granted: $perm');
+      // Permission is granted, continue with normal setup
+    } else {
+      debugPrint('[GpsController] Unexpected permission state: $perm');
+      _hasLocation = false;
+      _scheduleRetry();
+      return;
+    }
+
+    _positionSub?.cancel(); // Cancel any existing subscription
+    debugPrint('[GpsController] Starting GPS position stream');
+    _positionSub = Geolocator.getPositionStream(
+      locationSettings: const LocationSettings(
+        accuracy: LocationAccuracy.high,
+        distanceFilter: 5, // Update when moved at least 5 meters (standard frequency)
+      ),
+    ).listen(
+      (Position position) {
+        final latLng = LatLng(position.latitude, position.longitude);
+        _currentLatLng = latLng;
+        if (!_hasLocation) {
+          debugPrint('[GpsController] GPS location acquired');
+        }
+        _hasLocation = true;
+        _cancelRetry(); // Got location, stop retrying
+        debugPrint('[GpsController] GPS position updated: ${latLng.latitude}, ${latLng.longitude} (accuracy: ${position.accuracy}m)');
+      },
+      onError: (error) {
+        debugPrint('[GpsController] Position stream error: $error');
+        if (_hasLocation) {
+          debugPrint('[GpsController] GPS location lost, starting retry attempts');
+        }
+        _hasLocation = false;
+        _currentLatLng = null;
+        _scheduleRetry(); // Lost location, start retrying
+      },
+    );
   }
 
   /// Retry location initialization (e.g., after permission granted)
   Future<void> retryLocationInit() async {
-    debugPrint('[GpsController] Retrying location initialization');
+    debugPrint('[GpsController] Manual retry of location initialization');
+    _cancelRetry(); // Cancel automatic retries, this is a manual retry
     await initializeLocation();
   }
 
@@ -49,6 +111,9 @@ class GpsController {
     VoidCallback? onMapMovedProgrammatically,
   }) {
     debugPrint('[GpsController] Follow-me mode changed: $oldMode → $newMode');
+    
+    // Restart position stream with appropriate frequency for new mode
+    _restartPositionStream(newMode);
     
     // Only act when follow-me is first enabled and we have a current location
     if (newMode != FollowMeMode.off && 
@@ -98,6 +163,8 @@ class GpsController {
   }) {
     final latLng = LatLng(position.latitude, position.longitude);
     _currentLatLng = latLng;
+    _hasLocation = true;
+    _cancelRetry(); // Got location, stop any retries
     
     // Notify that location was updated (for setState, etc.)
     onLocationUpdated();
@@ -169,38 +236,184 @@ class GpsController {
     VoidCallback? onMapMovedProgrammatically,
 
   }) async {
-    final perm = await Geolocator.requestPermission();
-    if (perm == LocationPermission.denied ||
-        perm == LocationPermission.deniedForever) {
-      debugPrint('[GpsController] Location permission denied');
+    // Check if location services are enabled first
+    bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      debugPrint('[GpsController] Location services disabled');
+      _hasLocation = false;
+      _scheduleRetry();
       return;
     }
 
-    _positionSub = Geolocator.getPositionStream().listen((Position position) {
-      // Get the current follow-me mode from the app state each time
-      final currentFollowMeMode = getCurrentFollowMeMode();
-      final proximityAlertsEnabled = getProximityAlertsEnabled();
-      final proximityAlertDistance = getProximityAlertDistance();
-      final nearbyNodes = getNearbyNodes();
-      final enabledProfiles = getEnabledProfiles();
-      processPositionUpdate(
-        position: position,
-        followMeMode: currentFollowMeMode,
-        controller: controller,
-        onLocationUpdated: onLocationUpdated,
-        proximityAlertsEnabled: proximityAlertsEnabled,
-        proximityAlertDistance: proximityAlertDistance,
-        nearbyNodes: nearbyNodes,
-        enabledProfiles: enabledProfiles,
-        onMapMovedProgrammatically: onMapMovedProgrammatically,
-      );
+    final perm = await Geolocator.requestPermission();
+    debugPrint('[GpsController] Location permission result: $perm');
+    
+    if (perm == LocationPermission.denied ||
+        perm == LocationPermission.deniedForever) {
+      debugPrint('[GpsController] Precise location permission denied, trying approximate location');
+      
+      // Try approximate location as fallback
+      try {
+        await Geolocator.getCurrentPosition(
+          desiredAccuracy: LocationAccuracy.low,
+          timeLimit: const Duration(seconds: 10),
+        );
+        debugPrint('[GpsController] Approximate location available, proceeding with location stream');
+        // If we got here, approximate location works, continue with stream setup below
+      } catch (e) {
+        debugPrint('[GpsController] Approximate location also unavailable: $e');
+        _hasLocation = false;
+        _scheduleRetry();
+        return;
+      }
+    } else if (perm == LocationPermission.whileInUse || perm == LocationPermission.always) {
+      debugPrint('[GpsController] Location permission granted: $perm');
+      // Permission is granted, continue with normal setup
+    } else {
+      debugPrint('[GpsController] Unexpected permission state: $perm');
+      _hasLocation = false;
+      _scheduleRetry();
+      return;
+    }
+
+    _positionSub?.cancel(); // Cancel any existing subscription
+    debugPrint('[GpsController] Starting GPS position stream');
+    _positionSub = Geolocator.getPositionStream(
+      locationSettings: const LocationSettings(
+        accuracy: LocationAccuracy.high,
+        distanceFilter: 5, // Update when moved at least 5 meters (standard frequency)
+      ),
+    ).listen(
+      (Position position) {
+        if (!_hasLocation) {
+          debugPrint('[GpsController] GPS location acquired');
+        }
+        _hasLocation = true;
+        _cancelRetry(); // Got location, stop retrying
+        
+        // Get the current follow-me mode from the app state each time
+        final currentFollowMeMode = getCurrentFollowMeMode();
+        final proximityAlertsEnabled = getProximityAlertsEnabled();
+        final proximityAlertDistance = getProximityAlertDistance();
+        final nearbyNodes = getNearbyNodes();
+        final enabledProfiles = getEnabledProfiles();
+        processPositionUpdate(
+          position: position,
+          followMeMode: currentFollowMeMode,
+          controller: controller,
+          onLocationUpdated: onLocationUpdated,
+          proximityAlertsEnabled: proximityAlertsEnabled,
+          proximityAlertDistance: proximityAlertDistance,
+          nearbyNodes: nearbyNodes,
+          enabledProfiles: enabledProfiles,
+          onMapMovedProgrammatically: onMapMovedProgrammatically,
+        );
+      },
+      onError: (error) {
+        debugPrint('[GpsController] Position stream error: $error');
+        if (_hasLocation) {
+          debugPrint('[GpsController] GPS location lost, starting retry attempts');
+        }
+        _hasLocation = false;
+        _currentLatLng = null;
+        onLocationUpdated(); // Notify UI that location was lost
+        _scheduleRetry(); // Lost location, start retrying
+      },
+    );
+  }
+
+  /// Schedule periodic retry attempts to get location
+  void _scheduleRetry() {
+    _retryTimer?.cancel();
+    _retryTimer = Timer.periodic(const Duration(seconds: 15), (timer) {
+      debugPrint('[GpsController] Automatic retry of location initialization (attempt ${timer.tick})');
+      initializeLocation(); // This will cancel the timer if successful
     });
+  }
+  
+  /// Cancel any scheduled retry attempts
+  void _cancelRetry() {
+    if (_retryTimer != null) {
+      debugPrint('[GpsController] Canceling location retry timer');
+      _retryTimer?.cancel();
+      _retryTimer = null;
+    }
+  }
+
+  /// Restart position stream with frequency optimized for follow-me mode
+  void _restartPositionStream(FollowMeMode followMeMode) {
+    if (_positionSub == null || !_hasLocation) {
+      // No active stream or no location - let normal initialization handle it
+      return;
+    }
+    
+    _positionSub?.cancel();
+    
+    // Use higher frequency when follow-me is enabled
+    if (followMeMode != FollowMeMode.off) {
+      debugPrint('[GpsController] Starting high-frequency GPS updates for follow-me mode');
+      _positionSub = Geolocator.getPositionStream(
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.high,
+          distanceFilter: 1, // Update when moved at least 1 meter
+        ),
+      ).listen(
+        (Position position) {
+          final latLng = LatLng(position.latitude, position.longitude);
+          _currentLatLng = latLng;
+          if (!_hasLocation) {
+            debugPrint('[GpsController] GPS location acquired');
+          }
+          _hasLocation = true;
+          _cancelRetry(); // Got location, stop retrying
+          debugPrint('[GpsController] GPS position updated: ${latLng.latitude}, ${latLng.longitude} (accuracy: ${position.accuracy}m)');
+        },
+        onError: (error) {
+          debugPrint('[GpsController] Position stream error: $error');
+          if (_hasLocation) {
+            debugPrint('[GpsController] GPS location lost, starting retry attempts');
+          }
+          _hasLocation = false;
+          _currentLatLng = null;
+          _scheduleRetry(); // Lost location, start retrying
+        },
+      );
+    } else {
+      debugPrint('[GpsController] Starting standard-frequency GPS updates');
+      _positionSub = Geolocator.getPositionStream(
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.high,
+          distanceFilter: 5, // Update when moved at least 5 meters
+        ),
+      ).listen(
+        (Position position) {
+          final latLng = LatLng(position.latitude, position.longitude);
+          _currentLatLng = latLng;
+          if (!_hasLocation) {
+            debugPrint('[GpsController] GPS location acquired');
+          }
+          _hasLocation = true;
+          _cancelRetry(); // Got location, stop retrying
+          debugPrint('[GpsController] GPS position updated: ${latLng.latitude}, ${latLng.longitude} (accuracy: ${position.accuracy}m)');
+        },
+        onError: (error) {
+          debugPrint('[GpsController] Position stream error: $error');
+          if (_hasLocation) {
+            debugPrint('[GpsController] GPS location lost, starting retry attempts');
+          }
+          _hasLocation = false;
+          _currentLatLng = null;
+          _scheduleRetry(); // Lost location, start retrying
+        },
+      );
+    }
   }
 
   /// Dispose of GPS resources
   void dispose() {
     _positionSub?.cancel();
     _positionSub = null;
+    _cancelRetry();
     debugPrint('[GpsController] GPS controller disposed');
   }
 }

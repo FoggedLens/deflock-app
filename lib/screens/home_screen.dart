@@ -433,16 +433,18 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             IconButton(
               tooltip: _getFollowMeTooltip(appState.followMeMode),
               icon: Icon(_getFollowMeIcon(appState.followMeMode)),
-              onPressed: () {
-                final oldMode = appState.followMeMode;
-                final newMode = _getNextFollowMeMode(oldMode);
-                debugPrint('[HomeScreen] Follow mode changed: $oldMode → $newMode');
-                appState.setFollowMeMode(newMode);
-                // If enabling follow-me, retry location init in case permission was granted
-                if (newMode != FollowMeMode.off) {
-                  _mapViewKey.currentState?.retryLocationInit();
-                }
-              },
+              onPressed: _mapViewKey.currentState?.hasLocation == true
+                  ? () {
+                      final oldMode = appState.followMeMode;
+                      final newMode = _getNextFollowMeMode(oldMode);
+                      debugPrint('[HomeScreen] Follow mode changed: $oldMode → $newMode');
+                      appState.setFollowMeMode(newMode);
+                      // If enabling follow-me, retry location init in case permission was granted
+                      if (newMode != FollowMeMode.off) {
+                        _mapViewKey.currentState?.retryLocationInit();
+                      }
+                    }
+                  : null, // Grey out when no location
             ),
             AnimatedBuilder(
               animation: LocalizationService.instance,
@@ -489,6 +491,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 setState(() {
                   _isNodeLimitActive = isLimited;
                 });
+              },
+              onLocationStatusChanged: () {
+                // Re-render when location status changes (for follow-me button state)
+                setState(() {});
               },
               onUserGesture: () {
                 // Only clear selected node if tag sheet is not open

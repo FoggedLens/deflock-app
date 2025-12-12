@@ -2,7 +2,9 @@
   "2.1.3": {
     "content": [
       "• Fixed nodes losing their greyed-out appearance when map is moved while viewing a node's tag sheet",
-      "• Nodes now stay properly dimmed when viewing tags until the sheet is closed, regardless of map movement"
+      "• Improved GPS location handling - follow-me button is now greyed out when location is unavailable",
+      "• Added approximate location fallback - if precise location is denied, app will use approximate location",
+      "• Higher frequency GPS updates when follow-me modes are active for smoother tracking (1-second updates vs 5-second)"
     ]
   },
   "2.1.2": {
