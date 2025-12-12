@@ -491,10 +491,19 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 });
               },
               onUserGesture: () {
-                _mapInteractionHandler.handleUserGesture(
-                  context: context,
-                  onSelectedNodeChanged: (id) => setState(() => _selectedNodeId = id),
-                );
+                // Only clear selected node if tag sheet is not open
+                // This prevents nodes from losing their grey-out when map is moved while viewing tags
+                if (_sheetCoordinator.tagSheetHeight == 0) {
+                  _mapInteractionHandler.handleUserGesture(
+                    context: context,
+                    onSelectedNodeChanged: (id) => setState(() => _selectedNodeId = id),
+                  );
+                } else {
+                  // Tag sheet is open - only handle suspected location clearing, not node selection
+                  final appState = context.read<AppState>();
+                  appState.clearSuspectedLocationSelection();
+                }
+                
                 if (appState.followMeMode != FollowMeMode.off) {
                   appState.setFollowMeMode(FollowMeMode.off);
                 }

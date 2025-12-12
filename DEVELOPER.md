@@ -242,6 +242,10 @@ Users expect instant response to their actions. By immediately updating the cach
 - **Orange ring**: Node currently being edited
 - **Red ring**: Nodes pending deletion
 
+**Node dimming behavior:**
+- **Dimmed (50% opacity)**: Non-selected nodes when a specific node is selected for tag viewing, or all nodes during search/navigation modes
+- **Selection persistence**: When viewing a node's tag sheet, other nodes remain dimmed even when the map is moved, until the sheet is closed (v2.1.3+ fix)
+
 **Direction cone visual states:**
 - **Full opacity**: Active session direction (currently being edited)
 - **Reduced opacity (40%)**: Inactive session directions
