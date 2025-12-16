@@ -98,6 +98,7 @@ cp lib/keys.dart.example lib/keys.dart
 ## Roadmap
 
 ### Needed Bugfixes
+- When not logged in, submit button should take users to settings>account to log in.
 - Ensure GPS/follow-me works after recent revamp (loses lock? have to move map for button state to update?)
 - Add new tags to top of a profile so they're visible immediately
 - Allow arbitrary entry on refine tags page
