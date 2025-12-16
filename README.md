@@ -98,6 +98,7 @@ cp lib/keys.dart.example lib/keys.dart
 ## Roadmap
 
 ### Needed Bugfixes
+- Ensure GPS/follow-me works after recent revamp (loses lock? have to move map for button state to update?)
 - Add new tags to top of a profile so they're visible immediately
 - Allow arbitrary entry on refine tags page
 - Don't show NSI suggestions that aren't sufficiently popular (image=)
@@ -105,6 +106,8 @@ cp lib/keys.dart.example lib/keys.dart
 - Are offline areas preferred for fast loading even when online? Check working.
 
 ### Current Development
+- Add ability to downvote suspected locations which are old enough
+- Turn by turn navigation or at least swipe nav sheet up to see a list
 - Import/Export map providers, profiles (profiles from deflock identify page?)
 
 ### On Pause
