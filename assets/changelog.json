@@ -1,10 +1,15 @@
 {
+  "2.2.0": {
+    "content": [
+      "• Fixed follow-me sync issues where tracking would sometimes stop working after mode changes"
+    ]
+  },
   "2.1.3": {
     "content": [
       "• Fixed nodes losing their greyed-out appearance when map is moved while viewing a node's tag sheet",
       "• Improved GPS location handling - follow-me button is now greyed out when location is unavailable",
       "• Added approximate location fallback - if precise location is denied, app will use approximate location",
-      "• Higher frequency GPS updates when follow-me modes are active for smoother tracking (1-second updates vs 5-second)"
+      "• Higher frequency GPS updates when follow-me modes are active for smoother tracking (1-meter updates vs 5-meter)"
     ]
   },
   "2.1.2": {

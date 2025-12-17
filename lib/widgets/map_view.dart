@@ -120,9 +120,8 @@ class MapViewState extends State<MapView> {
     });
     
     // Initialize GPS with callback for position updates and follow-me
-    _gpsController.initializeWithCallback(
-      followMeMode: widget.followMeMode,
-      controller: _controller,
+    _gpsController.initialize(
+      mapController: _controller,
       onLocationUpdated: () {
         setState(() {});
         widget.onLocationStatusChanged?.call(); // Notify parent about location status change
@@ -195,7 +194,6 @@ class MapViewState extends State<MapView> {
         // Refresh nodes when GPS controller moves the map
         _refreshNodesFromProvider();
       },
-
     );
 
     // Fetch initial cameras
@@ -267,13 +265,9 @@ class MapViewState extends State<MapView> {
     super.didUpdateWidget(oldWidget);
     // Handle follow-me mode changes - only if it actually changed
     if (widget.followMeMode != oldWidget.followMeMode) {
-      _gpsController.handleFollowMeModeChange(
+      _gpsController.updateFollowMeMode(
         newMode: widget.followMeMode,
         oldMode: oldWidget.followMeMode,
-        controller: _controller,
-        onMapMovedProgrammatically: () {
-          _refreshNodesFromProvider();
-        },
       );
     }
   }
