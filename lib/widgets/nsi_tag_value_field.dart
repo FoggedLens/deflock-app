@@ -38,6 +38,7 @@ class _NSITagValueFieldState extends State<NSITagValueField> {
     _loadSuggestions();
     
     _focusNode.addListener(_onFocusChanged);
+    _controller.addListener(_onTextChanged);
   }
 
   @override
@@ -65,6 +66,26 @@ class _NSITagValueFieldState extends State<NSITagValueField> {
     super.dispose();
   }
 
+  /// Get filtered suggestions based on current text input (case-sensitive)
+  List<String> _getFilteredSuggestions() {
+    final currentText = _controller.text;
+    if (currentText.isEmpty) {
+      return _suggestions;
+    }
+    
+    return _suggestions
+        .where((suggestion) => suggestion.contains(currentText))
+        .toList();
+  }
+
+  /// Handle text changes to update suggestion filtering
+  void _onTextChanged() {
+    if (_showingSuggestions) {
+      // Update the overlay with filtered suggestions
+      _updateSuggestionsOverlay();
+    }
+  }
+
   void _loadSuggestions() async {
     if (widget.tagKey.trim().isEmpty) return;
     
@@ -86,7 +107,8 @@ class _NSITagValueFieldState extends State<NSITagValueField> {
   }
 
   void _onFocusChanged() {
-    if (_focusNode.hasFocus && _suggestions.isNotEmpty && !widget.readOnly) {
+    final filteredSuggestions = _getFilteredSuggestions();
+    if (_focusNode.hasFocus && filteredSuggestions.isNotEmpty && !widget.readOnly) {
       _showSuggestions();
     } else {
       _hideSuggestions();
@@ -94,11 +116,38 @@ class _NSITagValueFieldState extends State<NSITagValueField> {
   }
 
   void _showSuggestions() {
-    if (_showingSuggestions || _suggestions.isEmpty) return;
+    final filteredSuggestions = _getFilteredSuggestions();
+    if (_showingSuggestions || filteredSuggestions.isEmpty) return;
 
-    _overlayEntry = OverlayEntry(
+    _overlayEntry = _buildSuggestionsOverlay(filteredSuggestions);
+    Overlay.of(context).insert(_overlayEntry);
+    setState(() {
+      _showingSuggestions = true;
+    });
+  }
+
+  /// Update the suggestions overlay with current filtered suggestions
+  void _updateSuggestionsOverlay() {
+    final filteredSuggestions = _getFilteredSuggestions();
+    
+    if (filteredSuggestions.isEmpty) {
+      _hideSuggestions();
+      return;
+    }
+    
+    if (_showingSuggestions) {
+      // Remove current overlay and create new one with filtered suggestions
+      _overlayEntry.remove();
+      _overlayEntry = _buildSuggestionsOverlay(filteredSuggestions);
+      Overlay.of(context).insert(_overlayEntry);
+    }
+  }
+
+  /// Build the suggestions overlay with the given suggestions list
+  OverlayEntry _buildSuggestionsOverlay(List<String> suggestions) {
+    return OverlayEntry(
       builder: (context) => Positioned(
-        width: 200, // Fixed width for suggestions
+        width: 250, // Slightly wider to fit more content in refine tags
         child: CompositedTransformFollower(
           link: _layerLink,
           showWhenUnlinked: false,
@@ -111,9 +160,9 @@ class _NSITagValueFieldState extends State<NSITagValueField> {
               child: ListView.builder(
                 padding: EdgeInsets.zero,
                 shrinkWrap: true,
-                itemCount: _suggestions.length,
+                itemCount: suggestions.length,
                 itemBuilder: (context, index) {
-                  final suggestion = _suggestions[index];
+                  final suggestion = suggestions[index];
                   return ListTile(
                     dense: true,
                     title: Text(suggestion, style: const TextStyle(fontSize: 14)),
@@ -126,11 +175,6 @@ class _NSITagValueFieldState extends State<NSITagValueField> {
         ),
       ),
     );
-
-    Overlay.of(context).insert(_overlayEntry);
-    setState(() {
-      _showingSuggestions = true;
-    });
   }
 
   void _hideSuggestions() {
@@ -150,6 +194,8 @@ class _NSITagValueFieldState extends State<NSITagValueField> {
 
   @override
   Widget build(BuildContext context) {
+    final filteredSuggestions = _getFilteredSuggestions();
+    
     return CompositedTransformTarget(
       link: _layerLink,
       child: TextField(
@@ -171,7 +217,7 @@ class _NSITagValueFieldState extends State<NSITagValueField> {
           widget.onChanged(value);
         },
         onTap: () {
-          if (!widget.readOnly && _suggestions.isNotEmpty) {
+          if (!widget.readOnly && filteredSuggestions.isNotEmpty) {
             _showSuggestions();
           }
         },

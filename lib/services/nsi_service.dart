@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 
 import '../app_state.dart';
+import '../dev_config.dart';
 
 /// Service for fetching tag value suggestions from OpenStreetMap Name Suggestion Index
 class NSIService {
@@ -66,13 +67,19 @@ class NSIService {
     final data = jsonDecode(response.body) as Map<String, dynamic>;
     final values = data['data'] as List<dynamic>? ?? [];
     
-    // Extract the most commonly used values
+    // Extract the most commonly used values that meet our minimum hit threshold
     final suggestions = <String>[];
     
     for (final item in values) {
       if (item is Map<String, dynamic>) {
         final value = item['value'] as String?;
-        if (value != null && value.trim().isNotEmpty && _isValidSuggestion(value)) {
+        final count = item['count'] as int? ?? 0;
+        
+        // Only include suggestions that meet our minimum hit count threshold
+        if (value != null && 
+            value.trim().isNotEmpty && 
+            count >= kNSIMinimumHitCount &&
+            _isValidSuggestion(value)) {
           suggestions.add(value.trim());
         }
       }

@@ -50,7 +50,7 @@ class _SubmissionGuideDialogState extends State<SubmissionGuideDialog> {
     }
     
     if (mounted) {
-      Navigator.of(context).pop();
+      Navigator.of(context).pop(true); // Return true to indicate "proceed with submission"
     }
   }
 
@@ -148,6 +148,13 @@ class _SubmissionGuideDialogState extends State<SubmissionGuideDialog> {
           ],
         ),
         actions: [
+          TextButton(
+            onPressed: () {
+              // Cancel - just close dialog without marking as seen, return false to cancel submission
+              Navigator.of(context).pop(false);
+            },
+            child: Text(locService.cancel),
+          ),
           TextButton(
             onPressed: _onClose,
             child: Text(locService.t('submissionGuide.gotIt')),

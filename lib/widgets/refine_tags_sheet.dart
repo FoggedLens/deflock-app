@@ -5,7 +5,7 @@ import '../app_state.dart';
 import '../models/operator_profile.dart';
 import '../models/node_profile.dart';
 import '../services/localization_service.dart';
-import '../services/nsi_service.dart';
+import 'nsi_tag_value_field.dart';
 
 /// Result returned from RefineTagsSheet
 class RefineTagsResult {
@@ -37,47 +37,12 @@ class RefineTagsSheet extends StatefulWidget {
 class _RefineTagsSheetState extends State<RefineTagsSheet> {
   OperatorProfile? _selectedOperatorProfile;
   Map<String, String> _refinedTags = {};
-  Map<String, List<String>> _tagSuggestions = {};
-  Map<String, bool> _loadingSuggestions = {};
 
   @override
   void initState() {
     super.initState();
     _selectedOperatorProfile = widget.selectedOperatorProfile;
     _refinedTags = Map<String, String>.from(widget.currentRefinedTags ?? {});
-    _loadTagSuggestions();
-  }
-
-  /// Load suggestions for all empty-value tags in the selected profile
-  void _loadTagSuggestions() async {
-    if (widget.selectedProfile == null) return;
-
-    final refinableTags = _getRefinableTags();
-    
-    for (final tagKey in refinableTags) {
-      if (_tagSuggestions.containsKey(tagKey)) continue;
-      
-      setState(() {
-        _loadingSuggestions[tagKey] = true;
-      });
-
-      try {
-        final suggestions = await NSIService().getAllSuggestions(tagKey);
-        if (mounted) {
-          setState(() {
-            _tagSuggestions[tagKey] = suggestions;
-            _loadingSuggestions[tagKey] = false;
-          });
-        }
-      } catch (e) {
-        if (mounted) {
-          setState(() {
-            _tagSuggestions[tagKey] = [];
-            _loadingSuggestions[tagKey] = false;
-          });
-        }
-      }
-    }
   }
 
   /// Get list of tag keys that have empty values and can be refined
@@ -262,11 +227,9 @@ class _RefineTagsSheetState extends State<RefineTagsSheet> {
     ];
   }
 
-  /// Build a dropdown for a single refineable tag
+  /// Build a text field for a single refineable tag (similar to profile editor)
   Widget _buildTagDropdown(String tagKey, LocalizationService locService) {
-    final suggestions = _tagSuggestions[tagKey] ?? [];
-    final isLoading = _loadingSuggestions[tagKey] ?? false;
-    final currentValue = _refinedTags[tagKey];
+    final currentValue = _refinedTags[tagKey] ?? '';
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 16.0),
@@ -278,58 +241,21 @@ class _RefineTagsSheetState extends State<RefineTagsSheet> {
             style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
           ),
           const SizedBox(height: 4),
-          if (isLoading)
-            const Row(
-              children: [
-                SizedBox(
-                  width: 16,
-                  height: 16,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                ),
-                SizedBox(width: 8),
-                Text('Loading suggestions...', style: TextStyle(color: Colors.grey)),
-              ],
-            )
-          else if (suggestions.isEmpty)
-            DropdownButtonFormField<String>(
-              value: currentValue?.isNotEmpty == true ? currentValue : null,
-              decoration: InputDecoration(
-                hintText: locService.t('refineTagsSheet.noSuggestions'),
-                border: const OutlineInputBorder(),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              ),
-              items: const [],
-              onChanged: null, // Disabled when no suggestions
-            )
-          else
-            DropdownButtonFormField<String>(
-              value: currentValue?.isNotEmpty == true ? currentValue : null,
-              decoration: InputDecoration(
-                hintText: locService.t('refineTagsSheet.selectValue'),
-                border: const OutlineInputBorder(),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              ),
-              items: [
-                DropdownMenuItem<String>(
-                  value: null,
-                  child: Text(locService.t('refineTagsSheet.noValue'),
-                      style: const TextStyle(color: Colors.grey)),
-                ),
-                ...suggestions.map((suggestion) => DropdownMenuItem<String>(
-                  value: suggestion,
-                  child: Text(suggestion),
-                )),
-              ],
-              onChanged: (value) {
-                setState(() {
-                  if (value == null) {
-                    _refinedTags.remove(tagKey);
-                  } else {
-                    _refinedTags[tagKey] = value;
-                  }
-                });
-              },
-            ),
+          NSITagValueField(
+            key: ValueKey('${tagKey}_refine'),
+            tagKey: tagKey,
+            initialValue: currentValue,
+            hintText: locService.t('refineTagsSheet.selectValue'),
+            onChanged: (value) {
+              setState(() {
+                if (value.trim().isEmpty) {
+                  _refinedTags.remove(tagKey);
+                } else {
+                  _refinedTags[tagKey] = value.trim();
+                }
+              });
+            },
+          ),
         ],
       ),
     );

@@ -1,7 +1,12 @@
 {
   "2.2.0": {
     "content": [
-      "• Fixed follow-me sync issues where tracking would sometimes stop working after mode changes"
+      "• Fixed follow-me sync issues where tracking would sometimes stop working after mode changes",
+      "• Added cancel button to submission guide dialog - users can now go back and revise their submissions",
+      "• When not logged in, submit/edit buttons now say 'Log In' and navigate to account settings instead of being disabled",
+      "• Improved NSI tag suggestions: now only shows values with sufficient usage (100+ occurrences) to avoid rare/unhelpful suggestions like for 'image=' tags",
+      "• Enhanced tag refinement: refine tags sheet now allows arbitrary text entry like the profile editor, not just dropdown selection",
+      "• New tags are now added to the top of the profile tag list for immediate visibility instead of being hidden at the bottom"
     ]
   },
   "2.1.3": {

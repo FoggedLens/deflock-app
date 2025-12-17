@@ -96,11 +96,16 @@ class _AddNodeSheetState extends State<AddNodeSheet> {
     
     if (!hasSeenGuide) {
       // Show submission guide dialog first
-      await showDialog<void>(
+      final shouldProceed = await showDialog<bool>(
         context: context,
         barrierDismissible: false,
         builder: (context) => const SubmissionGuideDialog(),
       );
+      
+      // If user canceled the submission guide, don't proceed with submission
+      if (shouldProceed != true) {
+        return;
+      }
     }
     
     // Now proceed with proximity check
@@ -296,6 +301,10 @@ class _AddNodeSheetState extends State<AddNodeSheet> {
             session.profile != null && 
             session.profile!.isSubmittable;
         
+        void _navigateToLogin() {
+          Navigator.pushNamed(context, '/settings/osm-account');
+        }
+        
         void _openRefineTags() async {
           final result = await Navigator.push<RefineTagsResult?>(
             context,
@@ -439,8 +448,8 @@ class _AddNodeSheetState extends State<AddNodeSheet> {
                     const SizedBox(width: 12),
                     Expanded(
                       child: ElevatedButton(
-                        onPressed: allowSubmit ? _commit : null,
-                        child: Text(locService.t('actions.submit')),
+                        onPressed: !appState.isLoggedIn ? _navigateToLogin : (allowSubmit ? _commit : null),
+                        child: Text(!appState.isLoggedIn ? locService.t('actions.logIn') : locService.t('actions.submit')),
                       ),
                     ),
                   ],

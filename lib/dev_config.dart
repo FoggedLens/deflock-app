@@ -137,6 +137,9 @@ const double kNavigationDistanceWarningThreshold = 20000.0; // meters - distance
 // Node display configuration
 const int kDefaultMaxNodes = 500; // Default maximum number of nodes to render on the map at once
 
+// NSI (Name Suggestion Index) configuration
+const int kNSIMinimumHitCount = 500; // Minimum hit count for NSI suggestions to be considered useful
+
 // Map interaction configuration
 const double kNodeDoubleTapZoomDelta = 1.0; // How much to zoom in when double-tapping nodes (was 1.0)
 const double kScrollWheelVelocity = 0.01; // Mouse scroll wheel zoom speed (default 0.005)
