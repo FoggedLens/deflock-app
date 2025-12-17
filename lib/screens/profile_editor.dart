@@ -126,7 +126,7 @@ class _ProfileEditorState extends State<ProfileEditor> {
                         style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                     if (widget.profile.editable)
                       TextButton.icon(
-                        onPressed: () => setState(() => _tags.add(const MapEntry('', ''))),
+                        onPressed: () => setState(() => _tags.insert(0, const MapEntry('', ''))),
                         icon: const Icon(Icons.add),
                         label: Text(locService.t('profileEditor.addTag')),
                       ),
