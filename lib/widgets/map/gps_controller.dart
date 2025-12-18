@@ -19,6 +19,7 @@ class GpsController {
   // Location state
   LatLng? _currentLocation;
   bool _hasLocation = false;
+  bool _hasApproximateOnly = false; // Track if we only have approximate location access
   
   // Current tracking settings
   FollowMeMode _currentFollowMeMode = FollowMeMode.off;
@@ -107,7 +108,9 @@ class GpsController {
     // Determine frequency settings based on current follow-me mode
     final settings = _getLocationSettings();
     
-    debugPrint('[GpsController] Starting GPS position stream (${_currentFollowMeMode == FollowMeMode.off ? 'standard' : 'high'} frequency)');
+    final accuracyType = _hasApproximateOnly ? 'approximate' : 'precise';
+    final frequencyType = _currentFollowMeMode == FollowMeMode.off ? 'standard' : 'high';
+    debugPrint('[GpsController] Starting GPS position stream ($frequencyType frequency, $accuracyType accuracy)');
     
     try {
       _positionSub = Geolocator.getPositionStream(locationSettings: settings).listen(
@@ -123,6 +126,9 @@ class GpsController {
 
   /// Check if location services are available and permissions are granted
   Future<bool> _checkLocationAvailability() async {
+    // Reset approximate-only flag
+    _hasApproximateOnly = false;
+    
     // Check if location services are enabled
     bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
@@ -136,7 +142,7 @@ class GpsController {
     debugPrint('[GpsController] Location permission result: $perm');
     
     if (perm == LocationPermission.whileInUse || perm == LocationPermission.always) {
-      debugPrint('[GpsController] Location permission granted: $perm');
+      debugPrint('[GpsController] Precise location permission granted: $perm');
       return true;
     }
     
@@ -149,6 +155,7 @@ class GpsController {
           timeLimit: const Duration(seconds: 10),
         );
         debugPrint('[GpsController] Approximate location available');
+        _hasApproximateOnly = true;
         return true;
       } catch (e) {
         debugPrint('[GpsController] Approximate location also unavailable: $e');
@@ -160,18 +167,21 @@ class GpsController {
     return false;
   }
 
-  /// Get location settings based on current follow-me mode
+  /// Get location settings based on current follow-me mode and available accuracy
   LocationSettings _getLocationSettings() {
+    // Use appropriate accuracy based on what we have access to
+    final accuracy = _hasApproximateOnly ? LocationAccuracy.low : LocationAccuracy.high;
+    
     if (_currentFollowMeMode != FollowMeMode.off) {
       // High frequency for follow-me modes
-      return const LocationSettings(
-        accuracy: LocationAccuracy.high,
+      return LocationSettings(
+        accuracy: accuracy,
         distanceFilter: 1, // Update when moved 1+ meter
       );
     } else {
       // Standard frequency when not following
-      return const LocationSettings(
-        accuracy: LocationAccuracy.high,
+      return LocationSettings(
+        accuracy: accuracy,
         distanceFilter: 5, // Update when moved 5+ meters
       );
     }
