@@ -10,8 +10,11 @@ import '../../services/proximity_alert_service.dart';
 import '../../models/osm_node.dart';
 import '../../models/node_profile.dart';
 
-/// Manages GPS location tracking, follow-me modes, and location-based map animations.
-/// Handles GPS permissions, position streams, and follow-me behavior.
+/// Simple GPS controller that respects permissions and provides location updates.
+/// Key principles: 
+/// - Respect "denied forever" - stop trying
+/// - Retry "denied" - user might enable later
+/// - Accept whatever accuracy is available once granted
 class GpsController {
   StreamSubscription<Position>? _positionSub;
   Timer? _retryTimer;
@@ -19,12 +22,8 @@ class GpsController {
   // Location state
   LatLng? _currentLocation;
   bool _hasLocation = false;
-  bool _hasApproximateOnly = false; // Track if we only have approximate location access
   
-  // Current tracking settings
-  FollowMeMode _currentFollowMeMode = FollowMeMode.off;
-  
-  // Callbacks - set once during initialization
+  // Callbacks - set during initialization
   AnimatedMapController? _mapController;
   VoidCallback? _onLocationUpdated;
   FollowMeMode Function()? _getCurrentFollowMeMode;
@@ -40,7 +39,7 @@ class GpsController {
   /// Whether we currently have a valid GPS location
   bool get hasLocation => _hasLocation;
 
-  /// Initialize GPS tracking with callbacks for UI integration
+  /// Initialize GPS tracking with callbacks
   Future<void> initialize({
     required AnimatedMapController mapController,
     required VoidCallback onLocationUpdated,
@@ -73,121 +72,110 @@ class GpsController {
     required FollowMeMode oldMode,
   }) {
     debugPrint('[GpsController] Follow-me mode changed: $oldMode → $newMode');
-    _currentFollowMeMode = newMode;
     
-    // Restart tracking with new frequency
-    _startLocationTracking();
+    // Restart position stream with new frequency settings
+    _restartPositionStream();
     
     // Handle initial animation when follow-me is first enabled
-    if (newMode != FollowMeMode.off && 
-        oldMode == FollowMeMode.off && 
-        _currentLocation != null &&
-        _mapController != null) {
-      
-      _animateToCurrentLocation(newMode);
-    }
+    _handleInitialFollowMeAnimation(newMode, oldMode);
   }
 
-  /// Manually retry location initialization (e.g., after permission granted)
+  /// Manual retry (e.g., user pressed follow-me button)
   Future<void> retryLocationInit() async {
     debugPrint('[GpsController] Manual retry of location initialization');
     _cancelRetry();
     await _startLocationTracking();
   }
 
-  /// Start or restart GPS location tracking
+  /// Start location tracking - checks permissions and starts stream
   Future<void> _startLocationTracking() async {
     _stopLocationTracking(); // Clean slate
-    
-    // Check location services availability
-    if (!await _checkLocationAvailability()) {
-      _scheduleRetry();
-      return;
-    }
-    
-    // Determine frequency settings based on current follow-me mode
-    final settings = _getLocationSettings();
-    
-    final accuracyType = _hasApproximateOnly ? 'approximate' : 'precise';
-    final frequencyType = _currentFollowMeMode == FollowMeMode.off ? 'standard' : 'high';
-    debugPrint('[GpsController] Starting GPS position stream ($frequencyType frequency, $accuracyType accuracy)');
-    
-    try {
-      _positionSub = Geolocator.getPositionStream(locationSettings: settings).listen(
-        _onPositionReceived,
-        onError: _onPositionError,
-      );
-    } catch (e) {
-      debugPrint('[GpsController] Failed to start position stream: $e');
-      _hasLocation = false;
-      _scheduleRetry();
-    }
-  }
-
-  /// Check if location services are available and permissions are granted
-  Future<bool> _checkLocationAvailability() async {
-    // Reset approximate-only flag
-    _hasApproximateOnly = false;
     
     // Check if location services are enabled
     bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
       debugPrint('[GpsController] Location services disabled');
       _hasLocation = false;
-      return false;
+      _notifyLocationChange();
+      _scheduleRetry();
+      return;
     }
 
     // Check permissions
-    final perm = await Geolocator.requestPermission();
-    debugPrint('[GpsController] Location permission result: $perm');
+    final permission = await Geolocator.requestPermission();
+    debugPrint('[GpsController] Location permission result: $permission');
     
-    if (perm == LocationPermission.whileInUse || perm == LocationPermission.always) {
-      debugPrint('[GpsController] Precise location permission granted: $perm');
-      return true;
-    }
-    
-    if (perm == LocationPermission.denied || perm == LocationPermission.deniedForever) {
-      // Try approximate location as fallback
-      debugPrint('[GpsController] Precise location permission denied, trying approximate location');
-      try {
-        await Geolocator.getCurrentPosition(
-          desiredAccuracy: LocationAccuracy.low,
-          timeLimit: const Duration(seconds: 10),
-        );
-        debugPrint('[GpsController] Approximate location available');
-        _hasApproximateOnly = true;
-        return true;
-      } catch (e) {
-        debugPrint('[GpsController] Approximate location also unavailable: $e');
-      }
-    }
-    
-    debugPrint('[GpsController] Location unavailable, permission: $perm');
-    _hasLocation = false;
-    return false;
-  }
-
-  /// Get location settings based on current follow-me mode and available accuracy
-  LocationSettings _getLocationSettings() {
-    // Use appropriate accuracy based on what we have access to
-    final accuracy = _hasApproximateOnly ? LocationAccuracy.low : LocationAccuracy.high;
-    
-    if (_currentFollowMeMode != FollowMeMode.off) {
-      // High frequency for follow-me modes
-      return LocationSettings(
-        accuracy: accuracy,
-        distanceFilter: 1, // Update when moved 1+ meter
-      );
-    } else {
-      // Standard frequency when not following
-      return LocationSettings(
-        accuracy: accuracy,
-        distanceFilter: 5, // Update when moved 5+ meters
-      );
+    switch (permission) {
+      case LocationPermission.deniedForever:
+        // User said "never" - respect that and stop trying
+        debugPrint('[GpsController] Location denied forever - stopping attempts');
+        _hasLocation = false;
+        _notifyLocationChange();
+        return;
+        
+      case LocationPermission.denied:
+        // User said "not now" - keep trying later
+        debugPrint('[GpsController] Location denied - will retry later');
+        _hasLocation = false;
+        _notifyLocationChange();
+        _scheduleRetry();
+        return;
+        
+      case LocationPermission.whileInUse:
+      case LocationPermission.always:
+        // Permission granted - start stream
+        debugPrint('[GpsController] Location permission granted: $permission');
+        _startPositionStream();
+        return;
+        
+      case LocationPermission.unableToDetermine:
+        // Couldn't determine permission state - treat like denied and retry
+        debugPrint('[GpsController] Unable to determine permission state - will retry');
+        _hasLocation = false;
+        _notifyLocationChange();
+        _scheduleRetry();
+        return;
     }
   }
 
-  /// Handle position updates from GPS stream
+  /// Start the GPS position stream
+  void _startPositionStream() {
+    final followMeMode = _getCurrentFollowMeMode?.call() ?? FollowMeMode.off;
+    final distanceFilter = followMeMode == FollowMeMode.off ? 5 : 1; // 5m normal, 1m follow-me
+    
+    debugPrint('[GpsController] Starting GPS position stream (${distanceFilter}m filter)');
+    
+    try {
+      _positionSub = Geolocator.getPositionStream(
+        locationSettings: LocationSettings(
+          accuracy: LocationAccuracy.high, // Request best, accept what we get
+          distanceFilter: distanceFilter,
+        ),
+      ).listen(
+        _onPositionReceived,
+        onError: _onPositionError,
+      );
+    } catch (e) {
+      debugPrint('[GpsController] Failed to start position stream: $e');
+      _hasLocation = false;
+      _notifyLocationChange();
+      _scheduleRetry();
+    }
+  }
+
+  /// Restart position stream with current follow-me settings
+  void _restartPositionStream() {
+    if (_positionSub == null) {
+      // No active stream, let retry logic handle it
+      return;
+    }
+    
+    debugPrint('[GpsController] Restarting position stream for follow-me mode change');
+    _stopLocationTracking();
+    _startPositionStream();
+  }
+
+  /// Handle incoming GPS position
   void _onPositionReceived(Position position) {
     final newLocation = LatLng(position.latitude, position.longitude);
     _currentLocation = newLocation;
@@ -196,12 +184,12 @@ class GpsController {
       debugPrint('[GpsController] GPS location acquired');
     }
     _hasLocation = true;
-    _cancelRetry();
+    _cancelRetry(); // Got location, stop any retry attempts
     
-    debugPrint('[GpsController] GPS position updated: ${newLocation.latitude}, ${newLocation.longitude} (accuracy: ${position.accuracy}m)');
+    debugPrint('[GpsController] GPS position: ${newLocation.latitude}, ${newLocation.longitude} (±${position.accuracy}m)');
     
-    // Notify UI that location was updated
-    _onLocationUpdated?.call();
+    // Notify UI
+    _notifyLocationChange();
     
     // Handle proximity alerts
     _checkProximityAlerts(newLocation);
@@ -210,51 +198,48 @@ class GpsController {
     _handleFollowMeUpdate(position, newLocation);
   }
 
-  /// Handle position stream errors
-  void _onPositionError(error) {
+  /// Handle GPS stream errors
+  void _onPositionError(dynamic error) {
     debugPrint('[GpsController] Position stream error: $error');
     if (_hasLocation) {
-      debugPrint('[GpsController] GPS location lost, starting retry attempts');
+      debugPrint('[GpsController] Lost GPS location - will retry');
     }
     _hasLocation = false;
     _currentLocation = null;
-    _onLocationUpdated?.call();
+    _notifyLocationChange();
     _scheduleRetry();
   }
 
   /// Check proximity alerts if enabled
   void _checkProximityAlerts(LatLng userLocation) {
     final proximityEnabled = _getProximityAlertsEnabled?.call() ?? false;
-    final nearbyNodes = _getNearbyNodes?.call() ?? [];
+    if (!proximityEnabled) return;
     
-    if (proximityEnabled && nearbyNodes.isNotEmpty) {
-      final alertDistance = _getProximityAlertDistance?.call() ?? 200;
-      final enabledProfiles = _getEnabledProfiles?.call() ?? [];
-      
-      ProximityAlertService().checkProximity(
-        userLocation: userLocation,
-        nodes: nearbyNodes,
-        enabledProfiles: enabledProfiles,
-        alertDistance: alertDistance,
-      );
-    }
+    final nearbyNodes = _getNearbyNodes?.call() ?? [];
+    if (nearbyNodes.isEmpty) return;
+    
+    final alertDistance = _getProximityAlertDistance?.call() ?? 200;
+    final enabledProfiles = _getEnabledProfiles?.call() ?? [];
+    
+    ProximityAlertService().checkProximity(
+      userLocation: userLocation,
+      nodes: nearbyNodes,
+      enabledProfiles: enabledProfiles,
+      alertDistance: alertDistance,
+    );
   }
 
-  /// Handle follow-me animations and map updates
+  /// Handle follow-me animations
   void _handleFollowMeUpdate(Position position, LatLng location) {
-    // Get current follow-me mode from app state (in case it changed)
     final followMeMode = _getCurrentFollowMeMode?.call() ?? FollowMeMode.off;
-    
     if (followMeMode == FollowMeMode.off || _mapController == null) {
-      return; // Not following or no map controller
+      return;
     }
-    
-    debugPrint('[GpsController] GPS position update for follow-me: ${location.latitude}, ${location.longitude}, mode: $followMeMode');
     
     WidgetsBinding.instance.addPostFrameCallback((_) {
       try {
         if (followMeMode == FollowMeMode.follow) {
-          // Follow position only, preserve current rotation
+          // Follow position, preserve rotation
           _mapController!.animateTo(
             dest: location,
             zoom: _mapController!.mapController.camera.zoom,
@@ -263,11 +248,11 @@ class GpsController {
             curve: Curves.easeOut,
           );
         } else if (followMeMode == FollowMeMode.rotating) {
-          // Follow position and rotation based on heading
+          // Follow position and heading
           final heading = position.heading;
           final speed = position.speed;
           
-          // Only apply rotation if moving fast enough to avoid wild spinning
+          // Only rotate if moving fast enough and heading is valid
           final shouldRotate = !speed.isNaN && speed >= kMinSpeedForRotationMps && !heading.isNaN;
           final rotation = shouldRotate ? -heading : _mapController!.mapController.camera.rotation;
           
@@ -280,28 +265,34 @@ class GpsController {
           );
         }
         
-        // Notify that we moved the map programmatically (for node refresh)
+        // Notify that map was moved programmatically
         _onMapMovedProgrammatically?.call();
       } catch (e) {
-        debugPrint('[GpsController] MapController not ready for position animation: $e');
+        debugPrint('[GpsController] Map animation error: $e');
       }
     });
   }
 
-  /// Animate to current location when follow-me is first enabled
-  void _animateToCurrentLocation(FollowMeMode mode) {
-    if (_currentLocation == null || _mapController == null) return;
+  /// Handle initial animation when follow-me mode is enabled
+  void _handleInitialFollowMeAnimation(FollowMeMode newMode, FollowMeMode oldMode) {
+    if (newMode == FollowMeMode.off || oldMode != FollowMeMode.off) {
+      return; // Not enabling follow-me, or already enabled
+    }
+    
+    if (_currentLocation == null || _mapController == null) {
+      return; // No location or map controller
+    }
     
     try {
-      if (mode == FollowMeMode.follow) {
+      if (newMode == FollowMeMode.follow) {
         _mapController!.animateTo(
           dest: _currentLocation!,
           zoom: _mapController!.mapController.camera.zoom,
           duration: kFollowMeAnimationDuration,
           curve: Curves.easeOut,
         );
-      } else if (mode == FollowMeMode.rotating) {
-        // When switching to rotating mode, reset to north-up first
+      } else if (newMode == FollowMeMode.rotating) {
+        // Reset to north-up when starting rotating mode
         _mapController!.animateTo(
           dest: _currentLocation!,
           zoom: _mapController!.mapController.camera.zoom,
@@ -313,35 +304,40 @@ class GpsController {
       
       _onMapMovedProgrammatically?.call();
     } catch (e) {
-      debugPrint('[GpsController] MapController not ready for initial follow-me animation: $e');
+      debugPrint('[GpsController] Initial follow-me animation error: $e');
     }
   }
 
-  /// Schedule periodic retry attempts to get location
+  /// Notify UI that location status changed
+  void _notifyLocationChange() {
+    _onLocationUpdated?.call();
+  }
+
+  /// Schedule retry attempts for location access
   void _scheduleRetry() {
-    _retryTimer?.cancel();
+    _cancelRetry();
     _retryTimer = Timer.periodic(const Duration(seconds: 15), (timer) {
-      debugPrint('[GpsController] Automatic retry of location initialization (attempt ${timer.tick})');
+      debugPrint('[GpsController] Retry attempt ${timer.tick}');
       _startLocationTracking();
     });
   }
-  
-  /// Cancel any scheduled retry attempts
+
+  /// Cancel any pending retry attempts
   void _cancelRetry() {
     if (_retryTimer != null) {
-      debugPrint('[GpsController] Canceling location retry timer');
+      debugPrint('[GpsController] Canceling retry timer');
       _retryTimer?.cancel();
       _retryTimer = null;
     }
   }
 
-  /// Stop location tracking and clean up
+  /// Stop the position stream
   void _stopLocationTracking() {
     _positionSub?.cancel();
     _positionSub = null;
   }
 
-  /// Dispose of all GPS resources
+  /// Clean up all resources
   void dispose() {
     debugPrint('[GpsController] Disposing GPS controller');
     _stopLocationTracking();
