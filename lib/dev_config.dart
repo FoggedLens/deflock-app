@@ -61,7 +61,7 @@ const Duration kChangesetAutoCloseTimeout = Duration(minutes: 59); // Give up an
 const double kChangesetCloseBackoffMultiplier = 2.0;
 
 // Navigation routing configuration
-const Duration kNavigationRoutingTimeout = Duration(seconds: 120); // HTTP timeout for routing requests
+const Duration kNavigationRoutingTimeout = Duration(seconds: 90); // HTTP timeout for routing requests
 
 // Suspected locations CSV URL
 const String kSuspectedLocationsCsvUrl = 'https://alprwatch.org/suspected-locations/deflock-latest.csv';
