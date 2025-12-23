@@ -98,12 +98,9 @@ cp lib/keys.dart.example lib/keys.dart
 ## Roadmap
 
 ### Needed Bugfixes
-- Add cancel button to submission guide
-- When not logged in, submit button should take users to settings>account to log in.
+- Lengthen overepass query timeout
+- Upload queue processing is dook
 - Ensure GPS/follow-me works after recent revamp (loses lock? have to move map for button state to update?)
-- Add new tags to top of a profile so they're visible immediately
-- Allow arbitrary entry on refine tags page
-- Don't show NSI suggestions that aren't sufficiently popular (image=)
 - Clean cache when nodes have been deleted by others
 - Are offline areas preferred for fast loading even when online? Check working.
 
