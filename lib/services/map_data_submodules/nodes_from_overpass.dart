@@ -78,6 +78,11 @@ Future<List<OsmNode>> _fetchOverpassNodesWithSplitting({
     // Rate limits should NOT be split - just fail with extended backoff
     debugPrint('[fetchOverpassNodes] Rate limited - using extended backoff, not splitting');
     
+    // Report slow progress when backing off
+    if (reportStatus) {
+      NetworkStatus.instance.reportSlowProgress();
+    }
+    
     // Wait longer for rate limits before giving up entirely  
     await Future.delayed(const Duration(seconds: 30));
     return []; // Return empty rather than rethrowing - let caller handle error reporting
@@ -86,6 +91,11 @@ Future<List<OsmNode>> _fetchOverpassNodesWithSplitting({
     if (splitDepth >= maxSplitDepth) {
       debugPrint('[fetchOverpassNodes] Max split depth reached, giving up on area: $bounds');
       return []; // Return empty - let caller handle error reporting
+    }
+    
+    // Report slow progress when we start splitting (only at the top level)
+    if (reportStatus) {
+      NetworkStatus.instance.reportSlowProgress();
     }
     
     // Split the bounds into 4 quadrants and try each separately

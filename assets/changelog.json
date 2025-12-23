@@ -1,4 +1,11 @@
 {
+  "2.2.1": {
+    "content": [
+      "• Fixed network status indicator timing out prematurely while split requests were still loading",
+      "• Network status now accurately shows 'taking a while' when requests split or backoff, and only shows 'timed out' for actual network failures",
+      "• Removed artificial timeout timers in favor of reporting actual request status events"
+    ]
+  },
   "2.2.0": {
     "content": [
       "• Fixed follow-me sync issues where tracking would sometimes stop working after mode changes",

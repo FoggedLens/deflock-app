@@ -19,7 +19,6 @@ class NetworkStatus extends ChangeNotifier {
   bool _hasSuccess = false;
   int _recentOfflineMisses = 0;
   Timer? _overpassRecoveryTimer;
-  Timer? _waitingTimer;
   Timer? _noDataResetTimer;
   Timer? _successResetTimer;
   // Getters
@@ -72,7 +71,25 @@ class NetworkStatus extends ChangeNotifier {
     }
   }
 
-  /// Set waiting status (show when loading tiles/cameras)
+  /// Report that requests are taking longer than usual (splitting, backoffs, etc.)
+  void reportSlowProgress() {
+    if (!_overpassHasIssues) {
+      _overpassHasIssues = true;
+      _isWaitingForData = false; // Transition from waiting to slow progress
+      notifyListeners();
+      debugPrint('[NetworkStatus] Surveillance data requests taking longer than usual');
+    }
+    
+    // Reset recovery timer - we'll clear this when the operation actually completes
+    _overpassRecoveryTimer?.cancel();
+    _overpassRecoveryTimer = Timer(const Duration(minutes: 2), () {
+      _overpassHasIssues = false;
+      notifyListeners();
+      debugPrint('[NetworkStatus] Slow progress status cleared');
+    });
+  }
+
+  /// Set waiting status (show when loading surveillance data)
   void setWaiting() {
     // Clear any previous timeout/no-data state when starting new wait
     _isTimedOut = false;
@@ -83,17 +100,7 @@ class NetworkStatus extends ChangeNotifier {
     if (!_isWaitingForData) {
       _isWaitingForData = true;
       notifyListeners();
-      // Don't log routine waiting - only log if we stay waiting too long
     }
-    
-    // Set timeout for genuine network issues (not 404s)
-    _waitingTimer?.cancel();
-    _waitingTimer = Timer(const Duration(seconds: 8), () {
-      _isWaitingForData = false;
-      _isTimedOut = true;
-      debugPrint('[NetworkStatus] Request timed out - likely network issues');
-      notifyListeners();
-    });
   }
   
   /// Show success status briefly when data loads
@@ -103,7 +110,6 @@ class NetworkStatus extends ChangeNotifier {
     _hasNoData = false;
     _hasSuccess = true;
     _recentOfflineMisses = 0;
-    _waitingTimer?.cancel();
     _noDataResetTimer?.cancel();
     notifyListeners();
     
@@ -123,7 +129,6 @@ class NetworkStatus extends ChangeNotifier {
     _isTimedOut = false;
     _hasSuccess = false;
     _hasNoData = true;
-    _waitingTimer?.cancel();
     _successResetTimer?.cancel();
     notifyListeners();
     
@@ -145,7 +150,6 @@ class NetworkStatus extends ChangeNotifier {
       _hasNoData = false;
       _hasSuccess = false;
       _recentOfflineMisses = 0;
-      _waitingTimer?.cancel();
       _noDataResetTimer?.cancel();
       _successResetTimer?.cancel();
       notifyListeners();
@@ -158,7 +162,6 @@ class NetworkStatus extends ChangeNotifier {
     _isTimedOut = true;
     _hasNoData = false;
     _hasSuccess = false;
-    _waitingTimer?.cancel();
     _noDataResetTimer?.cancel();
     _successResetTimer?.cancel();
     notifyListeners();
@@ -179,7 +182,6 @@ class NetworkStatus extends ChangeNotifier {
     _isTimedOut = false;
     _hasNoData = false; 
     _hasSuccess = false;
-    _waitingTimer?.cancel();
     _noDataResetTimer?.cancel();
     _successResetTimer?.cancel();
     
@@ -200,7 +202,6 @@ class NetworkStatus extends ChangeNotifier {
       _isWaitingForData = false;
       _isTimedOut = false;
       _hasNoData = true;
-      _waitingTimer?.cancel();
       notifyListeners();
       debugPrint('[NetworkStatus] No offline data available for this area');
     }
@@ -217,7 +218,6 @@ class NetworkStatus extends ChangeNotifier {
   @override
   void dispose() {
     _overpassRecoveryTimer?.cancel();
-    _waitingTimer?.cancel();
     _noDataResetTimer?.cancel();
     _successResetTimer?.cancel();
     super.dispose();
