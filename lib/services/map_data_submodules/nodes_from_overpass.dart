@@ -218,7 +218,7 @@ String _buildOverpassQuery(LatLngBounds bounds, List<NodeProfile> profiles, int 
   }).join('\n  ');
 
   return '''
-[out:json][timeout:25];
+[out:json][timeout:${kOverpassQueryTimeout.inSeconds}];
 (
   $nodeClauses
 );

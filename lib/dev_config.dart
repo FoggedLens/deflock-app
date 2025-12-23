@@ -63,6 +63,9 @@ const double kChangesetCloseBackoffMultiplier = 2.0;
 // Navigation routing configuration
 const Duration kNavigationRoutingTimeout = Duration(seconds: 90); // HTTP timeout for routing requests
 
+// Overpass API configuration
+const Duration kOverpassQueryTimeout = Duration(seconds: 45); // Timeout for Overpass API queries (was 25s hardcoded)
+
 // Suspected locations CSV URL
 const String kSuspectedLocationsCsvUrl = 'https://alprwatch.org/suspected-locations/deflock-latest.csv';
 
