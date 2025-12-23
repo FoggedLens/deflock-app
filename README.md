@@ -99,6 +99,7 @@ cp lib/keys.dart.example lib/keys.dart
 
 ### Needed Bugfixes
 - Upload queue processing is dook
+- Node fetch network indicator claims timeout too early; need to wait for split requests and backoffs to resolve
 - Ensure GPS/follow-me works after recent revamp (loses lock? have to move map for button state to update?)
 - Clean cache when nodes have been deleted by others
 - Are offline areas preferred for fast loading even when online? Check working.
