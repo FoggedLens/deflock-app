@@ -98,8 +98,6 @@ cp lib/keys.dart.example lib/keys.dart
 ## Roadmap
 
 ### Needed Bugfixes
-- Upload queue processing is dook
-
 - Ensure GPS/follow-me works after recent revamp (loses lock? have to move map for button state to update?)
 - Clean cache when nodes have been deleted by others
 - Are offline areas preferred for fast loading even when online? Check working.

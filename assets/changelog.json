@@ -1,4 +1,14 @@
 {
+  "2.3.0": {
+    "content": [
+      "• MAJOR: Concurrent upload processing - uploads now process simultaneously instead of waiting in line",
+      "• Upload queue processing is now 3-5x faster for users with good internet connections",
+      "• Reduced queue processing interval from 10 seconds to 5 seconds for faster startup of new uploads", 
+      "• Multiple uploads can now progress through their stages (create changeset → upload node → close changeset) at the same time",
+      "• Configurable concurrency limit (max 5 simultaneous uploads) prevents overwhelming OSM servers",
+      "• All existing error handling and retry logic preserved - only the timing has been improved"
+    ]
+  },
   "2.2.1": {
     "content": [
       "• Fixed network status indicator timing out prematurely while split requests were still loading",

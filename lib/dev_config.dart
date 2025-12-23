@@ -55,6 +55,8 @@ const String kClientName = 'DeFlock';
 
 // Upload and changeset configuration
 const Duration kUploadHttpTimeout = Duration(seconds: 30); // HTTP request timeout for uploads
+const Duration kUploadQueueProcessingInterval = Duration(seconds: 5); // How often to check for new uploads to start
+const int kMaxConcurrentUploads = 5; // Maximum number of uploads processing simultaneously
 const Duration kChangesetCloseInitialRetryDelay = Duration(seconds: 10);
 const Duration kChangesetCloseMaxRetryDelay = Duration(minutes: 5);  // Cap at 5 minutes
 const Duration kChangesetAutoCloseTimeout = Duration(minutes: 59); // Give up and trust OSM auto-close

@@ -10,16 +10,19 @@ import '../models/node_profile.dart';
 import '../services/node_cache.dart';
 import '../services/uploader.dart';
 import '../widgets/node_provider_with_cache.dart';
+import '../dev_config.dart';
 import 'settings_state.dart';
 import 'session_state.dart';
 
 class UploadQueueState extends ChangeNotifier {
   final List<PendingUpload> _queue = [];
   Timer? _uploadTimer;
+  int _activeUploadCount = 0;
 
   // Getters
   int get pendingCount => _queue.length;
   List<PendingUpload> get pendingUploads => List.unmodifiable(_queue);
+  int get activeUploadCount => _activeUploadCount;
 
   // Initialize by loading queue from storage and repopulate cache with pending nodes
   Future<void> init() async {
@@ -321,19 +324,22 @@ class UploadQueueState extends ChangeNotifier {
     // No uploads if queue is empty, offline mode is enabled, or queue processing is paused
     if (_queue.isEmpty || offlineMode || pauseQueueProcessing) return;
 
-    _uploadTimer = Timer.periodic(const Duration(seconds: 10), (t) async {
+    _uploadTimer = Timer.periodic(kUploadQueueProcessingInterval, (t) async {
       if (_queue.isEmpty || offlineMode || pauseQueueProcessing) {
         _uploadTimer?.cancel();
         return;
       }
 
-      // Find next item to process based on state
-      final pendingItems = _queue.where((pu) => pu.uploadState == UploadState.pending).toList();
-      final creatingChangesetItems = _queue.where((pu) => pu.uploadState == UploadState.creatingChangeset).toList();
+      // Check if we can start more uploads (concurrency limit check)
+      if (_activeUploadCount >= kMaxConcurrentUploads) {
+        debugPrint('[UploadQueue] At concurrency limit ($_activeUploadCount/$kMaxConcurrentUploads), waiting for uploads to complete');
+        return;
+      }
+
+      // Process any expired items
       final uploadingItems = _queue.where((pu) => pu.uploadState == UploadState.uploading).toList();
       final closingItems = _queue.where((pu) => pu.uploadState == UploadState.closingChangeset).toList();
       
-      // Process any expired items
       for (final uploadingItem in uploadingItems) {
         if (uploadingItem.hasChangesetExpired) {
           debugPrint('[UploadQueue] Changeset expired during node submission - marking as failed');
@@ -347,71 +353,107 @@ class UploadQueueState extends ChangeNotifier {
         if (closingItem.hasChangesetExpired) {
           debugPrint('[UploadQueue] Changeset expired during close - trusting OSM auto-close (node was submitted successfully)');
           _markAsCompleting(closingItem, submittedNodeId: closingItem.submittedNodeId!);
-          // Continue processing loop - don't return here
         }
       }
+
+      // Find next pending item to start
+      final pendingItems = _queue.where((pu) => pu.uploadState == UploadState.pending).toList();
       
-      // Find next item to process (process in stage order)
-      PendingUpload? item;
-      if (pendingItems.isNotEmpty) {
-        item = pendingItems.first;
-      } else if (creatingChangesetItems.isNotEmpty) {
-        // Already in progress, skip
-        return;
-      } else if (uploadingItems.isNotEmpty) {
-        // Check if any uploading items are ready for retry
-        final readyToRetry = uploadingItems.where((ui) => 
-          !ui.hasChangesetExpired && ui.isReadyForNodeSubmissionRetry
-        ).toList();
-        
-        if (readyToRetry.isNotEmpty) {
-          item = readyToRetry.first;
-        }
-      } else {
-        // No active items, check if any changeset close items are ready for retry
-        final readyToRetry = closingItems.where((ci) => 
-          !ci.hasChangesetExpired && ci.isReadyForChangesetCloseRetry
-        ).toList();
-        
-        if (readyToRetry.isNotEmpty) {
-          item = readyToRetry.first;
-        }
-      }
-      
-      if (item == null) {
-        // No items ready for processing - check if queue is effectively empty
+      if (pendingItems.isEmpty) {
+        // Check if queue is effectively empty
         final hasActiveItems = _queue.any((pu) => 
-          pu.uploadState == UploadState.pending || 
           pu.uploadState == UploadState.creatingChangeset ||
-          (pu.uploadState == UploadState.uploading && !pu.hasChangesetExpired) ||
-          (pu.uploadState == UploadState.closingChangeset && !pu.hasChangesetExpired)
+          pu.uploadState == UploadState.uploading ||
+          pu.uploadState == UploadState.closingChangeset
         );
         
         if (!hasActiveItems) {
           debugPrint('[UploadQueue] No active items remaining, stopping uploader');
           _uploadTimer?.cancel();
         }
-        return; // Nothing to process right now
+        return;
       }
 
-      // Retrieve access after every tick (accounts for re-login)
+      // Retrieve access token
       final access = await getAccessToken();
       if (access == null) return; // not logged in
 
-      debugPrint('[UploadQueue] Processing item in state: ${item.uploadState} with uploadMode: ${item.uploadMode}');
+      // Start processing the next pending upload
+      final item = pendingItems.first;
+      debugPrint('[UploadQueue] Starting new upload processing for item at ${item.coord} ($_activeUploadCount/$kMaxConcurrentUploads active)');
       
-      if (item.uploadState == UploadState.pending) {
-        await _processCreateChangeset(item, access);
-      } else if (item.uploadState == UploadState.creatingChangeset) {
-        // Already in progress, skip (shouldn't happen due to filtering above)
-        debugPrint('[UploadQueue] Changeset creation already in progress, skipping');
-        return;
-      } else if (item.uploadState == UploadState.uploading) {
-        await _processNodeOperation(item, access);
-      } else if (item.uploadState == UploadState.closingChangeset) {
-        await _processChangesetClose(item, access);
-      }
+      _activeUploadCount++;
+      _processIndividualUpload(item, access);
     });
+  }
+
+  // Process an individual upload through all three stages
+  Future<void> _processIndividualUpload(PendingUpload item, String accessToken) async {
+    try {
+      debugPrint('[UploadQueue] Starting individual upload processing for ${item.operation.name} at ${item.coord}');
+      
+      // Stage 1: Create changeset
+      await _processCreateChangeset(item, accessToken);
+      if (item.uploadState == UploadState.error) return;
+
+      // Stage 2: Node operation with retry logic
+      bool nodeOperationCompleted = false;
+      while (!nodeOperationCompleted && !item.hasChangesetExpired && item.uploadState != UploadState.error) {
+        await _processNodeOperation(item, accessToken);
+        
+        if (item.uploadState == UploadState.closingChangeset) {
+          // Node operation succeeded
+          nodeOperationCompleted = true;
+        } else if (item.uploadState == UploadState.uploading && !item.isReadyForNodeSubmissionRetry) {
+          // Need to wait before retry
+          final delay = item.nextNodeSubmissionRetryDelay;
+          debugPrint('[UploadQueue] Waiting ${delay.inSeconds}s before node submission retry');
+          await Future.delayed(delay);
+        } else if (item.uploadState == UploadState.error) {
+          // Failed permanently
+          return;
+        }
+      }
+
+      if (!nodeOperationCompleted) return; // Failed or expired
+
+      // Stage 3: Close changeset with retry logic  
+      bool changesetClosed = false;
+      while (!changesetClosed && !item.hasChangesetExpired && item.uploadState != UploadState.error) {
+        await _processChangesetClose(item, accessToken);
+        
+        if (item.uploadState == UploadState.complete) {
+          // Changeset close succeeded
+          changesetClosed = true;
+        } else if (item.uploadState == UploadState.closingChangeset && !item.isReadyForChangesetCloseRetry) {
+          // Need to wait before retry
+          final delay = item.nextChangesetCloseRetryDelay;
+          debugPrint('[UploadQueue] Waiting ${delay.inSeconds}s before changeset close retry');
+          await Future.delayed(delay);
+        } else if (item.uploadState == UploadState.error) {
+          // Failed permanently
+          return;
+        }
+      }
+      
+      if (!changesetClosed && item.hasChangesetExpired) {
+        // Trust OSM auto-close if we ran out of time
+        debugPrint('[UploadQueue] Upload completed but changeset close timed out - trusting OSM auto-close');
+        if (item.submittedNodeId != null) {
+          _markAsCompleting(item, submittedNodeId: item.submittedNodeId!);
+        }
+      }
+      
+    } catch (e) {
+      debugPrint('[UploadQueue] Unexpected error in individual upload processing: $e');
+      item.setError('Unexpected error: $e');
+      _saveQueue();
+      notifyListeners();
+    } finally {
+      // Always decrement the active upload count
+      _activeUploadCount--;
+      debugPrint('[UploadQueue] Individual upload processing finished ($_activeUploadCount/$kMaxConcurrentUploads active)');
+    }
   }
 
   // Process changeset creation (step 1 of 3)
