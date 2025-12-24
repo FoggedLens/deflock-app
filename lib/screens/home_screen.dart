@@ -433,7 +433,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             IconButton(
               tooltip: _getFollowMeTooltip(appState.followMeMode),
               icon: Icon(_getFollowMeIcon(appState.followMeMode)),
-              onPressed: _mapViewKey.currentState?.hasLocation == true
+              onPressed: (_mapViewKey.currentState?.hasLocation == true && !_sheetCoordinator.hasActiveNodeSheet)
                   ? () {
                       final oldMode = appState.followMeMode;
                       final newMode = _getNextFollowMeMode(oldMode);
@@ -444,7 +444,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                         _mapViewKey.currentState?.retryLocationInit();
                       }
                     }
-                  : null, // Grey out when no location
+                  : null, // Grey out when no location or when node sheet is open
             ),
             AnimatedBuilder(
               animation: LocalizationService.instance,

@@ -1,4 +1,11 @@
 {
+  "2.3.1": {
+    "content": [
+      "• Follow-me mode now automatically restores when add/edit/tag sheets are closed",
+      "• Follow-me button is greyed out while node sheets are open (add/edit/tag) since following doesn't make sense during node operations"
+      "• Drop support for approximate location since I can't get it to work reliably; apologies"
+    ]
+  },
   "2.3.0": {
     "content": [
       "• Concurrent upload queue processing",
@@ -8,6 +15,7 @@
   "2.2.1": {
     "content": [
       "• Fixed network status indicator timing out prematurely",
+      "• Improved GPS follow-me reliability - fixed sync issues that could cause tracking to stop working",
       "• Network status now accurately shows 'taking a while' when requests split or backoff, and only shows 'timed out' for actual network failures"
     ]
   },

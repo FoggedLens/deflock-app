@@ -10,11 +10,11 @@ import '../../services/proximity_alert_service.dart';
 import '../../models/osm_node.dart';
 import '../../models/node_profile.dart';
 
-/// Simple GPS controller that respects permissions and provides location updates.
+/// Simple GPS controller that handles precise location permissions only.
 /// Key principles: 
 /// - Respect "denied forever" - stop trying
-/// - Retry "denied" - user might enable later
-/// - Accept whatever accuracy is available once granted
+/// - Retry "denied" - user might enable later  
+/// - Only works with precise location permissions
 class GpsController {
   StreamSubscription<Position>? _positionSub;
   Timer? _retryTimer;

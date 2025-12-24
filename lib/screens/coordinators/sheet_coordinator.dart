@@ -9,6 +9,7 @@ import '../../widgets/add_node_sheet.dart';
 import '../../widgets/edit_node_sheet.dart';
 import '../../widgets/navigation_sheet.dart';
 import '../../widgets/measured_sheet.dart';
+import '../../state/settings_state.dart' show FollowMeMode;
 
 /// Coordinates all bottom sheet operations including opening, closing, height tracking,
 /// and sheet-related validation logic.
@@ -25,6 +26,9 @@ class SheetCoordinator {
   
   // Flag to prevent map bounce when transitioning from tag sheet to edit sheet
   bool _transitioningToEdit = false;
+  
+  // Follow-me state restoration
+  FollowMeMode? _followMeModeBeforeSheet;
 
   // Getters for accessing heights
   double get addSheetHeight => _addSheetHeight;
@@ -88,7 +92,8 @@ class SheetCoordinator {
       return;
     }
     
-    // Disable follow-me when adding a node so the map doesn't jump around
+    // Save current follow-me mode and disable it while sheet is open
+    _followMeModeBeforeSheet = appState.followMeMode;
     appState.setFollowMeMode(FollowMeMode.off);
     
     appState.startAddSession();
@@ -120,6 +125,9 @@ class SheetCoordinator {
         debugPrint('[SheetCoordinator] AddNodeSheet dismissed - canceling session');
         appState.cancelSession();
       }
+      
+      // Restore follow-me mode that was active before sheet opened
+      _restoreFollowMeMode(appState);
     });
   }
 
@@ -132,7 +140,8 @@ class SheetCoordinator {
   }) {
     final appState = context.read<AppState>();
     
-    // Disable follow-me when editing a node so the map doesn't jump around
+    // Save current follow-me mode and disable it while sheet is open  
+    _followMeModeBeforeSheet = appState.followMeMode;
     appState.setFollowMeMode(FollowMeMode.off);
     
     final session = appState.editSession!;     // should be non-null when this is called
@@ -185,6 +194,9 @@ class SheetCoordinator {
         debugPrint('[SheetCoordinator] EditNodeSheet dismissed - canceling edit session');
         appState.cancelEditSession();
       }
+      
+      // Restore follow-me mode that was active before sheet opened
+      _restoreFollowMeMode(appState);
     });
   }
 
@@ -250,4 +262,16 @@ class SheetCoordinator {
     _tagSheetHeight = 0.0;
     onStateChanged();
   }
+
+  /// Restore the follow-me mode that was active before opening a node sheet
+  void _restoreFollowMeMode(AppState appState) {
+    if (_followMeModeBeforeSheet != null) {
+      debugPrint('[SheetCoordinator] Restoring follow-me mode: ${_followMeModeBeforeSheet}');
+      appState.setFollowMeMode(_followMeModeBeforeSheet!);
+      _followMeModeBeforeSheet = null; // Clear stored state
+    }
+  }
+
+  /// Check if any node editing/viewing sheet is currently open
+  bool get hasActiveNodeSheet => _addSheetHeight > 0 || _editSheetHeight > 0 || _tagSheetHeight > 0;
 }
