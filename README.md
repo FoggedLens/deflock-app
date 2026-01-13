@@ -98,11 +98,14 @@ cp lib/keys.dart.example lib/keys.dart
 ## Roadmap
 
 ### Needed Bugfixes
-- Ensure GPS/follow-me works after recent revamp (loses lock? have to move map for button state to update?)
+- Clean up tile cache; implement some max size or otherwise trim unused / old tiles to prevent infinite memory growth
+- Filter NSI suggestions based on what has already been typed in
+- NSI sometimes doesn't populate a dropdown, maybe always on the second tag added during an edit session?
 - Clean cache when nodes have been deleted by others
 - Are offline areas preferred for fast loading even when online? Check working.
 
 ### Current Development
+- Import profiles from app URL like deflockapp://addprofile?name=foo&tag1=value1 etc; submittable and FOV and requires direction are special cases
 - Add ability to downvote suspected locations which are old enough
 - Turn by turn navigation or at least swipe nav sheet up to see a list
 - Import/Export map providers, profiles (profiles from deflock identify page?)
