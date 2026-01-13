@@ -2,7 +2,7 @@
   "2.3.1": {
     "content": [
       "• Follow-me mode now automatically restores when add/edit/tag sheets are closed",
-      "• Follow-me button is greyed out while node sheets are open (add/edit/tag) since following doesn't make sense during node operations"
+      "• Follow-me button is greyed out while node sheets are open (add/edit/tag) since following doesn't make sense during node operations",
       "• Drop support for approximate location since I can't get it to work reliably; apologies"
     ]
   },
