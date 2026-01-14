@@ -98,6 +98,7 @@ cp lib/keys.dart.example lib/keys.dart
 ## Roadmap
 
 ### Needed Bugfixes
+- Node data fetching super slow; retries not working?
 - Clean up tile cache; implement some max size or otherwise trim unused / old tiles to prevent infinite memory growth
 - Filter NSI suggestions based on what has already been typed in
 - NSI sometimes doesn't populate a dropdown, maybe always on the second tag added during an edit session?
@@ -116,6 +117,7 @@ cp lib/keys.dart.example lib/keys.dart
 ### Future Features & Wishlist
 - Optional reason message when deleting
 - Update offline area data while browsing?
+- Save named locations to more easily navigate to home or work
 
 ### Maybes
 - Yellow ring for devices missing specific tag details
