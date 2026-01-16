@@ -98,6 +98,8 @@ cp lib/keys.dart.example lib/keys.dart
 ## Roadmap
 
 ### Needed Bugfixes
+- 360 FOV means no direction slider
+- Fix rendering of 0-360 FOV ring
 - Node data fetching super slow; retries not working?
 - Clean up tile cache; implement some max size or otherwise trim unused / old tiles to prevent infinite memory growth
 - Filter NSI suggestions based on what has already been typed in
