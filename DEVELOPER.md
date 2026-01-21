@@ -809,7 +809,8 @@ cd ios && pod install
 ### Running
 ```bash
 flutter pub get
-flutter run
+./gen_icons_splashes.sh
+flutter run --dart-define=OSM_PROD_CLIENT_ID=[your OAuth2 client ID]
 ```
 
 ### Testing
