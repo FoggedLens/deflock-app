@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_map/flutter_map.dart' show LatLngBounds;
 import 'package:latlong2/latlong.dart';
 
 import '../models/search_result.dart';
@@ -31,7 +32,8 @@ class NavigationState extends ChangeNotifier {
   bool _isSearchLoading = false;
   List<SearchResult> _searchResults = [];
   String _lastQuery = '';
-  
+  LatLngBounds? _searchViewbox;
+
   // Location state
   LatLng? _provisionalPinLocation;
   String? _provisionalPinAddress;
@@ -106,19 +108,20 @@ class NavigationState extends ChangeNotifier {
   }
   
   /// BRUTALIST: Single entry point to search mode
-  void enterSearchMode(LatLng mapCenter) {
+  void enterSearchMode(LatLng mapCenter, {LatLngBounds? viewbox}) {
     debugPrint('[NavigationState] enterSearchMode - current mode: $_mode');
-    
+
     if (_mode != AppNavigationMode.normal) {
       debugPrint('[NavigationState] Cannot enter search mode - not in normal mode');
       return;
     }
-    
+
     _mode = AppNavigationMode.search;
     _provisionalPinLocation = mapCenter;
     _provisionalPinAddress = null;
+    _searchViewbox = viewbox;
     _clearSearchResults();
-    
+
     debugPrint('[NavigationState] Entered search mode');
     notifyListeners();
   }
@@ -149,7 +152,8 @@ class NavigationState extends ChangeNotifier {
     _showingOverview = false;
     _nextPointIsStart = false;
     _routingError = null;
-    
+    _searchViewbox = null;
+
     // Clear search
     _clearSearchResults();
     
@@ -336,21 +340,21 @@ class NavigationState extends ChangeNotifier {
       _clearSearchResults();
       return;
     }
-    
+
     if (query.trim() == _lastQuery.trim()) return;
-    
+
     _setSearchLoading(true);
     _lastQuery = query.trim();
-    
+
     try {
-      final results = await _searchService.search(query.trim());
+      final results = await _searchService.search(query.trim(), viewbox: _searchViewbox);
       _searchResults = results;
       debugPrint('[NavigationState] Found ${results.length} results');
     } catch (e) {
       debugPrint('[NavigationState] Search failed: $e');
       _searchResults = [];
     }
-    
+
     _setSearchLoading(false);
   }
   

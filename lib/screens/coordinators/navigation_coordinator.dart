@@ -138,7 +138,8 @@ class NavigationCoordinator {
         // Enter search mode
         try {
           final center = mapController.mapController.camera.center;
-          appState.enterSearchMode(center);
+          final viewbox = mapController.mapController.camera.visibleBounds;
+          appState.enterSearchMode(center, viewbox: viewbox);
         } catch (e) {
           debugPrint('[NavigationCoordinator] Could not get map center for search: $e');
           // Fallback to default location
