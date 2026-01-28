@@ -15,6 +15,7 @@ import 'screens/osm_account_screen.dart';
 import 'screens/upload_queue_screen.dart';
 import 'services/localization_service.dart';
 import 'services/version_service.dart';
+import 'services/deep_link_service.dart';
 
 
 
@@ -26,6 +27,10 @@ Future<void> main() async {
   
   // Initialize localization service
   await LocalizationService.instance.init();
+
+  // Initialize deep link service
+  await DeepLinkService().init();
+  DeepLinkService().setNavigatorKey(_navigatorKey);
 
   runApp(
     ChangeNotifierProvider(
@@ -68,6 +73,7 @@ class DeFlockApp extends StatelessWidget {
         ),
         useMaterial3: true,
       ),
+      navigatorKey: _navigatorKey,
       routes: {
         '/': (context) => const HomeScreen(),
         '/settings': (context) => const SettingsScreen(),
@@ -82,7 +88,11 @@ class DeFlockApp extends StatelessWidget {
         '/settings/release-notes': (context) => const ReleaseNotesScreen(),
       },
       initialRoute: '/',
+
     );
   }
 }
+
+// Global navigator key for deep link navigation
+final GlobalKey<NavigatorState> _navigatorKey = GlobalKey<NavigatorState>();
 

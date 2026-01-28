@@ -35,6 +35,14 @@
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
+            
+            <!-- Profile import deep links -->
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <data android:scheme="deflockapp" android:host="profiles"/>
+            </intent-filter>
         </activity>
 
         <!-- flutter_web_auth_2 callback activity (V2 embedding) -->

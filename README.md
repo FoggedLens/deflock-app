@@ -53,6 +53,12 @@ A comprehensive Flutter app for mapping public surveillance infrastructure with 
 - **Queue management**: Review, edit, retry, or cancel pending uploads
 - **Changeset tracking**: Automatic grouping and commenting for organized contributions
 
+### Profile Import & Sharing
+- **Deep link support**: Import custom profiles via `deflockapp://profiles/add?p=<base64>` URLs
+- **Website integration**: Generate profile import links from [deflock.me](https://deflock.me)
+- **Pre-filled editor**: Imported profiles open in the profile editor for review and modification
+- **Seamless workflow**: Edit imported profiles like any custom profile before saving
+
 ### Offline Operations
 - **Smart area downloads**: Automatically calculate tile counts and storage requirements
 - **Device caching**: Offline areas include surveillance device data for complete functionality without network
@@ -100,6 +106,8 @@ cp lib/keys.dart.example lib/keys.dart
 ### Needed Bugfixes
 - 360 FOV means no direction slider
 - Fix rendering of 0-360 FOV ring
+- Move profile save button
+- Fix iOS not taking FOV values, cannot remove FOV
 - Node data fetching super slow; retries not working?
 - Clean up tile cache; implement some max size or otherwise trim unused / old tiles to prevent infinite memory growth
 - Filter NSI suggestions based on what has already been typed in
@@ -108,10 +116,9 @@ cp lib/keys.dart.example lib/keys.dart
 - Are offline areas preferred for fast loading even when online? Check working.
 
 ### Current Development
-- Import profiles from app URL like deflockapp://addprofile?name=foo&tag1=value1 etc; submittable and FOV and requires direction are special cases
 - Add ability to downvote suspected locations which are old enough
 - Turn by turn navigation or at least swipe nav sheet up to see a list
-- Import/Export map providers, profiles (profiles from deflock identify page?)
+- Import/Export map providers
 
 ### On Pause
 - Offline navigation (pending vector map tiles)

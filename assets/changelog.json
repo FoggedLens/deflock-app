@@ -1,4 +1,10 @@
 {
+  "2.4.0": {
+    "content": [
+      "• Profile import from website links",
+      "• Visit deflock.me for profile links to auto-populate custom profiles"
+    ]
+  },
   "2.3.1": {
     "content": [
       "• Follow-me mode now automatically restores when add/edit/tag sheets are closed",

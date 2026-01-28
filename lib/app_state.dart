@@ -18,6 +18,7 @@ import 'services/node_cache.dart';
 import 'services/tile_preview_service.dart';
 import 'services/changelog_service.dart';
 import 'services/operator_profile_service.dart';
+import 'services/deep_link_service.dart';
 import 'widgets/node_provider_with_cache.dart';
 import 'services/profile_service.dart';
 import 'widgets/proximity_warning_dialog.dart';
@@ -243,6 +244,11 @@ class AppState extends ChangeNotifier {
     _startUploader();
     
     _isInitialized = true;
+    
+    // Check for initial deep link after a small delay to let navigation settle
+    Future.delayed(const Duration(milliseconds: 500), () {
+      DeepLinkService().checkInitialLink();
+    });
     
     // Start periodic message checking
     _startMessageCheckTimer();
