@@ -104,10 +104,7 @@ cp lib/keys.dart.example lib/keys.dart
 ## Roadmap
 
 ### Needed Bugfixes
-- 360 FOV means no direction slider
 - Fix rendering of 0-360 FOV ring
-- Move profile save button
-- Fix iOS not taking FOV values, cannot remove FOV
 - Node data fetching super slow; retries not working?
 - Clean up tile cache; implement some max size or otherwise trim unused / old tiles to prevent infinite memory growth
 - Filter NSI suggestions based on what has already been typed in
@@ -129,6 +126,7 @@ cp lib/keys.dart.example lib/keys.dart
 - Save named locations to more easily navigate to home or work
 
 ### Maybes
+- "Universal Links" for better handling of profile import when app not installed?
 - Yellow ring for devices missing specific tag details
 - Android Auto / CarPlay
 - "Cache accumulating" offline area?

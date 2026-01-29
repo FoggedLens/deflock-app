@@ -69,6 +69,12 @@ class _ProfileEditorState extends State<ProfileEditor> {
             title: Text(!widget.profile.editable 
                 ? locService.t('profileEditor.viewProfile')
                 : (widget.profile.name.isEmpty ? locService.t('profileEditor.newProfile') : locService.t('profileEditor.editProfile'))),
+            actions: widget.profile.editable ? [
+              TextButton(
+                onPressed: _save,
+                child: Text(locService.t('profileEditor.saveProfile')),
+              ),
+            ] : null,
           ),
           body: ListView(
             padding: EdgeInsets.fromLTRB(
@@ -135,11 +141,6 @@ class _ProfileEditorState extends State<ProfileEditor> {
               const SizedBox(height: 8),
               ..._buildTagRows(),
               const SizedBox(height: 24),
-              if (widget.profile.editable)
-                ElevatedButton(
-                  onPressed: _save,
-                  child: Text(locService.t('profileEditor.saveProfile')),
-                ),
             ],
           ),
         );

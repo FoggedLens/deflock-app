@@ -157,6 +157,15 @@ class _AddNodeSheetState extends State<AddNodeSheet> {
 
   Widget _buildDirectionControls(BuildContext context, AppState appState, AddNodeSession session, LocalizationService locService) {
     final requiresDirection = session.profile != null && session.profile!.requiresDirection;
+    final is360Fov = session.profile?.fov == 360;
+    final enableDirectionControls = requiresDirection && !is360Fov;
+    
+    // Force direction to 0 when FOV is 360 (omnidirectional)
+    if (is360Fov && session.directionDegrees != 0) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        appState.updateSession(directionDeg: 0);
+      });
+    }
     
     // Format direction display text with bold for current direction
     String directionsText = '';
@@ -206,7 +215,7 @@ class _AddNodeSheetState extends State<AddNodeSheet> {
                   divisions: 359,
                   value: session.directionDegrees,
                   label: session.directionDegrees.round().toString(),
-                  onChanged: requiresDirection ? (v) => appState.updateSession(directionDeg: v) : null,
+                  onChanged: enableDirectionControls ? (v) => appState.updateSession(directionDeg: v) : null,
                 ),
               ),
               // Direction control buttons - always show but grey out when direction not required
@@ -216,9 +225,9 @@ class _AddNodeSheetState extends State<AddNodeSheet> {
                 icon: Icon(
                   Icons.remove, 
                   size: 20,
-                  color: requiresDirection ? null : Theme.of(context).disabledColor,
+                  color: enableDirectionControls ? null : Theme.of(context).disabledColor,
                 ),
-                onPressed: requiresDirection && session.directions.length > 1 
+                onPressed: enableDirectionControls && session.directions.length > 1 
                     ? () => appState.removeDirection() 
                     : null,
                 tooltip: requiresDirection ? 'Remove current direction' : 'Direction not required for this profile',
@@ -230,9 +239,9 @@ class _AddNodeSheetState extends State<AddNodeSheet> {
                 icon: Icon(
                   Icons.add, 
                   size: 20,
-                  color: requiresDirection && session.directions.length < 8 ? null : Theme.of(context).disabledColor,
+                  color: enableDirectionControls && session.directions.length < 8 ? null : Theme.of(context).disabledColor,
                 ),
-                onPressed: requiresDirection && session.directions.length < 8 ? () => appState.addDirection() : null,
+                onPressed: enableDirectionControls && session.directions.length < 8 ? () => appState.addDirection() : null,
                 tooltip: requiresDirection 
                     ? (session.directions.length >= 8 ? 'Maximum 8 directions allowed' : 'Add new direction') 
                     : 'Direction not required for this profile',
@@ -244,9 +253,9 @@ class _AddNodeSheetState extends State<AddNodeSheet> {
                 icon: Icon(
                   Icons.repeat, 
                   size: 20,
-                  color: requiresDirection ? null : Theme.of(context).disabledColor,
+                  color: enableDirectionControls ? null : Theme.of(context).disabledColor,
                 ),
-                onPressed: requiresDirection && session.directions.length > 1 
+                onPressed: enableDirectionControls && session.directions.length > 1 
                     ? () => appState.cycleDirection() 
                     : null,
                 tooltip: requiresDirection ? 'Cycle through directions' : 'Direction not required for this profile',

@@ -1,4 +1,11 @@
 {
+  "2.4.1": {
+    "content": [
+      "• Save button moved to top-right corner of profile editor screens",
+      "• Fixed issue where FOV values could not be removed from profiles",
+      "• Direction slider is now disabled for profiles with 360° FOV"
+    ]
+  },
   "2.4.0": {
     "content": [
       "• Profile import from website links",

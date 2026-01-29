@@ -1,5 +1,8 @@
 import 'package:uuid/uuid.dart';
 
+/// Sentinel value for copyWith methods to distinguish between null and not provided
+const Object _notProvided = Object();
+
 /// A bundle of preset OSM tags that describe a particular surveillance node model/type.
 class NodeProfile {
   final String id;
@@ -217,7 +220,7 @@ class NodeProfile {
     bool? requiresDirection,
     bool? submittable,
     bool? editable,
-    double? fov,
+    Object? fov = _notProvided,
   }) =>
       NodeProfile(
         id: id ?? this.id,
@@ -227,7 +230,7 @@ class NodeProfile {
         requiresDirection: requiresDirection ?? this.requiresDirection,
         submittable: submittable ?? this.submittable,
         editable: editable ?? this.editable,
-        fov: fov ?? this.fov,
+        fov: fov == _notProvided ? this.fov : fov as double?,
       );
 
   Map<String, dynamic> toJson() => {

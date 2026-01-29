@@ -55,6 +55,12 @@ class _OperatorProfileEditorState extends State<OperatorProfileEditor> {
         return Scaffold(
           appBar: AppBar(
             title: Text(widget.profile.name.isEmpty ? locService.t('operatorProfileEditor.newOperatorProfile') : locService.t('operatorProfileEditor.editOperatorProfile')),
+            actions: [
+              TextButton(
+                onPressed: _save,
+                child: Text(locService.t('profileEditor.saveProfile')),
+              ),
+            ],
           ),
           body: ListView(
             padding: EdgeInsets.fromLTRB(
@@ -87,10 +93,6 @@ class _OperatorProfileEditorState extends State<OperatorProfileEditor> {
               const SizedBox(height: 8),
               ..._buildTagRows(),
               const SizedBox(height: 24),
-              ElevatedButton(
-                onPressed: _save,
-                child: Text(locService.t('profileEditor.saveProfile')),
-              ),
             ],
           ),
         );
