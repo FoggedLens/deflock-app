@@ -107,7 +107,7 @@ cp lib/keys.dart.example lib/keys.dart
 - Make submission guide scarier
 - "More..." button in profiles dropdown -> identify page
 - Node data fetching super slow; retries not working?
-- Clean up tile cache; implement some max size or otherwise trim unused / old tiles to prevent infinite memory growth
+- Tile cache trimming? Does fluttermap handle?
 - Filter NSI suggestions based on what has already been typed in
 - NSI sometimes doesn't populate a dropdown, maybe always on the second tag added during an edit session?
 - Clean cache when nodes have been deleted by others
