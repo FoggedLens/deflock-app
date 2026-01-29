@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter_map/flutter_map.dart' show LatLngBounds;
 import 'package:http/http.dart' as http;
 import 'package:latlong2/latlong.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -569,8 +570,8 @@ class AppState extends ChangeNotifier {
   }
 
   // ---------- Navigation Methods - Simplified ----------
-  void enterSearchMode(LatLng mapCenter) {
-    _navigationState.enterSearchMode(mapCenter);
+  void enterSearchMode(LatLng mapCenter, {LatLngBounds? viewbox}) {
+    _navigationState.enterSearchMode(mapCenter, viewbox: viewbox);
   }
 
   void cancelNavigation() {

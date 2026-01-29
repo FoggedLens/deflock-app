@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
+import 'package:flutter_map/flutter_map.dart' show LatLngBounds;
 import 'package:http/http.dart' as http;
 import 'package:latlong2/latlong.dart';
 
@@ -12,19 +13,19 @@ class SearchService {
   static const Duration _timeout = Duration(seconds: 10);
   
   /// Search for places using Nominatim geocoding service
-  Future<List<SearchResult>> search(String query) async {
+  Future<List<SearchResult>> search(String query, {LatLngBounds? viewbox}) async {
     if (query.trim().isEmpty) {
       return [];
     }
-    
+
     // Check if query looks like coordinates first
     final coordResult = _tryParseCoordinates(query.trim());
     if (coordResult != null) {
       return [coordResult];
     }
-    
+
     // Otherwise, use Nominatim API
-    return await _searchNominatim(query.trim());
+    return await _searchNominatim(query.trim(), viewbox: viewbox);
   }
   
   /// Try to parse various coordinate formats
@@ -52,14 +53,37 @@ class SearchService {
   }
   
   /// Search using Nominatim API
-  Future<List<SearchResult>> _searchNominatim(String query) async {
-    final uri = Uri.parse('$_baseUrl/search').replace(queryParameters: {
+  Future<List<SearchResult>> _searchNominatim(String query, {LatLngBounds? viewbox}) async {
+    final params = {
       'q': query,
       'format': 'json',
       'limit': _maxResults.toString(),
       'addressdetails': '1',
       'extratags': '1',
-    });
+    };
+
+    if (viewbox != null) {
+      double round1(double v) => (v * 10).round() / 10;
+      var west = round1(viewbox.west);
+      var east = round1(viewbox.east);
+      var south = round1(viewbox.south);
+      var north = round1(viewbox.north);
+
+      if (east - west < 0.5) {
+        final mid = (east + west) / 2;
+        west = mid - 0.25;
+        east = mid + 0.25;
+      }
+      if (north - south < 0.5) {
+        final mid = (north + south) / 2;
+        south = mid - 0.25;
+        north = mid + 0.25;
+      }
+
+      params['viewbox'] = '$west,$north,$east,$south';
+    }
+
+    final uri = Uri.parse('$_baseUrl/search').replace(queryParameters: params);
     
     debugPrint('[SearchService] Searching Nominatim: $uri');
     
