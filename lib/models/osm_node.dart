@@ -107,6 +107,11 @@ class OsmNode {
     start = ((start % 360) + 360) % 360;
     end = ((end % 360) + 360) % 360;
     
+    // Special case: if start equals end, this represents 360° FOV
+    if (start == end) {
+      return DirectionFov(start, 360.0);
+    }
+    
     double width, center;
     
     if (start > end) {

@@ -743,6 +743,11 @@ class UploadQueueState extends ChangeNotifier {
 
   // Convert a center direction and FOV to range notation (e.g., 180° center with 90° FOV -> "135-225")
   String _formatDirectionWithFov(double center, double fov) {
+    // Handle 360-degree FOV as special case
+    if (fov >= 360) {
+      return '0-360';
+    }
+    
     final halfFov = fov / 2;
     final start = (center - halfFov + 360) % 360;
     final end = (center + halfFov) % 360;

@@ -170,7 +170,10 @@ class DirectionConesBuilder {
     bool isActiveDirection = true,
   }) {
     // Handle full circle case (360-degree FOV)
-    if (halfAngleDeg >= 180) {
+    // Use 179.5 threshold to account for floating point precision
+    print("DEBUG: halfAngleDeg = $halfAngleDeg, bearing = $bearingDeg");
+    if (halfAngleDeg >= 179.5) {
+      print("DEBUG: Using full circle for 360° FOV");
       return _buildFullCircle(
         origin: origin,
         zoom: zoom,
@@ -179,6 +182,7 @@ class DirectionConesBuilder {
         isActiveDirection: isActiveDirection,
       );
     }
+    print("DEBUG: Using normal cone for FOV = ${halfAngleDeg * 2}°");
     
     // Calculate pixel-based radii
     final outerRadiusPx = kNodeIconDiameter + (kNodeIconDiameter * kDirectionConeBaseLength);
@@ -232,6 +236,7 @@ class DirectionConesBuilder {
   }
 
   /// Build a full circle for 360-degree FOV cases
+  /// Returns just the outer circle - we'll handle the donut effect differently
   static Polygon _buildFullCircle({
     required LatLng origin,
     required double zoom,
@@ -239,17 +244,19 @@ class DirectionConesBuilder {
     bool isSession = false,
     bool isActiveDirection = true,
   }) {
-    // Calculate pixel-based radii
+    print("DEBUG: Building full circle - isSession: $isSession, isActiveDirection: $isActiveDirection");
+    
+    // Calculate pixel-based radii  
     final outerRadiusPx = kNodeIconDiameter + (kNodeIconDiameter * kDirectionConeBaseLength);
-    final innerRadiusPx = kNodeIconDiameter + (2 * getNodeRingThickness(context));
     
     // Convert pixels to coordinate distances with zoom scaling
     final pixelToCoordinate = 0.00001 * math.pow(2, 15 - zoom);
     final outerRadius = outerRadiusPx * pixelToCoordinate;
-    final innerRadius = innerRadiusPx * pixelToCoordinate;
     
-    // Create full circle with many points for smooth rendering
-    const int circlePoints = 36;
+    print("DEBUG: Outer radius: $outerRadius, zoom: $zoom");
+    
+    // Create simple filled circle - no donut complexity
+    const int circlePoints = 60;
     final points = <LatLng>[];
 
     LatLng project(double deg, double distance) {
@@ -260,17 +267,13 @@ class DirectionConesBuilder {
       return LatLng(origin.latitude + dLat, origin.longitude + dLon);
     }
     
-    // Add outer circle points
-    for (int i = 0; i < circlePoints; i++) {
-      final angle = i * 360.0 / circlePoints;
+    // Add outer circle points - simple complete circle
+    for (int i = 0; i <= circlePoints; i++) { // Note: <= to ensure closure
+      final angle = (i * 360.0 / circlePoints) % 360.0;
       points.add(project(angle, outerRadius));
     }
-    
-    // Add inner circle points in reverse order to create donut
-    for (int i = circlePoints - 1; i >= 0; i--) {
-      final angle = i * 360.0 / circlePoints;
-      points.add(project(angle, innerRadius));
-    }
+
+    print("DEBUG: Created ${points.length} points for full circle");
 
     // Adjust opacity based on direction state
     double opacity = kDirectionConeOpacity;

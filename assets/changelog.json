@@ -1,4 +1,10 @@
 {
+  "2.4.3": {
+    "content": [
+      "• Fixed 360° FOV rendering - devices with full circle coverage now render as complete rings instead of having a wedge cut out or being a line",
+      "• Fixed 360° FOV submission - now correctly submits '0-360' to OpenStreetMap instead of incorrect '180-180' values, disables direction slider"
+    ]
+  },
   "2.4.1": {
     "content": [
       "• Save button moved to top-right corner of profile editor screens",
