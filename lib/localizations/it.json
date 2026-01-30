@@ -316,7 +316,14 @@
     "view": "Visualizza",
     "deleteProfile": "Elimina Profilo",
     "deleteProfileConfirm": "Sei sicuro di voler eliminare \"{}\"?",
-    "profileDeleted": "Profilo eliminato"
+    "profileDeleted": "Profilo eliminato",
+    "getMore": "Ottieni altri...",
+    "addProfileChoice": "Aggiungi Profilo",
+    "addProfileChoiceMessage": "Come desideri aggiungere un profilo?",
+    "createCustomProfile": "Crea Profilo Personalizzato",
+    "createCustomProfileDescription": "Crea un profilo da zero con i tuoi tag",
+    "importFromWebsite": "Importa da Sito Web", 
+    "importFromWebsiteDescription": "Sfoglia e importa profili da deflock.me/identify"
   },
   "mapTiles": {
     "title": "Tile Mappa",

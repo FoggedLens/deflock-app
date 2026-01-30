@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../app_state.dart';
 import '../dev_config.dart';
@@ -340,14 +341,7 @@ class _EditNodeSheetState extends State<EditNodeSheet> {
               const SizedBox(height: 16),
               ListTile(
                 title: Text(locService.t('editNode.profile')),
-                trailing: DropdownButton<NodeProfile?>(
-                  value: session.profile,
-                  hint: Text(locService.t('editNode.selectProfile')),
-                  items: submittableProfiles
-                      .map((p) => DropdownMenuItem(value: p, child: Text(p.name)))
-                      .toList(),
-                  onChanged: (p) => appState.updateEditSession(profile: p),
-                ),
+                trailing: _buildProfileDropdown(context, appState, session, submittableProfiles, locService),
               ),
               // Direction controls
               _buildDirectionControls(context, appState, session, locService),
@@ -532,6 +526,101 @@ class _EditNodeSheetState extends State<EditNodeSheet> {
           ],
         );
       },
+    );
+  }
+
+  Widget _buildProfileDropdown(BuildContext context, AppState appState, EditNodeSession session, List<NodeProfile> submittableProfiles, LocalizationService locService) {
+    return PopupMenuButton<String>(
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        decoration: BoxDecoration(
+          border: Border.all(color: Colors.grey.shade400),
+          borderRadius: BorderRadius.circular(4),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              session.profile?.name ?? locService.t('editNode.selectProfile'),
+              style: TextStyle(
+                fontSize: 16,
+                color: session.profile != null ? null : Colors.grey.shade600,
+              ),
+            ),
+            const SizedBox(width: 4),
+            const Icon(Icons.arrow_drop_down, size: 20),
+          ],
+        ),
+      ),
+      itemBuilder: (context) => [
+        // Regular profiles
+        ...submittableProfiles.map(
+          (profile) => PopupMenuItem<String>(
+            value: 'profile_${profile.id}',
+            child: Text(profile.name),
+          ),
+        ),
+        // Divider
+        if (submittableProfiles.isNotEmpty) const PopupMenuDivider(),
+        // Get more... option
+        PopupMenuItem<String>(
+          value: 'get_more',
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.language, size: 16),
+              const SizedBox(width: 8),
+              Text(
+                locService.t('profiles.getMore'),
+                style: TextStyle(
+                  fontStyle: FontStyle.italic,
+                  color: Theme.of(context).primaryColor,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+      onSelected: (value) {
+        if (value == 'get_more') {
+          _openIdentifyWebsite(context);
+        } else if (value.startsWith('profile_')) {
+          final profileId = value.substring(8); // Remove 'profile_' prefix
+          final profile = submittableProfiles.firstWhere((p) => p.id == profileId);
+          appState.updateEditSession(profile: profile);
+        }
+      },
+    );
+  }
+
+  void _openIdentifyWebsite(BuildContext context) async {
+    const url = 'https://deflock.me/identify';
+    
+    try {
+      final uri = Uri.parse(url);
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(
+          uri,
+          mode: LaunchMode.externalApplication, // Force external browser
+        );
+      } else {
+        if (context.mounted) {
+          _showErrorSnackBar(context, 'Unable to open website');
+        }
+      }
+    } catch (e) {
+      if (context.mounted) {
+        _showErrorSnackBar(context, 'Error opening website: $e');
+      }
+    }
+  }
+
+  void _showErrorSnackBar(BuildContext context, String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.red,
+      ),
     );
   }
 

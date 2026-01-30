@@ -316,7 +316,14 @@
     "view": "查看",
     "deleteProfile": "删除配置文件",
     "deleteProfileConfirm": "您确定要删除 \"{}\" 吗？",
-    "profileDeleted": "配置文件已删除"
+    "profileDeleted": "配置文件已删除",
+    "getMore": "获取更多...",
+    "addProfileChoice": "添加配置文件",
+    "addProfileChoiceMessage": "您希望如何添加配置文件？",
+    "createCustomProfile": "创建自定义配置文件",
+    "createCustomProfileDescription": "从头开始构建带有您自己标签的配置文件",
+    "importFromWebsite": "从网站导入", 
+    "importFromWebsiteDescription": "浏览并从 deflock.me/identify 导入配置文件"
   },
   "mapTiles": {
     "title": "地图瓦片",

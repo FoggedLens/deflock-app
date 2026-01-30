@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../../app_state.dart';
 import '../../../models/node_profile.dart';
 import '../../../services/localization_service.dart';
+import '../../../widgets/profile_add_choice_dialog.dart';
 import '../../profile_editor.dart';
 
 class NodeProfilesSection extends StatelessWidget {
@@ -27,18 +28,7 @@ class NodeProfilesSection extends StatelessWidget {
                   style: Theme.of(context).textTheme.titleMedium,
                 ),
                 TextButton.icon(
-                  onPressed: () => Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => ProfileEditor(
-                        profile: NodeProfile(
-                          id: const Uuid().v4(),
-                          name: '',
-                          tags: const {},
-                        ),
-                      ),
-                    ),
-                  ),
+                  onPressed: () => _showAddProfileDialog(context),
                   icon: const Icon(Icons.add),
                   label: Text(locService.t('profiles.newProfile')),
                 ),
@@ -118,6 +108,34 @@ class NodeProfilesSection extends StatelessWidget {
           ],
         );
       },
+    );
+  }
+
+  void _showAddProfileDialog(BuildContext context) async {
+    final result = await showDialog<String?>(
+      context: context,
+      builder: (context) => const ProfileAddChoiceDialog(),
+    );
+    
+    // If user chose to create custom profile, open the profile editor
+    if (result == 'create') {
+      _createNewProfile(context);
+    }
+    // If user chose import from website, ProfileAddChoiceDialog handles opening the URL
+  }
+
+  void _createNewProfile(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => ProfileEditor(
+          profile: NodeProfile(
+            id: const Uuid().v4(),
+            name: '',
+            tags: const {},
+          ),
+        ),
+      ),
     );
   }
 

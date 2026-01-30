@@ -105,7 +105,6 @@ cp lib/keys.dart.example lib/keys.dart
 
 ### Needed Bugfixes
 - Make submission guide scarier
-- "More..." button in profiles dropdown -> identify page
 - Node data fetching super slow; retries not working?
 - Tile cache trimming? Does fluttermap handle?
 - Filter NSI suggestions based on what has already been typed in
@@ -118,13 +117,11 @@ cp lib/keys.dart.example lib/keys.dart
 - Turn by turn navigation or at least swipe nav sheet up to see a list
 - Import/Export map providers
 
-### On Pause
-- Offline navigation (pending vector map tiles)
-
 ### Future Features & Wishlist
 - Optional reason message when deleting
 - Update offline area data while browsing?
 - Save named locations to more easily navigate to home or work
+- Offline navigation (pending vector map tiles)
 
 ### Maybes
 - "Universal Links" for better handling of profile import when app not installed?

@@ -279,7 +279,14 @@
     "view": "Anzeigen",
     "deleteProfile": "Profil Löschen",
     "deleteProfileConfirm": "Sind Sie sicher, dass Sie \"{}\" löschen möchten?",
-    "profileDeleted": "Profil gelöscht"
+    "profileDeleted": "Profil gelöscht",
+    "getMore": "Weitere anzeigen...",
+    "addProfileChoice": "Profil Hinzufügen",
+    "addProfileChoiceMessage": "Wie möchten Sie ein Profil hinzufügen?",
+    "createCustomProfile": "Benutzerdefiniertes Profil Erstellen",
+    "createCustomProfileDescription": "Erstellen Sie ein Profil von Grund auf mit Ihren eigenen Tags",
+    "importFromWebsite": "Von Webseite Importieren", 
+    "importFromWebsiteDescription": "Profile von deflock.me/identify durchsuchen und importieren"
   },
   "mapTiles": {
     "title": "Karten-Kacheln",

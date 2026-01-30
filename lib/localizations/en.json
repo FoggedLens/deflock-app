@@ -316,7 +316,14 @@
     "view": "View",
     "deleteProfile": "Delete Profile",
     "deleteProfileConfirm": "Are you sure you want to delete \"{}\"?",
-    "profileDeleted": "Profile deleted"
+    "profileDeleted": "Profile deleted",
+    "getMore": "Get more...",
+    "addProfileChoice": "Add Profile",
+    "addProfileChoiceMessage": "How would you like to add a profile?",
+    "createCustomProfile": "Create Custom Profile",
+    "createCustomProfileDescription": "Build a profile from scratch with your own tags",
+    "importFromWebsite": "Import from Website", 
+    "importFromWebsiteDescription": "Browse and import profiles from deflock.me/identify"
   },
   "mapTiles": {
     "title": "Map Tiles",

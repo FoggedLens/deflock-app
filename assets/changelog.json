@@ -1,4 +1,11 @@
 {
+  "2.5.0": {
+    "content": [
+      "• NEW: 'Get more...' button in profile dropdowns - easily browse and import profiles from deflock.me/identify",
+      "• NEW: Profile creation choice dialog - when adding profiles in settings, choose between creating custom profiles or importing from website",
+      "• Enhanced profile discovery workflow - clearer path for users to find and import community-created profiles"
+    ]
+  },
   "2.4.4": {
     "content": [
       "• Search results now prioritize locations near your current map view"
