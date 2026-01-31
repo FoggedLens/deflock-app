@@ -4,7 +4,8 @@ import 'package:latlong2/latlong.dart';
 import 'package:flutter_map/flutter_map.dart' show LatLngBounds;
 
 import '../services/map_data_provider.dart';
-import '../services/node_cache.dart';
+import '../services/node_data_manager.dart';
+import '../services/node_spatial_cache.dart';
 import '../services/network_status.dart';
 import '../models/node_profile.dart';
 import '../models/osm_node.dart';
@@ -17,51 +18,47 @@ class NodeProviderWithCache extends ChangeNotifier {
   factory NodeProviderWithCache() => instance;
   NodeProviderWithCache._internal();
 
+  final NodeDataManager _nodeDataManager = NodeDataManager();
+  final NodeSpatialCache _cache = NodeSpatialCache();
   Timer? _debounceTimer;
 
-  /// Call this to get (quickly) all cached overlays for the given view.
-  /// Filters by currently enabled profiles only. Limiting is handled by MapView.
+  /// Get cached nodes for the given bounds, filtered by enabled profiles
   List<OsmNode> getCachedNodesForBounds(LatLngBounds bounds) {
-    final allNodes = NodeCache.instance.queryByBounds(bounds);
+    final allNodes = _cache.getNodesFor(bounds);
     final enabledProfiles = AppState.instance.enabledProfiles;
     
     // If no profiles are enabled, show no nodes
     if (enabledProfiles.isEmpty) return [];
     
     // Filter nodes to only show those matching enabled profiles
-    // Note: This uses ALL enabled profiles for filtering, even though Overpass queries
-    // may be deduplicated for efficiency (broader profiles capture nodes for specific ones)
     return allNodes.where((node) {
       return _matchesAnyProfile(node, enabledProfiles);
     }).toList();
   }
 
-  /// Call this when the map view changes (bounds/profiles), triggers async fetch
-  /// and notifies listeners/UI when new data is available.
+  /// Fetch and update nodes for the given view, with debouncing for rapid map movement
   void fetchAndUpdate({
     required LatLngBounds bounds,
     required List<NodeProfile> profiles,
     UploadMode uploadMode = UploadMode.production,
   }) {
-    // Fast: serve cached immediately
+    // Serve cached immediately
     notifyListeners();
+    
     // Debounce rapid panning/zooming
     _debounceTimer?.cancel();
     _debounceTimer = Timer(const Duration(milliseconds: 400), () async {
       try {
-        // Use MapSource.auto to handle both offline and online modes appropriately
-        final fresh = await MapDataProvider().getNodes(
+        await _nodeDataManager.getNodesFor(
           bounds: bounds,
           profiles: profiles,
           uploadMode: uploadMode,
-          source: MapSource.auto,
+          isUserInitiated: true,
         );
-        if (fresh.isNotEmpty) {
-          NodeCache.instance.addOrUpdate(fresh);
-        // Clear waiting status when node data arrives
-          NetworkStatus.instance.clearWaiting();
-          notifyListeners();
-        }
+        
+        // Notify UI of new data
+        notifyListeners();
+        
       } catch (e) {
         debugPrint('[NodeProviderWithCache] Node fetch failed: $e');
         // Cache already holds whatever is available for the view
@@ -71,7 +68,8 @@ class NodeProviderWithCache extends ChangeNotifier {
 
   /// Clear the cache and repopulate with pending nodes from upload queue
   void clearCache() {
-    NodeCache.instance.clear();
+    _cache.clear();
+    _nodeDataManager.clearCache();
     // Repopulate with pending nodes from upload queue if available
     _repopulatePendingNodesAfterClear();
     notifyListeners();
@@ -79,12 +77,7 @@ class NodeProviderWithCache extends ChangeNotifier {
 
   /// Repopulate pending nodes after cache clear
   void _repopulatePendingNodesAfterClear() {
-    // We need access to the upload queue state, but we don't have direct access here
-    // Instead, we'll trigger a callback that the app state can handle
-    // For now, let's use a more direct approach through a global service access
-    // This could be refactored to use proper dependency injection later
     Future.microtask(() {
-      // This will be called from app state when cache clears happen
       _onCacheCleared?.call();
     });
   }

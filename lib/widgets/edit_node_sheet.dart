@@ -7,7 +7,7 @@ import '../dev_config.dart';
 import '../models/node_profile.dart';
 import '../models/operator_profile.dart';
 import '../services/localization_service.dart';
-import '../services/node_cache.dart';
+import '../services/map_data_provider.dart';
 import '../services/changelog_service.dart';
 import '../state/settings_state.dart';
 import 'refine_tags_sheet.dart';
@@ -100,7 +100,7 @@ class _EditNodeSheetState extends State<EditNodeSheet> {
 
   void _checkProximityOnly(BuildContext context, AppState appState, LocalizationService locService) {
     // Check for nearby nodes within the configured distance, excluding the node being edited
-    final nearbyNodes = NodeCache.instance.findNodesWithinDistance(
+    final nearbyNodes = MapDataProvider().findNodesWithinDistance(
       widget.session.target, 
       kNodeProximityWarningDistance,
       excludeNodeId: widget.session.originalNode.id,

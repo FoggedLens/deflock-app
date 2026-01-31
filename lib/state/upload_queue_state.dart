@@ -7,7 +7,7 @@ import 'package:latlong2/latlong.dart';
 import '../models/pending_upload.dart';
 import '../models/osm_node.dart';
 import '../models/node_profile.dart';
-import '../services/node_cache.dart';
+import '../services/map_data_provider.dart';
 import '../services/uploader.dart';
 import '../widgets/node_provider_with_cache.dart';
 import '../dev_config.dart';
@@ -15,6 +15,8 @@ import 'settings_state.dart';
 import 'session_state.dart';
 
 class UploadQueueState extends ChangeNotifier {
+  /// Helper to access the map data provider instance
+  MapDataProvider get _nodeCache => MapDataProvider();
   final List<PendingUpload> _queue = [];
   Timer? _uploadTimer;
   int _activeUploadCount = 0;
@@ -48,7 +50,7 @@ class UploadQueueState extends ChangeNotifier {
       if (upload.isDeletion) {
         // For deletions: mark the original node as pending deletion if it exists in cache
         if (upload.originalNodeId != null) {
-          final existingNode = NodeCache.instance.getNodeById(upload.originalNodeId!);
+          final existingNode = _nodeCache.getNodeById(upload.originalNodeId!);
           if (existingNode != null) {
             final deletionTags = Map<String, String>.from(existingNode.tags);
             deletionTags['_pending_deletion'] = 'true';
@@ -78,7 +80,7 @@ class UploadQueueState extends ChangeNotifier {
         if (upload.isEdit) {
           // For edits: also mark original with _pending_edit if it exists
           if (upload.originalNodeId != null) {
-            final existingOriginal = NodeCache.instance.getNodeById(upload.originalNodeId!);
+            final existingOriginal = _nodeCache.getNodeById(upload.originalNodeId!);
             if (existingOriginal != null) {
               final originalTags = Map<String, String>.from(existingOriginal.tags);
               originalTags['_pending_edit'] = 'true';
@@ -109,7 +111,7 @@ class UploadQueueState extends ChangeNotifier {
     }
     
     if (nodesToAdd.isNotEmpty) {
-      NodeCache.instance.addOrUpdate(nodesToAdd);
+      _nodeCache.addOrUpdate(nodesToAdd);
       print('[UploadQueue] Repopulated cache with ${nodesToAdd.length} pending nodes from queue');
       
       // Save queue if we updated any temp IDs for backward compatibility
@@ -152,7 +154,7 @@ class UploadQueueState extends ChangeNotifier {
       tags: tags,
     );
     
-    NodeCache.instance.addOrUpdate([tempNode]);
+    _nodeCache.addOrUpdate([tempNode]);
     // Notify node provider to update the map
     NodeProviderWithCache.instance.notifyListeners();
     
@@ -211,7 +213,7 @@ class UploadQueueState extends ChangeNotifier {
         tags: extractedTags,
       );
       
-      NodeCache.instance.addOrUpdate([extractedNode]);
+      _nodeCache.addOrUpdate([extractedNode]);
     } else {
       // For modify: mark original with grey ring and create new temp node
       // 1. Mark the original node with _pending_edit (grey ring) at original location
@@ -240,7 +242,7 @@ class UploadQueueState extends ChangeNotifier {
         tags: editedTags,
       );
       
-      NodeCache.instance.addOrUpdate([originalNode, editedNode]);
+      _nodeCache.addOrUpdate([originalNode, editedNode]);
     }
     // Notify node provider to update the map
     NodeProviderWithCache.instance.notifyListeners();
@@ -272,7 +274,7 @@ class UploadQueueState extends ChangeNotifier {
       tags: deletionTags,
     );
     
-    NodeCache.instance.addOrUpdate([nodeWithDeletionTag]);
+    _nodeCache.addOrUpdate([nodeWithDeletionTag]);
     // Notify node provider to update the map
     NodeProviderWithCache.instance.notifyListeners();
     
@@ -693,11 +695,11 @@ class UploadQueueState extends ChangeNotifier {
     );
     
     // Add/update the cache with the real node
-    NodeCache.instance.addOrUpdate([realNode]);
+    _nodeCache.addOrUpdate([realNode]);
     
     // Clean up the specific temp node for this upload
     if (item.tempNodeId != null) {
-      NodeCache.instance.removeTempNodeById(item.tempNodeId!);
+      _nodeCache.removeTempNodeById(item.tempNodeId!);
     }
     
     // For modify operations, clean up the original node's _pending_edit marker
@@ -705,7 +707,7 @@ class UploadQueueState extends ChangeNotifier {
     if (item.isEdit && item.originalNodeId != null) {
       // Remove the _pending_edit marker from the original node in cache
       // The next Overpass fetch will provide the authoritative data anyway
-      NodeCache.instance.removePendingEditMarker(item.originalNodeId!);
+      _nodeCache.removePendingEditMarker(item.originalNodeId!);
     }
     
     // Notify node provider to update the map
@@ -716,7 +718,7 @@ class UploadQueueState extends ChangeNotifier {
   void _handleSuccessfulDeletion(PendingUpload item) {
     if (item.originalNodeId != null) {
       // Remove the node from cache entirely
-      NodeCache.instance.removeNodeById(item.originalNodeId!);
+      _nodeCache.removeNodeById(item.originalNodeId!);
       
       // Notify node provider to update the map
       NodeProviderWithCache.instance.notifyListeners();
@@ -760,25 +762,25 @@ class UploadQueueState extends ChangeNotifier {
     if (upload.isDeletion) {
       // For deletions: remove the _pending_deletion marker from the original node
       if (upload.originalNodeId != null) {
-        NodeCache.instance.removePendingDeletionMarker(upload.originalNodeId!);
+        _nodeCache.removePendingDeletionMarker(upload.originalNodeId!);
       }
     } else if (upload.isEdit) {
       // For edits: remove the specific temp node and the _pending_edit marker from original
       if (upload.tempNodeId != null) {
-        NodeCache.instance.removeTempNodeById(upload.tempNodeId!);
+        _nodeCache.removeTempNodeById(upload.tempNodeId!);
       }
       if (upload.originalNodeId != null) {
-        NodeCache.instance.removePendingEditMarker(upload.originalNodeId!);
+        _nodeCache.removePendingEditMarker(upload.originalNodeId!);
       }
     } else if (upload.operation == UploadOperation.extract) {
       // For extracts: remove the specific temp node (leave original unchanged)
       if (upload.tempNodeId != null) {
-        NodeCache.instance.removeTempNodeById(upload.tempNodeId!);
+        _nodeCache.removeTempNodeById(upload.tempNodeId!);
       }
     } else {
       // For creates: remove the specific temp node
       if (upload.tempNodeId != null) {
-        NodeCache.instance.removeTempNodeById(upload.tempNodeId!);
+        _nodeCache.removeTempNodeById(upload.tempNodeId!);
       }
     }
   }

@@ -5,7 +5,7 @@ import 'package:latlong2/latlong.dart';
 
 import '../../models/node_profile.dart';
 import '../../app_state.dart' show UploadMode;
-import '../../services/prefetch_area_service.dart';
+
 import '../node_provider_with_cache.dart';
 import '../../dev_config.dart';
 
@@ -44,8 +44,6 @@ class NodeRefreshController {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         // Clear node cache to ensure fresh data for new profile combination
         _nodeProvider.clearCache();
-        // Clear pre-fetch area since profiles changed
-        PrefetchAreaService().clearPreFetchedArea();
         // Force display refresh first (for immediate UI update)
         _nodeProvider.refreshDisplay();
         // Notify that profiles changed (triggers node refresh)

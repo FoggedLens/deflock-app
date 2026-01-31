@@ -7,7 +7,7 @@ import '../dev_config.dart';
 import '../models/node_profile.dart';
 import '../models/operator_profile.dart';
 import '../services/localization_service.dart';
-import '../services/node_cache.dart';
+import '../services/map_data_provider.dart';
 import '../services/changelog_service.dart';
 import 'refine_tags_sheet.dart';
 import 'proximity_warning_dialog.dart';
@@ -121,7 +121,7 @@ class _AddNodeSheetState extends State<AddNodeSheet> {
     }
     
     // Check for nearby nodes within the configured distance
-    final nearbyNodes = NodeCache.instance.findNodesWithinDistance(
+    final nearbyNodes = MapDataProvider().findNodesWithinDistance(
       widget.session.target!, 
       kNodeProximityWarningDistance,
     );

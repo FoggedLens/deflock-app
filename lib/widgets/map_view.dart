@@ -7,7 +7,7 @@ import 'package:provider/provider.dart';
 import '../app_state.dart' show AppState, FollowMeMode, UploadMode;
 import '../services/offline_area_service.dart';
 import '../services/network_status.dart';
-import '../services/prefetch_area_service.dart';
+
 import '../models/osm_node.dart';
 import '../models/node_profile.dart';
 import '../models/suspected_location.dart';
@@ -214,7 +214,7 @@ class MapViewState extends State<MapView> {
     _nodeController.dispose();
     _tileManager.dispose();
     _gpsController.dispose();
-    PrefetchAreaService().dispose();
+    // PrefetchAreaService no longer used - replaced with NodeDataManager
     super.dispose();
   }
 

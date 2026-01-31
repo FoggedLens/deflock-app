@@ -15,7 +15,7 @@ import 'models/suspected_location.dart';
 import 'models/tile_provider.dart';
 import 'models/search_result.dart';
 import 'services/offline_area_service.dart';
-import 'services/node_cache.dart';
+import 'services/map_data_provider.dart';
 import 'services/tile_preview_service.dart';
 import 'services/changelog_service.dart';
 import 'services/operator_profile_service.dart';
@@ -658,7 +658,7 @@ class AppState extends ChangeNotifier {
 
   Future<void> setUploadMode(UploadMode mode) async {
     // Clear node cache when switching upload modes to prevent mixing production/sandbox data
-    NodeCache.instance.clear();
+    MapDataProvider().clearCache();
     debugPrint('[AppState] Cleared node cache due to upload mode change');
     
     await _settingsState.setUploadMode(mode);

@@ -5,13 +5,9 @@ import 'package:flutter/foundation.dart';
 import '../models/node_profile.dart';
 import '../models/osm_node.dart';
 import '../app_state.dart';
-import 'map_data_submodules/nodes_from_overpass.dart';
-import 'map_data_submodules/nodes_from_osm_api.dart';
 import 'map_data_submodules/tiles_from_remote.dart';
-import 'map_data_submodules/nodes_from_local.dart';
 import 'map_data_submodules/tiles_from_local.dart';
-import 'network_status.dart';
-import 'prefetch_area_service.dart';
+import 'node_data_manager.dart';
 
 enum MapSource { local, remote, auto } // For future use
 
@@ -27,103 +23,31 @@ class MapDataProvider {
   factory MapDataProvider() => _instance;
   MapDataProvider._();
 
-  // REMOVED: AppState get _appState => AppState();
+  final NodeDataManager _nodeDataManager = NodeDataManager();
 
   bool get isOfflineMode => AppState.instance.offlineMode;
   void setOfflineMode(bool enabled) {
     AppState.instance.setOfflineMode(enabled);
   }
 
-  /// Fetch surveillance nodes from OSM/Overpass or local storage.
-  /// Remote is default. If source is MapSource.auto, remote is tried first unless offline.
+  /// Fetch surveillance nodes using the new simplified system.
+  /// Returns cached data immediately if available, otherwise fetches from appropriate source.
   Future<List<OsmNode>> getNodes({
     required LatLngBounds bounds,
     required List<NodeProfile> profiles,
     UploadMode uploadMode = UploadMode.production,
     MapSource source = MapSource.auto,
+    bool isUserInitiated = false,
   }) async {
-    final offline = AppState.instance.offlineMode;
-
-    // Explicit remote request: error if offline, else always remote
-    if (source == MapSource.remote) {
-      if (offline) {
-        throw OfflineModeException("Cannot fetch remote nodes in offline mode.");
-      }
-      return _fetchRemoteNodes(
-        bounds: bounds,
-        profiles: profiles,
-        uploadMode: uploadMode,
-        maxResults: 0, // No limit - fetch all available data
-      );
-    }
-
-    // Explicit local request: always use local
-    if (source == MapSource.local) {
-      return fetchLocalNodes(
-        bounds: bounds,
-        profiles: profiles,
-      );
-    }
-
-    // AUTO: In offline mode, behavior depends on upload mode
-    if (offline) {
-      if (uploadMode == UploadMode.sandbox) {
-        // Offline + Sandbox = no nodes (local cache is production data)
-        debugPrint('[MapDataProvider] Offline + Sandbox mode: returning no nodes (local cache is production data)');
-        return <OsmNode>[];
-      } else {
-        // Offline + Production = use local cache
-        return fetchLocalNodes(
-          bounds: bounds,
-          profiles: profiles,
-          maxNodes: 0, // No limit - get all available data
-        );
-      }
-    } else if (uploadMode == UploadMode.sandbox) {
-      // Sandbox mode: Only fetch from sandbox API, ignore local production nodes
-      debugPrint('[MapDataProvider] Sandbox mode: fetching only from sandbox API, ignoring local cache');
-      return _fetchRemoteNodes(
-        bounds: bounds,
-        profiles: profiles,
-        uploadMode: uploadMode,
-        maxResults: 0, // No limit - fetch all available data
-      );
-    } else {
-      // Production mode: use pre-fetch service for efficient area loading
-      final preFetchService = PrefetchAreaService();
-      
-      // Always get local nodes first (fast, from cache)
-      final localNodes = await fetchLocalNodes(
-        bounds: bounds,
-        profiles: profiles,
-        maxNodes: AppState.instance.maxNodes,
-      );
-      
-      // Check if we need to trigger a new pre-fetch (spatial or temporal)
-      final needsFetch = !preFetchService.isWithinPreFetchedArea(bounds, profiles, uploadMode) || 
-                        preFetchService.isDataStale();
-      
-      if (needsFetch) {
-        // Outside area OR data stale - start pre-fetch with loading state  
-        debugPrint('[MapDataProvider] Starting pre-fetch with loading state');
-        NetworkStatus.instance.setWaiting();
-        preFetchService.requestPreFetchIfNeeded(
-          viewBounds: bounds,
-          profiles: profiles,
-          uploadMode: uploadMode,
-        );
-      } else {
-        debugPrint('[MapDataProvider] Using existing fresh pre-fetched area cache');
-      }
-      
-      // Return all local nodes without any rendering limit
-      // Rendering limits are applied at the UI layer
-      return localNodes;
-    }
+    return _nodeDataManager.getNodesFor(
+      bounds: bounds,
+      profiles: profiles,
+      uploadMode: uploadMode,
+      isUserInitiated: isUserInitiated,
+    );
   }
 
-  /// Bulk/paged node fetch for offline downloads (handling paging, dedup, and Overpass retries)
-  /// Only use for offline area download, not for map browsing! Ignores maxNodes config.
+  /// Bulk node fetch for offline downloads using new system
   Future<List<OsmNode>> getAllNodesForDownload({
     required LatLngBounds bounds,
     required List<NodeProfile> profiles,
@@ -131,16 +55,12 @@ class MapDataProvider {
     int maxResults = 0, // 0 = no limit for offline downloads
     int maxTries = 3,
   }) async {
-    final offline = AppState.instance.offlineMode;
-    if (offline) {
+    if (AppState.instance.offlineMode) {
       throw OfflineModeException("Cannot fetch remote nodes for offline area download in offline mode.");
     }
-    return _fetchRemoteNodes(
-      bounds: bounds,
-      profiles: profiles,
-      uploadMode: uploadMode,
-      maxResults: maxResults, // Pass 0 for unlimited
-    );
+    
+    // For downloads, always fetch fresh data (don't use cache)
+    return _nodeDataManager.fetchWithSplitting(bounds, profiles);
   }
 
   /// Fetch tile image bytes. Default is to try local first, then remote if not offline. Honors explicit source.
@@ -202,57 +122,44 @@ class MapDataProvider {
     clearRemoteTileQueueSelective(currentBounds);
   }
 
-  /// Fetch remote nodes with Overpass first, OSM API fallback
-  Future<List<OsmNode>> _fetchRemoteNodes({
+  /// Add or update nodes in cache (for upload queue integration)
+  void addOrUpdateNodes(List<OsmNode> nodes) {
+    _nodeDataManager.addOrUpdateNodes(nodes);
+  }
+
+  /// NodeCache compatibility - alias for addOrUpdateNodes
+  void addOrUpdate(List<OsmNode> nodes) {
+    addOrUpdateNodes(nodes);
+  }
+
+  /// Remove node from cache (for deletions)
+  void removeNodeById(int nodeId) {
+    _nodeDataManager.removeNodeById(nodeId);
+  }
+
+  /// Clear cache (when profiles change)
+  void clearCache() {
+    _nodeDataManager.clearCache();
+  }
+
+  /// Force refresh current area (manual retry)
+  Future<void> refreshArea({
     required LatLngBounds bounds,
     required List<NodeProfile> profiles,
     UploadMode uploadMode = UploadMode.production,
-    required int maxResults,
   }) async {
-    // For sandbox mode, skip Overpass and go directly to OSM API
-    // (Overpass doesn't have sandbox data)
-    if (uploadMode == UploadMode.sandbox) {
-      debugPrint('[MapDataProvider] Sandbox mode detected, using OSM API directly');
-      return fetchOsmApiNodes(
-        bounds: bounds,
-        profiles: profiles,
-        uploadMode: uploadMode,
-        maxResults: maxResults,
-      );
-    }
-
-    // For production mode, try Overpass first, then fallback to OSM API
-    try {
-      final nodes = await fetchOverpassNodes(
-        bounds: bounds,
-        profiles: profiles,
-        uploadMode: uploadMode,
-        maxResults: maxResults,
-      );
-      
-      // If Overpass returns nodes, we're good
-      if (nodes.isNotEmpty) {
-        return nodes;
-      }
-      
-      // If Overpass returns empty (could be no data or could be an issue), 
-      // try OSM API as well to be thorough
-      debugPrint('[MapDataProvider] Overpass returned no nodes, trying OSM API fallback');
-      return fetchOsmApiNodes(
-        bounds: bounds,
-        profiles: profiles,
-        uploadMode: uploadMode,
-        maxResults: maxResults,
-      );
-      
-    } catch (e) {
-      debugPrint('[MapDataProvider] Overpass failed ($e), trying OSM API fallback');
-      return fetchOsmApiNodes(
-        bounds: bounds,
-        profiles: profiles,
-        uploadMode: uploadMode,
-        maxResults: maxResults,
-      );
-    }
+    return _nodeDataManager.refreshArea(
+      bounds: bounds,
+      profiles: profiles,
+      uploadMode: uploadMode,
+    );
   }
+
+  /// NodeCache compatibility methods for upload queue
+  OsmNode? getNodeById(int nodeId) => _nodeDataManager.getNodeById(nodeId);
+  void removePendingEditMarker(int nodeId) => _nodeDataManager.removePendingEditMarker(nodeId);
+  void removePendingDeletionMarker(int nodeId) => _nodeDataManager.removePendingDeletionMarker(nodeId);
+  void removeTempNodeById(int tempNodeId) => _nodeDataManager.removeTempNodeById(tempNodeId);
+  List<OsmNode> findNodesWithinDistance(LatLng coord, double distanceMeters, {int? excludeNodeId}) => 
+      _nodeDataManager.findNodesWithinDistance(coord, distanceMeters, excludeNodeId: excludeNodeId);
 }
