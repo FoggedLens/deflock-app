@@ -624,9 +624,8 @@ class _EditNodeSheetState extends State<EditNodeSheet> {
               const SizedBox(width: 8),
               Text(
                 locService.t('profiles.getMore'),
-                style: TextStyle(
+                style: const TextStyle(
                   fontStyle: FontStyle.italic,
-                  color: Theme.of(context).primaryColor,
                 ),
               ),
             ],

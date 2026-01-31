@@ -212,9 +212,8 @@ class _AddNodeSheetState extends State<AddNodeSheet> {
               const SizedBox(width: 8),
               Text(
                 locService.t('profiles.getMore'),
-                style: TextStyle(
+                style: const TextStyle(
                   fontStyle: FontStyle.italic,
-                  color: Theme.of(context).primaryColor,
                 ),
               ),
             ],
