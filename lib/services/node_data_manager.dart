@@ -26,6 +26,10 @@ class NodeDataManager extends ChangeNotifier {
   final OverpassService _overpassService = OverpassService();
   final NodeSpatialCache _cache = NodeSpatialCache();
   
+  // Track ongoing requests and which one is "primary" for status reporting
+  final Set<String> _activeRequests = <String>{};
+  String? _primaryRequestKey; // The latest request that should drive NetworkStatus
+  
   /// Get nodes for the given bounds and profiles.
   /// Returns cached data immediately if available, otherwise fetches from appropriate source.
   Future<List<OsmNode>> getNodesFor({
@@ -88,21 +92,40 @@ class NodeDataManager extends ChangeNotifier {
     }
 
     // Not cached - need to fetch
-    if (isUserInitiated) {
+    // Create a unique key for this request to prevent duplicates
+    final requestKey = '${bounds.hashCode}_${profiles.map((p) => p.id).join('_')}_$uploadMode';
+    final bool isDuplicate = _activeRequests.contains(requestKey);
+    final bool isPrimaryRequest = isUserInitiated;
+    
+    if (isDuplicate && !isPrimaryRequest) {
+      debugPrint('[NodeDataManager] Background request already in progress for this area, returning cached data');
+      return _cache.getNodesFor(bounds);
+    }
+    
+    // Set this as primary request if user-initiated (most recent)
+    if (isPrimaryRequest) {
+      _primaryRequestKey = requestKey;
       NetworkStatus.instance.setWaiting();
+      debugPrint('[NodeDataManager] Starting PRIMARY request (${_activeRequests.length + 1} total active)');
+    } else {
+      debugPrint('[NodeDataManager] Starting background request (${_activeRequests.length + 1} total active)');
     }
 
+    _activeRequests.add(requestKey);
     try {
       final nodes = await fetchWithSplitting(bounds, profiles);
       
       // Don't set success immediately - wait for UI to render the nodes
       notifyListeners();
       
-      // Set success after the next frame renders (when nodes are actually visible)
-      if (isUserInitiated) {
+      // Set success after the next frame renders, but only for primary requests
+      if (isPrimaryRequest && _primaryRequestKey == requestKey) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
           NetworkStatus.instance.setSuccess();
         });
+        debugPrint('[NodeDataManager] PRIMARY request completed successfully');
+      } else {
+        debugPrint('[NodeDataManager] Background request completed successfully');
       }
       
       return nodes;
@@ -110,16 +133,26 @@ class NodeDataManager extends ChangeNotifier {
     } catch (e) {
       debugPrint('[NodeDataManager] Fetch failed: $e');
       
-      if (isUserInitiated) {
+      // Only report errors for primary requests to avoid status confusion
+      if (isPrimaryRequest && _primaryRequestKey == requestKey) {
         if (e is RateLimitError) {
           NetworkStatus.instance.reportOverpassIssue();
         } else {
           NetworkStatus.instance.setNetworkError();
         }
+        debugPrint('[NodeDataManager] PRIMARY request failed: $e');
+      } else {
+        debugPrint('[NodeDataManager] Background request failed: $e');
       }
       
       // Return whatever we have in cache for this area
       return _cache.getNodesFor(bounds);
+    } finally {
+      _activeRequests.remove(requestKey);
+      // Clear primary key if this was the primary request
+      if (_primaryRequestKey == requestKey) {
+        _primaryRequestKey = null;
+      }
     }
   }
 
