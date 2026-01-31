@@ -171,9 +171,7 @@ class DirectionConesBuilder {
   }) {
     // Handle full circle case (360-degree FOV)
     // Use 179.5 threshold to account for floating point precision
-    print("DEBUG: halfAngleDeg = $halfAngleDeg, bearing = $bearingDeg");
     if (halfAngleDeg >= 179.5) {
-      print("DEBUG: Using full circle for 360° FOV");
       return _buildFullCircle(
         origin: origin,
         zoom: zoom,
@@ -182,7 +180,6 @@ class DirectionConesBuilder {
         isActiveDirection: isActiveDirection,
       );
     }
-    print("DEBUG: Using normal cone for FOV = ${halfAngleDeg * 2}°");
     
     // Calculate pixel-based radii
     final outerRadiusPx = kNodeIconDiameter + (kNodeIconDiameter * kDirectionConeBaseLength);
@@ -244,16 +241,12 @@ class DirectionConesBuilder {
     bool isSession = false,
     bool isActiveDirection = true,
   }) {
-    print("DEBUG: Building full circle - isSession: $isSession, isActiveDirection: $isActiveDirection");
-    
     // Calculate pixel-based radii  
     final outerRadiusPx = kNodeIconDiameter + (kNodeIconDiameter * kDirectionConeBaseLength);
     
     // Convert pixels to coordinate distances with zoom scaling
     final pixelToCoordinate = 0.00001 * math.pow(2, 15 - zoom);
     final outerRadius = outerRadiusPx * pixelToCoordinate;
-    
-    print("DEBUG: Outer radius: $outerRadius, zoom: $zoom");
     
     // Create simple filled circle - no donut complexity
     const int circlePoints = 60;
@@ -272,8 +265,6 @@ class DirectionConesBuilder {
       final angle = (i * 360.0 / circlePoints) % 360.0;
       points.add(project(angle, outerRadius));
     }
-
-    print("DEBUG: Created ${points.length} points for full circle");
 
     // Adjust opacity based on direction state
     double opacity = kDirectionConeOpacity;
