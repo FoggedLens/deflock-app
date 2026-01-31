@@ -1,4 +1,10 @@
 {
+  "2.6.0": {
+    "content": [
+      "• Fix slow node loading, offline node loading",
+      "• Prevent submissions when we have no data in that area"
+    ]
+  },
   "2.5.0": {
     "content": [
       "• NEW: 'Get more...' button in profile dropdowns - easily browse and import profiles from deflock.me/identify",
