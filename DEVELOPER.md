@@ -395,30 +395,39 @@ Local cache contains production data. Showing production nodes in sandbox mode w
 **Why separate from follow mode:**
 Users often want to follow their location while keeping the map oriented north. Previous "north up" follow mode was confusing because it didn't actually keep north up. This separation provides clear, predictable behavior.
 
-### 10. Network Status Indicator (Simplified in v1.5.2+)
+### 10. Network Status Indicator (Refactored in v2.6.1)
 
 **Purpose**: Show loading and error states for surveillance data fetching only
 
-**Simplified approach (v1.5.2+):**
-- **Surveillance data focus**: Only tracks node/camera data loading, not tile loading
-- **Visual feedback**: Tiles show their own loading progress naturally
-- **Reduced complexity**: Eliminated tile completion tracking and multiple issue types
+**Brutalist approach (v2.6.1+):**
+- **Single enum state**: Replaced multiple boolean flags with simple `NetworkRequestStatus` enum
+- **User-initiated only**: Only tracks latest user-initiated requests (pan/zoom), background requests ignored
+- **Auto-reset timers**: Different timeouts for different states (success: 2s, errors: 5s, rate limit: 2min)
 
-**Status types:**
-- **Loading**: Shows when fetching surveillance data from APIs
-- **Success**: Brief confirmation when data loads successfully  
-- **Timeout**: Network request timeouts
-- **Limit reached**: When node display limit is hit
-- **API issues**: Overpass/OSM API problems only
+**Status states:**
+```dart
+enum NetworkRequestStatus {
+  idle,        // No indicator shown
+  loading,     // Initial request in progress
+  splitting,   // Request being split due to limits/timeouts
+  success,     // Data loaded successfully (brief confirmation)
+  timeout,     // Request timed out
+  rateLimited, // API rate limited
+  noData,      // No offline data available
+  error,       // Other network errors
+}
+```
 
-**What was removed:**
-- Tile server issue tracking (tiles handle their own progress)
-- "Both" network issue type (only surveillance data matters)
-- Complex semaphore-based completion detection
-- Tile-related status messages and localizations
+**State transitions:**
+- **Normal flow**: `idle` → `loading` → `success` → `idle`
+- **Split requests**: `loading` → `splitting` → `success` → `idle`
+- **Errors**: `loading` → `timeout/error/rateLimited` → `idle`
 
-**Why the change:**
-The previous approach tracked both tile loading and surveillance data, creating redundancy since tiles already show loading progress visually on the map. Users don't need to be notified about tile loading issues when they can see tiles loading/failing directly. Focusing only on surveillance data makes the indicator more purposeful and less noisy.
+**Why the refactor:**
+The previous system used multiple boolean flags with complex reconciliation logic, creating potential for conflicting states and race conditions. The new enum-based approach provides clear, explicit state management with predictable transitions and eliminates complexity while maintaining all functionality.
+
+**Request ownership:**
+Only user-initiated requests (pan, zoom, manual refresh) report status. Background requests (pre-fetch, cache warming) complete silently to avoid status indicator noise.
 
 ### 11. Suspected Locations (v1.8.0+: SQLite Database Storage)
 
