@@ -104,13 +104,12 @@ cp lib/keys.dart.example lib/keys.dart
 ## Roadmap
 
 ### Needed Bugfixes
+- Handle concurrent overpass requests better; cancel ongoing? Status indicator gets confused.
 - Make submission guide scarier
-- Node data fetching super slow; retries not working?
 - Tile cache trimming? Does fluttermap handle?
 - Filter NSI suggestions based on what has already been typed in
 - NSI sometimes doesn't populate a dropdown, maybe always on the second tag added during an edit session?
 - Clean cache when nodes have been deleted by others
-- Are offline areas preferred for fast loading even when online? Check working.
 
 ### Current Development
 - Add ability to downvote suspected locations which are old enough
