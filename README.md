@@ -113,6 +113,7 @@ cp lib/keys.dart.example lib/keys.dart
 - Clean cache when nodes have been deleted by others
 
 ### Current Development
+- Populate a temp operator profile and select it by default when those tags already exist on a node being edited
 - Add ability to downvote suspected locations which are old enough
 - Turn by turn navigation or at least swipe nav sheet up to see a list
 - Import/Export map providers
