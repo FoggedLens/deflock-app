@@ -140,6 +140,7 @@
     "mustBeLoggedIn": "Você deve estar logado para enviar novos nós. Por favor, faça login via Configurações.",
     "enableSubmittableProfile": "Ative um perfil enviável nas Configurações para enviar novos nós.",
     "profileViewOnlyWarning": "Este perfil é apenas para visualização do mapa. Por favor, selecione um perfil enviável para enviar novos nós.",
+    "loadingAreaData": "Carregando dados da área... Por favor aguarde antes de enviar.",
     "refineTags": "Refinar Tags",
     "refineTagsWithProfile": "Refinar Tags ({})"
   },
@@ -155,6 +156,7 @@
     "sandboxModeWarning": "Não é possível enviar edições de nós de produção para o sandbox. Mude para o modo Produção nas Configurações para editar nós.",
     "enableSubmittableProfile": "Ative um perfil enviável nas Configurações para editar nós.",
     "profileViewOnlyWarning": "Este perfil é apenas para visualização do mapa. Por favor, selecione um perfil enviável para editar nós.",
+    "loadingAreaData": "Carregando dados da área... Por favor aguarde antes de enviar.",
     "cannotMoveConstrainedNode": "Não é possível mover esta câmera - ela está conectada a outro elemento do mapa (OSM way/relation). Você ainda pode editar suas tags e direção.",
     "zoomInRequiredMessage": "Amplie para pelo menos o nível {} para adicionar ou editar nós de vigilância. Isto garante um posicionamento preciso para mapeamento exato.",
     "extractFromWay": "Extrair nó do way/relation",

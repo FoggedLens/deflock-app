@@ -1,5 +1,7 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/scheduler.dart';
+import 'package:flutter/widgets.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:flutter_map/flutter_map.dart';
 
@@ -11,6 +13,8 @@ import 'node_spatial_cache.dart';
 import 'network_status.dart';
 import 'map_data_submodules/nodes_from_osm_api.dart';
 import 'map_data_submodules/nodes_from_local.dart';
+import 'offline_area_service.dart';
+import 'offline_areas/offline_area_models.dart';
 
 /// Coordinates node data fetching between cache, Overpass, and OSM API.
 /// Simple interface: give me nodes for this view with proper caching and error handling.
@@ -32,15 +36,37 @@ class NodeDataManager extends ChangeNotifier {
   }) async {
     if (profiles.isEmpty) return [];
 
-    // Handle offline mode
+    // Handle offline mode - no loading states needed, data is instant
     if (AppState.instance.offlineMode) {
+      // Clear any existing loading states since offline data is instant
+      if (isUserInitiated) {
+        NetworkStatus.instance.clearWaiting();
+      }
+      
       if (uploadMode == UploadMode.sandbox) {
         // Offline + Sandbox = no nodes (local cache is production data)
         debugPrint('[NodeDataManager] Offline + Sandbox mode: returning no nodes');
         return [];
       } else {
-        // Offline + Production = use local cache only
-        return fetchLocalNodes(bounds: bounds, profiles: profiles);
+        // Offline + Production = use local offline areas (instant)
+        final offlineNodes = await fetchLocalNodes(bounds: bounds, profiles: profiles);
+        
+        // Add offline nodes to cache so they integrate with the rest of the system
+        if (offlineNodes.isNotEmpty) {
+          _cache.addOrUpdateNodes(offlineNodes);
+          // Mark this area as having coverage for submit button logic
+          _cache.markAreaAsFetched(bounds, offlineNodes);
+          notifyListeners();
+        }
+        
+        // Show brief success for user-initiated offline loads
+        if (isUserInitiated && offlineNodes.isNotEmpty) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            NetworkStatus.instance.setSuccess();
+          });
+        }
+        
+        return offlineNodes;
       }
     }
 
@@ -69,11 +95,16 @@ class NodeDataManager extends ChangeNotifier {
     try {
       final nodes = await fetchWithSplitting(bounds, profiles);
       
+      // Don't set success immediately - wait for UI to render the nodes
+      notifyListeners();
+      
+      // Set success after the next frame renders (when nodes are actually visible)
       if (isUserInitiated) {
-        NetworkStatus.instance.setSuccess();
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          NetworkStatus.instance.setSuccess();
+        });
       }
       
-      notifyListeners();
       return nodes;
       
     } catch (e) {
@@ -230,6 +261,39 @@ class NodeDataManager extends ChangeNotifier {
   void removeTempNodeById(int tempNodeId) => _cache.removeTempNodeById(tempNodeId);
   List<OsmNode> findNodesWithinDistance(LatLng coord, double distanceMeters, {int? excludeNodeId}) =>
       _cache.findNodesWithinDistance(coord, distanceMeters, excludeNodeId: excludeNodeId);
+
+  /// Check if we have good cache coverage for the given area
+  bool hasGoodCoverageFor(LatLngBounds bounds) {
+    return _cache.hasDataFor(bounds);
+  }
+
+  /// Load all offline nodes into cache (call at app startup)
+  Future<void> preloadOfflineNodes() async {
+    try {
+      final offlineAreaService = OfflineAreaService();
+      
+      for (final area in offlineAreaService.offlineAreas) {
+        if (area.status != OfflineAreaStatus.complete) continue;
+        
+        // Load nodes from this offline area
+        final nodes = await fetchLocalNodes(
+          bounds: area.bounds,
+          profiles: [], // Empty profiles = load all nodes
+        );
+        
+        if (nodes.isNotEmpty) {
+          _cache.addOrUpdateNodes(nodes);
+          // Mark the offline area as having coverage so submit buttons work
+          _cache.markAreaAsFetched(area.bounds, nodes);
+          debugPrint('[NodeDataManager] Preloaded ${nodes.length} offline nodes from area ${area.name}');
+        }
+      }
+      
+      notifyListeners();
+    } catch (e) {
+      debugPrint('[NodeDataManager] Error preloading offline nodes: $e');
+    }
+  }
 
   /// Get cache statistics
   String get cacheStats => _cache.stats.toString();

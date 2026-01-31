@@ -140,6 +140,7 @@
     "mustBeLoggedIn": "You must be logged in to submit new nodes. Please log in via Settings.",
     "enableSubmittableProfile": "Enable a submittable profile in Settings to submit new nodes.",
     "profileViewOnlyWarning": "This profile is for map viewing only. Please select a submittable profile to submit new nodes.",
+    "loadingAreaData": "Loading area data... Please wait before submitting.",
     "refineTags": "Refine Tags",
     "refineTagsWithProfile": "Refine Tags ({})"
   },
@@ -155,6 +156,7 @@
     "sandboxModeWarning": "Cannot submit edits on production nodes to sandbox. Switch to Production mode in Settings to edit nodes.",
     "enableSubmittableProfile": "Enable a submittable profile in Settings to edit nodes.",
     "profileViewOnlyWarning": "This profile is for map viewing only. Please select a submittable profile to edit nodes.",
+    "loadingAreaData": "Loading area data... Please wait before submitting.",
     "cannotMoveConstrainedNode": "Cannot move this camera - it's connected to another map element (OSM way/relation). You can still edit its tags and direction.",
     "zoomInRequiredMessage": "Zoom in to at least level {} to add or edit surveillance nodes. This ensures precise positioning for accurate mapping.",
     "extractFromWay": "Extract node from way/relation",

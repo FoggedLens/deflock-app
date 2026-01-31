@@ -140,6 +140,7 @@
     "mustBeLoggedIn": "Devi essere loggato per inviare nuovi nodi. Per favore accedi tramite Impostazioni.",
     "enableSubmittableProfile": "Abilita un profilo inviabile nelle Impostazioni per inviare nuovi nodi.",
     "profileViewOnlyWarning": "Questo profilo è solo per la visualizzazione della mappa. Per favore seleziona un profilo inviabile per inviare nuovi nodi.",
+    "loadingAreaData": "Caricamento dati area... Per favore attendi prima di inviare.",
     "refineTags": "Affina Tag",
     "refineTagsWithProfile": "Affina Tag ({})"
   },
@@ -155,6 +156,7 @@
     "sandboxModeWarning": "Impossibile inviare modifiche di nodi di produzione alla sandbox. Passa alla modalità Produzione nelle Impostazioni per modificare i nodi.",
     "enableSubmittableProfile": "Abilita un profilo inviabile nelle Impostazioni per modificare i nodi.",
     "profileViewOnlyWarning": "Questo profilo è solo per la visualizzazione della mappa. Per favore seleziona un profilo inviabile per modificare i nodi.",
+    "loadingAreaData": "Caricamento dati area... Per favore attendi prima di inviare.",
     "cannotMoveConstrainedNode": "Impossibile spostare questa telecamera - è collegata a un altro elemento della mappa (OSM way/relation). Puoi ancora modificare i suoi tag e direzione.",
     "zoomInRequiredMessage": "Ingrandisci almeno al livello {} per aggiungere o modificare nodi di sorveglianza. Questo garantisce un posizionamento preciso per una mappatura accurata.",
     "extractFromWay": "Estrai nodo da way/relation",

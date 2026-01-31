@@ -8,6 +8,7 @@ import '../app_state.dart';
 import 'map_data_submodules/tiles_from_remote.dart';
 import 'map_data_submodules/tiles_from_local.dart';
 import 'node_data_manager.dart';
+import 'node_spatial_cache.dart';
 
 enum MapSource { local, remote, auto } // For future use
 
@@ -156,10 +157,14 @@ class MapDataProvider {
   }
 
   /// NodeCache compatibility methods for upload queue
-  OsmNode? getNodeById(int nodeId) => _nodeDataManager.getNodeById(nodeId);
-  void removePendingEditMarker(int nodeId) => _nodeDataManager.removePendingEditMarker(nodeId);
-  void removePendingDeletionMarker(int nodeId) => _nodeDataManager.removePendingDeletionMarker(nodeId);
-  void removeTempNodeById(int tempNodeId) => _nodeDataManager.removeTempNodeById(tempNodeId);
+  /// These all delegate to the singleton cache to ensure consistency
+  OsmNode? getNodeById(int nodeId) => NodeSpatialCache().getNodeById(nodeId);
+  void removePendingEditMarker(int nodeId) => NodeSpatialCache().removePendingEditMarker(nodeId);
+  void removePendingDeletionMarker(int nodeId) => NodeSpatialCache().removePendingDeletionMarker(nodeId);
+  void removeTempNodeById(int tempNodeId) => NodeSpatialCache().removeTempNodeById(tempNodeId);
   List<OsmNode> findNodesWithinDistance(LatLng coord, double distanceMeters, {int? excludeNodeId}) => 
-      _nodeDataManager.findNodesWithinDistance(coord, distanceMeters, excludeNodeId: excludeNodeId);
+      NodeSpatialCache().findNodesWithinDistance(coord, distanceMeters, excludeNodeId: excludeNodeId);
+
+  /// Check if we have good cache coverage for the given area (prevents submission in uncovered areas)
+  bool hasGoodCoverageFor(LatLngBounds bounds) => NodeSpatialCache().hasDataFor(bounds);
 }

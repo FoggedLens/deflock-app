@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:latlong2/latlong.dart';
+import 'package:flutter_map/flutter_map.dart';
 
 import '../app_state.dart';
 import '../dev_config.dart';
@@ -8,6 +10,7 @@ import '../models/node_profile.dart';
 import '../models/operator_profile.dart';
 import '../services/localization_service.dart';
 import '../services/map_data_provider.dart';
+import '../services/node_data_manager.dart';
 import '../services/changelog_service.dart';
 import '../state/settings_state.dart';
 import 'refine_tags_sheet.dart';
@@ -33,6 +36,13 @@ class _EditNodeSheetState extends State<EditNodeSheet> {
   void initState() {
     super.initState();
     _checkTutorialStatus();
+    // Listen to node data manager for cache updates
+    NodeDataManager().addListener(_onCacheUpdated);
+  }
+
+  void _onCacheUpdated() {
+    // Rebuild when cache updates (e.g., when new data loads)
+    if (mounted) setState(() {});
   }
 
   Future<void> _checkTutorialStatus() async {
@@ -60,7 +70,11 @@ class _EditNodeSheetState extends State<EditNodeSheet> {
   }
 
   @override
+  @override
   void dispose() {
+    // Remove listener
+    NodeDataManager().removeListener(_onCacheUpdated);
+    
     // Clear tutorial callback when widget is disposed
     if (_showTutorial) {
       try {
@@ -287,11 +301,33 @@ class _EditNodeSheetState extends State<EditNodeSheet> {
         final session = widget.session;
         final submittableProfiles = appState.enabledProfiles.where((p) => p.isSubmittable).toList();
         final isSandboxMode = appState.uploadMode == UploadMode.sandbox;
+        
+        // Check if we have good cache coverage around the node position
+        bool hasGoodCoverage = true;
+        final nodeCoord = session.originalNode.coord;
+        const double bufferDegrees = 0.001; // ~100m buffer
+        final targetBounds = LatLngBounds(
+          LatLng(nodeCoord.latitude - bufferDegrees, nodeCoord.longitude - bufferDegrees),
+          LatLng(nodeCoord.latitude + bufferDegrees, nodeCoord.longitude + bufferDegrees),
+        );
+        hasGoodCoverage = MapDataProvider().hasGoodCoverageFor(targetBounds);
+        
+        // If strict coverage check fails, fall back to checking if we have any nodes nearby
+        // This handles the timing issue where cache might not be marked as "covered" yet
+        if (!hasGoodCoverage) {
+          final nearbyNodes = MapDataProvider().findNodesWithinDistance(
+            nodeCoord, 
+            200.0, // 200m radius - if we have nodes nearby, we likely have good data
+          );
+          hasGoodCoverage = nearbyNodes.isNotEmpty;
+        }
+        
         final allowSubmit = kEnableNodeEdits && 
             appState.isLoggedIn && 
             submittableProfiles.isNotEmpty && 
             session.profile != null && 
-            session.profile!.isSubmittable;
+            session.profile!.isSubmittable &&
+            hasGoodCoverage;
         
         void _navigateToLogin() {
           Navigator.pushNamed(context, '/settings/osm-account');
@@ -474,6 +510,22 @@ class _EditNodeSheetState extends State<EditNodeSheet> {
                         child: Text(
                           locService.t('editNode.profileViewOnlyWarning'),
                           style: const TextStyle(color: Colors.orange, fontSize: 13),
+                        ),
+                      ),
+                    ],
+                  ),
+                )
+              else if (!hasGoodCoverage)
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.cloud_download, color: Colors.blue, size: 20),
+                      const SizedBox(width: 6),
+                      Expanded(
+                        child: Text(
+                          locService.t('editNode.loadingAreaData'),
+                          style: const TextStyle(color: Colors.blue, fontSize: 13),
                         ),
                       ),
                     ],

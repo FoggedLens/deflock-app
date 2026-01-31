@@ -140,6 +140,7 @@
     "mustBeLoggedIn": "Vous devez être connecté pour soumettre de nouveaux nœuds. Veuillez vous connecter via les Paramètres.",
     "enableSubmittableProfile": "Activez un profil soumissible dans les Paramètres pour soumettre de nouveaux nœuds.",
     "profileViewOnlyWarning": "Ce profil est uniquement pour la visualisation de la carte. Veuillez sélectionner un profil soumissible pour soumettre de nouveaux nœuds.",
+    "loadingAreaData": "Chargement des données de zone... Veuillez patienter avant de soumettre.",
     "refineTags": "Affiner Balises",
     "refineTagsWithProfile": "Affiner Balises ({})"
   },
@@ -155,6 +156,7 @@
     "sandboxModeWarning": "Impossible de soumettre des modifications de nœuds de production au sandbox. Passez au mode Production dans les Paramètres pour modifier les nœuds.",
     "enableSubmittableProfile": "Activez un profil soumissible dans les Paramètres pour modifier les nœuds.",
     "profileViewOnlyWarning": "Ce profil est uniquement pour la visualisation de la carte. Veuillez sélectionner un profil soumissible pour modifier les nœuds.",
+    "loadingAreaData": "Chargement des données de zone... Veuillez patienter avant de soumettre.",
     "cannotMoveConstrainedNode": "Impossible de déplacer cette caméra - elle est connectée à un autre élément de carte (OSM way/relation). Vous pouvez toujours modifier ses balises et sa direction.",
     "zoomInRequiredMessage": "Zoomez au moins au niveau {} pour ajouter ou modifier des nœuds de surveillance. Cela garantit un positionnement précis pour une cartographie exacte.",
     "extractFromWay": "Extraire le nœud du way/relation",

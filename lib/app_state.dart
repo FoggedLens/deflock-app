@@ -16,6 +16,7 @@ import 'models/tile_provider.dart';
 import 'models/search_result.dart';
 import 'services/offline_area_service.dart';
 import 'services/map_data_provider.dart';
+import 'services/node_data_manager.dart';
 import 'services/tile_preview_service.dart';
 import 'services/changelog_service.dart';
 import 'services/operator_profile_service.dart';
@@ -240,6 +241,9 @@ class AppState extends ChangeNotifier {
     
     // Initialize OfflineAreaService to ensure offline areas are loaded
     await OfflineAreaService().ensureInitialized();
+    
+    // Preload offline nodes into cache for immediate display
+    await NodeDataManager().preloadOfflineNodes();
     
     // Start uploader if conditions are met
     _startUploader();

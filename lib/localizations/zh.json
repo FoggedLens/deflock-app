@@ -140,6 +140,7 @@
     "mustBeLoggedIn": "您必须登录才能提交新节点。请通过设置登录。",
     "enableSubmittableProfile": "在设置中启用可提交的配置文件以提交新节点。",
     "profileViewOnlyWarning": "此配置文件仅用于地图查看。请选择可提交的配置文件来提交新节点。",
+    "loadingAreaData": "正在加载区域数据...提交前请稍候。",
     "refineTags": "细化标签",
     "refineTagsWithProfile": "细化标签（{}）"
   },
@@ -155,6 +156,7 @@
     "sandboxModeWarning": "无法将生产节点的编辑提交到沙盒。在设置中切换到生产模式以编辑节点。",
     "enableSubmittableProfile": "在设置中启用可提交的配置文件以编辑节点。",
     "profileViewOnlyWarning": "此配置文件仅用于地图查看。请选择可提交的配置文件来编辑节点。",
+    "loadingAreaData": "正在加载区域数据...提交前请稍候。",
     "cannotMoveConstrainedNode": "无法移动此相机 - 它连接到另一个地图元素（OSM way/relation）。您仍可以编辑其标签和方向。",
     "zoomInRequiredMessage": "请放大至至少第{}级来添加或编辑监控节点。这确保精确定位以便准确制图。",
     "extractFromWay": "从way/relation中提取节点",

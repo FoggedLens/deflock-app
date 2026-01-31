@@ -19,12 +19,12 @@ class NodeProviderWithCache extends ChangeNotifier {
   NodeProviderWithCache._internal();
 
   final NodeDataManager _nodeDataManager = NodeDataManager();
-  final NodeSpatialCache _cache = NodeSpatialCache();
   Timer? _debounceTimer;
 
   /// Get cached nodes for the given bounds, filtered by enabled profiles
   List<OsmNode> getCachedNodesForBounds(LatLngBounds bounds) {
-    final allNodes = _cache.getNodesFor(bounds);
+    // Use the same cache instance as NodeDataManager
+    final allNodes = NodeSpatialCache().getNodesFor(bounds);
     final enabledProfiles = AppState.instance.enabledProfiles;
     
     // If no profiles are enabled, show no nodes
@@ -68,7 +68,6 @@ class NodeProviderWithCache extends ChangeNotifier {
 
   /// Clear the cache and repopulate with pending nodes from upload queue
   void clearCache() {
-    _cache.clear();
     _nodeDataManager.clearCache();
     // Repopulate with pending nodes from upload queue if available
     _repopulatePendingNodesAfterClear();

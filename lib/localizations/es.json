@@ -140,6 +140,7 @@
     "mustBeLoggedIn": "Debe estar conectado para enviar nuevos nodos. Por favor, inicie sesión a través de Configuración.",
     "enableSubmittableProfile": "Habilite un perfil envíable en Configuración para enviar nuevos nodos.",
     "profileViewOnlyWarning": "Este perfil es solo para visualización del mapa. Por favor, seleccione un perfil envíable para enviar nuevos nodos.",
+    "loadingAreaData": "Cargando datos del área... Por favor espere antes de enviar.",
     "refineTags": "Refinar Etiquetas",
     "refineTagsWithProfile": "Refinar Etiquetas ({})"
   },
@@ -155,6 +156,7 @@
     "sandboxModeWarning": "No se pueden enviar ediciones de nodos de producción al sandbox. Cambie al modo Producción en Configuración para editar nodos.",
     "enableSubmittableProfile": "Habilite un perfil envíable en Configuración para editar nodos.",
     "profileViewOnlyWarning": "Este perfil es solo para visualización del mapa. Por favor, seleccione un perfil envíable para editar nodos.",
+    "loadingAreaData": "Cargando datos del área... Por favor espere antes de enviar.",
     "cannotMoveConstrainedNode": "No se puede mover esta cámara - está conectada a otro elemento del mapa (OSM way/relation). Aún puede editar sus etiquetas y dirección.",
     "zoomInRequiredMessage": "Amplíe al menos al nivel {} para agregar o editar nodos de vigilancia. Esto garantiza un posicionamiento preciso para un mapeo exacto.",
     "extractFromWay": "Extraer nodo de way/relation",
