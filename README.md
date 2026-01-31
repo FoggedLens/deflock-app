@@ -104,6 +104,7 @@ cp lib/keys.dart.example lib/keys.dart
 ## Roadmap
 
 ### Needed Bugfixes
+- Default profile selection "<no change>" when editing an existing node
 - Handle concurrent overpass requests better; cancel ongoing? Status indicator gets confused.
 - Make submission guide scarier
 - Tile cache trimming? Does fluttermap handle?
