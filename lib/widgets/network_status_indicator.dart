@@ -26,49 +26,55 @@ class NetworkStatusIndicator extends StatelessWidget {
             IconData icon;
             Color color;
 
-            switch (networkStatus.currentStatus) {
-              case NetworkStatusType.waiting:
+            switch (networkStatus.status) {
+              case NetworkRequestStatus.loading:
                 message = locService.t('networkStatus.loading');
                 icon = Icons.hourglass_empty;
                 color = Colors.blue;
                 break;
                 
-              case NetworkStatusType.timedOut:
-                message = locService.t('networkStatus.timedOut');
-                icon = Icons.hourglass_disabled;
+              case NetworkRequestStatus.splitting:
+                message = locService.t('networkStatus.nodeDataSlow');
+                icon = Icons.camera_alt_outlined;
                 color = Colors.orange;
                 break;
                 
-              case NetworkStatusType.noData:
-                message = locService.t('networkStatus.noData');
-                icon = Icons.cloud_off;
-                color = Colors.grey;
-                break;
-
-              case NetworkStatusType.success:
+              case NetworkRequestStatus.success:
                 message = locService.t('networkStatus.success');
                 icon = Icons.check_circle;
                 color = Colors.green;
                 break;
                 
-              case NetworkStatusType.issues:
-                switch (networkStatus.currentIssueType) {
-                  case NetworkIssueType.overpassApi:
-                    message = locService.t('networkStatus.nodeDataSlow');
-                    icon = Icons.camera_alt_outlined;
-                    color = Colors.orange;
-                    break;
-                  default:
-                    return const SizedBox.shrink();
-                }
+              case NetworkRequestStatus.timeout:
+                message = locService.t('networkStatus.timedOut');
+                icon = Icons.hourglass_disabled;
+                color = Colors.orange;
                 break;
                 
-              case NetworkStatusType.ready:
+              case NetworkRequestStatus.rateLimited:
+                message = locService.t('networkStatus.rateLimited');
+                icon = Icons.speed;
+                color = Colors.red;
+                break;
+                
+              case NetworkRequestStatus.noData:
+                message = locService.t('networkStatus.noData');
+                icon = Icons.cloud_off;
+                color = Colors.grey;
+                break;
+                
+              case NetworkRequestStatus.error:
+                message = locService.t('networkStatus.networkError');
+                icon = Icons.error_outline;
+                color = Colors.red;
+                break;
+                
+              case NetworkRequestStatus.idle:
                 return const SizedBox.shrink();
             }
 
             return Positioned(
-              top: top, // Position dynamically based on other indicators
+              top: top,
               left: left,
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),

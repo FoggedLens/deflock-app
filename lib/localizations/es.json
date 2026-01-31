@@ -455,7 +455,9 @@
     "timedOut": "Solicitud agotada",
     "noData": "Sin datos sin conexión",
     "success": "Datos de vigilancia cargados",
-    "nodeDataSlow": "Datos de vigilancia lentos"
+    "nodeDataSlow": "Datos de vigilancia lentos",
+    "rateLimited": "Limitado por el servidor",
+    "networkError": "Error de red"
   },
   "nodeLimitIndicator": {
     "message": "Mostrando {rendered} de {total} dispositivos",

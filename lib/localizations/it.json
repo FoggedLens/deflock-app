@@ -455,7 +455,9 @@
     "timedOut": "Richiesta scaduta",
     "noData": "Nessun dato offline",
     "success": "Dati di sorveglianza caricati",
-    "nodeDataSlow": "Dati di sorveglianza lenti"
+    "nodeDataSlow": "Dati di sorveglianza lenti",
+    "rateLimited": "Limitato dal server",
+    "networkError": "Errore di rete"
   },
   "nodeLimitIndicator": {
     "message": "Mostra {rendered} di {total} dispositivi",

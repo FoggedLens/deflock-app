@@ -1,225 +1,117 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
 
-import '../app_state.dart';
-
-enum NetworkIssueType { overpassApi }
-enum NetworkStatusType { waiting, issues, timedOut, noData, ready, success }
-
-
+/// Simple enum-based network status for surveillance data requests.
+/// Only tracks the latest user-initiated request - background requests are ignored.
+enum NetworkRequestStatus {
+  idle,        // No active requests
+  loading,     // Request in progress  
+  splitting,   // Request being split due to limits/timeouts
+  success,     // Data loaded successfully
+  timeout,     // Request timed out
+  rateLimited, // API rate limited
+  noData,      // No offline data available
+  error,       // Other network errors
+}
 
 class NetworkStatus extends ChangeNotifier {
   static final NetworkStatus instance = NetworkStatus._();
   NetworkStatus._();
 
-  bool _overpassHasIssues = false;
-  bool _isWaitingForData = false;
-  bool _isTimedOut = false;
-  bool _hasNoData = false;
-  bool _hasSuccess = false;
-  int _recentOfflineMisses = 0;
-  Timer? _overpassRecoveryTimer;
-  Timer? _noDataResetTimer;
-  Timer? _successResetTimer;
-  // Getters
-  bool get hasAnyIssues => _overpassHasIssues;
-  bool get overpassHasIssues => _overpassHasIssues;
-  bool get isWaitingForData => _isWaitingForData;
-  bool get isTimedOut => _isTimedOut;
-  bool get hasNoData => _hasNoData;
-  bool get hasSuccess => _hasSuccess;
+  NetworkRequestStatus _status = NetworkRequestStatus.idle;
+  Timer? _autoResetTimer;
   
-  NetworkStatusType get currentStatus {
-    // Simple single-path status logic
-    if (hasAnyIssues) return NetworkStatusType.issues;
-    if (_isWaitingForData) return NetworkStatusType.waiting;
-    if (_isTimedOut) return NetworkStatusType.timedOut;
-    if (_hasNoData) return NetworkStatusType.noData;
-    if (_hasSuccess) return NetworkStatusType.success;
-    return NetworkStatusType.ready;
-  }
-
-  NetworkIssueType? get currentIssueType {
-    if (_overpassHasIssues) return NetworkIssueType.overpassApi;
-    return null;
-  }
-
-  /// Report Overpass API issues
-  void reportOverpassIssue() {
-    if (!_overpassHasIssues) {
-      _overpassHasIssues = true;
-      notifyListeners();
-      debugPrint('[NetworkStatus] Overpass API issues detected');
+  /// Current network status
+  NetworkRequestStatus get status => _status;
+  
+  /// Set status and handle auto-reset timers
+  void _setStatus(NetworkRequestStatus newStatus) {
+    if (_status == newStatus) return;
+    
+    _status = newStatus;
+    _autoResetTimer?.cancel();
+    
+    // Auto-reset certain statuses after a delay
+    switch (newStatus) {
+      case NetworkRequestStatus.success:
+        _autoResetTimer = Timer(const Duration(seconds: 2), () {
+          _setStatus(NetworkRequestStatus.idle);
+        });
+        break;
+      case NetworkRequestStatus.timeout:
+      case NetworkRequestStatus.error:
+        _autoResetTimer = Timer(const Duration(seconds: 5), () {
+          _setStatus(NetworkRequestStatus.idle);
+        });
+        break;
+      case NetworkRequestStatus.noData:
+        _autoResetTimer = Timer(const Duration(seconds: 3), () {
+          _setStatus(NetworkRequestStatus.idle);
+        });
+        break;
+      case NetworkRequestStatus.rateLimited:
+        _autoResetTimer = Timer(const Duration(minutes: 2), () {
+          _setStatus(NetworkRequestStatus.idle);
+        });
+        break;
+      default:
+        // No auto-reset for idle, loading, splitting
+        break;
     }
     
-    // Reset recovery timer
-    _overpassRecoveryTimer?.cancel();
-    _overpassRecoveryTimer = Timer(const Duration(minutes: 2), () {
-      _overpassHasIssues = false;
-      notifyListeners();
-      debugPrint('[NetworkStatus] Overpass API issues cleared');
-    });
+    notifyListeners();
   }
 
-  /// Report successful operations to potentially clear issues faster
-  void reportOverpassSuccess() {
-    if (_overpassHasIssues) {
-      // Quietly clear - don't log routine success
-      _overpassHasIssues = false;
-      _overpassRecoveryTimer?.cancel();
-      notifyListeners();
-    }
-  }
-
-  /// Report that requests are taking longer than usual (splitting, backoffs, etc.)
-  void reportSlowProgress() {
-    if (!_overpassHasIssues) {
-      _overpassHasIssues = true;
-      _isWaitingForData = false; // Transition from waiting to slow progress
-      notifyListeners();
-      debugPrint('[NetworkStatus] Surveillance data requests taking longer than usual');
-    }
-    
-    // Reset recovery timer - we'll clear this when the operation actually completes
-    _overpassRecoveryTimer?.cancel();
-    _overpassRecoveryTimer = Timer(const Duration(minutes: 2), () {
-      _overpassHasIssues = false;
-      notifyListeners();
-      debugPrint('[NetworkStatus] Slow progress status cleared');
-    });
-  }
-
-  /// Set waiting status (show when loading surveillance data)
-  void setWaiting() {
-    // Clear any previous timeout/no-data state when starting new wait
-    _isTimedOut = false;
-    _hasNoData = false;
-    _recentOfflineMisses = 0;
-    _noDataResetTimer?.cancel();
-    
-    if (!_isWaitingForData) {
-      _isWaitingForData = true;
-      notifyListeners();
-    }
+  /// Start loading surveillance data
+  void setLoading() {
+    debugPrint('[NetworkStatus] Loading surveillance data');
+    _setStatus(NetworkRequestStatus.loading);
   }
   
-  /// Show success status briefly when data loads
+  /// Request is being split due to complexity/limits
+  void setSplitting() {
+    debugPrint('[NetworkStatus] Splitting request due to complexity');
+    _setStatus(NetworkRequestStatus.splitting);
+  }
+  
+  /// Data loaded successfully
   void setSuccess() {
-    _isWaitingForData = false;
-    _isTimedOut = false;
-    _hasNoData = false;
-    _hasSuccess = true;
-    _recentOfflineMisses = 0;
-    _noDataResetTimer?.cancel();
-    notifyListeners();
-    
-    // Auto-clear success status after 2 seconds
-    _successResetTimer?.cancel();
-    _successResetTimer = Timer(const Duration(seconds: 2), () {
-      if (_hasSuccess) {
-        _hasSuccess = false;
-        notifyListeners();
-      }
-    });
-  }
-
-  /// Show no-data status briefly when tiles aren't available
-  void setNoData() {
-    _isWaitingForData = false;
-    _isTimedOut = false;
-    _hasSuccess = false;
-    _hasNoData = true;
-    _successResetTimer?.cancel();
-    notifyListeners();
-    
-    // Auto-clear no-data status after 2 seconds
-    _noDataResetTimer?.cancel();
-    _noDataResetTimer = Timer(const Duration(seconds: 2), () {
-      if (_hasNoData) {
-        _hasNoData = false;
-        notifyListeners();
-      }
-    });
-  }
-
-  /// Clear waiting/timeout/no-data status (legacy method for compatibility)
-  void clearWaiting() {
-    if (_isWaitingForData || _isTimedOut || _hasNoData || _hasSuccess) {
-      _isWaitingForData = false;
-      _isTimedOut = false;
-      _hasNoData = false;
-      _hasSuccess = false;
-      _recentOfflineMisses = 0;
-      _noDataResetTimer?.cancel();
-      _successResetTimer?.cancel();
-      notifyListeners();
-    }
+    debugPrint('[NetworkStatus] Surveillance data loaded successfully');
+    _setStatus(NetworkRequestStatus.success);
   }
   
-  /// Set timeout error state
-  void setTimeoutError() {
-    _isWaitingForData = false;
-    _isTimedOut = true;
-    _hasNoData = false;
-    _hasSuccess = false;
-    _noDataResetTimer?.cancel();
-    _successResetTimer?.cancel();
-    notifyListeners();
+  /// Request timed out
+  void setTimeout() {
     debugPrint('[NetworkStatus] Request timed out');
-    
-    // Auto-clear timeout after 5 seconds
-    Timer(const Duration(seconds: 5), () {
-      if (_isTimedOut) {
-        _isTimedOut = false;
-        notifyListeners();
-      }
-    });
+    _setStatus(NetworkRequestStatus.timeout);
   }
   
-  /// Set network error state (rate limits, connection issues, etc.)
-  void setNetworkError() {
-    _isWaitingForData = false;
-    _isTimedOut = false;
-    _hasNoData = false; 
-    _hasSuccess = false;
-    _noDataResetTimer?.cancel();
-    _successResetTimer?.cancel();
-    
-    // Use existing issue reporting system
-    reportOverpassIssue();
+  /// Rate limited by API
+  void setRateLimited() {
+    debugPrint('[NetworkStatus] Rate limited by API');
+    _setStatus(NetworkRequestStatus.rateLimited);
+  }
+  
+  /// No offline data available
+  void setNoData() {
+    debugPrint('[NetworkStatus] No offline data available');
+    _setStatus(NetworkRequestStatus.noData);
+  }
+  
+  /// Network or other error
+  void setError() {
     debugPrint('[NetworkStatus] Network error occurred');
+    _setStatus(NetworkRequestStatus.error);
   }
   
-
-  
-  /// Report that a tile was not available offline
-  void reportOfflineMiss() {
-    _recentOfflineMisses++;
-    debugPrint('[NetworkStatus] Offline miss #$_recentOfflineMisses');
-    
-    // If we get several misses in a short time, show "no data" status
-    if (_recentOfflineMisses >= 3 && !_hasNoData) {
-      _isWaitingForData = false;
-      _isTimedOut = false;
-      _hasNoData = true;
-      notifyListeners();
-      debugPrint('[NetworkStatus] No offline data available for this area');
-    }
-    
-    // Reset the miss counter after some time
-    _noDataResetTimer?.cancel();
-    _noDataResetTimer = Timer(const Duration(seconds: 5), () {
-      _recentOfflineMisses = 0;
-    });
+  /// Clear status (force to idle)
+  void clear() {
+    _setStatus(NetworkRequestStatus.idle);
   }
-
-
 
   @override
   void dispose() {
-    _overpassRecoveryTimer?.cancel();
-    _noDataResetTimer?.cancel();
-    _successResetTimer?.cancel();
+    _autoResetTimer?.cancel();
     super.dispose();
   }
 }

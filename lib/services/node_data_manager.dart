@@ -26,9 +26,8 @@ class NodeDataManager extends ChangeNotifier {
   final OverpassService _overpassService = OverpassService();
   final NodeSpatialCache _cache = NodeSpatialCache();
   
-  // Track ongoing requests and which one is "primary" for status reporting
-  final Set<String> _activeRequests = <String>{};
-  String? _primaryRequestKey; // The latest request that should drive NetworkStatus
+  // Track ongoing user-initiated requests for status reporting
+  final Set<String> _userInitiatedRequests = <String>{};
   
   /// Get nodes for the given bounds and profiles.
   /// Returns cached data immediately if available, otherwise fetches from appropriate source.
@@ -44,7 +43,7 @@ class NodeDataManager extends ChangeNotifier {
     if (AppState.instance.offlineMode) {
       // Clear any existing loading states since offline data is instant
       if (isUserInitiated) {
-        NetworkStatus.instance.clearWaiting();
+        NetworkStatus.instance.clear();
       }
       
       if (uploadMode == UploadMode.sandbox) {
@@ -63,10 +62,15 @@ class NodeDataManager extends ChangeNotifier {
           notifyListeners();
         }
         
-        // Show brief success for user-initiated offline loads
+        // Show brief success for user-initiated offline loads with data
         if (isUserInitiated && offlineNodes.isNotEmpty) {
           WidgetsBinding.instance.addPostFrameCallback((_) {
             NetworkStatus.instance.setSuccess();
+          });
+        } else if (isUserInitiated && offlineNodes.isEmpty) {
+          // Show no data briefly for offline areas with no surveillance devices
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            NetworkStatus.instance.setNoData();
           });
         }
         
@@ -92,40 +96,35 @@ class NodeDataManager extends ChangeNotifier {
     }
 
     // Not cached - need to fetch
-    // Create a unique key for this request to prevent duplicates
     final requestKey = '${bounds.hashCode}_${profiles.map((p) => p.id).join('_')}_$uploadMode';
-    final bool isDuplicate = _activeRequests.contains(requestKey);
-    final bool isPrimaryRequest = isUserInitiated;
     
-    if (isDuplicate && !isPrimaryRequest) {
-      debugPrint('[NodeDataManager] Background request already in progress for this area, returning cached data');
+    // Only allow one user-initiated request per area at a time
+    if (isUserInitiated && _userInitiatedRequests.contains(requestKey)) {
+      debugPrint('[NodeDataManager] User request already in progress for this area');
       return _cache.getNodesFor(bounds);
     }
     
-    // Set this as primary request if user-initiated (most recent)
-    if (isPrimaryRequest) {
-      _primaryRequestKey = requestKey;
-      NetworkStatus.instance.setWaiting();
-      debugPrint('[NodeDataManager] Starting PRIMARY request (${_activeRequests.length + 1} total active)');
+    // Start status tracking for user-initiated requests only
+    if (isUserInitiated) {
+      _userInitiatedRequests.add(requestKey);
+      NetworkStatus.instance.setLoading();
+      debugPrint('[NodeDataManager] Starting user-initiated request');
     } else {
-      debugPrint('[NodeDataManager] Starting background request (${_activeRequests.length + 1} total active)');
+      debugPrint('[NodeDataManager] Starting background request (no status reporting)');
     }
 
-    _activeRequests.add(requestKey);
     try {
-      final nodes = await fetchWithSplitting(bounds, profiles);
+      final nodes = await fetchWithSplitting(bounds, profiles, isUserInitiated: isUserInitiated);
       
-      // Don't set success immediately - wait for UI to render the nodes
+      // Update cache and notify listeners
       notifyListeners();
       
-      // Set success after the next frame renders, but only for primary requests
-      if (isPrimaryRequest && _primaryRequestKey == requestKey) {
+      // Set success after the next frame renders, but only for user-initiated requests
+      if (isUserInitiated) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
           NetworkStatus.instance.setSuccess();
         });
-        debugPrint('[NodeDataManager] PRIMARY request completed successfully');
-      } else {
-        debugPrint('[NodeDataManager] Background request completed successfully');
+        debugPrint('[NodeDataManager] User-initiated request completed successfully');
       }
       
       return nodes;
@@ -133,25 +132,23 @@ class NodeDataManager extends ChangeNotifier {
     } catch (e) {
       debugPrint('[NodeDataManager] Fetch failed: $e');
       
-      // Only report errors for primary requests to avoid status confusion
-      if (isPrimaryRequest && _primaryRequestKey == requestKey) {
+      // Only report errors for user-initiated requests
+      if (isUserInitiated) {
         if (e is RateLimitError) {
-          NetworkStatus.instance.reportOverpassIssue();
+          NetworkStatus.instance.setRateLimited();
+        } else if (e.toString().contains('timeout')) {
+          NetworkStatus.instance.setTimeout();
         } else {
-          NetworkStatus.instance.setNetworkError();
+          NetworkStatus.instance.setError();
         }
-        debugPrint('[NodeDataManager] PRIMARY request failed: $e');
-      } else {
-        debugPrint('[NodeDataManager] Background request failed: $e');
+        debugPrint('[NodeDataManager] User-initiated request failed: $e');
       }
       
       // Return whatever we have in cache for this area
       return _cache.getNodesFor(bounds);
     } finally {
-      _activeRequests.remove(requestKey);
-      // Clear primary key if this was the primary request
-      if (_primaryRequestKey == requestKey) {
-        _primaryRequestKey = null;
+      if (isUserInitiated) {
+        _userInitiatedRequests.remove(requestKey);
       }
     }
   }
@@ -161,6 +158,7 @@ class NodeDataManager extends ChangeNotifier {
     LatLngBounds bounds, 
     List<NodeProfile> profiles, {
     int splitDepth = 0,
+    bool isUserInitiated = false,
   }) async {
     const maxSplitDepth = 3; // 4^3 = 64 max sub-areas
     
@@ -185,9 +183,13 @@ class NodeDataManager extends ChangeNotifier {
       }
       
       debugPrint('[NodeDataManager] Splitting area (depth: $splitDepth)');
-      NetworkStatus.instance.reportSlowProgress();
       
-      return _fetchSplitAreas(bounds, profiles, splitDepth + 1);
+      // Only report splitting status for user-initiated requests
+      if (isUserInitiated && splitDepth == 0) {
+        NetworkStatus.instance.setSplitting();
+      }
+      
+      return _fetchSplitAreas(bounds, profiles, splitDepth + 1, isUserInitiated: isUserInitiated);
       
     } on RateLimitError {
       // Rate limited - wait and return empty
@@ -201,14 +203,20 @@ class NodeDataManager extends ChangeNotifier {
   Future<List<OsmNode>> _fetchSplitAreas(
     LatLngBounds bounds, 
     List<NodeProfile> profiles,
-    int splitDepth,
-  ) async {
+    int splitDepth, {
+    bool isUserInitiated = false,
+  }) async {
     final quadrants = _splitBounds(bounds);
     final allNodes = <OsmNode>[];
     
     for (final quadrant in quadrants) {
       try {
-        final nodes = await fetchWithSplitting(quadrant, profiles, splitDepth: splitDepth);
+        final nodes = await fetchWithSplitting(
+          quadrant, 
+          profiles, 
+          splitDepth: splitDepth, 
+          isUserInitiated: isUserInitiated,
+        );
         allNodes.addAll(nodes);
       } catch (e) {
         debugPrint('[NodeDataManager] Quadrant fetch failed: $e');
@@ -276,9 +284,9 @@ class NodeDataManager extends ChangeNotifier {
     UploadMode uploadMode = UploadMode.production,
   }) async {
     // Clear any cached data for this area
-    _cache.clear(); // Simple: clear everything for now
+    _cache.clear();
     
-    // Re-fetch
+    // Re-fetch as user-initiated request
     await getNodesFor(
       bounds: bounds,
       profiles: profiles,

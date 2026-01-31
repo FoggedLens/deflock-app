@@ -1,4 +1,11 @@
 {
+  "2.6.1": {
+    "content": [
+      "• Simplified network status indicator - cleaner state management",
+      "• Improved error handling for surveillance data requests",
+      "• Better status reporting for background vs. user-initiated requests"
+    ]
+  },
   "2.6.0": {
     "content": [
       "• Fix slow node loading, offline node loading",

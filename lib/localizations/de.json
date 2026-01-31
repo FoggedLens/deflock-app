@@ -418,7 +418,9 @@
     "timedOut": "Anfrage Zeitüberschreitung",
     "noData": "Keine Offline-Daten",
     "success": "Überwachungsdaten geladen",
-    "nodeDataSlow": "Überwachungsdaten langsam"
+    "nodeDataSlow": "Überwachungsdaten langsam",
+    "rateLimited": "Server-Limitierung",
+    "networkError": "Netzwerkfehler"
   },
   "nodeLimitIndicator": {
     "message": "Zeige {rendered} von {total} Geräten",

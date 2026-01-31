@@ -455,7 +455,9 @@
     "timedOut": "Request timed out",
     "noData": "No offline data",
     "success": "Surveillance data loaded",
-    "nodeDataSlow": "Surveillance data slow"
+    "nodeDataSlow": "Surveillance data slow",
+    "rateLimited": "Rate limited by server",
+    "networkError": "Network error"
   },
   "nodeLimitIndicator": {
     "message": "Showing {rendered} of {total} devices",

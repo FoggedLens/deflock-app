@@ -20,9 +20,6 @@ Future<List<OsmNode>> fetchOsmApiNodes({
 }) async {
   if (profiles.isEmpty) return [];
   
-  // Check if this is a user-initiated fetch (indicated by loading state)
-  final wasUserInitiated = NetworkStatus.instance.currentStatus == NetworkStatusType.waiting;
-  
   try {
     final nodes = await _fetchFromOsmApi(
       bounds: bounds,
@@ -31,22 +28,8 @@ Future<List<OsmNode>> fetchOsmApiNodes({
       maxResults: maxResults,
     );
     
-    // Only report success at the top level if this was user-initiated
-    if (wasUserInitiated) {
-      NetworkStatus.instance.setSuccess();
-    }
-    
     return nodes;
   } catch (e) {
-    // Only report errors at the top level if this was user-initiated
-    if (wasUserInitiated) {
-      if (e.toString().contains('timeout') || e.toString().contains('timed out')) {
-        NetworkStatus.instance.setTimeoutError();
-      } else {
-        NetworkStatus.instance.setNetworkError();
-      }
-    }
-    
     debugPrint('[fetchOsmApiNodes] OSM API operation failed: $e');
     return [];
   }
