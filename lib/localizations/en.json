@@ -141,8 +141,7 @@
     "enableSubmittableProfile": "Enable a submittable profile in Settings to submit new nodes.",
     "profileViewOnlyWarning": "This profile is for map viewing only. Please select a submittable profile to submit new nodes.",
     "loadingAreaData": "Loading area data... Please wait before submitting.",
-    "refineTags": "Refine Tags",
-    "refineTagsWithProfile": "Refine Tags ({})"
+    "refineTags": "Refine Tags"
   },
   "editNode": {
     "title": "Edit Node #{}",
@@ -162,7 +161,7 @@
     "extractFromWay": "Extract node from way/relation",
     "extractFromWaySubtitle": "Create new node with same tags, allow moving to new location",
     "refineTags": "Refine Tags",
-    "refineTagsWithProfile": "Refine Tags ({})"
+    "existingTags": "<Existing tags>"
   },
   "download": {
     "title": "Download Map Area",
@@ -420,7 +419,11 @@
     "profileTagsDescription": "Complete these optional tag values for more detailed submissions:",
     "selectValue": "Select value...",
     "noValue": "(leave empty)",
-    "noSuggestions": "No suggestions available"
+    "noSuggestions": "No suggestions available",
+    "existingTagsTitle": "Existing Tags",
+    "existingTagsDescription": "Edit the existing tags on this device. Add, remove, or modify any tag:",
+    "existingOperator": "<Existing operator>",
+    "existingOperatorTags": "existing operator tags"
   },
   "layerSelector": {
     "cannotChangeTileTypes": "Cannot change tile types while downloading offline areas",

@@ -141,8 +141,7 @@
     "enableSubmittableProfile": "Activez un profil soumissible dans les Paramètres pour soumettre de nouveaux nœuds.",
     "profileViewOnlyWarning": "Ce profil est uniquement pour la visualisation de la carte. Veuillez sélectionner un profil soumissible pour soumettre de nouveaux nœuds.",
     "loadingAreaData": "Chargement des données de zone... Veuillez patienter avant de soumettre.",
-    "refineTags": "Affiner Balises",
-    "refineTagsWithProfile": "Affiner Balises ({})"
+    "refineTags": "Affiner Balises"
   },
   "editNode": {
     "title": "Modifier Nœud #{}",
@@ -162,7 +161,7 @@
     "extractFromWay": "Extraire le nœud du way/relation",
     "extractFromWaySubtitle": "Créer un nouveau nœud avec les mêmes balises, permettre le déplacement vers un nouvel emplacement",
     "refineTags": "Affiner Balises",
-    "refineTagsWithProfile": "Affiner Balises ({})"
+    "existingTags": "<Balises existantes>"
   },
   "download": {
     "title": "Télécharger Zone de Carte",
@@ -420,7 +419,11 @@
     "profileTagsDescription": "Spécifiez des valeurs pour les étiquettes qui nécessitent un raffinement :",
     "selectValue": "Sélectionner une valeur...",
     "noValue": "(Aucune valeur)",
-    "noSuggestions": "Aucune suggestion disponible"
+    "noSuggestions": "Aucune suggestion disponible",
+    "existingTagsTitle": "Balises Existantes",
+    "existingTagsDescription": "Modifiez les balises existantes sur cet appareil. Ajoutez, supprimez ou modifiez n'importe quelle balise :",
+    "existingOperator": "<Opérateur existant>",
+    "existingOperatorTags": "balises d'opérateur existantes"
   },
   "layerSelector": {
     "cannotChangeTileTypes": "Impossible de changer les types de tuiles pendant le téléchargement des zones hors ligne",

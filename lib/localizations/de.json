@@ -104,8 +104,7 @@
     "enableSubmittableProfile": "Aktivieren Sie ein übertragbares Profil in den Einstellungen, um neue Knoten zu übertragen.",
     "profileViewOnlyWarning": "Dieses Profil ist nur zum Anzeigen der Karte gedacht. Bitte wählen Sie ein übertragbares Profil aus, um neue Knoten zu übertragen.",
     "loadingAreaData": "Lade Bereichsdaten... Bitte warten Sie vor dem Übertragen.",
-    "refineTags": "Tags Verfeinern",
-    "refineTagsWithProfile": "Tags Verfeinern ({})"
+    "refineTags": "Tags Verfeinern"
   },
   "editNode": {
     "title": "Knoten #{} Bearbeiten",
@@ -125,7 +124,7 @@
     "extractFromWay": "Knoten aus Weg/Relation extrahieren",
     "extractFromWaySubtitle": "Neuen Knoten mit gleichen Tags erstellen, Verschieben an neuen Ort ermöglichen",
     "refineTags": "Tags Verfeinern",
-    "refineTagsWithProfile": "Tags Verfeinern ({})"
+    "existingTags": "<Vorhandene Tags>"
   },
   "download": {
     "title": "Kartenbereich Herunterladen",
@@ -383,7 +382,11 @@
     "profileTagsDescription": "Geben Sie Werte für Tags an, die verfeinert werden müssen:",
     "selectValue": "Wert auswählen...",
     "noValue": "(Kein Wert)",
-    "noSuggestions": "Keine Vorschläge verfügbar"
+    "noSuggestions": "Keine Vorschläge verfügbar",
+    "existingTagsTitle": "Vorhandene Tags",
+    "existingTagsDescription": "Bearbeiten Sie die vorhandenen Tags auf diesem Gerät. Hinzufügen, entfernen oder ändern Sie beliebige Tags:",
+    "existingOperator": "<Vorhandener Betreiber>",
+    "existingOperatorTags": "vorhandene Betreiber-Tags"
   },
   "layerSelector": {
     "cannotChangeTileTypes": "Kachel-Typen können während des Herunterladens von Offline-Bereichen nicht geändert werden",

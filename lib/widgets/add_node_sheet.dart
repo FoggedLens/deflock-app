@@ -578,9 +578,7 @@ class _AddNodeSheetState extends State<AddNodeSheet> {
                   child: OutlinedButton.icon(
                     onPressed: session.profile != null ? _openRefineTags : null, // Disabled when no profile selected
                     icon: const Icon(Icons.tune),
-                    label: Text(session.operatorProfile != null
-                        ? locService.t('addNode.refineTagsWithProfile', params: [session.operatorProfile!.name])
-                        : locService.t('addNode.refineTags')),
+                    label: Text(locService.t('addNode.refineTags')),
                   ),
                 ),
               ),

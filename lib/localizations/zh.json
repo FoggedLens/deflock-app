@@ -141,8 +141,7 @@
     "enableSubmittableProfile": "在设置中启用可提交的配置文件以提交新节点。",
     "profileViewOnlyWarning": "此配置文件仅用于地图查看。请选择可提交的配置文件来提交新节点。",
     "loadingAreaData": "正在加载区域数据...提交前请稍候。",
-    "refineTags": "细化标签",
-    "refineTagsWithProfile": "细化标签（{}）"
+    "refineTags": "细化标签"
   },
   "editNode": {
     "title": "编辑节点 #{}",
@@ -162,7 +161,7 @@
     "extractFromWay": "从way/relation中提取节点",
     "extractFromWaySubtitle": "创建具有相同标签的新节点，允许移动到新位置",
     "refineTags": "细化标签",
-    "refineTagsWithProfile": "细化标签（{}）"
+    "existingTags": "<现有标签>"
   },
   "download": {
     "title": "下载地图区域",
@@ -420,7 +419,11 @@
     "profileTagsDescription": "为需要细化的标签指定值：",
     "selectValue": "选择值...",
     "noValue": "(无值)",
-    "noSuggestions": "无建议可用"
+    "noSuggestions": "无建议可用",
+    "existingTagsTitle": "现有标签",
+    "existingTagsDescription": "编辑此设备上的现有标签。添加、删除或修改任何标签：",
+    "existingOperator": "<现有运营商>",
+    "existingOperatorTags": "现有运营商标签"
   },
   "layerSelector": {
     "cannotChangeTileTypes": "在下载离线区域时无法更改瓦片类型",

@@ -141,8 +141,7 @@
     "enableSubmittableProfile": "Ative um perfil enviável nas Configurações para enviar novos nós.",
     "profileViewOnlyWarning": "Este perfil é apenas para visualização do mapa. Por favor, selecione um perfil enviável para enviar novos nós.",
     "loadingAreaData": "Carregando dados da área... Por favor aguarde antes de enviar.",
-    "refineTags": "Refinar Tags",
-    "refineTagsWithProfile": "Refinar Tags ({})"
+    "refineTags": "Refinar Tags"
   },
   "editNode": {
     "title": "Editar Nó #{}",
@@ -162,7 +161,7 @@
     "extractFromWay": "Extrair nó do way/relation",
     "extractFromWaySubtitle": "Criar novo nó com as mesmas tags, permitir mover para nova localização",
     "refineTags": "Refinar Tags",
-    "refineTagsWithProfile": "Refinar Tags ({})"
+    "existingTags": "<Tags existentes>"
   },
   "download": {
     "title": "Baixar Área do Mapa",
@@ -420,7 +419,11 @@
     "profileTagsDescription": "Especifique valores para tags que precisam de refinamento:",
     "selectValue": "Selecionar um valor...",
     "noValue": "(Sem valor)",
-    "noSuggestions": "Nenhuma sugestão disponível"
+    "noSuggestions": "Nenhuma sugestão disponível",
+    "existingTagsTitle": "Tags Existentes",
+    "existingTagsDescription": "Edite as tags existentes neste dispositivo. Adicione, remova ou modifique qualquer tag:",
+    "existingOperator": "<Operador existente>",
+    "existingOperatorTags": "tags de operador existentes"
   },
   "layerSelector": {
     "cannotChangeTileTypes": "Não é possível alterar tipos de tiles durante o download de áreas offline",

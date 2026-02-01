@@ -141,8 +141,7 @@
     "enableSubmittableProfile": "Abilita un profilo inviabile nelle Impostazioni per inviare nuovi nodi.",
     "profileViewOnlyWarning": "Questo profilo è solo per la visualizzazione della mappa. Per favore seleziona un profilo inviabile per inviare nuovi nodi.",
     "loadingAreaData": "Caricamento dati area... Per favore attendi prima di inviare.",
-    "refineTags": "Affina Tag",
-    "refineTagsWithProfile": "Affina Tag ({})"
+    "refineTags": "Affina Tag"
   },
   "editNode": {
     "title": "Modifica Nodo #{}",
@@ -162,7 +161,7 @@
     "extractFromWay": "Estrai nodo da way/relation",
     "extractFromWaySubtitle": "Crea nuovo nodo con gli stessi tag, consenti spostamento in nuova posizione",
     "refineTags": "Affina Tag",
-    "refineTagsWithProfile": "Affina Tag ({})"
+    "existingTags": "<Tag esistenti>"
   },
   "download": {
     "title": "Scarica Area Mappa",
@@ -420,7 +419,11 @@
     "profileTagsDescription": "Specificare valori per i tag che necessitano di raffinamento:",
     "selectValue": "Seleziona un valore...",
     "noValue": "(Nessun valore)",
-    "noSuggestions": "Nessun suggerimento disponibile"
+    "noSuggestions": "Nessun suggerimento disponibile",
+    "existingTagsTitle": "Tag Esistenti",
+    "existingTagsDescription": "Modifica i tag esistenti su questo dispositivo. Aggiungi, rimuovi o modifica qualsiasi tag:",
+    "existingOperator": "<Operatore esistente>",
+    "existingOperatorTags": "tag operatore esistenti"
   },
   "layerSelector": {
     "cannotChangeTileTypes": "Impossibile cambiare tipi di tile durante il download di aree offline",

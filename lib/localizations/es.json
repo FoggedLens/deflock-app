@@ -141,8 +141,7 @@
     "enableSubmittableProfile": "Habilite un perfil envíable en Configuración para enviar nuevos nodos.",
     "profileViewOnlyWarning": "Este perfil es solo para visualización del mapa. Por favor, seleccione un perfil envíable para enviar nuevos nodos.",
     "loadingAreaData": "Cargando datos del área... Por favor espere antes de enviar.",
-    "refineTags": "Refinar Etiquetas",
-    "refineTagsWithProfile": "Refinar Etiquetas ({})"
+    "refineTags": "Refinar Etiquetas"
   },
   "editNode": {
     "title": "Editar Nodo #{}",
@@ -162,7 +161,7 @@
     "extractFromWay": "Extraer nodo de way/relation",
     "extractFromWaySubtitle": "Crear nuevo nodo con las mismas etiquetas, permitir mover a nueva ubicación",
     "refineTags": "Refinar Etiquetas",
-    "refineTagsWithProfile": "Refinar Etiquetas ({})"
+    "existingTags": "<Etiquetas existentes>"
   },
   "download": {
     "title": "Descargar Área del Mapa",
@@ -420,7 +419,11 @@
     "profileTagsDescription": "Especifique valores para etiquetas que necesitan refinamiento:",
     "selectValue": "Seleccionar un valor...",
     "noValue": "(Sin valor)",
-    "noSuggestions": "No hay sugerencias disponibles"
+    "noSuggestions": "No hay sugerencias disponibles",
+    "existingTagsTitle": "Etiquetas Existentes",
+    "existingTagsDescription": "Edite las etiquetas existentes en este dispositivo. Agregue, elimine o modifique cualquier etiqueta:",
+    "existingOperator": "<Operador existente>",
+    "existingOperatorTags": "etiquetas de operador existentes"
   },
   "layerSelector": {
     "cannotChangeTileTypes": "No se pueden cambiar los tipos de teselas mientras se descargan áreas sin conexión",

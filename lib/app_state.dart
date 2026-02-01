@@ -435,7 +435,7 @@ class AppState extends ChangeNotifier {
   }
 
   void startEditSession(OsmNode node) {
-    _sessionState.startEditSession(node, enabledProfiles);
+    _sessionState.startEditSession(node, enabledProfiles, operatorProfiles);
   }
 
   void updateSession({
@@ -528,6 +528,8 @@ class AppState extends ChangeNotifier {
   void removeDirection() {
     _sessionState.removeDirection();
   }
+
+  bool get canRemoveDirection => _sessionState.canRemoveDirection;
 
   void cycleDirection() {
     _sessionState.cycleDirection();

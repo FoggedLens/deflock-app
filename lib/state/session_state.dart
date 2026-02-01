@@ -25,13 +25,20 @@ class AddNodeSession {
        refinedTags = refinedTags ?? {};
   
   // Slider always shows the current direction being edited
-  double get directionDegrees => directions[currentDirectionIndex];
-  set directionDegrees(double value) => directions[currentDirectionIndex] = value;
+  double get directionDegrees => directions.isNotEmpty && currentDirectionIndex >= 0 
+      ? directions[currentDirectionIndex] 
+      : 0.0;
+  set directionDegrees(double value) {
+    if (directions.isNotEmpty && currentDirectionIndex >= 0) {
+      directions[currentDirectionIndex] = value;
+    }
+  }
 }
 
 // ------------------ EditNodeSession ------------------
 class EditNodeSession {
   final OsmNode originalNode; // The original node being edited
+  final bool originalHadDirections; // Whether original node had any directions
   NodeProfile? profile;
   OperatorProfile? operatorProfile;
   LatLng target; // Current position (can be dragged)
@@ -42,7 +49,9 @@ class EditNodeSession {
   
   EditNodeSession({
     required this.originalNode,
+    required this.originalHadDirections,
     this.profile,
+    this.operatorProfile,
     required double initialDirection,
     required this.target,
     this.extractFromWay = false,
@@ -52,13 +61,20 @@ class EditNodeSession {
        refinedTags = refinedTags ?? {};
   
   // Slider always shows the current direction being edited
-  double get directionDegrees => directions[currentDirectionIndex];
-  set directionDegrees(double value) => directions[currentDirectionIndex] = value;
+  double get directionDegrees => directions.isNotEmpty && currentDirectionIndex >= 0 
+      ? directions[currentDirectionIndex] 
+      : 0.0;
+  set directionDegrees(double value) {
+    if (directions.isNotEmpty && currentDirectionIndex >= 0) {
+      directions[currentDirectionIndex] = value;
+    }
+  }
 }
 
 class SessionState extends ChangeNotifier {
   AddNodeSession? _session;
   EditNodeSession? _editSession;
+  OperatorProfile? _detectedOperatorProfile; // Persists across profile changes
 
   // Getters
   AddNodeSession? get session => _session;
@@ -71,34 +87,30 @@ class SessionState extends ChangeNotifier {
     notifyListeners();
   }
 
-  void startEditSession(OsmNode node, List<NodeProfile> enabledProfiles) {
-    final submittableProfiles = enabledProfiles.where((p) => p.isSubmittable).toList();
+  void startEditSession(OsmNode node, List<NodeProfile> enabledProfiles, List<OperatorProfile> operatorProfiles) {
+    // Always create and pre-select the temporary "existing tags" profile
+    final existingTagsProfile = NodeProfile.createExistingTagsProfile(node);
     
-    // Try to find a matching profile based on the node's tags
-    NodeProfile? matchingProfile;
+    // Detect and store operator profile (persists across profile changes)
+    _detectedOperatorProfile = OperatorProfile.createExistingOperatorProfile(node, operatorProfiles);
     
-    // Attempt to find a match by comparing tags
-    for (final profile in submittableProfiles) {
-      if (_profileMatchesTags(profile, node.tags)) {
-        matchingProfile = profile;
-        break;
-      }
-    }
-    
-    // Start with no profile selected if no match found - force user to choose
-    // Initialize edit session with all existing directions
-    final existingDirections = node.directionDeg.isNotEmpty ? node.directionDeg : [0.0];
+    // Initialize edit session with all existing directions, or empty list if none
+    final existingDirections = node.directionDeg.isNotEmpty ? node.directionDeg : <double>[];
+    final initialDirection = existingDirections.isNotEmpty ? existingDirections.first : 0.0;
+    final originalHadDirections = existingDirections.isNotEmpty;
     
     _editSession = EditNodeSession(
       originalNode: node,
-      profile: matchingProfile,
-      initialDirection: existingDirections.first,
+      originalHadDirections: originalHadDirections,
+      profile: existingTagsProfile,
+      operatorProfile: _detectedOperatorProfile,
+      initialDirection: initialDirection,
       target: node.coord,
     );
     
-    // Replace the default single direction with all existing directions
+    // Replace the default single direction with all existing directions (or empty list)
     _editSession!.directions = List<double>.from(existingDirections);
-    _editSession!.currentDirectionIndex = 0; // Start editing the first direction
+    _editSession!.currentDirectionIndex = existingDirections.isNotEmpty ? 0 : -1; // -1 indicates no directions
     _session = null; // Clear any add session
     notifyListeners();
   }
@@ -165,10 +177,22 @@ class SessionState extends ChangeNotifier {
       dirty = true;
     }
     if (profile != null && profile != _editSession!.profile) {
+      final oldProfile = _editSession!.profile;
       _editSession!.profile = profile;
+      
+      // Handle direction requirements when profile changes
+      _handleDirectionRequirementsOnProfileChange(oldProfile, profile);
+      
+      // When profile changes but operator profile not explicitly provided,
+      // restore the detected operator profile (if any)
+      if (operatorProfile == null && _detectedOperatorProfile != null) {
+        _editSession!.operatorProfile = _detectedOperatorProfile;
+      }
+      
       dirty = true;
     }
-    if (operatorProfile != _editSession!.operatorProfile) {
+    // Only update operator profile if explicitly provided or different from current
+    if (operatorProfile != null && operatorProfile != _editSession!.operatorProfile) {
       _editSession!.operatorProfile = operatorProfile;
       dirty = true;
     }
@@ -222,18 +246,28 @@ class SessionState extends ChangeNotifier {
 
   // Remove currently selected direction
   void removeDirection() {
-    if (_session != null && _session!.directions.length > 1) {
-      _session!.directions.removeAt(_session!.currentDirectionIndex);
-      if (_session!.currentDirectionIndex >= _session!.directions.length) {
-        _session!.currentDirectionIndex = _session!.directions.length - 1;
+    if (_session != null && _session!.directions.isNotEmpty) {
+      // For add sessions, keep minimum of 1 direction
+      if (_session!.directions.length > 1) {
+        _session!.directions.removeAt(_session!.currentDirectionIndex);
+        if (_session!.currentDirectionIndex >= _session!.directions.length) {
+          _session!.currentDirectionIndex = _session!.directions.length - 1;
+        }
+        notifyListeners();
       }
-      notifyListeners();
-    } else if (_editSession != null && _editSession!.directions.length > 1) {
-      _editSession!.directions.removeAt(_editSession!.currentDirectionIndex);
-      if (_editSession!.currentDirectionIndex >= _editSession!.directions.length) {
-        _editSession!.currentDirectionIndex = _editSession!.directions.length - 1;
+    } else if (_editSession != null && _editSession!.directions.isNotEmpty) {
+      // For edit sessions, use minimum calculation
+      final minDirections = _getMinimumDirections();
+      
+      if (_editSession!.directions.length > minDirections) {
+        _editSession!.directions.removeAt(_editSession!.currentDirectionIndex);
+        if (_editSession!.directions.isEmpty) {
+          _editSession!.currentDirectionIndex = -1; // No directions
+        } else if (_editSession!.currentDirectionIndex >= _editSession!.directions.length) {
+          _editSession!.currentDirectionIndex = _editSession!.directions.length - 1;
+        }
+        notifyListeners();
       }
-      notifyListeners();
     }
   }
 
@@ -242,7 +276,7 @@ class SessionState extends ChangeNotifier {
     if (_session != null && _session!.directions.length > 1) {
       _session!.currentDirectionIndex = (_session!.currentDirectionIndex + 1) % _session!.directions.length;
       notifyListeners();
-    } else if (_editSession != null && _editSession!.directions.length > 1) {
+    } else if (_editSession != null && _editSession!.directions.length > 1 && _editSession!.currentDirectionIndex >= 0) {
       _editSession!.currentDirectionIndex = (_editSession!.currentDirectionIndex + 1) % _editSession!.directions.length;
       notifyListeners();
     }
@@ -257,6 +291,7 @@ class SessionState extends ChangeNotifier {
 
   void cancelEditSession() {
     _editSession = null;
+    _detectedOperatorProfile = null;
     notifyListeners();
   }
 
@@ -274,7 +309,36 @@ class SessionState extends ChangeNotifier {
     
     final session = _editSession!;
     _editSession = null;
+    _detectedOperatorProfile = null;
     notifyListeners();
     return session;
+  }
+
+  /// Get the minimum number of directions required for current session state
+  int _getMinimumDirections() {
+    if (_editSession == null) return 1;
+    
+    // Minimum = 0 only if original had no directions AND currently using existing tags profile
+    final isExistingTags = _editSession!.profile?.isExistingTagsProfile == true;
+    return (_editSession!.originalHadDirections || !isExistingTags) ? 1 : 0;
+  }
+
+  /// Check if remove direction button should be enabled for edit session
+  bool get canRemoveDirection {
+    if (_editSession == null || _editSession!.directions.isEmpty) return false;
+    return _editSession!.directions.length > _getMinimumDirections();
+  }
+
+  /// Handle direction requirements when profile changes in edit session
+  void _handleDirectionRequirementsOnProfileChange(NodeProfile? oldProfile, NodeProfile newProfile) {
+    if (_editSession == null) return;
+    
+    final minimum = _getMinimumDirections();
+    
+    // Ensure we meet the minimum (add direction if needed)
+    if (_editSession!.directions.length < minimum) {
+      _editSession!.directions = [0.0];
+      _editSession!.currentDirectionIndex = 0;
+    }
   }
 }

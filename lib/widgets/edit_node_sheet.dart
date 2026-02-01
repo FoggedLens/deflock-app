@@ -153,7 +153,9 @@ class _EditNodeSheetState extends State<EditNodeSheet> {
   Widget _buildDirectionControls(BuildContext context, AppState appState, EditNodeSession session, LocalizationService locService) {
     final requiresDirection = session.profile != null && session.profile!.requiresDirection;
     final is360Fov = session.profile?.fov == 360;
-    final enableDirectionControls = requiresDirection && !is360Fov;
+    final hasDirections = session.directions.isNotEmpty;
+    final enableDirectionControls = requiresDirection && !is360Fov && hasDirections;
+    final enableAddButton = requiresDirection && !is360Fov;
     
     // Force direction to 0 when FOV is 360 (omnidirectional)
     if (is360Fov && session.directionDegrees != 0) {
@@ -164,7 +166,7 @@ class _EditNodeSheetState extends State<EditNodeSheet> {
     
     // Format direction display text with bold for current direction
     String directionsText = '';
-    if (requiresDirection) {
+    if (requiresDirection && hasDirections) {
       final directionsWithBold = <String>[];
       for (int i = 0; i < session.directions.length; i++) {
         final dirStr = session.directions[i].round().toString();
@@ -195,7 +197,12 @@ class _EditNodeSheetState extends State<EditNodeSheet> {
                             fontWeight: isEven ? FontWeight.normal : FontWeight.bold,
                           ),
                         );
-                      }),
+                      })
+                    else
+                      const TextSpan(
+                        text: 'None',
+                        style: TextStyle(fontStyle: FontStyle.italic, color: Colors.grey),
+                      ),
                   ],
                 ),
               )
@@ -220,12 +227,16 @@ class _EditNodeSheetState extends State<EditNodeSheet> {
                 icon: Icon(
                   Icons.remove, 
                   size: 20,
-                  color: enableDirectionControls ? null : Theme.of(context).disabledColor,
+                  color: enableDirectionControls && appState.canRemoveDirection ? null : Theme.of(context).disabledColor,
                 ),
-                onPressed: enableDirectionControls && session.directions.length > 1 
+                onPressed: enableDirectionControls && appState.canRemoveDirection
                     ? () => appState.removeDirection() 
                     : null,
-                tooltip: requiresDirection ? 'Remove current direction' : 'Direction not required for this profile',
+                tooltip: requiresDirection 
+                    ? (hasDirections 
+                        ? (appState.canRemoveDirection ? 'Remove current direction' : 'Cannot remove - minimum reached')
+                        : 'No directions to remove')
+                    : 'Direction not required for this profile',
                 padding: EdgeInsets.zero,
                 constraints: const BoxConstraints(minWidth: kDirectionButtonMinWidth, minHeight: kDirectionButtonMinHeight),
               ),
@@ -234,9 +245,9 @@ class _EditNodeSheetState extends State<EditNodeSheet> {
                 icon: Icon(
                   Icons.add, 
                   size: 20,
-                  color: enableDirectionControls && session.directions.length < 8 ? null : Theme.of(context).disabledColor,
+                  color: enableAddButton && session.directions.length < 8 ? null : Theme.of(context).disabledColor,
                 ),
-                onPressed: enableDirectionControls && session.directions.length < 8 ? () => appState.addDirection() : null,
+                onPressed: enableAddButton && session.directions.length < 8 ? () => appState.addDirection() : null,
                 tooltip: requiresDirection 
                     ? (session.directions.length >= 8 ? 'Maximum 8 directions allowed' : 'Add new direction') 
                     : 'Direction not required for this profile',
@@ -248,19 +259,23 @@ class _EditNodeSheetState extends State<EditNodeSheet> {
                 icon: Icon(
                   Icons.repeat, 
                   size: 20,
-                  color: enableDirectionControls ? null : Theme.of(context).disabledColor,
+                  color: enableDirectionControls && session.directions.length > 1 ? null : Theme.of(context).disabledColor,
                 ),
                 onPressed: enableDirectionControls && session.directions.length > 1 
                     ? () => appState.cycleDirection() 
                     : null,
-                tooltip: requiresDirection ? 'Cycle through directions' : 'Direction not required for this profile',
+                tooltip: requiresDirection 
+                    ? (hasDirections 
+                        ? (session.directions.length > 1 ? 'Cycle through directions' : 'Only one direction')
+                        : 'No directions to cycle') 
+                    : 'Direction not required for this profile',
                 padding: EdgeInsets.zero,
                 constraints: const BoxConstraints(minWidth: kDirectionButtonMinWidth, minHeight: kDirectionButtonMinHeight),
               ),
             ],
           ),
         ),
-        // Show info text when profile doesn't require direction
+        // Show info text when profile doesn't require direction or when no directions exist
         if (!requiresDirection)
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
@@ -272,6 +287,22 @@ class _EditNodeSheetState extends State<EditNodeSheet> {
                   child: Text(
                     'This profile does not require a direction.',
                     style: const TextStyle(color: Colors.grey, fontSize: 12),
+                  ),
+                ),
+              ],
+            ),
+          )
+        else if (requiresDirection && !hasDirections)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+            child: Row(
+              children: [
+                const Icon(Icons.info_outline, color: Colors.blue, size: 16),
+                const SizedBox(width: 6),
+                Expanded(
+                  child: Text(
+                    'This device currently has no direction. Tap the + button to add one.',
+                    style: const TextStyle(color: Colors.blue, fontSize: 12),
                   ),
                 ),
               ],
@@ -341,15 +372,28 @@ class _EditNodeSheetState extends State<EditNodeSheet> {
                 selectedOperatorProfile: session.operatorProfile,
                 selectedProfile: session.profile,
                 currentRefinedTags: session.refinedTags,
+                originalNodeTags: session.originalNode.tags,
               ),
               fullscreenDialog: true,
             ),
           );
           if (result != null) {
-            appState.updateEditSession(
-              operatorProfile: result.operatorProfile,
-              refinedTags: result.refinedTags,
-            );
+            if (result.editedTags != null && session.profile?.isExistingTagsProfile == true) {
+              // Update the existing tags profile with the edited tags
+              final updatedProfile = session.profile!.copyWith(
+                tags: result.editedTags,
+              );
+              appState.updateEditSession(
+                profile: updatedProfile,
+                operatorProfile: result.operatorProfile,
+                refinedTags: result.refinedTags,
+              );
+            } else {
+              appState.updateEditSession(
+                operatorProfile: result.operatorProfile,
+                refinedTags: result.refinedTags,
+              );
+            }
           }
         }
 
@@ -539,9 +583,7 @@ class _EditNodeSheetState extends State<EditNodeSheet> {
                   child: OutlinedButton.icon(
                     onPressed: session.profile != null ? _openRefineTags : null, // Disabled when no profile selected
                     icon: const Icon(Icons.tune),
-                    label: Text(session.operatorProfile != null
-                        ? locService.t('editNode.refineTagsWithProfile', params: [session.operatorProfile!.name])
-                        : locService.t('editNode.refineTags')),
+                    label: Text(locService.t('editNode.refineTags')),
                   ),
                 ),
               ),
@@ -582,6 +624,15 @@ class _EditNodeSheetState extends State<EditNodeSheet> {
   }
 
   Widget _buildProfileDropdown(BuildContext context, AppState appState, EditNodeSession session, List<NodeProfile> submittableProfiles, LocalizationService locService) {
+    // Display name for the current profile - localize the existing tags profile
+    String getDisplayName(NodeProfile? profile) {
+      if (profile == null) return locService.t('editNode.selectProfile');
+      if (profile.isExistingTagsProfile) {
+        return locService.t('editNode.existingTags');
+      }
+      return profile.name;
+    }
+    
     return PopupMenuButton<String>(
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -593,7 +644,7 @@ class _EditNodeSheetState extends State<EditNodeSheet> {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              session.profile?.name ?? locService.t('editNode.selectProfile'),
+              getDisplayName(session.profile),
               style: TextStyle(
                 fontSize: 16,
                 color: session.profile != null ? null : Colors.grey.shade600,
@@ -605,6 +656,14 @@ class _EditNodeSheetState extends State<EditNodeSheet> {
         ),
       ),
       itemBuilder: (context) => [
+        // Existing tags profile (always first in edit mode)
+        PopupMenuItem<String>(
+          value: 'existing_tags',
+          child: Text(locService.t('editNode.existingTags')),
+        ),
+        // Divider after existing tags profile
+        if (submittableProfiles.isNotEmpty) 
+          const PopupMenuDivider(),
         // Regular profiles
         ...submittableProfiles.map(
           (profile) => PopupMenuItem<String>(
@@ -635,6 +694,10 @@ class _EditNodeSheetState extends State<EditNodeSheet> {
       onSelected: (value) {
         if (value == 'get_more') {
           _openIdentifyWebsite(context);
+        } else if (value == 'existing_tags') {
+          // Re-create and select the existing tags profile
+          final existingTagsProfile = NodeProfile.createExistingTagsProfile(session.originalNode);
+          appState.updateEditSession(profile: existingTagsProfile);
         } else if (value.startsWith('profile_')) {
           final profileId = value.substring(8); // Remove 'profile_' prefix
           final profile = submittableProfiles.firstWhere((p) => p.id == profileId);

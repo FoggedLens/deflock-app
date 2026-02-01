@@ -1,4 +1,14 @@
 {
+  "2.6.2": {
+    "content": [
+      "• Enhanced edit workflow - existing device properties are preserved by default, reducing accidental tag loss during edits",
+      "• New '<Existing tags>' profile when editing nodes; preserves current device tags while allowing direction and location edits",
+      "• New '<Existing operator>' profile when editing nodes with operator tags; preserves operator details automatically", 
+      "• Tag pre-population; when switching profiles, existing node values automatically fill empty profile tags to prevent data loss",
+      "• Smart operator matching - existing operator tags automatically match saved operator profiles when possible",
+      "• Operator profile selection now persists across main profile selection changes"
+    ]
+  },
   "2.6.1": {
     "content": [
       "• Simplified network status indicator - cleaner state management",

@@ -104,7 +104,8 @@ cp lib/keys.dart.example lib/keys.dart
 ## Roadmap
 
 ### Needed Bugfixes
-- Default profile selection "<no change>" when editing an existing node
+- Old nodes are sticking around after edit submissions go through, at least in simulate mode. I think we prune those from cache when in production mode at least?
+- Ask for location permission on first launch, temp disable notification permission
 - Make submission guide scarier
 - Tile cache trimming? Does fluttermap handle?
 - Filter NSI suggestions based on what has already been typed in
@@ -112,7 +113,6 @@ cp lib/keys.dart.example lib/keys.dart
 - Clean cache when nodes have been deleted by others
 
 ### Current Development
-- Populate a temp operator profile and select it by default when those tags already exist on a node being edited
 - Add ability to downvote suspected locations which are old enough
 - Turn by turn navigation or at least swipe nav sheet up to see a list
 - Import/Export map providers

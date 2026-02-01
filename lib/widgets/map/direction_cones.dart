@@ -19,8 +19,11 @@ class DirectionConesBuilder {
   }) {
     final overlays = <Polygon>[];
     
-    // Add session cones if in add-camera mode and profile requires direction
-    if (session != null && session.target != null && session.profile?.requiresDirection == true) {
+    // Add session cones if in add-camera mode and profile requires direction AND we have directions
+    if (session != null && 
+        session.target != null && 
+        session.profile?.requiresDirection == true && 
+        session.directions.isNotEmpty) {
       final sessionFov = session.profile?.fov ?? (kDirectionConeHalfAngle * 2);
       
       // Add current working direction (full opacity)
@@ -50,8 +53,10 @@ class DirectionConesBuilder {
       }
     }
     
-    // Add edit session cones if in edit-camera mode and profile requires direction
-    if (editSession != null && editSession.profile?.requiresDirection == true) {
+    // Add edit session cones if in edit-camera mode and profile requires direction AND we have directions
+    if (editSession != null && 
+        editSession.profile?.requiresDirection == true && 
+        editSession.directions.isNotEmpty) {
       final sessionFov = editSession.profile?.fov ?? (kDirectionConeHalfAngle * 2);
       
       // Add current working direction (full opacity)

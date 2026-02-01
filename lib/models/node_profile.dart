@@ -1,4 +1,5 @@
 import 'package:uuid/uuid.dart';
+import 'osm_node.dart';
 
 /// Sentinel value for copyWith methods to distinguish between null and not provided
 const Object _notProvided = Object();
@@ -264,5 +265,31 @@ class NodeProfile {
 
   @override
   int get hashCode => id.hashCode;
+
+  /// Create a temporary profile representing the existing tags on a node (minus direction and operator)
+  /// Used as the default "<Existing tags>" option when editing nodes
+  static NodeProfile createExistingTagsProfile(OsmNode node) {
+    final tagsWithoutSpecial = Map<String, String>.from(node.tags);
+    // Remove direction tags (handled separately)
+    tagsWithoutSpecial.remove('direction');
+    tagsWithoutSpecial.remove('camera:direction');
+    
+    // Remove operator tags (handled separately by operator profile)
+    tagsWithoutSpecial.removeWhere((key, value) => 
+        key == 'operator' || key.startsWith('operator:'));
+    
+    return NodeProfile(
+      id: 'temp-no-change-${node.id}',
+      name: '<Existing tags>', // Will be localized in UI
+      tags: tagsWithoutSpecial,
+      builtin: false,
+      requiresDirection: true,
+      submittable: true,
+      editable: false,
+    );
+  }
+
+  /// Returns true if this is a temporary "existing tags" profile
+  bool get isExistingTagsProfile => id.startsWith('temp-no-change-');
 }
 
