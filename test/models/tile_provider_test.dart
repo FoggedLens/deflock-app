@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:flock_map_app/models/tile_provider.dart';
+import 'package:deflockapp/models/tile_provider.dart';
 
 void main() {
   group('TileType', () {
@@ -127,10 +127,17 @@ void main() {
       expect(satelliteType.attribution, '© Microsoft Corporation');
     });
 
-    test('all default providers are usable', () {
+    test('providers without API key requirements are usable', () {
       final providers = DefaultTileProviders.createDefaults();
       for (final provider in providers) {
-        expect(provider.isUsable, isTrue, reason: '${provider.name} should be usable');
+        final needsKey = provider.tileTypes.any((t) => t.requiresApiKey);
+        if (needsKey) {
+          expect(provider.isUsable, isFalse,
+              reason: '${provider.name} requires API key and has none set');
+        } else {
+          expect(provider.isUsable, isTrue,
+              reason: '${provider.name} should be usable without API key');
+        }
       }
     });
   });
