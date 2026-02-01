@@ -533,8 +533,14 @@ class UploadQueueState extends ChangeNotifier {
       debugPrint('[UploadQueue] Simulating node operation (no real API call)');
       await Future.delayed(const Duration(milliseconds: 500)); // Simulate network delay
       
-      // Store simulated node ID and move to changeset close phase
-      item.submittedNodeId = DateTime.now().millisecondsSinceEpoch;
+      // Store appropriate simulated node ID based on operation type
+      if (item.operation == UploadOperation.modify) {
+        // For edits, keep the original node ID (same as production behavior)
+        item.submittedNodeId = item.originalNodeId!;
+      } else {
+        // For creates and extracts, generate new simulated ID
+        item.submittedNodeId = DateTime.now().millisecondsSinceEpoch;
+      }
       item.markNodeOperationComplete();
       _saveQueue();
       notifyListeners();
@@ -668,7 +674,9 @@ class UploadQueueState extends ChangeNotifier {
         debugPrint('[UploadQueue] Simulated deletion, removing fake node ID: $simulatedNodeId from cache');
         _handleSuccessfulDeletion(item);
       } else {
-        debugPrint('[UploadQueue] Simulated upload, fake node ID: $simulatedNodeId');
+        debugPrint('[UploadQueue] Simulated upload successful, updating cache with fake node ID: $simulatedNodeId');
+        // Update cache with simulated node ID, same as production mode
+        _updateCacheWithRealNodeId(item, simulatedNodeId);
       }
     }
     

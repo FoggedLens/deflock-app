@@ -104,7 +104,6 @@ cp lib/keys.dart.example lib/keys.dart
 ## Roadmap
 
 ### Needed Bugfixes
-- Old nodes are sticking around after edit submissions go through, at least in simulate mode. I think we prune those from cache when in production mode at least?
 - Ask for location permission on first launch, temp disable notification permission
 - Make submission guide scarier
 - Tile cache trimming? Does fluttermap handle?
