@@ -161,7 +161,10 @@
     "extractFromWay": "从way/relation中提取节点",
     "extractFromWaySubtitle": "创建具有相同标签的新节点，允许移动到新位置",
     "refineTags": "细化标签",
-    "existingTags": "<现有标签>"
+    "existingTags": "<现有标签>",
+    "noChangesDetected": "未检测到更改 - 无需提交",
+    "noChangesTitle": "无更改可提交",
+    "noChangesMessage": "您尚未对此节点进行任何更改。要提交编辑，您需要更改位置、配置文件、方向或标签。"
   },
   "download": {
     "title": "下载地图区域",

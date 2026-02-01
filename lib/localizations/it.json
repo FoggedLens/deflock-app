@@ -161,7 +161,10 @@
     "extractFromWay": "Estrai nodo da way/relation",
     "extractFromWaySubtitle": "Crea nuovo nodo con gli stessi tag, consenti spostamento in nuova posizione",
     "refineTags": "Affina Tag",
-    "existingTags": "<Tag esistenti>"
+    "existingTags": "<Tag esistenti>",
+    "noChangesDetected": "Nessuna modifica rilevata - niente da inviare",
+    "noChangesTitle": "Nessuna Modifica da Inviare",
+    "noChangesMessage": "Non hai apportato modifiche a questo nodo. Per inviare una modifica, devi cambiare la posizione, il profilo, le direzioni o i tag."
   },
   "download": {
     "title": "Scarica Area Mappa",

@@ -161,7 +161,10 @@
     "extractFromWay": "Extrair nó do way/relation",
     "extractFromWaySubtitle": "Criar novo nó com as mesmas tags, permitir mover para nova localização",
     "refineTags": "Refinar Tags",
-    "existingTags": "<Tags existentes>"
+    "existingTags": "<Tags existentes>",
+    "noChangesDetected": "Nenhuma alteração detectada - nada para enviar",
+    "noChangesTitle": "Nenhuma Alteração para Enviar",
+    "noChangesMessage": "Você não fez nenhuma alteração neste nó. Para enviar uma edição, você precisa alterar a localização, o perfil, as direções ou as tags."
   },
   "download": {
     "title": "Baixar Área do Mapa",

@@ -161,7 +161,10 @@
     "extractFromWay": "Extraer nodo de way/relation",
     "extractFromWaySubtitle": "Crear nuevo nodo con las mismas etiquetas, permitir mover a nueva ubicación",
     "refineTags": "Refinar Etiquetas",
-    "existingTags": "<Etiquetas existentes>"
+    "existingTags": "<Etiquetas existentes>",
+    "noChangesDetected": "No se detectaron cambios - nada que enviar",
+    "noChangesTitle": "No Hay Cambios que Enviar",
+    "noChangesMessage": "No ha realizado ningún cambio en este nodo. Para enviar una edición, necesita cambiar la ubicación, el perfil, las direcciones o las etiquetas."
   },
   "download": {
     "title": "Descargar Área del Mapa",

@@ -161,7 +161,10 @@
     "extractFromWay": "Extraire le nœud du way/relation",
     "extractFromWaySubtitle": "Créer un nouveau nœud avec les mêmes balises, permettre le déplacement vers un nouvel emplacement",
     "refineTags": "Affiner Balises",
-    "existingTags": "<Balises existantes>"
+    "existingTags": "<Balises existantes>",
+    "noChangesDetected": "Aucun changement détecté - rien à soumettre",
+    "noChangesTitle": "Aucun Changement à Soumettre",
+    "noChangesMessage": "Vous n'avez apporté aucun changement à ce nœud. Pour soumettre une modification, vous devez changer l'emplacement, le profil, les directions ou les balises."
   },
   "download": {
     "title": "Télécharger Zone de Carte",

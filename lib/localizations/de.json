@@ -124,7 +124,10 @@
     "extractFromWay": "Knoten aus Weg/Relation extrahieren",
     "extractFromWaySubtitle": "Neuen Knoten mit gleichen Tags erstellen, Verschieben an neuen Ort ermöglichen",
     "refineTags": "Tags Verfeinern",
-    "existingTags": "<Vorhandene Tags>"
+    "existingTags": "<Vorhandene Tags>",
+    "noChangesDetected": "Keine Änderungen erkannt - nichts zu übertragen",
+    "noChangesTitle": "Keine Änderungen zu Übertragen",
+    "noChangesMessage": "Sie haben keine Änderungen an diesem Knoten vorgenommen. Um eine Bearbeitung zu übertragen, müssen Sie den Standort, das Profil, die Richtungen oder die Tags ändern."
   },
   "download": {
     "title": "Kartenbereich Herunterladen",

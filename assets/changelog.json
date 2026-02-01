@@ -1,4 +1,9 @@
 {
+  "2.6.3": {
+    "content": [
+      "• Prevent edit submissions where nothing (location, tags, direction) has been changed"
+    ]
+  },
   "2.6.2": {
     "content": [
       "• Enhanced edit workflow - existing device properties are preserved by default, reducing accidental tag loss during edits",

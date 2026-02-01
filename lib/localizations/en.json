@@ -161,7 +161,10 @@
     "extractFromWay": "Extract node from way/relation",
     "extractFromWaySubtitle": "Create new node with same tags, allow moving to new location",
     "refineTags": "Refine Tags",
-    "existingTags": "<Existing tags>"
+    "existingTags": "<Existing tags>",
+    "noChangesDetected": "No changes detected - nothing to submit",
+    "noChangesTitle": "No Changes to Submit",
+    "noChangesMessage": "You haven't made any changes to this node. To submit an edit, you need to change the location, profile, directions, or tags."
   },
   "download": {
     "title": "Download Map Area",

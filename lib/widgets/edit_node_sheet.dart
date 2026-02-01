@@ -8,11 +8,13 @@ import '../app_state.dart';
 import '../dev_config.dart';
 import '../models/node_profile.dart';
 import '../models/operator_profile.dart';
+import '../models/pending_upload.dart';
 import '../services/localization_service.dart';
 import '../services/map_data_provider.dart';
 import '../services/node_data_manager.dart';
 import '../services/changelog_service.dart';
 import '../state/settings_state.dart';
+import '../state/session_state.dart';
 import 'refine_tags_sheet.dart';
 import 'advanced_edit_options_sheet.dart';
 import 'proximity_warning_dialog.dart';
@@ -147,6 +149,116 @@ class _EditNodeSheetState extends State<EditNodeSheet> {
     Navigator.pop(context);
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(locService.t('node.editQueuedForUpload'))),
+    );
+  }
+
+  /// Check if the edit session has any actual changes compared to the original node
+  bool _hasActualChanges(EditNodeSession session) {
+    // Extract operation is always a change
+    if (session.extractFromWay) return true;
+    
+    // Check location change
+    const double tolerance = 0.0000001; // ~1cm precision
+    if ((session.target.latitude - session.originalNode.coord.latitude).abs() > tolerance ||
+        (session.target.longitude - session.originalNode.coord.longitude).abs() > tolerance) {
+      return true;
+    }
+    
+    // Check direction changes
+    if (!_directionsEqual(session.directions, session.originalNode.directionDeg)) {
+      return true;
+    }
+    
+    // Check tag changes (including operator profile)
+    final originalTags = session.originalNode.tags;
+    final newTags = _getSessionCombinedTags(session);
+    if (!_tagsEqual(originalTags, newTags)) {
+      return true;
+    }
+    
+    return false;
+  }
+
+  /// Compare two direction lists, handling empty vs [0] cases
+  bool _directionsEqual(List<double> sessionDirs, List<double> originalDirs) {
+    // Sort both lists for comparison
+    final sorted1 = List<double>.from(sessionDirs)..sort();
+    final sorted2 = List<double>.from(originalDirs)..sort();
+    
+    // Handle empty list cases
+    if (sorted1.isEmpty && sorted2.isEmpty) return true;
+    if (sorted1.isEmpty || sorted2.isEmpty) {
+      // Special case: if one is empty and the other is [0], consider them different
+      // because the user either added or removed a direction
+      return false;
+    }
+    
+    if (sorted1.length != sorted2.length) return false;
+    
+    for (int i = 0; i < sorted1.length; i++) {
+      if ((sorted1[i] - sorted2[i]).abs() > 0.1) return false; // 0.1° tolerance
+    }
+    
+    return true;
+  }
+
+  /// Compare two tag maps, ignoring direction tags (handled separately)
+  bool _tagsEqual(Map<String, String> tags1, Map<String, String> tags2) {
+    final filtered1 = Map<String, String>.from(tags1);
+    final filtered2 = Map<String, String>.from(tags2);
+    
+    // Remove direction tags - they're handled separately
+    filtered1.remove('direction');
+    filtered1.remove('camera:direction');
+    filtered2.remove('direction');
+    filtered2.remove('camera:direction');
+    
+    return _mapEquals(filtered1, filtered2);
+  }
+
+  /// Deep equality check for maps
+  bool _mapEquals(Map<String, String> map1, Map<String, String> map2) {
+    if (map1.length != map2.length) return false;
+    
+    for (final entry in map1.entries) {
+      if (map2[entry.key] != entry.value) return false;
+    }
+    
+    return true;
+  }
+
+  /// Get the combined tags that would be submitted for this session
+  Map<String, String> _getSessionCombinedTags(EditNodeSession session) {
+    if (session.profile == null) return <String, String>{};
+    
+    // Create a temporary PendingUpload to use its getCombinedTags logic
+    final tempUpload = PendingUpload(
+      coord: session.target,
+      direction: session.directions.isNotEmpty ? session.directions.first : 0.0,
+      profile: session.profile,
+      operatorProfile: session.operatorProfile,
+      refinedTags: session.refinedTags,
+      uploadMode: UploadMode.production, // Mode doesn't matter for tag combination
+      operation: UploadOperation.modify,
+    );
+    
+    return tempUpload.getCombinedTags();
+  }
+
+  /// Show dialog explaining why submission is disabled due to no changes
+  void _showNoChangesDialog(BuildContext context, LocalizationService locService) {
+    showDialog<void>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(locService.t('editNode.noChangesTitle')),
+        content: Text(locService.t('editNode.noChangesMessage')),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text(locService.ok),
+          ),
+        ],
+      ),
     );
   }
 
@@ -321,6 +433,12 @@ class _EditNodeSheetState extends State<EditNodeSheet> {
         final appState = context.watch<AppState>();
 
         void _commit() {
+          // Check if there are any actual changes to submit
+          if (!_hasActualChanges(widget.session)) {
+            _showNoChangesDialog(context, locService);
+            return;
+          }
+          
           _checkProximityAndCommit(context, appState, locService);
         }
 
