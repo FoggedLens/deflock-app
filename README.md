@@ -117,6 +117,7 @@ cp lib/keys.dart.example lib/keys.dart
 - Import/Export map providers
 
 ### Future Features & Wishlist
+- Tap pending queue item to edit again before submitting
 - Optional reason message when deleting
 - Update offline area data while browsing?
 - Save named locations to more easily navigate to home or work
