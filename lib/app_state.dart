@@ -34,12 +34,16 @@ import 'state/session_state.dart';
 import 'state/settings_state.dart';
 import 'state/suspected_location_state.dart';
 import 'state/upload_queue_state.dart';
+import 'state/scanner_state.dart';
+import 'services/usb_scanner_service.dart' show ScannerConnectionStatus;
 
 // Re-export types
 export 'state/navigation_state.dart' show AppNavigationMode;
 export 'state/settings_state.dart' show UploadMode, FollowMeMode;
 export 'state/session_state.dart' show AddNodeSession, EditNodeSession;
 export 'models/pending_upload.dart' show UploadOperation;
+export 'state/scanner_state.dart' show ScannerState;
+export 'services/usb_scanner_service.dart' show ScannerConnectionStatus;
 
 // ------------------ AppState ------------------
 class AppState extends ChangeNotifier {
@@ -56,6 +60,7 @@ class AppState extends ChangeNotifier {
   late final SettingsState _settingsState;
   late final SuspectedLocationState _suspectedLocationState;
   late final UploadQueueState _uploadQueueState;
+  late final ScannerState _scannerState;
 
   bool _isInitialized = false;
   
@@ -76,7 +81,8 @@ class AppState extends ChangeNotifier {
     _settingsState = SettingsState();
     _suspectedLocationState = SuspectedLocationState();
     _uploadQueueState = UploadQueueState();
-    
+    _scannerState = ScannerState();
+
     // Set up state change listeners
     _authState.addListener(_onStateChanged);
     _messagesState.addListener(_onStateChanged);
@@ -88,7 +94,8 @@ class AppState extends ChangeNotifier {
     _settingsState.addListener(_onStateChanged);
     _suspectedLocationState.addListener(_onStateChanged);
     _uploadQueueState.addListener(_onStateChanged);
-    
+    _scannerState.addListener(_onStateChanged);
+
     _init();
   }
 
@@ -185,6 +192,12 @@ class AppState extends ChangeNotifier {
   double? get suspectedLocationsDownloadProgress => _suspectedLocationState.downloadProgress;
   Future<DateTime?> get suspectedLocationsLastFetch => _suspectedLocationState.lastFetchTime;
 
+  // Scanner state
+  ScannerConnectionStatus get scannerConnectionStatus => _scannerState.connectionStatus;
+  bool get isScannerConnected => _scannerState.isConnected;
+  int get scannerDetectionCount => _scannerState.detectionCount;
+  ScannerState get scannerState => _scannerState;
+
   void _onStateChanged() {
     notifyListeners();
   }
@@ -224,6 +237,7 @@ class AppState extends ChangeNotifier {
     }
     
     await _suspectedLocationState.init(offlineMode: _settingsState.offlineMode);
+    await _scannerState.init();
     await _uploadQueueState.init();
     await _authState.init(_settingsState.uploadMode);
     
@@ -829,17 +843,30 @@ class AppState extends ChangeNotifier {
     final profileName = profile?.name.startsWith('<') == true && profile?.name.endsWith('>') == true
         ? 'a'
         : profile?.name ?? 'surveillance';
-    
+
     switch (operation) {
       case UploadOperation.create:
         return 'Add $profileName surveillance node';
       case UploadOperation.modify:
-        return 'Update $profileName surveillance node'; 
+        return 'Update $profileName surveillance node';
       case UploadOperation.delete:
         return 'Delete $profileName surveillance node';
       case UploadOperation.extract:
         return 'Extract $profileName surveillance node';
     }
+  }
+
+  // ---------- Scanner Methods ----------
+  Future<bool> reconnectScanner() async {
+    return await _scannerState.reconnect();
+  }
+
+  Future<void> disconnectScanner() async {
+    await _scannerState.disconnect();
+  }
+
+  Future<void> linkDetectionToNode(String mac, int osmNodeId) async {
+    await _scannerState.linkDetectionToNode(mac, osmNodeId);
   }
 
   // ---------- Private Methods ----------
@@ -874,7 +901,9 @@ class AppState extends ChangeNotifier {
     _settingsState.removeListener(_onStateChanged);
     _suspectedLocationState.removeListener(_onStateChanged);
     _uploadQueueState.removeListener(_onStateChanged);
-    
+    _scannerState.removeListener(_onStateChanged);
+
+    _scannerState.dispose();
     _uploadQueueState.dispose();
     super.dispose();
   }

@@ -13,9 +13,12 @@ import '../widgets/download_area_dialog.dart';
 import '../widgets/measured_sheet.dart';
 import '../widgets/search_bar.dart';
 import '../widgets/suspected_location_sheet.dart';
+import '../widgets/rf_detection_sheet.dart';
+import '../widgets/scanner_status_indicator.dart';
 import '../widgets/welcome_dialog.dart';
 import '../widgets/changelog_dialog.dart';
 import '../models/osm_node.dart';
+import '../models/rf_detection.dart';
 import '../models/suspected_location.dart';
 import '../models/search_result.dart';
 import '../services/changelog_service.dart';
@@ -50,6 +53,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   // Track popup display to avoid showing multiple times
   bool _hasCheckedForPopup = false;
 
+  // RF detections for map markers
+  List<RfDetection> _rfDetections = [];
+  bool _rfDetectionsLoading = false;
+
   @override
   void initState() {
     super.initState();
@@ -57,10 +64,22 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     _sheetCoordinator = SheetCoordinator();
     _navigationCoordinator = NavigationCoordinator();
     _mapInteractionHandler = MapInteractionHandler();
+
+    // Listen to scanner state changes to reload RF detections
+    final appState = context.read<AppState>();
+    appState.scannerState.addListener(_onScannerStateChanged);
+  }
+
+  void _onScannerStateChanged() {
+    _loadRfDetections();
   }
 
   @override
   void dispose() {
+    // Use try/catch in case context is no longer valid
+    try {
+      context.read<AppState>().scannerState.removeListener(_onScannerStateChanged);
+    } catch (_) {}
     _mapController.dispose();
     super.dispose();
   }
@@ -378,6 +397,57 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     });
   }
 
+  Future<void> _loadRfDetections() async {
+    if (_rfDetectionsLoading) return;
+    _rfDetectionsLoading = true;
+    try {
+      final appState = context.read<AppState>();
+      final bounds = _mapController.mapController.camera.visibleBounds;
+      final detections = await appState.scannerState.getDetectionsInBounds(
+        north: bounds.north,
+        south: bounds.south,
+        east: bounds.east,
+        west: bounds.west,
+      );
+      if (mounted) {
+        setState(() => _rfDetections = detections);
+      }
+    } catch (_) {
+      // Map not ready or DB error — ignore
+    } finally {
+      _rfDetectionsLoading = false;
+    }
+  }
+
+  void openRfDetectionSheet(RfDetection detection) {
+    // Disable follow-me when viewing a detection
+    final appState = context.read<AppState>();
+    if (appState.followMeMode != FollowMeMode.off) {
+      appState.setFollowMeMode(FollowMeMode.off);
+    }
+
+    final controller = _scaffoldKey.currentState!.showBottomSheet(
+      (ctx) => Padding(
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(context).padding.bottom,
+        ),
+        child: MeasuredSheet(
+          onHeightChanged: (height) {
+            _sheetCoordinator.updateTagSheetHeight(
+              height + MediaQuery.of(context).padding.bottom,
+              () => setState(() {}),
+            );
+          },
+          child: RfDetectionSheet(detection: detection),
+        ),
+      ),
+    );
+
+    controller.closed.then((_) {
+      _sheetCoordinator.resetTagSheetHeight(() => setState(() {}));
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final appState = context.watch<AppState>();
@@ -432,6 +502,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             fit: BoxFit.contain,
           ),
           actions: [
+            const ScannerStatusIndicator(),
             IconButton(
               tooltip: _getFollowMeTooltip(appState.followMeMode),
               icon: Icon(_getFollowMeIcon(appState.followMeMode)),
@@ -488,6 +559,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               selectedNodeId: _selectedNodeId,
               onNodeTap: openNodeTagSheet,
               onSuspectedLocationTap: openSuspectedLocationSheet,
+              onRfDetectionTap: openRfDetectionSheet,
+              rfDetections: _rfDetections,
               onSearchPressed: _onNavigationButtonPressed,
               onNodeLimitChanged: (isLimited) {
                 setState(() {
