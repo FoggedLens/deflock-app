@@ -10,6 +10,11 @@
     <!-- Notification permission for proximity alerts -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
 
+    <!-- BLE permissions for FlockSquawk scanner -->
+    <uses-permission android:name="android.permission.BLUETOOTH_SCAN"
+        android:usesPermissionFlags="neverForLocation"/>
+    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT"/>
+
     <application
         android:name="${applicationName}"
         android:label="DeFlock"

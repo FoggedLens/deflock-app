@@ -35,6 +35,19 @@ class _ScannerScreenState extends State<ScannerScreen> {
     final appState = context.watch<AppState>();
     final theme = Theme.of(context);
     final status = appState.scannerConnectionStatus;
+    final transport = appState.scannerTransportType;
+    final isBle = transport == ScannerTransportType.ble;
+
+    // Transport-aware icon
+    final IconData connectionIcon;
+    final Color? connectionColor;
+    if (appState.isScannerConnected) {
+      connectionIcon = isBle ? Icons.bluetooth_connected : Icons.usb;
+      connectionColor = Colors.green;
+    } else {
+      connectionIcon = isBle ? Icons.bluetooth : Icons.usb_off;
+      connectionColor = null;
+    }
 
     return Scaffold(
       appBar: AppBar(
@@ -42,11 +55,10 @@ class _ScannerScreenState extends State<ScannerScreen> {
         actions: [
           // Connection status + reconnect
           IconButton(
-            icon: Icon(
-              appState.isScannerConnected ? Icons.usb : Icons.usb_off,
-              color: appState.isScannerConnected ? Colors.green : null,
-            ),
-            tooltip: appState.isScannerConnected ? 'Connected' : 'Reconnect',
+            icon: Icon(connectionIcon, color: connectionColor),
+            tooltip: appState.isScannerConnected
+                ? 'Connected via ${isBle ? 'Bluetooth' : 'USB'}'
+                : 'Reconnect',
             onPressed: appState.isScannerConnected
                 ? () => appState.disconnectScanner()
                 : () => appState.reconnectScanner(),
@@ -56,7 +68,7 @@ class _ScannerScreenState extends State<ScannerScreen> {
       body: Column(
         children: [
           // Status banner
-          _ConnectionBanner(status: status, error: appState.scannerState.lastError),
+          _ConnectionBanner(status: status, transport: transport, error: appState.scannerState.lastError),
 
           // Stats row
           if (_stats != null)
@@ -140,28 +152,30 @@ class _ScannerScreenState extends State<ScannerScreen> {
 
 class _ConnectionBanner extends StatelessWidget {
   final ScannerConnectionStatus status;
+  final ScannerTransportType transport;
   final String? error;
 
-  const _ConnectionBanner({required this.status, this.error});
+  const _ConnectionBanner({required this.status, required this.transport, this.error});
 
   @override
   Widget build(BuildContext context) {
     final Color bgColor;
     final String text;
+    final transportName = transport == ScannerTransportType.ble ? 'Bluetooth' : 'USB';
 
     switch (status) {
       case ScannerConnectionStatus.connected:
         bgColor = Colors.green;
-        text = 'Scanner connected — receiving detections';
+        text = 'Scanner connected via $transportName';
       case ScannerConnectionStatus.connecting:
         bgColor = Colors.orange;
-        text = 'Connecting to scanner...';
+        text = 'Connecting via $transportName...';
       case ScannerConnectionStatus.error:
         bgColor = Colors.red;
         text = error ?? 'Scanner error';
       case ScannerConnectionStatus.disconnected:
         bgColor = Colors.grey;
-        text = 'Scanner disconnected — plug in M5StickC via USB';
+        text = 'Scanner disconnected — searching for FlockSquawk...';
     }
 
     return Container(
