@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:latlong2/latlong.dart';
 import '../models/osm_node.dart';
 import 'package:flutter_map/flutter_map.dart' show LatLngBounds;
@@ -85,7 +86,7 @@ class NodeCache {
   /// Remove a node by ID from the cache (used for successful deletions)
   void removeNodeById(int nodeId) {
     if (_nodes.remove(nodeId) != null) {
-      print('[NodeCache] Removed node $nodeId from cache (successful deletion)');
+      debugPrint('[NodeCache] Removed node $nodeId from cache (successful deletion)');
     }
   }
   
@@ -111,19 +112,19 @@ class NodeCache {
     }
     
     if (nodesToRemove.isNotEmpty) {
-      print('[NodeCache] Removed ${nodesToRemove.length} temp nodes at coordinate ${coord.latitude}, ${coord.longitude}');
+      debugPrint('[NodeCache] Removed ${nodesToRemove.length} temp nodes at coordinate ${coord.latitude}, ${coord.longitude}');
     }
   }
 
   /// Remove a specific temporary node by its ID (for queue item-specific cleanup)
   void removeTempNodeById(int tempNodeId) {
     if (tempNodeId >= 0) {
-      print('[NodeCache] Warning: Attempted to remove non-temp node ID $tempNodeId');
+      debugPrint('[NodeCache] Warning: Attempted to remove non-temp node ID $tempNodeId');
       return;
     }
     
     if (_nodes.remove(tempNodeId) != null) {
-      print('[NodeCache] Removed specific temp node $tempNodeId from cache');
+      debugPrint('[NodeCache] Removed specific temp node $tempNodeId from cache');
     }
   }
 

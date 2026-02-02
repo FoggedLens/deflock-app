@@ -29,23 +29,23 @@ class UploadQueueState extends ChangeNotifier {
   // Initialize by loading queue from storage and repopulate cache with pending nodes
   Future<void> init() async {
     await _loadQueue();
-    print('[UploadQueue] Loaded ${_queue.length} items from storage');
+    debugPrint('[UploadQueue] Loaded ${_queue.length} items from storage');
     _repopulateCacheFromQueue();
   }
 
   // Repopulate the cache with pending nodes from the queue on startup
   void _repopulateCacheFromQueue() {
-    print('[UploadQueue] Repopulating cache from ${_queue.length} queue items');
+    debugPrint('[UploadQueue] Repopulating cache from ${_queue.length} queue items');
     final nodesToAdd = <OsmNode>[];
     
     for (final upload in _queue) {
       // Skip completed uploads - they should already be in OSM and will be fetched normally
       if (upload.isComplete) {
-        print('[UploadQueue] Skipping completed upload at ${upload.coord}');
+        debugPrint('[UploadQueue] Skipping completed upload at ${upload.coord}');
         continue;
       }
       
-      print('[UploadQueue] Processing ${upload.operation} upload at ${upload.coord}');
+      debugPrint('[UploadQueue] Processing ${upload.operation} upload at ${upload.coord}');
       
       if (upload.isDeletion) {
         // For deletions: mark the original node as pending deletion if it exists in cache
@@ -73,9 +73,7 @@ class UploadQueueState extends ChangeNotifier {
         tags['_temp_id'] = tempId.toString();
         
         // Store temp ID for future cleanup if not already set
-        if (upload.tempNodeId == null) {
-          upload.tempNodeId = tempId;
-        }
+        upload.tempNodeId ??= tempId;
         
         if (upload.isEdit) {
           // For edits: also mark original with _pending_edit if it exists
@@ -112,7 +110,7 @@ class UploadQueueState extends ChangeNotifier {
     
     if (nodesToAdd.isNotEmpty) {
       _nodeCache.addOrUpdate(nodesToAdd);
-      print('[UploadQueue] Repopulated cache with ${nodesToAdd.length} pending nodes from queue');
+      debugPrint('[UploadQueue] Repopulated cache with ${nodesToAdd.length} pending nodes from queue');
       
       // Save queue if we updated any temp IDs for backward compatibility
       _saveQueue();
@@ -587,7 +585,7 @@ class UploadQueueState extends ChangeNotifier {
         // Still have time, will retry after backoff delay
         final nextDelay = item.nextNodeSubmissionRetryDelay;
         final timeLeft = item.timeUntilAutoClose;
-        debugPrint('[UploadQueue] Will retry node submission in ${nextDelay}, ${timeLeft?.inMinutes}m remaining');
+        debugPrint('[UploadQueue] Will retry node submission in $nextDelay, ${timeLeft?.inMinutes}m remaining');
         // No state change needed - attempt count was already updated above
       }
     }
@@ -646,7 +644,7 @@ class UploadQueueState extends ChangeNotifier {
       // Note: This will NEVER error out - will keep trying until 59-minute window expires
       final nextDelay = item.nextChangesetCloseRetryDelay;
       final timeLeft = item.timeUntilAutoClose;
-      debugPrint('[UploadQueue] Changeset close failed (attempt ${item.changesetCloseAttempts}), will retry in ${nextDelay}, ${timeLeft?.inMinutes}m remaining');
+      debugPrint('[UploadQueue] Changeset close failed (attempt ${item.changesetCloseAttempts}), will retry in $nextDelay, ${timeLeft?.inMinutes}m remaining');
       debugPrint('[UploadQueue] Error: ${result.errorMessage}');
       // No additional state change needed - attempt count was already updated above
     }
