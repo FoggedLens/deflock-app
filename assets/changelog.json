@@ -1,7 +1,8 @@
 {
   "2.6.3": {
     "content": [
-      "• Prevent edit submissions where nothing (location, tags, direction) has been changed"
+      "• Prevent edit submissions where nothing (location, tags, direction) has been changed",
+      "• FIXED: Node data not loading in sandbox mode - improved cache integration and status reporting for development testing"
     ]
   },
   "2.6.2": {

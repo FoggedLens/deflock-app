@@ -78,15 +78,79 @@ class NodeDataManager extends ChangeNotifier {
       }
     }
 
-    // Handle sandbox mode (always fetch from OSM API, no caching)
+    // Handle sandbox mode (always fetch from OSM API, but integrate with cache system for UI)
     if (uploadMode == UploadMode.sandbox) {
       debugPrint('[NodeDataManager] Sandbox mode: fetching from OSM API');
-      return fetchOsmApiNodes(
-        bounds: bounds,
-        profiles: profiles,
-        uploadMode: uploadMode,
-        maxResults: 0,
-      );
+      
+      // Track user-initiated requests for status reporting
+      final requestKey = '${bounds.hashCode}_${profiles.map((p) => p.id).join('_')}_$uploadMode';
+      
+      if (isUserInitiated && _userInitiatedRequests.contains(requestKey)) {
+        debugPrint('[NodeDataManager] Sandbox request already in progress for this area');
+        return _cache.getNodesFor(bounds);
+      }
+      
+      // Start status tracking for user-initiated requests
+      if (isUserInitiated) {
+        _userInitiatedRequests.add(requestKey);
+        NetworkStatus.instance.setLoading();
+        debugPrint('[NodeDataManager] Starting user-initiated sandbox request');
+      } else {
+        debugPrint('[NodeDataManager] Starting background sandbox request (no status reporting)');
+      }
+      
+      try {
+        final nodes = await fetchOsmApiNodes(
+          bounds: bounds,
+          profiles: profiles,
+          uploadMode: uploadMode,
+          maxResults: 0,
+        );
+        
+        // Add nodes to cache for UI integration (even though we don't rely on cache for subsequent fetches)
+        if (nodes.isNotEmpty) {
+          _cache.addOrUpdateNodes(nodes);
+          _cache.markAreaAsFetched(bounds, nodes);
+        } else {
+          // Mark area as fetched even with no nodes so UI knows we've checked this area
+          _cache.markAreaAsFetched(bounds, []);
+        }
+        
+        // Update UI
+        notifyListeners();
+        
+        // Set success after the next frame renders, but only for user-initiated requests
+        if (isUserInitiated) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            NetworkStatus.instance.setSuccess();
+          });
+          debugPrint('[NodeDataManager] User-initiated sandbox request completed successfully: ${nodes.length} nodes');
+        }
+        
+        return nodes;
+        
+      } catch (e) {
+        debugPrint('[NodeDataManager] Sandbox fetch failed: $e');
+        
+        // Only report errors for user-initiated requests
+        if (isUserInitiated) {
+          if (e is RateLimitError) {
+            NetworkStatus.instance.setRateLimited();
+          } else if (e.toString().contains('timeout')) {
+            NetworkStatus.instance.setTimeout();
+          } else {
+            NetworkStatus.instance.setError();
+          }
+          debugPrint('[NodeDataManager] User-initiated sandbox request failed: $e');
+        }
+        
+        // Return whatever we have in cache for this area (likely empty for sandbox)
+        return _cache.getNodesFor(bounds);
+      } finally {
+        if (isUserInitiated) {
+          _userInitiatedRequests.remove(requestKey);
+        }
+      }
     }
 
     // Production mode: check cache first

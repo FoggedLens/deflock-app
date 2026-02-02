@@ -70,12 +70,18 @@ class NodeRefreshController {
     }
     
     final zoom = controller.mapController.camera.zoom;
-    if (zoom < kNodeMinZoomLevel) {
-      // Show a snackbar-style bubble warning
+    // Use the correct minimum zoom level based on upload mode
+    final minZoom = uploadMode == UploadMode.sandbox ? kOsmApiMinZoomLevel : kNodeMinZoomLevel;
+    
+    if (zoom < minZoom) {
+      // Show a snackbar-style bubble warning with mode-specific message
       if (context.mounted) {
+        final message = uploadMode == UploadMode.sandbox 
+          ? 'Nodes not drawn below zoom level $minZoom in sandbox mode (OSM API limits)'
+          : 'Nodes not drawn below zoom level $minZoom';
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Nodes not drawn below zoom level $kNodeMinZoomLevel'),
+            content: Text(message),
             duration: const Duration(seconds: 2),
           ),
         );

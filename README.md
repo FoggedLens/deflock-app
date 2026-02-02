@@ -115,6 +115,7 @@ cp lib/keys.dart.example lib/keys.dart
 - Add ability to downvote suspected locations which are old enough
 - Turn by turn navigation or at least swipe nav sheet up to see a list
 - Import/Export map providers
+- Import default profiles from the website to capture changes without pushing an update?
 
 ### Future Features & Wishlist
 - Tap pending queue item to edit again before submitting
