@@ -118,7 +118,7 @@ class NodeProfilesSection extends StatelessWidget {
     );
     
     // If user chose to create custom profile, open the profile editor
-    if (result == 'create') {
+    if (result == 'create' && context.mounted) {
       _createNewProfile(context);
     }
     // If user chose import from website, ProfileAddChoiceDialog handles opening the URL

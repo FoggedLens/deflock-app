@@ -146,7 +146,7 @@ class OneTimeMigrations {
       debugPrint('[Migration] Stack trace: $stackTrace');
       
       // Nuclear option: clear everything and show non-dismissible error dialog
-      if (context != null) {
+      if (context != null && context.mounted) {
         NuclearResetDialog.show(context, error, stackTrace);
       } else {
         // If no context available, just log and hope for the best

@@ -96,7 +96,8 @@ class NuclearResetDialog extends StatelessWidget {
     
     // Clear all app data
     await NuclearResetService.clearEverything();
-    
+
+    if (!context.mounted) return;
     // Show non-dismissible dialog
     await showDialog(
       context: context,

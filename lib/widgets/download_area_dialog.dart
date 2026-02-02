@@ -264,8 +264,9 @@ class _DownloadAreaDialogState extends State<DownloadAreaDialog> {
                 try {
                   final id = DateTime.now().toIso8601String().replaceAll(':', '-');
                   final appDocDir = await OfflineAreaService().getOfflineAreaDir();
+                  if (!context.mounted) return;
                   final dir = "${appDocDir.path}/$id";
-                  
+
                   // Get current tile provider info
                   final appState = context.read<AppState>();
                   final selectedProvider = appState.selectedTileProvider;
@@ -292,6 +293,7 @@ class _DownloadAreaDialogState extends State<DownloadAreaDialog> {
                     builder: (context) => const DownloadStartedDialog(),
                   );
                 } catch (e) {
+                  if (!context.mounted) return;
                   Navigator.pop(context);
                   showDialog(
                     context: context,

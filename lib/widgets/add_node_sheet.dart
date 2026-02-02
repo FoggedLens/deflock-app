@@ -89,7 +89,8 @@ class _AddNodeSheetState extends State<AddNodeSheet> {
   void _checkSubmissionGuideAndProceed(BuildContext context, AppState appState, LocalizationService locService) async {
     // Check if user has seen the submission guide
     final hasSeenGuide = await ChangelogService().hasSeenSubmissionGuide();
-    
+    if (!context.mounted) return;
+
     if (!hasSeenGuide) {
       // Show submission guide dialog first
       final shouldProceed = await showDialog<bool>(
@@ -97,13 +98,14 @@ class _AddNodeSheetState extends State<AddNodeSheet> {
         barrierDismissible: false,
         builder: (context) => const SubmissionGuideDialog(),
       );
-      
+      if (!context.mounted) return;
+
       // If user canceled the submission guide, don't proceed with submission
       if (shouldProceed != true) {
         return;
       }
     }
-    
+
     // Now proceed with proximity check
     _checkProximityOnly(context, appState, locService);
   }

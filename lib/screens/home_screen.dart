@@ -185,6 +185,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       
       // Run any needed migrations first
       final versionsNeedingMigration = await ChangelogService().getVersionsNeedingMigration();
+      if (!mounted) return;
       for (final version in versionsNeedingMigration) {
         await ChangelogService().runMigration(version, appState, context);
       }
@@ -209,6 +210,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         
         case PopupType.changelog:
           final changelogContent = await ChangelogService().getChangelogContentForDisplay();
+          if (!mounted) return;
           if (changelogContent != null) {
             await showDialog(
               context: context,
@@ -368,9 +370,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     );
     
     // Reset height and clear selection when sheet is dismissed
+    final appState = context.read<AppState>();
     controller.closed.then((_) {
+      if (!mounted) return;
       _sheetCoordinator.resetTagSheetHeight(() => setState(() {}));
-      context.read<AppState>().clearSuspectedLocationSelection();
+      appState.clearSuspectedLocationSelection();
     });
   }
 

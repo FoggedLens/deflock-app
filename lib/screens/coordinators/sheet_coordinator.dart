@@ -117,9 +117,8 @@ class SheetCoordinator {
     controller.closed.then((_) {
       _addSheetHeight = 0.0;
       onStateChanged();
-      
+
       // Handle dismissal by canceling session if still active
-      final appState = context.read<AppState>();
       if (appState.session != null) {
         debugPrint('[SheetCoordinator] AddNodeSheet dismissed - canceling session');
         appState.cancelSession();
@@ -186,9 +185,8 @@ class SheetCoordinator {
       _editSheetHeight = 0.0;
       _transitioningToEdit = false;
       onStateChanged();
-      
+
       // Handle dismissal by canceling session if still active
-      final appState = context.read<AppState>();
       if (appState.editSession != null) {
         debugPrint('[SheetCoordinator] EditNodeSheet dismissed - canceling edit session');
         appState.cancelEditSession();
