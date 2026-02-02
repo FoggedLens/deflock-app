@@ -7,7 +7,6 @@ import 'package:flutter_map/flutter_map.dart';
 import '../app_state.dart';
 import '../dev_config.dart';
 import '../models/node_profile.dart';
-import '../models/operator_profile.dart';
 import '../services/localization_service.dart';
 import '../services/map_data_provider.dart';
 import '../services/node_data_manager.dart';
@@ -55,23 +54,6 @@ class _AddNodeSheetState extends State<AddNodeSheet> {
       if (_showTutorial) {
         final appState = context.read<AppState>();
         appState.registerTutorialCallback(_hideTutorial);
-      }
-    }
-  }
-
-  /// Listen for tutorial completion from AppState
-  void _onTutorialCompleted() {
-    _hideTutorial();
-  }
-
-  /// Also check periodically if tutorial was completed by another sheet
-  void _recheckTutorialStatus() async {
-    if (_showTutorial) {
-      final hasCompleted = await ChangelogService().hasCompletedPositioningTutorial();
-      if (hasCompleted && mounted) {
-        setState(() {
-          _showTutorial = false;
-        });
       }
     }
   }
@@ -402,11 +384,11 @@ class _AddNodeSheetState extends State<AddNodeSheet> {
         final locService = LocalizationService.instance;
         final appState = context.watch<AppState>();
 
-        void _commit() {
+        void commit() {
           _checkProximityAndCommit(context, appState, locService);
         }
 
-        void _cancel() {
+        void cancel() {
           appState.cancelSession();
           Navigator.pop(context);
         }
@@ -442,11 +424,11 @@ class _AddNodeSheetState extends State<AddNodeSheet> {
             session.profile!.isSubmittable &&
             hasGoodCoverage;
         
-        void _navigateToLogin() {
+        void navigateToLogin() {
           Navigator.pushNamed(context, '/settings/osm-account');
         }
-        
-        void _openRefineTags() async {
+
+        void openRefineTags() async {
           final result = await Navigator.push<RefineTagsResult?>(
             context,
             MaterialPageRoute(
@@ -578,7 +560,7 @@ class _AddNodeSheetState extends State<AddNodeSheet> {
                 child: SizedBox(
                   width: double.infinity,
                   child: OutlinedButton.icon(
-                    onPressed: session.profile != null ? _openRefineTags : null, // Disabled when no profile selected
+                    onPressed: session.profile != null ? openRefineTags : null, // Disabled when no profile selected
                     icon: const Icon(Icons.tune),
                     label: Text(locService.t('addNode.refineTags')),
                   ),
@@ -591,14 +573,14 @@ class _AddNodeSheetState extends State<AddNodeSheet> {
                   children: [
                     Expanded(
                       child: OutlinedButton(
-                        onPressed: _cancel,
+                        onPressed: cancel,
                         child: Text(locService.cancel),
                       ),
                     ),
                     const SizedBox(width: 12),
                     Expanded(
                       child: ElevatedButton(
-                        onPressed: !appState.isLoggedIn ? _navigateToLogin : (allowSubmit ? _commit : null),
+                        onPressed: !appState.isLoggedIn ? navigateToLogin : (allowSubmit ? commit : null),
                         child: Text(!appState.isLoggedIn ? locService.t('actions.logIn') : locService.t('actions.submit')),
                       ),
                     ),

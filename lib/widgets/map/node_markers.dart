@@ -20,8 +20,8 @@ class NodeMapMarker extends StatefulWidget {
     required this.mapController, 
     this.onNodeTap,
     this.enabled = true,
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   @override
   State<NodeMapMarker> createState() => _NodeMapMarkerState();

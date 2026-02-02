@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_map_animations/flutter_map_animations.dart';
 import 'package:provider/provider.dart';
 
 import '../../app_state.dart';
 import '../../dev_config.dart';
 import '../../services/localization_service.dart';
-import '../camera_icon.dart';
 import '../compass_indicator.dart';
 import 'layer_selector_button.dart';
 

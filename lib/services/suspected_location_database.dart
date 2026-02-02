@@ -143,7 +143,6 @@ class SuspectedLocationDatabase {
       
       // Process entries in batches to avoid memory issues
       const batchSize = 1000;
-      int totalInserted = 0;
       int validCount = 0;
       int errorCount = 0;
       
@@ -188,7 +187,6 @@ class SuspectedLocationDatabase {
           
           // Commit this batch
           await batch.commit(noResult: true);
-          totalInserted += currentBatch.length;
           
           // Log progress every few batches
           if ((i ~/ batchSize) % 5 == 0) {

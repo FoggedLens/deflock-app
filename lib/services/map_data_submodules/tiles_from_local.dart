@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'package:latlong2/latlong.dart';
 import '../offline_area_service.dart';
 import '../offline_areas/offline_area_models.dart';
 import '../offline_areas/offline_tile_utils.dart';

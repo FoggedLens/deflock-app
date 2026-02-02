@@ -5,7 +5,7 @@ import 'dart:async';
 /// Only tracks the latest user-initiated request - background requests are ignored.
 enum NetworkRequestStatus {
   idle,        // No active requests
-  loading,     // Request in progress  
+  loading,     // Request in progress
   splitting,   // Request being split due to limits/timeouts
   success,     // Data loaded successfully
   timeout,     // Request timed out

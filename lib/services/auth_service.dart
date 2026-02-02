@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'dart:developer';
-import 'dart:math' as math;
 
 import 'package:oauth2_client/oauth2_client.dart';
 import 'package:oauth2_client/oauth2_helper.dart';
@@ -30,7 +29,6 @@ class AuthService {
       case UploadMode.sandbox:
         return 'osm_token_sandbox';
       case UploadMode.simulate:
-      default:
         return 'osm_token_simulate';
     }
   }
@@ -97,7 +95,7 @@ class AuthService {
       final tokenJson = jsonEncode(tokenMap);
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString(_tokenKey, tokenJson); // Save token for current mode
-      _displayName = await _fetchUsername(token!.accessToken!);
+      _displayName = await _fetchUsername(token.accessToken!);
       return _displayName;
     } catch (e) {
       print('AuthService: OAuth login failed: $e');

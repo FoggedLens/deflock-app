@@ -1,6 +1,5 @@
 import 'package:latlong2/latlong.dart';
 import 'package:flutter_map/flutter_map.dart';
-import 'package:flutter/foundation.dart';
 
 import '../models/node_profile.dart';
 import '../models/osm_node.dart';

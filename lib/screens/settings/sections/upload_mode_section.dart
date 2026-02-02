@@ -95,7 +95,6 @@ class UploadModeSection extends StatelessWidget {
                             ),
                           );
                         case UploadMode.simulate:
-                        default:
                           return Text(
                             locService.t('uploadMode.simulateDescription'), 
                             style: TextStyle(

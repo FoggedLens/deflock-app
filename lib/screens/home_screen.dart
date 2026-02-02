@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_map_animations/flutter_map_animations.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:latlong2/latlong.dart';
 import 'package:provider/provider.dart';
 
 import '../app_state.dart';
@@ -10,12 +8,9 @@ import '../dev_config.dart';
 import '../widgets/map_view.dart';
 import '../services/localization_service.dart';
 
-import '../widgets/add_node_sheet.dart';
-import '../widgets/edit_node_sheet.dart';
 import '../widgets/node_tag_sheet.dart';
 import '../widgets/download_area_dialog.dart';
 import '../widgets/measured_sheet.dart';
-import '../widgets/navigation_sheet.dart';
 import '../widgets/search_bar.dart';
 import '../widgets/suspected_location_sheet.dart';
 import '../widgets/welcome_dialog.dart';
@@ -250,35 +245,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       mapController: _mapController,
       mapViewKey: _mapViewKey,
     );
-  }
-  
-  void _zoomAndCenterForRoute(bool followMeEnabled, LatLng? userLocation, LatLng? routeStart) {
-    try {
-      LatLng centerLocation;
-      
-      if (followMeEnabled && userLocation != null) {
-        // Center on user if follow-me is enabled
-        centerLocation = userLocation;
-        debugPrint('[HomeScreen] Centering on user location for route start');
-      } else if (routeStart != null) {
-        // Center on start pin if user is far away or no GPS
-        centerLocation = routeStart;
-        debugPrint('[HomeScreen] Centering on route start pin');
-      } else {
-        debugPrint('[HomeScreen] No valid location to center on');
-        return;
-      }
-      
-      // Animate to zoom 14 and center location
-      _mapController.animateTo(
-        dest: centerLocation,
-        zoom: 14.0,
-        duration: const Duration(milliseconds: 800),
-        curve: Curves.easeInOut,
-      );
-    } catch (e) {
-      debugPrint('[HomeScreen] Could not zoom/center for route: $e');
-    }
   }
   
   void _onResumeRoute() {

@@ -57,8 +57,7 @@ class _DownloadAreaDialogState extends State<DownloadAreaDialog> {
     }
     
     final minZoom = 1; // Always start from zoom 1 to show area overview when zoomed out
-    final maxZoom = _zoom.toInt();
-    
+
     // Calculate maximum possible zoom based on tile count limit and tile provider max zoom
     final maxPossibleZoom = _calculateMaxZoomForTileLimit(bounds, minZoom);
     
@@ -124,7 +123,6 @@ class _DownloadAreaDialogState extends State<DownloadAreaDialog> {
         final locService = LocalizationService.instance;
         final appState = context.watch<AppState>();
         final bounds = widget.controller.camera.visibleBounds;
-        final maxZoom = _zoom.toInt();
         final isOfflineMode = appState.offlineMode;
         
         // Use the calculated max possible zoom instead of fixed span

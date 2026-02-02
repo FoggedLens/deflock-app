@@ -6,7 +6,6 @@ import 'package:latlong2/latlong.dart';
 import '../../models/osm_node.dart';
 import '../../models/suspected_location.dart';
 import '../../app_state.dart';
-import '../../state/session_state.dart';
 import '../../dev_config.dart';
 import '../camera_icon.dart';
 import '../provisional_pin.dart';

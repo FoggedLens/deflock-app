@@ -3,7 +3,6 @@ import 'package:provider/provider.dart';
 import '../app_state.dart';
 import '../models/pending_upload.dart';
 import '../services/localization_service.dart';
-import '../state/settings_state.dart';
 
 class UploadQueueScreen extends StatelessWidget {
   const UploadQueueScreen({super.key});
@@ -114,8 +113,8 @@ class UploadQueueScreen extends StatelessWidget {
                   margin: const EdgeInsets.only(bottom: 16),
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: Colors.orange.withOpacity(0.1),
-                    border: Border.all(color: Colors.orange.withOpacity(0.3)),
+                    color: Colors.orange.withValues(alpha: 0.1),
+                    border: Border.all(color: Colors.orange.withValues(alpha: 0.3)),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Row(
@@ -205,7 +204,7 @@ class UploadQueueScreen extends StatelessWidget {
                   icon: const Icon(Icons.clear_all),
                   label: Text(locService.t('queue.clearUploadQueue')),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: appState.pendingCount > 0 ? null : Theme.of(context).disabledColor.withOpacity(0.1),
+                    backgroundColor: appState.pendingCount > 0 ? null : Theme.of(context).disabledColor.withValues(alpha: 0.1),
                   ),
                 ),
               ),
@@ -224,13 +223,13 @@ class UploadQueueScreen extends StatelessWidget {
                         Icon(
                           Icons.check_circle_outline,
                           size: 64,
-                          color: Theme.of(context).textTheme.bodySmall?.color?.withOpacity(0.4),
+                          color: Theme.of(context).textTheme.bodySmall?.color?.withValues(alpha: 0.4),
                         ),
                         const SizedBox(height: 16),
                         Text(
                           locService.t('queue.nothingInQueue'),
                           style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            color: Theme.of(context).textTheme.bodySmall?.color?.withOpacity(0.6),
+                            color: Theme.of(context).textTheme.bodySmall?.color?.withValues(alpha: 0.6),
                           ),
                           textAlign: TextAlign.center,
                         ),
@@ -272,16 +271,16 @@ class UploadQueueScreen extends StatelessWidget {
                         _getUploadStateText(upload, locService)
                       ),
                       subtitle: Text(
-                        locService.t('queue.destination', params: [_getUploadModeDisplayName(upload.uploadMode)]) + '\n' +
-                        locService.t('queue.latitude', params: [upload.coord.latitude.toStringAsFixed(6)]) + '\n' +
-                        locService.t('queue.longitude', params: [upload.coord.longitude.toStringAsFixed(6)]) + '\n' +
-                        locService.t('queue.direction', params: [
-                          upload.direction is String 
+                        '${locService.t('queue.destination', params: [_getUploadModeDisplayName(upload.uploadMode)])}\n'
+                        '${locService.t('queue.latitude', params: [upload.coord.latitude.toStringAsFixed(6)])}\n'
+                        '${locService.t('queue.longitude', params: [upload.coord.longitude.toStringAsFixed(6)])}\n'
+                        '${locService.t('queue.direction', params: [
+                          upload.direction is String
                               ? upload.direction.toString()
                               : upload.direction.round().toString()
-                        ]) + '\n' +
-                        locService.t('queue.attempts', params: [upload.attempts.toString()]) +
-                        (upload.uploadState == UploadState.error ? "\n${locService.t('queue.uploadFailedRetry')}" : "")
+                        ])}\n'
+                        '${locService.t('queue.attempts', params: [upload.attempts.toString()])}'
+                        '${upload.uploadState == UploadState.error ? "\n${locService.t('queue.uploadFailedRetry')}" : ""}'
                       ),
                       trailing: Row(
                         mainAxisSize: MainAxisSize.min,

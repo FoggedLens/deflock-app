@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
-import 'package:latlong2/latlong.dart';
 
 import '../../models/tile_provider.dart' as models;
 import '../../services/deflock_tile_provider.dart';
@@ -93,7 +92,7 @@ class TileLayerManager {
     return TileLayer(
       urlTemplate: urlTemplate, // Critical for cache key generation
       userAgentPackageName: 'me.deflock.deflockapp',
-      maxZoom: selectedTileType?.maxZoom?.toDouble() ?? 18.0,
+      maxZoom: selectedTileType?.maxZoom.toDouble() ?? 18.0,
       tileProvider: _tileProvider!,
     );
   }

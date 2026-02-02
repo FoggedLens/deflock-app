@@ -1,12 +1,9 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:latlong2/latlong.dart';
 import 'package:flutter_map/flutter_map.dart' show LatLngBounds;
 
-import '../services/map_data_provider.dart';
 import '../services/node_data_manager.dart';
 import '../services/node_spatial_cache.dart';
-import '../services/network_status.dart';
 import '../models/node_profile.dart';
 import '../models/osm_node.dart';
 import '../app_state.dart';

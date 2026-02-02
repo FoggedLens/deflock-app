@@ -9,7 +9,6 @@ import '../../widgets/add_node_sheet.dart';
 import '../../widgets/edit_node_sheet.dart';
 import '../../widgets/navigation_sheet.dart';
 import '../../widgets/measured_sheet.dart';
-import '../../state/settings_state.dart' show FollowMeMode;
 
 /// Coordinates all bottom sheet operations including opening, closing, height tracking,
 /// and sheet-related validation logic.
@@ -266,7 +265,7 @@ class SheetCoordinator {
   /// Restore the follow-me mode that was active before opening a node sheet
   void _restoreFollowMeMode(AppState appState) {
     if (_followMeModeBeforeSheet != null) {
-      debugPrint('[SheetCoordinator] Restoring follow-me mode: ${_followMeModeBeforeSheet}');
+      debugPrint('[SheetCoordinator] Restoring follow-me mode: $_followMeModeBeforeSheet');
       appState.setFollowMeMode(_followMeModeBeforeSheet!);
       _followMeModeBeforeSheet = null; // Clear stored state
     }

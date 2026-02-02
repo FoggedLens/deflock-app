@@ -87,9 +87,9 @@ class _OfflineAreasSectionState extends State<OfflineAreasSection> {
                     : "${(area.sizeBytes / 1024).toStringAsFixed(1)} ${locService.t('offlineAreas.kilobytes')}"
                 : '--';
                 
-            String subtitle = '${locService.t('offlineAreas.provider')}: ${area.tileProviderDisplay}\n' +
-                '${locService.t('offlineAreas.maxZoom')}: Z${area.maxZoom}' + '\n' +
-                '${locService.t('offlineAreas.latitude')}: ${area.bounds.southWest.latitude.toStringAsFixed(3)}, ${area.bounds.southWest.longitude.toStringAsFixed(3)}\n' +
+            String subtitle = '${locService.t('offlineAreas.provider')}: ${area.tileProviderDisplay}\n'
+                '${locService.t('offlineAreas.maxZoom')}: Z${area.maxZoom}\n'
+                '${locService.t('offlineAreas.latitude')}: ${area.bounds.southWest.latitude.toStringAsFixed(3)}, ${area.bounds.southWest.longitude.toStringAsFixed(3)}\n'
                 '${locService.t('offlineAreas.latitude')}: ${area.bounds.northEast.latitude.toStringAsFixed(3)}, ${area.bounds.northEast.longitude.toStringAsFixed(3)}';
                 
             if (area.status == OfflineAreaStatus.downloading) {
@@ -207,7 +207,7 @@ class _OfflineAreasSectionState extends State<OfflineAreasSection> {
                 : null,
           ),
           );
-        }).toList(),
+        }),
           ],
         );
       },

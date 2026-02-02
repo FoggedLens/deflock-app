@@ -31,16 +31,16 @@ void main() {
       );
 
       // Test 0-3 range
-      final url_0_3_a = tileType0_3.getTileUrl(1, 0, 0);
-      final url_0_3_b = tileType0_3.getTileUrl(1, 3, 0);
-      expect(url_0_3_a, contains('s0.example.com'));
-      expect(url_0_3_b, contains('s3.example.com'));
+      final url03A = tileType0_3.getTileUrl(1, 0, 0);
+      final url03B = tileType0_3.getTileUrl(1, 3, 0);
+      expect(url03A, contains('s0.example.com'));
+      expect(url03B, contains('s3.example.com'));
 
       // Test 1-4 range
-      final url_1_4_a = tileType1_4.getTileUrl(1, 0, 0);
-      final url_1_4_b = tileType1_4.getTileUrl(1, 3, 0);
-      expect(url_1_4_a, contains('s1.example.com'));
-      expect(url_1_4_b, contains('s4.example.com'));
+      final url14A = tileType1_4.getTileUrl(1, 0, 0);
+      final url14B = tileType1_4.getTileUrl(1, 3, 0);
+      expect(url14A, contains('s1.example.com'));
+      expect(url14B, contains('s4.example.com'));
 
       // Test consistency
       final url1 = tileType0_3.getTileUrl(1, 2, 3);

@@ -36,9 +36,9 @@ class RoutingService {
     debugPrint('[RoutingService] Calculating route from $start to $end');
 
     final prefs = await SharedPreferences.getInstance();
-    final avoidance_distance = await prefs.getInt('navigation_avoidance_distance');
+    final avoidanceDistance = prefs.getInt('navigation_avoidance_distance') ?? 250;
 
-    final enabled_profiles = AppState.instance.enabledProfiles.map((p) {
+    final enabledProfiles = AppState.instance.enabledProfiles.map((p) {
       final full = p.toJson();
       return {
         'id': full['id'],
@@ -47,7 +47,7 @@ class RoutingService {
       };
     }).toList();
     
-    final uri = Uri.parse('$_baseUrl');
+    final uri = Uri.parse(_baseUrl);
     final params = {
       'start': {
         'longitude': start.longitude,
@@ -57,8 +57,8 @@ class RoutingService {
         'longitude': end.longitude,
         'latitude': end.latitude
       },
-      'avoidance_distance': avoidance_distance,
-      'enabled_profiles': enabled_profiles,
+      'avoidance_distance': avoidanceDistance,
+      'enabled_profiles': enabledProfiles,
       'show_exclusion_zone': false, // for debugging: if true, returns a GeoJSON Feature MultiPolygon showing what areas are avoided in calculating the route
     };
     

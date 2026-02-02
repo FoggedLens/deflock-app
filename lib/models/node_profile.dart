@@ -1,4 +1,3 @@
-import 'package:uuid/uuid.dart';
 import 'osm_node.dart';
 
 /// Sentinel value for copyWith methods to distinguish between null and not provided
