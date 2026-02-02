@@ -122,7 +122,6 @@ class _DownloadAreaDialogState extends State<DownloadAreaDialog> {
       builder: (context, child) {
         final locService = LocalizationService.instance;
         final appState = context.watch<AppState>();
-        final bounds = widget.controller.camera.visibleBounds;
         final isOfflineMode = appState.offlineMode;
         
         // Use the calculated max possible zoom instead of fixed span
