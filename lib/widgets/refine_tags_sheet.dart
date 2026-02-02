@@ -248,34 +248,32 @@ class _RefineTagsSheetState extends State<RefineTagsSheet> {
             )
           else ...[
             Card(
-              child: Column(
-                children: [
-                  // Show existing operator profile first if it exists
-                  if (hasExistingOperatorProfile) ...[
+              child: RadioGroup<OperatorProfile?>(
+                groupValue: _selectedOperatorProfile,
+                onChanged: (value) => setState(() => _selectedOperatorProfile = value),
+                child: Column(
+                  children: [
+                    // Show existing operator profile first if it exists
+                    if (hasExistingOperatorProfile) ...[
+                      RadioListTile<OperatorProfile?>(
+                        title: Text(locService.t('refineTagsSheet.existingOperator')),
+                        subtitle: Text('${widget.selectedOperatorProfile!.tags.length} ${locService.t('refineTagsSheet.existingOperatorTags')}'),
+                        value: widget.selectedOperatorProfile,
+                      ),
+                      const Divider(height: 1),
+                    ],
                     RadioListTile<OperatorProfile?>(
-                      title: Text(locService.t('refineTagsSheet.existingOperator')),
-                      subtitle: Text('${widget.selectedOperatorProfile!.tags.length} ${locService.t('refineTagsSheet.existingOperatorTags')}'),
-                      value: widget.selectedOperatorProfile,
-                      groupValue: _selectedOperatorProfile,
-                      onChanged: (value) => setState(() => _selectedOperatorProfile = value),
+                      title: Text(locService.t('refineTagsSheet.none')),
+                      subtitle: Text(locService.t('refineTagsSheet.noAdditionalOperatorTags')),
+                      value: null,
                     ),
-                    const Divider(height: 1),
+                    ...operatorProfiles.map((profile) => RadioListTile<OperatorProfile?>(
+                      title: Text(profile.name),
+                      subtitle: Text('${profile.tags.length} ${locService.t('refineTagsSheet.additionalTags')}'),
+                      value: profile,
+                    )),
                   ],
-                  RadioListTile<OperatorProfile?>(
-                    title: Text(locService.t('refineTagsSheet.none')),
-                    subtitle: Text(locService.t('refineTagsSheet.noAdditionalOperatorTags')),
-                    value: null,
-                    groupValue: _selectedOperatorProfile,
-                    onChanged: (value) => setState(() => _selectedOperatorProfile = value),
-                  ),
-                  ...operatorProfiles.map((profile) => RadioListTile<OperatorProfile?>(
-                    title: Text(profile.name),
-                    subtitle: Text('${profile.tags.length} ${locService.t('refineTagsSheet.additionalTags')}'),
-                    value: profile,
-                    groupValue: _selectedOperatorProfile,
-                    onChanged: (value) => setState(() => _selectedOperatorProfile = value),
-                  )),
-                ],
+                ),
               ),
             ),
             const SizedBox(height: 16),
