@@ -12,11 +12,13 @@ class RefineTagsResult {
   final OperatorProfile? operatorProfile;
   final Map<String, String> refinedTags;
   final Map<String, String>? editedTags; // For existing tags profile mode
+  final String changesetComment; // User-editable changeset comment
 
   RefineTagsResult({
     required this.operatorProfile,
     required this.refinedTags,
     this.editedTags,
+    required this.changesetComment,
   });
 }
 
@@ -27,12 +29,14 @@ class RefineTagsSheet extends StatefulWidget {
     this.selectedProfile,
     this.currentRefinedTags,
     this.originalNodeTags,
+    required this.operation,
   });
 
   final OperatorProfile? selectedOperatorProfile;
   final NodeProfile? selectedProfile;
   final Map<String, String>? currentRefinedTags;
   final Map<String, String>? originalNodeTags;
+  final UploadOperation operation;
 
   @override
   State<RefineTagsSheet> createState() => _RefineTagsSheetState();
@@ -44,6 +48,9 @@ class _RefineTagsSheetState extends State<RefineTagsSheet> {
   
   // For existing tags profile: full tag editing
   late List<MapEntry<String, String>> _editableTags;
+  
+  // Changeset comment editing
+  late final TextEditingController _commentController;
 
   @override
   void initState() {
@@ -60,6 +67,19 @@ class _RefineTagsSheetState extends State<RefineTagsSheet> {
     } else {
       _editableTags = [];
     }
+    
+    // Initialize changeset comment with default
+    final defaultComment = AppState.generateDefaultChangesetComment(
+      profile: widget.selectedProfile,
+      operation: widget.operation,
+    );
+    _commentController = TextEditingController(text: defaultComment);
+  }
+
+  @override
+  void dispose() {
+    _commentController.dispose();
+    super.dispose();
   }
 
   /// Pre-populate refined tags with existing values from the original node
@@ -113,6 +133,7 @@ class _RefineTagsSheetState extends State<RefineTagsSheet> {
             operatorProfile: widget.selectedOperatorProfile,
             refinedTags: widget.currentRefinedTags ?? {},
             editedTags: _isExistingTagsMode ? widget.selectedProfile?.tags : null,
+            changesetComment: _commentController.text,
           )),
         ),
         actions: [
@@ -126,6 +147,7 @@ class _RefineTagsSheetState extends State<RefineTagsSheet> {
                 operatorProfile: _selectedOperatorProfile,
                 refinedTags: _refinedTags,
                 editedTags: editedTags,
+                changesetComment: _commentController.text,
               ));
             },
             child: Text(locService.t('refineTagsSheet.done')),
@@ -133,7 +155,12 @@ class _RefineTagsSheetState extends State<RefineTagsSheet> {
         ],
       ),
       body: ListView(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.fromLTRB(
+          16,
+          16,
+          16,
+          16 + MediaQuery.of(context).padding.bottom,
+        ),
         children: [
           Text(
             locService.t('refineTagsSheet.operatorProfile'),
@@ -253,6 +280,25 @@ class _RefineTagsSheetState extends State<RefineTagsSheet> {
           ...(_isExistingTagsMode 
               ? _buildExistingTagsEditingSection(locService)
               : _buildRefinableTagsSection(locService)),
+          
+          // Changeset comment section
+          const SizedBox(height: 16),
+          Text(
+            'Change Comment',
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 8),
+          TextField(
+            controller: _commentController,
+            decoration: const InputDecoration(
+              hintText: 'Describe your changes...',
+              border: OutlineInputBorder(),
+              isDense: true,
+            ),
+            maxLines: 2,
+            textCapitalization: TextCapitalization.sentences,
+          ),
+          const SizedBox(height: 16),
         ],
       ),
     );

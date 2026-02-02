@@ -22,6 +22,7 @@ class PendingUpload {
   final NodeProfile? profile;
   final OperatorProfile? operatorProfile;
   final Map<String, String> refinedTags; // User-selected values for empty profile tags
+  final String changesetComment; // User-editable changeset comment
   final UploadMode uploadMode; // Capture upload destination when queued
   final UploadOperation operation; // Type of operation: create, modify, or delete
   final int? originalNodeId; // If this is modify/delete, the ID of the original OSM node
@@ -45,6 +46,7 @@ class PendingUpload {
     this.profile,
     this.operatorProfile,
     Map<String, String>? refinedTags,
+    required this.changesetComment,
     required this.uploadMode,
     required this.operation,
     this.originalNodeId,
@@ -269,6 +271,7 @@ class PendingUpload {
         'profile': profile?.toJson(),
         'operatorProfile': operatorProfile?.toJson(),
         'refinedTags': refinedTags,
+        'changesetComment': changesetComment,
         'uploadMode': uploadMode.index,
         'operation': operation.index,
         'originalNodeId': originalNodeId,
@@ -299,6 +302,7 @@ class PendingUpload {
         refinedTags: j['refinedTags'] != null 
             ? Map<String, String>.from(j['refinedTags'])
             : {}, // Default empty map for legacy entries
+        changesetComment: j['changesetComment'] ?? _generateLegacyComment(j), // Default for legacy entries
         uploadMode: j['uploadMode'] != null 
             ? UploadMode.values[j['uploadMode']] 
             : UploadMode.production, // Default for legacy entries
@@ -337,6 +341,26 @@ class PendingUpload {
     if (completing) return UploadState.complete;
     if (error) return UploadState.error;
     return UploadState.pending;
+  }
+
+  /// Generate a default changeset comment for legacy uploads that don't have one
+  static String _generateLegacyComment(Map<String, dynamic> j) {
+    final operation = j['operation'] != null
+        ? UploadOperation.values[j['operation']]
+        : (j['originalNodeId'] != null ? UploadOperation.modify : UploadOperation.create);
+    
+    final profileName = j['profile']?['name'] ?? 'surveillance';
+    
+    switch (operation) {
+      case UploadOperation.create:
+        return 'Add $profileName surveillance node';
+      case UploadOperation.modify:
+        return 'Update $profileName surveillance node';
+      case UploadOperation.delete:
+        return 'Delete $profileName surveillance node';
+      case UploadOperation.extract:
+        return 'Extract $profileName surveillance node';
+    }
   }
 }
 

@@ -71,12 +71,13 @@ class Uploader {
           break;
       }
       
-      final profileName = p.profile?.name ?? 'surveillance';
+      // Use the user's changeset comment, with XML sanitization
+      final sanitizedComment = _sanitizeXmlText(p.changesetComment);
       final csXml = '''
         <osm>
           <changeset>
             <tag k="created_by" v="$kClientName ${VersionService().version}"/>
-            <tag k="comment" v="$action $profileName surveillance node"/>
+            <tag k="comment" v="$sanitizedComment"/>
           </changeset>
         </osm>''';
       
@@ -371,6 +372,21 @@ class Uploader {
         'Authorization': 'Bearer $accessToken',
         'Content-Type': 'text/xml',
       };
+
+  /// Sanitize text for safe inclusion in XML attributes and content
+  /// Removes or escapes characters that could break XML parsing
+  String _sanitizeXmlText(String input) {
+    return input
+        .replaceAll('&', '&amp;')   // Must be first to avoid double-escaping
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&apos;')
+        .replaceAll('\n', ' ')      // Replace newlines with spaces
+        .replaceAll('\r', ' ')      // Replace carriage returns with spaces  
+        .replaceAll('\t', ' ')      // Replace tabs with spaces
+        .trim();                    // Remove leading/trailing whitespace
+  }
 }
 
 extension StringExtension on String {

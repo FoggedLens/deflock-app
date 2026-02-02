@@ -454,6 +454,7 @@ class _AddNodeSheetState extends State<AddNodeSheet> {
                 selectedOperatorProfile: session.operatorProfile,
                 selectedProfile: session.profile,
                 currentRefinedTags: session.refinedTags,
+                operation: UploadOperation.create,
               ),
               fullscreenDialog: true,
             ),
@@ -462,6 +463,7 @@ class _AddNodeSheetState extends State<AddNodeSheet> {
             appState.updateSession(
               operatorProfile: result.operatorProfile,
               refinedTags: result.refinedTags,
+              changesetComment: result.changesetComment,
             );
           }
         }

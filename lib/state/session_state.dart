@@ -4,6 +4,7 @@ import 'package:latlong2/latlong.dart';
 import '../models/node_profile.dart';
 import '../models/operator_profile.dart';
 import '../models/osm_node.dart';
+import '../models/pending_upload.dart'; // For UploadOperation enum
 
 // ------------------ AddNodeSession ------------------
 class AddNodeSession {
@@ -13,6 +14,7 @@ class AddNodeSession {
   List<double> directions;          // All directions [90, 180, 270]
   int currentDirectionIndex;        // Which direction we're editing (e.g. 1 = editing the 180°)
   Map<String, String> refinedTags;  // User-selected values for empty profile tags
+  String changesetComment;          // User-editable changeset comment
   
   AddNodeSession({
     this.profile, 
@@ -20,9 +22,11 @@ class AddNodeSession {
     this.operatorProfile,
     this.target,
     Map<String, String>? refinedTags,
+    String? changesetComment,
   }) : directions = [initialDirection],
        currentDirectionIndex = 0,
-       refinedTags = refinedTags ?? {};
+       refinedTags = refinedTags ?? {},
+       changesetComment = changesetComment ?? '';
   
   // Slider always shows the current direction being edited
   double get directionDegrees => directions.isNotEmpty && currentDirectionIndex >= 0 
@@ -46,6 +50,7 @@ class EditNodeSession {
   int currentDirectionIndex;        // Which direction we're editing (e.g. 1 = editing the 180°)
   bool extractFromWay; // True if user wants to extract this constrained node
   Map<String, String> refinedTags;  // User-selected values for empty profile tags
+  String changesetComment;          // User-editable changeset comment
   
   EditNodeSession({
     required this.originalNode,
@@ -56,9 +61,11 @@ class EditNodeSession {
     required this.target,
     this.extractFromWay = false,
     Map<String, String>? refinedTags,
+    String? changesetComment,
   }) : directions = [initialDirection],
        currentDirectionIndex = 0,
-       refinedTags = refinedTags ?? {};
+       refinedTags = refinedTags ?? {},
+       changesetComment = changesetComment ?? '';
   
   // Slider always shows the current direction being edited
   double get directionDegrees => directions.isNotEmpty && currentDirectionIndex >= 0 
@@ -82,7 +89,9 @@ class SessionState extends ChangeNotifier {
 
   void startAddSession(List<NodeProfile> enabledProfiles) {
     // Start with no profile selected - force user to choose
-    _session = AddNodeSession();
+    _session = AddNodeSession(
+      changesetComment: 'Add surveillance node', // Default comment, will be updated when profile is selected
+    );
     _editSession = null; // Clear any edit session
     notifyListeners();
   }
@@ -106,6 +115,7 @@ class SessionState extends ChangeNotifier {
       operatorProfile: _detectedOperatorProfile,
       initialDirection: initialDirection,
       target: node.coord,
+      changesetComment: 'Update a surveillance node', // Default comment for existing tags profile
     );
     
     // Replace the default single direction with all existing directions (or empty list)
@@ -131,6 +141,7 @@ class SessionState extends ChangeNotifier {
     OperatorProfile? operatorProfile,
     LatLng? target,
     Map<String, String>? refinedTags,
+    String? changesetComment,
   }) {
     if (_session == null) return;
 
@@ -141,6 +152,11 @@ class SessionState extends ChangeNotifier {
     }
     if (profile != null && profile != _session!.profile) {
       _session!.profile = profile;
+      // Regenerate changeset comment when profile changes
+      _session!.changesetComment = _generateDefaultChangesetComment(
+        profile: profile,
+        operation: UploadOperation.create,
+      );
       dirty = true;
     }
     if (operatorProfile != _session!.operatorProfile) {
@@ -155,6 +171,10 @@ class SessionState extends ChangeNotifier {
       _session!.refinedTags = Map<String, String>.from(refinedTags);
       dirty = true;
     }
+    if (changesetComment != null) {
+      _session!.changesetComment = changesetComment;
+      dirty = true;
+    }
     if (dirty) notifyListeners();
   }
 
@@ -165,6 +185,7 @@ class SessionState extends ChangeNotifier {
     LatLng? target,
     bool? extractFromWay,
     Map<String, String>? refinedTags,
+    String? changesetComment,
   }) {
     if (_editSession == null) return;
 
@@ -189,6 +210,13 @@ class SessionState extends ChangeNotifier {
         _editSession!.operatorProfile = _detectedOperatorProfile;
       }
       
+      // Regenerate changeset comment when profile changes
+      final operation = _editSession!.extractFromWay ? UploadOperation.extract : UploadOperation.modify;
+      _editSession!.changesetComment = _generateDefaultChangesetComment(
+        profile: profile,
+        operation: operation,
+      );
+      
       dirty = true;
     }
     // Only update operator profile if explicitly provided or different from current
@@ -212,6 +240,10 @@ class SessionState extends ChangeNotifier {
     }
     if (refinedTags != null) {
       _editSession!.refinedTags = Map<String, String>.from(refinedTags);
+      dirty = true;
+    }
+    if (changesetComment != null) {
+      _editSession!.changesetComment = changesetComment;
       dirty = true;
     }
     
@@ -339,6 +371,29 @@ class SessionState extends ChangeNotifier {
     if (_editSession!.directions.length < minimum) {
       _editSession!.directions = [0.0];
       _editSession!.currentDirectionIndex = 0;
+    }
+  }
+
+  /// Generate a default changeset comment for a submission
+  /// Handles special case of <Existing tags> profile by using "a" instead
+  String _generateDefaultChangesetComment({
+    required NodeProfile? profile,
+    required UploadOperation operation,
+  }) {
+    // Handle temp profiles with brackets by using "a"
+    final profileName = profile?.name.startsWith('<') == true && profile?.name.endsWith('>') == true
+        ? 'a'
+        : profile?.name ?? 'surveillance';
+    
+    switch (operation) {
+      case UploadOperation.create:
+        return 'Add $profileName surveillance node';
+      case UploadOperation.modify:
+        return 'Update $profileName surveillance node'; 
+      case UploadOperation.delete:
+        return 'Delete $profileName surveillance node';
+      case UploadOperation.extract:
+        return 'Extract $profileName surveillance node';
     }
   }
 }

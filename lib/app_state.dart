@@ -41,6 +41,7 @@ import 'state/upload_queue_state.dart';
 export 'state/navigation_state.dart' show AppNavigationMode;
 export 'state/settings_state.dart' show UploadMode, FollowMeMode;
 export 'state/session_state.dart' show AddNodeSession, EditNodeSession;
+export 'models/pending_upload.dart' show UploadOperation;
 
 // ------------------ AppState ------------------
 class AppState extends ChangeNotifier {
@@ -444,6 +445,7 @@ class AppState extends ChangeNotifier {
     OperatorProfile? operatorProfile,
     LatLng? target,
     Map<String, String>? refinedTags,
+    String? changesetComment,
   }) {
     _sessionState.updateSession(
       directionDeg: directionDeg,
@@ -451,6 +453,7 @@ class AppState extends ChangeNotifier {
       operatorProfile: operatorProfile,
       target: target,
       refinedTags: refinedTags,
+      changesetComment: changesetComment,
     );
     
     // Check tutorial completion if position changed
@@ -466,6 +469,7 @@ class AppState extends ChangeNotifier {
     LatLng? target,
     bool? extractFromWay,
     Map<String, String>? refinedTags,
+    String? changesetComment,
   }) {
     _sessionState.updateEditSession(
       directionDeg: directionDeg,
@@ -474,6 +478,7 @@ class AppState extends ChangeNotifier {
       target: target,
       extractFromWay: extractFromWay,
       refinedTags: refinedTags,
+      changesetComment: changesetComment,
     );
     
     // Check tutorial completion if position changed
@@ -795,6 +800,31 @@ class AppState extends ChangeNotifier {
       east: east,
       west: west,
     );
+  }
+
+  // ---------- Utility Methods ----------
+
+  /// Generate a default changeset comment for a submission
+  /// Handles special case of <Existing tags> profile by using "a" instead
+  static String generateDefaultChangesetComment({
+    required NodeProfile? profile,
+    required UploadOperation operation,
+  }) {
+    // Handle temp profiles with brackets by using "a"
+    final profileName = profile?.name.startsWith('<') == true && profile?.name.endsWith('>') == true
+        ? 'a'
+        : profile?.name ?? 'surveillance';
+    
+    switch (operation) {
+      case UploadOperation.create:
+        return 'Add $profileName surveillance node';
+      case UploadOperation.modify:
+        return 'Update $profileName surveillance node'; 
+      case UploadOperation.delete:
+        return 'Delete $profileName surveillance node';
+      case UploadOperation.extract:
+        return 'Extract $profileName surveillance node';
+    }
   }
 
   // ---------- Private Methods ----------

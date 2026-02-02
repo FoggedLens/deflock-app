@@ -130,6 +130,7 @@ class UploadQueueState extends ChangeNotifier {
       profile: session.profile!,  // Safe to use ! because commitSession() checks for null
       operatorProfile: session.operatorProfile,
       refinedTags: session.refinedTags,
+      changesetComment: session.changesetComment,
       uploadMode: uploadMode,
       operation: UploadOperation.create,
     );
@@ -187,6 +188,7 @@ class UploadQueueState extends ChangeNotifier {
       profile: session.profile!,  // Safe to use ! because commitEditSession() checks for null
       operatorProfile: session.operatorProfile,
       refinedTags: session.refinedTags,
+      changesetComment: session.changesetComment,
       uploadMode: uploadMode,
       operation: operation,
       originalNodeId: session.originalNode.id, // Track which node we're editing
@@ -256,6 +258,7 @@ class UploadQueueState extends ChangeNotifier {
       coord: node.coord,
       direction: node.directionDeg.isNotEmpty ? node.directionDeg.first : 0, // Direction not used for deletions but required for API
       profile: null, // No profile needed for deletions - just delete by node ID
+      changesetComment: 'Delete a surveillance node', // Default comment for deletions  
       uploadMode: uploadMode,
       operation: UploadOperation.delete,
       originalNodeId: node.id,

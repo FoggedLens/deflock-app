@@ -238,6 +238,7 @@ class _EditNodeSheetState extends State<EditNodeSheet> {
       profile: session.profile,
       operatorProfile: session.operatorProfile,
       refinedTags: session.refinedTags,
+      changesetComment: session.changesetComment, // Required parameter
       uploadMode: UploadMode.production, // Mode doesn't matter for tag combination
       operation: UploadOperation.modify,
     );
@@ -491,6 +492,7 @@ class _EditNodeSheetState extends State<EditNodeSheet> {
                 selectedProfile: session.profile,
                 currentRefinedTags: session.refinedTags,
                 originalNodeTags: session.originalNode.tags,
+                operation: session.extractFromWay ? UploadOperation.extract : UploadOperation.modify,
               ),
               fullscreenDialog: true,
             ),
@@ -505,11 +507,13 @@ class _EditNodeSheetState extends State<EditNodeSheet> {
                 profile: updatedProfile,
                 operatorProfile: result.operatorProfile,
                 refinedTags: result.refinedTags,
+                changesetComment: result.changesetComment,
               );
             } else {
               appState.updateEditSession(
                 operatorProfile: result.operatorProfile,
                 refinedTags: result.refinedTags,
+                changesetComment: result.changesetComment,
               );
             }
           }
