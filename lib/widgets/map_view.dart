@@ -10,8 +10,6 @@ import '../services/offline_area_service.dart';
 import '../models/osm_node.dart';
 import '../models/suspected_location.dart';
 import '../models/rf_detection.dart';
-import '../models/tile_provider.dart';
-import '../state/session_state.dart';
 import 'debouncer.dart';
 import 'node_provider_with_cache.dart';
 import 'map/map_overlays.dart';

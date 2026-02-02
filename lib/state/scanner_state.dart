@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io' show Platform;
 
 import 'package:flutter/foundation.dart';
 import 'package:latlong2/latlong.dart';
@@ -6,20 +7,32 @@ import 'package:geolocator/geolocator.dart';
 
 import '../models/rf_detection.dart';
 import '../services/rf_detection_database.dart';
+import '../services/scanner_service.dart';
+import '../services/ble_scanner_service.dart';
 import '../services/usb_scanner_service.dart';
 
 /// State module for the RF scanner (11th AppState module).
-/// Manages USB scanner connection, detection processing, and map data.
+/// Manages scanner connection, detection processing, and map data.
+///
+/// BLE is the primary transport on both iOS and Android. On Android, when a USB
+/// cable is detected the active transport auto-upgrades to USB serial so the
+/// ESP32 can reclaim BLE bandwidth for scanning.
 class ScannerState extends ChangeNotifier {
-  final UsbScannerService _scanner;
+  ScannerService _activeScanner;
   final RfDetectionDatabase _db;
 
-  ScannerState({UsbScannerService? scanner, RfDetectionDatabase? db})
-      : _scanner = scanner ?? UsbScannerService(),
-        _db = db ?? RfDetectionDatabase();
+  /// BLE scanner — always exists, used as primary transport.
+  final ScannerService _bleScanner;
+
+  /// USB scanner — Android only, used when a cable is attached.
+  final ScannerService? _usbScanner;
 
   StreamSubscription<Map<String, dynamic>>? _eventSubscription;
   StreamSubscription<ScannerConnectionStatus>? _statusSubscription;
+
+  /// Subscription on the USB scanner's status stream so we can detect
+  /// USB attach/detach and auto-switch transports.
+  StreamSubscription<ScannerConnectionStatus>? _usbStatusSubscription;
 
   ScannerConnectionStatus _connectionStatus =
       ScannerConnectionStatus.disconnected;
@@ -30,15 +43,48 @@ class ScannerState extends ChangeNotifier {
 
   static const int _maxRecentDetections = 50;
 
+  /// Production constructor — BLE primary, USB on Android.
+  ///
+  /// When [scanner] is provided (e.g. in tests), it becomes the sole scanner
+  /// and no USB transport is created. In production, a [BleScannerService] is
+  /// the primary scanner and [UsbScannerService] is created on Android.
+  ScannerState({ScannerService? scanner, RfDetectionDatabase? db})
+      : _bleScanner = scanner ?? BleScannerService(),
+        _usbScanner = scanner != null
+            ? null
+            : (_isAndroid ? UsbScannerService() : null),
+        // Temporary — overwritten in constructor body to point at _bleScanner
+        _activeScanner = scanner ?? _placeholder,
+        _db = db ?? RfDetectionDatabase() {
+    _activeScanner = _bleScanner;
+  }
+
+  /// Sentinel that is never used — exists only because Dart initializer lists
+  /// cannot reference other initializer-list members. The constructor body
+  /// immediately replaces `_activeScanner` with `_bleScanner`.
+  static final ScannerService _placeholder = _NoOpScanner();
+
+  /// Cached platform check. Safe to evaluate at class-load time because
+  /// `dart:io` Platform is available on mobile/desktop (never on web, but
+  /// this app does not target web).
+  static final bool _isAndroid = Platform.isAndroid;
+
   // Public getters
   ScannerConnectionStatus get connectionStatus => _connectionStatus;
   List<RfDetection> get recentDetections =>
       List.unmodifiable(_recentDetections);
   int get detectionCount => _detectionCount;
-  bool get isConnected => _scanner.isConnected;
-  String? get lastError => _scanner.lastError;
+  bool get isConnected => _activeScanner.isConnected;
+  String? get lastError => _activeScanner.lastError;
 
-  /// Initialize scanner: open database, start listening for USB device.
+  /// Which transport is currently active (BLE or USB).
+  ScannerTransportType get activeTransportType =>
+      _activeScanner == _usbScanner
+          ? ScannerTransportType.usb
+          : ScannerTransportType.ble;
+
+  /// Initialize scanner: open database, start BLE transport, and optionally
+  /// start USB monitoring on Android.
   Future<void> init() async {
     await _db.init();
 
@@ -46,33 +92,72 @@ class ScannerState extends ChangeNotifier {
     final stats = await _db.getStats();
     _detectionCount = stats['total'] as int;
 
-    // Listen to scanner status changes
-    _statusSubscription = _scanner.statusStream.listen((status) {
+    // Subscribe to the active scanner
+    _subscribeToScanner(_activeScanner);
+
+    // Start BLE scanner
+    await _bleScanner.init();
+
+    // On Android, also start USB scanner to listen for hotplug events.
+    // When USB connects, we auto-switch transport.
+    if (_usbScanner case final usb?) {
+      await usb.init();
+      _usbStatusSubscription = usb.statusStream.listen(_onUsbStatusChange);
+    }
+
+    notifyListeners();
+  }
+
+  void _subscribeToScanner(ScannerService scanner) {
+    _statusSubscription?.cancel();
+    _eventSubscription?.cancel();
+
+    _statusSubscription = scanner.statusStream.listen((status) {
       _connectionStatus = status;
       notifyListeners();
     });
 
-    // Listen to detection events
-    _eventSubscription = _scanner.events.listen(_onSerialEvent);
+    _eventSubscription = scanner.events.listen(_onDetectionEvent);
+  }
 
-    // Start USB listener
-    await _scanner.init();
+  /// Handle USB status changes to auto-switch transport on Android.
+  void _onUsbStatusChange(ScannerConnectionStatus usbStatus) {
+    if (usbStatus == ScannerConnectionStatus.connected &&
+        _activeScanner != _usbScanner) {
+      // USB cable just attached — switch to USB for higher throughput
+      debugPrint('[ScannerState] USB connected — switching to USB transport');
+      _switchTransport(_usbScanner!);
+      // Disconnect BLE client so ESP32 can boost scan duty
+      _bleScanner.disconnect();
+    } else if (usbStatus == ScannerConnectionStatus.disconnected &&
+        _activeScanner == _usbScanner) {
+      // USB cable detached — switch back to BLE
+      debugPrint('[ScannerState] USB disconnected — switching to BLE transport');
+      _switchTransport(_bleScanner);
+      // Reconnect BLE
+      _bleScanner.connect();
+    }
+  }
 
+  void _switchTransport(ScannerService newScanner) {
+    _activeScanner = newScanner;
+    _subscribeToScanner(newScanner);
+    _connectionStatus = newScanner.status;
     notifyListeners();
   }
 
   /// Manually trigger a reconnect attempt.
   Future<bool> reconnect() async {
-    return await _scanner.connect();
+    return await _activeScanner.connect();
   }
 
-  /// Disconnect from the USB scanner.
+  /// Disconnect from the active scanner.
   Future<void> disconnect() async {
-    await _scanner.disconnect();
+    await _activeScanner.disconnect();
   }
 
-  /// Process an incoming detection event from the M5StickC.
-  Future<void> _onSerialEvent(Map<String, dynamic> json) async {
+  /// Process an incoming detection event from the FlockSquawk.
+  Future<void> _onDetectionEvent(Map<String, dynamic> json) async {
     try {
       // Get current GPS position
       await _updateGpsPosition();
@@ -84,7 +169,7 @@ class ScannerState extends ChangeNotifier {
 
       final now = DateTime.now();
 
-      // Create detection and sighting from serial JSON
+      // Create detection and sighting from JSON
       final detection = RfDetection.fromSerialJson(
         json,
         _currentGpsPosition!,
@@ -190,9 +275,34 @@ class ScannerState extends ChangeNotifier {
   void dispose() {
     _eventSubscription?.cancel();
     _statusSubscription?.cancel();
+    _usbStatusSubscription?.cancel();
     // dispose() is async but ChangeNotifier.dispose() is not — fire and forget
-    _scanner.dispose();
+    _bleScanner.dispose();
+    _usbScanner?.dispose();
     _db.close();
     super.dispose();
   }
+}
+
+/// Minimal no-op scanner used only as an initializer-list placeholder.
+/// Immediately replaced by the constructor body — never receives events.
+class _NoOpScanner implements ScannerService {
+  @override
+  Stream<Map<String, dynamic>> get events => const Stream.empty();
+  @override
+  Stream<ScannerConnectionStatus> get statusStream => const Stream.empty();
+  @override
+  ScannerConnectionStatus get status => ScannerConnectionStatus.disconnected;
+  @override
+  bool get isConnected => false;
+  @override
+  String? get lastError => null;
+  @override
+  Future<void> init() async {}
+  @override
+  Future<bool> connect() async => false;
+  @override
+  Future<void> disconnect() async {}
+  @override
+  Future<void> dispose() async {}
 }

@@ -99,7 +99,7 @@ class _RfDetectionIcon extends StatelessWidget {
       height: 20,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: ringColor.withOpacity(0.3),
+        color: ringColor.withValues(alpha: 0.3),
         border: Border.all(color: ringColor, width: 2.5),
       ),
       child: isSubmitted

@@ -12,6 +12,7 @@ class ScannerStatusIndicator extends StatelessWidget {
   Widget build(BuildContext context) {
     final appState = context.watch<AppState>();
     final status = appState.scannerConnectionStatus;
+    final transportLabel = appState.scannerTransportType == ScannerTransportType.ble ? 'BLE' : 'USB';
 
     final IconData icon;
     final Color color;
@@ -21,7 +22,7 @@ class ScannerStatusIndicator extends StatelessWidget {
       case ScannerConnectionStatus.connected:
         icon = Icons.sensors;
         color = Colors.green;
-        tooltip = 'Scanner connected';
+        tooltip = 'Scanner connected ($transportLabel)';
       case ScannerConnectionStatus.connecting:
         icon = Icons.sensors;
         color = Colors.orange;

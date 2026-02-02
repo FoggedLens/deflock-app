@@ -1,21 +1,17 @@
 import 'dart:async';
-import 'dart:convert';
-import 'dart:typed_data';
-
 import 'package:flutter/foundation.dart';
 import 'package:usb_serial/usb_serial.dart';
 
-/// Connection status for the USB scanner.
-enum ScannerConnectionStatus {
-  disconnected,
-  connecting,
-  connected,
-  error,
-}
+import 'scanner_service.dart';
+import 'json_line_parser.dart';
+
+// Re-export so existing `import 'usb_scanner_service.dart' show ScannerConnectionStatus`
+// continues to work.
+export 'scanner_service.dart' show ScannerConnectionStatus;
 
 /// Manages USB serial connection to the FlockSquawk M5StickC device.
 /// Parses newline-delimited JSON events and exposes them as a stream.
-class UsbScannerService {
+class UsbScannerService with JsonLineParser implements ScannerService {
   UsbPort? _port;
   StreamSubscription<Uint8List>? _portSubscription;
   StreamSubscription<UsbEvent>? _hotplugSubscription;
@@ -31,22 +27,31 @@ class UsbScannerService {
   ScannerConnectionStatus _status = ScannerConnectionStatus.disconnected;
   String? _lastError;
 
-  /// Partial line buffer for reassembling split serial data.
-  String _lineBuffer = '';
-
   static const int _baudRate = 115200;
 
   /// Stream of parsed JSON detection events.
+  @override
   Stream<Map<String, dynamic>> get events => _eventController.stream;
 
   /// Stream of connection status changes.
+  @override
   Stream<ScannerConnectionStatus> get statusStream => _statusController.stream;
 
+  @override
   ScannerConnectionStatus get status => _status;
+  @override
   bool get isConnected => _status == ScannerConnectionStatus.connected;
+  @override
   String? get lastError => _lastError;
 
+  // -- JsonLineParser callback --
+  @override
+  void onJsonEvent(Map<String, dynamic> json) {
+    _eventController.add(json);
+  }
+
   /// Start listening for USB device hotplug and attempt initial connection.
+  @override
   Future<void> init() async {
     // Listen for USB attach/detach
     _hotplugSubscription = UsbSerial.usbEventStream?.listen((event) {
@@ -63,6 +68,7 @@ class UsbScannerService {
   }
 
   /// Attempt to find and connect to a USB serial device.
+  @override
   Future<bool> connect() async {
     if (_status == ScannerConnectionStatus.connected) return true;
 
@@ -104,11 +110,11 @@ class UsbScannerService {
         UsbPort.PARITY_NONE,
       );
 
-      _lineBuffer = '';
+      resetLineBuffer();
 
       // Listen to incoming serial data
       _portSubscription = _port!.inputStream?.listen(
-        _onSerialData,
+        (data) => processBytes(data),
         onError: (error) {
           debugPrint('[UsbScanner] Serial stream error: $error');
           _handleDisconnect();
@@ -139,6 +145,7 @@ class UsbScannerService {
   }
 
   /// Disconnect from the USB device.
+  @override
   Future<void> disconnect() async {
     _heartbeatTimer?.cancel();
     _heartbeatTimer = null;
@@ -155,46 +162,9 @@ class UsbScannerService {
       _port = null;
     }
 
-    _lineBuffer = '';
+    resetLineBuffer();
     _setStatus(ScannerConnectionStatus.disconnected);
     debugPrint('[UsbScanner] Disconnected');
-  }
-
-  /// Process raw bytes from USB serial into newline-delimited JSON.
-  void _onSerialData(Uint8List data) {
-    final chunk = utf8.decode(data, allowMalformed: true);
-    _lineBuffer += chunk;
-
-    // Process all complete lines
-    while (_lineBuffer.contains('\n')) {
-      final newlineIndex = _lineBuffer.indexOf('\n');
-      final line = _lineBuffer.substring(0, newlineIndex).trim();
-      _lineBuffer = _lineBuffer.substring(newlineIndex + 1);
-
-      if (line.isEmpty) continue;
-
-      _parseLine(line);
-    }
-
-    // Prevent unbounded buffer growth from non-JSON serial output
-    if (_lineBuffer.length > 4096) {
-      debugPrint('[UsbScanner] Line buffer overflow, clearing');
-      _lineBuffer = '';
-    }
-  }
-
-  /// Parse a single JSON line and emit if it's a detection event.
-  void _parseLine(String line) {
-    try {
-      final json = jsonDecode(line) as Map<String, dynamic>;
-      final event = json['event'] as String?;
-
-      if (event == 'target_detected') {
-        _eventController.add(json);
-      }
-    } catch (e) {
-      // Non-JSON serial output (boot messages, debug prints) — ignore
-    }
   }
 
   /// Handle unexpected disconnection (USB detach, stream error).
@@ -211,12 +181,13 @@ class UsbScannerService {
     final port = _port;
     _port = null;
     if (port != null) {
-      port.close().catchError((e) {
+      port.close().catchError((Object e) {
         debugPrint('[UsbScanner] Error closing port during disconnect: $e');
+        return false;
       });
     }
 
-    _lineBuffer = '';
+    resetLineBuffer();
     _setStatus(ScannerConnectionStatus.disconnected);
   }
 
@@ -234,6 +205,7 @@ class UsbScannerService {
     _statusController.add(ScannerConnectionStatus.error);
   }
 
+  @override
   Future<void> dispose() async {
     _hotplugSubscription?.cancel();
     await disconnect();
@@ -243,7 +215,7 @@ class UsbScannerService {
 
   /// Feed raw bytes into the serial parser for testing.
   @visibleForTesting
-  void processSerialDataForTesting(Uint8List data) => _onSerialData(data);
+  void processSerialDataForTesting(Uint8List data) => processBytes(data);
 
   /// Whether the heartbeat timer is currently active (for testing).
   @visibleForTesting
