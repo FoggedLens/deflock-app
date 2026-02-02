@@ -189,8 +189,8 @@ class _DownloadAreaDialogState extends State<DownloadAreaDialog> {
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
                         color: _tileCount! > kMaxReasonableTileCount 
-                            ? Colors.orange.withOpacity(0.1)
-                            : Colors.green.withOpacity(0.1),
+                            ? Colors.orange.withValues(alpha: 0.1)
+                            : Colors.green.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(4),
                       ),
                       child: Column(
@@ -198,7 +198,7 @@ class _DownloadAreaDialogState extends State<DownloadAreaDialog> {
                         children: [
                           Text(
                             _tileCount! > kMaxReasonableTileCount 
-                                ? 'Above recommended limit (Z${_maxPossibleZoom})'
+                                ? 'Above recommended limit (Z$_maxPossibleZoom)'
                                 : locService.t('download.maxRecommendedZoom', params: [_maxPossibleZoom.toString()]),
                             style: TextStyle(
                               fontSize: 12,
@@ -211,7 +211,7 @@ class _DownloadAreaDialogState extends State<DownloadAreaDialog> {
                           const SizedBox(height: 2),
                           Text(
                             _tileCount! > kMaxReasonableTileCount
-                                ? 'Current selection exceeds ${kMaxReasonableTileCount} recommended tile limit but is within ${kAbsoluteMaxTileCount} absolute limit'
+                                ? 'Current selection exceeds $kMaxReasonableTileCount recommended tile limit but is within $kAbsoluteMaxTileCount absolute limit'
                                 : locService.t('download.withinTileLimit', params: [kMaxReasonableTileCount.toString()]),
                             style: TextStyle(
                               fontSize: 11,
@@ -230,9 +230,9 @@ class _DownloadAreaDialogState extends State<DownloadAreaDialog> {
                     child: Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: Colors.orange.withOpacity(0.1),
+                        color: Colors.orange.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: Colors.orange.withOpacity(0.3)),
+                        border: Border.all(color: Colors.orange.withValues(alpha: 0.3)),
                       ),
                       child: Row(
                         children: [

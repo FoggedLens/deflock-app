@@ -275,7 +275,7 @@ class _OSMAccountScreenState extends State<OSMAccountScreen> {
             Container(
               padding: const EdgeInsets.all(12.0),
               decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.5),
+                color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
                 borderRadius: BorderRadius.circular(8.0),
               ),
               child: Row(
@@ -308,7 +308,7 @@ class _OSMAccountScreenState extends State<OSMAccountScreen> {
                 label: Text(locService.t('auth.deleteAccount')),
                 style: OutlinedButton.styleFrom(
                   foregroundColor: Theme.of(context).colorScheme.error,
-                  side: BorderSide(color: Theme.of(context).colorScheme.error.withOpacity(0.5)),
+                  side: BorderSide(color: Theme.of(context).colorScheme.error.withValues(alpha: 0.5)),
                 ),
               ),
             ),
@@ -354,10 +354,10 @@ class _OSMAccountScreenState extends State<OSMAccountScreen> {
             Container(
               padding: const EdgeInsets.all(12.0),
               decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.errorContainer.withOpacity(0.1),
+                color: Theme.of(context).colorScheme.errorContainer.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8.0),
                 border: Border.all(
-                  color: Theme.of(context).colorScheme.error.withOpacity(0.3),
+                  color: Theme.of(context).colorScheme.error.withValues(alpha: 0.3),
                 ),
               ),
               child: Text(

@@ -44,7 +44,7 @@ class TileProviderSection extends StatelessWidget {
                 ),
               )
             else
-              ...providers.map((provider) => _buildProviderTile(context, provider, appState)).toList(),
+              ...providers.map((provider) => _buildProviderTile(context, provider, appState)),
           ],
         );
       },
@@ -89,7 +89,7 @@ class TileProviderSection extends StatelessWidget {
         leading: CircleAvatar(
           backgroundColor: isSelected 
               ? Theme.of(context).colorScheme.primary
-              : Theme.of(context).colorScheme.surfaceVariant,
+              : Theme.of(context).colorScheme.surfaceContainerHighest,
           child: Icon(
             Icons.map,
             color: isSelected 

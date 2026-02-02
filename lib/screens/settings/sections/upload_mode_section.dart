@@ -81,7 +81,7 @@ class UploadModeSection extends StatelessWidget {
                               fontSize: 12, 
                               color: appState.pendingCount > 0 
                                 ? Theme.of(context).disabledColor
-                                : Theme.of(context).colorScheme.onSurface.withOpacity(0.7)
+                                : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7)
                             )
                           );
                         case UploadMode.sandbox:

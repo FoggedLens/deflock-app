@@ -94,7 +94,7 @@ class SuspectedLocationSheet extends StatelessWidget {
                                       : Text(
                                           e.value,
                                           style: TextStyle(
-                                            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+                                            color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
                                           ),
                                           softWrap: true,
                                         ),
@@ -128,7 +128,7 @@ class SuspectedLocationSheet extends StatelessWidget {
                         child: Text(
                           '${location.centroid.latitude.toStringAsFixed(6)}, ${location.centroid.longitude.toStringAsFixed(6)}',
                           style: TextStyle(
-                            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+                            color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
                           ),
                           softWrap: true,
                         ),

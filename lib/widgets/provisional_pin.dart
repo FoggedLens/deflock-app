@@ -43,7 +43,7 @@ class LocationPin extends StatelessWidget {
               width: size * 0.4,
               height: size * 0.2,
               decoration: BoxDecoration(
-                color: Colors.black.withOpacity(0.3),
+                color: Colors.black.withValues(alpha: 0.3),
                 borderRadius: BorderRadius.circular(size * 0.1),
               ),
             ),
@@ -64,7 +64,7 @@ class LocationPin extends StatelessWidget {
                 color: Colors.white,
                 shape: BoxShape.circle,
                 border: Border.all(
-                  color: _pinColor.withOpacity(0.8),
+                  color: _pinColor.withValues(alpha: 0.8),
                   width: 1.5,
                 ),
               ),

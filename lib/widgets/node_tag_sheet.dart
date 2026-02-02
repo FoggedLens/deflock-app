@@ -40,7 +40,7 @@ class NodeTagSheet extends StatelessWidget {
         final isRealOSMNode = !node.tags.containsKey('_pending_upload') &&
                               node.id > 0; // Real OSM nodes have positive IDs
         
-        void _openEditSheet() {
+        void openEditSheet() {
           // Check if node limit is active and warn user
           if (isNodeLimitActive) {
             ScaffoldMessenger.of(context).showSnackBar(
@@ -64,7 +64,7 @@ class NodeTagSheet extends StatelessWidget {
           }
         }
 
-        void _deleteNode() async {
+        void deleteNode() async {
           final shouldDelete = await showDialog<bool>(
             context: context,
             builder: (BuildContext context) {
@@ -95,7 +95,7 @@ class NodeTagSheet extends StatelessWidget {
           }
         }
 
-        void _viewOnOSM() async {
+        void viewOnOSM() async {
           final url = 'https://www.openstreetmap.org/node/${node.id}';
           try {
             final uri = Uri.parse(url);
@@ -117,7 +117,7 @@ class NodeTagSheet extends StatelessWidget {
           }
         }
 
-        void _openAdvancedEdit() {
+        void openAdvancedEdit() {
           showModalBottomSheet(
             context: context,
             isScrollControlled: true,
@@ -177,7 +177,7 @@ class NodeTagSheet extends StatelessWidget {
                                     },
                                     text: e.value,
                                     style: TextStyle(
-                                      color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+                                      color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
                                     ),
                                     linkStyle: TextStyle(
                                       color: Theme.of(context).colorScheme.primary,
@@ -201,7 +201,7 @@ class NodeTagSheet extends StatelessWidget {
                   children: [
                     if (isRealOSMNode) ...[
                       TextButton.icon(
-                        onPressed: () => _viewOnOSM(),
+                        onPressed: () => viewOnOSM(),
                         icon: const Icon(Icons.open_in_new, size: 16),
                         label: Text(locService.t('actions.viewOnOSM')),
                       ),
@@ -209,7 +209,7 @@ class NodeTagSheet extends StatelessWidget {
                     ],
                     if (isEditable) ...[
                       OutlinedButton.icon(
-                        onPressed: _openAdvancedEdit,
+                        onPressed: openAdvancedEdit,
                         icon: const Icon(Icons.open_in_new, size: 18),
                         label: Text(locService.t('actions.advanced')),
                         style: OutlinedButton.styleFrom(
@@ -226,7 +226,7 @@ class NodeTagSheet extends StatelessWidget {
                   children: [
                     if (isEditable) ...[
                       ElevatedButton.icon(
-                        onPressed: _openEditSheet,
+                        onPressed: openEditSheet,
                         icon: const Icon(Icons.edit, size: 18),
                         label: Text(locService.edit),
                         style: ElevatedButton.styleFrom(
@@ -235,7 +235,7 @@ class NodeTagSheet extends StatelessWidget {
                       ),
                       const SizedBox(width: 8),
                       ElevatedButton.icon(
-                        onPressed: node.isConstrained ? null : _deleteNode,
+                        onPressed: node.isConstrained ? null : deleteNode,
                         icon: const Icon(Icons.delete, size: 18),
                         label: Text(locService.t('actions.delete')),
                         style: ElevatedButton.styleFrom(
