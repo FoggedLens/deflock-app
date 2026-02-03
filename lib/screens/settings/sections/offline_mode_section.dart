@@ -77,27 +77,7 @@ class OfflineModeSection extends StatelessWidget {
                 onChanged: (value) => _handleOfflineModeChange(context, appState, value),
               ),
             ),
-            const SizedBox(height: 8),
-            ListTile(
-              leading: Icon(
-                Icons.pause_circle_outline,
-                color: appState.offlineMode 
-                    ? Theme.of(context).disabledColor 
-                    : Theme.of(context).iconTheme.color,
-              ),
-              title: Text(
-                locService.t('settings.pauseQueueProcessingSubtitle'),
-                style: appState.offlineMode 
-                    ? TextStyle(color: Theme.of(context).disabledColor)
-                    : null,
-              ),
-              trailing: Switch(
-                value: appState.pauseQueueProcessing,
-                onChanged: appState.offlineMode 
-                    ? null // Disable when offline mode is on
-                    : (value) => appState.setPauseQueueProcessing(value),
-              ),
-            ),
+
           ],
         );
       },

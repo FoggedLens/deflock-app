@@ -148,6 +148,31 @@ class UploadQueueScreen extends StatelessWidget {
                     ],
                   ),
                 ),
+              // Pause Upload Queue Toggle
+              ListTile(
+                leading: Icon(
+                  Icons.pause_circle_outline,
+                  color: appState.offlineMode 
+                      ? Theme.of(context).disabledColor 
+                      : Theme.of(context).iconTheme.color,
+                ),
+                title: Text(locService.t('settings.pauseQueueProcessing')),
+                subtitle: Text(
+                  locService.t('settings.pauseQueueProcessingSubtitle'),
+                  style: appState.offlineMode 
+                      ? TextStyle(color: Theme.of(context).disabledColor)
+                      : null,
+                ),
+                trailing: Switch(
+                  value: appState.pauseQueueProcessing,
+                  onChanged: appState.offlineMode 
+                      ? null // Disable when offline mode is on
+                      : (value) => appState.setPauseQueueProcessing(value),
+                ),
+              ),
+              
+              const SizedBox(height: 16),
+              
               // Clear Upload Queue button - always visible
               SizedBox(
                 width: double.infinity,

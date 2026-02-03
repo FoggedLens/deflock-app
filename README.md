@@ -106,7 +106,6 @@ cp lib/keys.dart.example lib/keys.dart
 ### Needed Bugfixes
 - Imperial units
 - Pass through tags on existing nodes which are not included in selected profile to the refine tags page, much like we do for all tags when "existing tags" profile is selected
-- Move "pause queue" toggle
 - Make submission guide scarier
 - Tile cache trimming? Does fluttermap handle?
 - Filter NSI suggestions based on what has already been typed in
