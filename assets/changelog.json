@@ -1,8 +1,10 @@
 {
   "2.6.3": {
     "content": [
+      "• Improved first launch experience - location permission is now requested immediately after welcome dialog",
+      "• Notification permission is now requested only when user enables proximity alerts (better UX)",
       "• Prevent edit submissions where nothing (location, tags, direction) has been changed",
-      "• FIXED: Node data not loading in sandbox mode - improved cache integration and status reporting for development testing"
+      "• Allow customizing changeset comment on refine tags page"
     ]
   },
   "2.6.2": {

@@ -41,9 +41,9 @@ class ProximityAlertService {
     
     const androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
     const iosSettings = DarwinInitializationSettings(
-      requestAlertPermission: true,
-      requestBadgePermission: true,
-      requestSoundPermission: true,
+      requestAlertPermission: false,
+      requestBadgePermission: false,
+      requestSoundPermission: false,
     );
     
     const initSettings = InitializationSettings(
@@ -55,12 +55,10 @@ class ProximityAlertService {
       final initialized = await _notifications!.initialize(initSettings);
       _isInitialized = initialized ?? false;
       
-      // Request notification permissions (especially important for Android 13+)
-      if (_isInitialized) {
-        await _requestNotificationPermissions();
-      }
+      // Note: We don't request notification permissions here anymore.
+      // Permissions are requested on-demand when user enables proximity alerts.
       
-      debugPrint('[ProximityAlertService] Initialized: $_isInitialized');
+      debugPrint('[ProximityAlertService] Initialized: $_isInitialized (permissions deferred)');
     } catch (e) {
       debugPrint('[ProximityAlertService] Failed to initialize: $e');
       _isInitialized = false;

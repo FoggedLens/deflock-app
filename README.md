@@ -104,7 +104,9 @@ cp lib/keys.dart.example lib/keys.dart
 ## Roadmap
 
 ### Needed Bugfixes
-- Ask for location permission on first launch, temp disable notification permission
+- Imperial units
+- Pass through tags on existing nodes which are not included in selected profile to the refine tags page, much like we do for all tags when "existing tags" profile is selected
+- Move "pause queue" toggle
 - Make submission guide scarier
 - Tile cache trimming? Does fluttermap handle?
 - Filter NSI suggestions based on what has already been typed in
@@ -112,6 +114,8 @@ cp lib/keys.dart.example lib/keys.dart
 - Clean cache when nodes have been deleted by others
 
 ### Current Development
+- Support check_date= tag, update on all edits, quick button to update that only
+- Support source= tag, default to survey, let user pick a different value
 - Add ability to downvote suspected locations which are old enough
 - Turn by turn navigation or at least swipe nav sheet up to see a list
 - Import/Export map providers

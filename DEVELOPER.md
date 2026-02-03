@@ -97,9 +97,14 @@ Changelog content is stored in `assets/changelog.json`:
 
 ### User Experience Flow
 - **First Launch**: Welcome popup with "don't show again" option
+- **Location Permission**: Requested immediately after welcome dialog on first launch (v2.6.3+)
 - **First Submission**: Submission guide popup with best practices and resource links
 - **Version Updates**: Changelog popup (only if content exists, no "don't show again")  
 - **Settings Access**: Complete changelog history available in Settings > About > Release Notes
+
+### Permission Handling (Updated v2.6.3)
+- **Location Permission**: Requested on first launch for core GPS functionality
+- **Notification Permission**: Requested on-demand when user enables proximity alerts
 
 ### Privacy Integration
 The welcome popup explains that the app:
@@ -365,11 +370,13 @@ Local cache contains production data. Showing production nodes in sandbox mode w
 - **Dual alert types**: Push notifications (background) and visual banners (foreground)
 - **Configurable distance**: 25-200 meter alert radius
 - **Battery awareness**: Users explicitly opt into background location monitoring
+- **On-demand permissions**: Notification permission requested only when user enables proximity alerts (v2.6.3+)
 
 **Implementation notes:**
 - Uses Flutter Local Notifications for cross-platform background alerts
 - Simple RecentAlert tracking prevents duplicate notifications
 - Visual callback system for in-app alerts when app is active
+- Permission requests deferred until feature activation for better UX
 
 ### 9. Compass Indicator & North Lock
 

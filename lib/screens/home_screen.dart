@@ -27,6 +27,7 @@ import '../services/changelog_service.dart';
 import 'coordinators/sheet_coordinator.dart';
 import 'coordinators/navigation_coordinator.dart';
 import 'coordinators/map_interaction_handler.dart';
+import 'package:geolocator/geolocator.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -153,6 +154,33 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     );
   }
 
+  // Request location permission on first launch
+  Future<void> _requestLocationPermissionIfFirstLaunch() async {
+    if (!mounted) return;
+    
+    try {
+      // Only request on first launch or if user has never seen welcome
+      final isFirstLaunch = await ChangelogService().isFirstLaunch();
+      final hasSeenWelcome = await ChangelogService().hasSeenWelcome();
+      
+      if (isFirstLaunch || !hasSeenWelcome) {
+        // Check if location services are enabled
+        bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+        if (!serviceEnabled) {
+          debugPrint('[HomeScreen] Location services disabled - skipping permission request');
+          return;
+        }
+
+        // Request location permission (this will show system dialog if needed)
+        final permission = await Geolocator.requestPermission();
+        debugPrint('[HomeScreen] First launch location permission result: $permission');
+      }
+    } catch (e) {
+      // Silently handle errors to avoid breaking the app launch
+      debugPrint('[HomeScreen] Error requesting location permission: $e');
+    }
+  }
+
   // Check for and display welcome/changelog popup
   Future<void> _checkForPopup() async {
     if (!mounted) return;
@@ -178,6 +206,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             barrierDismissible: false,
             builder: (context) => const WelcomeDialog(),
           );
+          
+          // Request location permission right after welcome dialog on first launch
+          if (!mounted) return;
+          await _requestLocationPermissionIfFirstLaunch();
           break;
         
         case PopupType.changelog:
