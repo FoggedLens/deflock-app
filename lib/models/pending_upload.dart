@@ -22,6 +22,7 @@ class PendingUpload {
   final NodeProfile? profile;
   final OperatorProfile? operatorProfile;
   final Map<String, String> refinedTags; // User-selected values for empty profile tags
+  final Map<String, String> additionalExistingTags; // Tags that exist on node but not in profile
   final String changesetComment; // User-editable changeset comment
   final UploadMode uploadMode; // Capture upload destination when queued
   final UploadOperation operation; // Type of operation: create, modify, or delete
@@ -46,6 +47,7 @@ class PendingUpload {
     this.profile,
     this.operatorProfile,
     Map<String, String>? refinedTags,
+    Map<String, String>? additionalExistingTags,
     required this.changesetComment,
     required this.uploadMode,
     required this.operation,
@@ -64,6 +66,7 @@ class PendingUpload {
     this.nodeSubmissionAttempts = 0,
     this.lastNodeSubmissionAttemptAt,
   }) : refinedTags = refinedTags ?? {},
+       additionalExistingTags = additionalExistingTags ?? {},
        assert(
          (operation == UploadOperation.create && originalNodeId == null) ||
          (operation == UploadOperation.create) || (originalNodeId != null),
@@ -224,7 +227,7 @@ class PendingUpload {
     return DateTime.now().isAfter(nextRetryTime);
   }
 
-  // Get combined tags from node profile, operator profile, and refined tags
+  // Get combined tags from node profile, operator profile, refined tags, and additional existing tags
   Map<String, String> getCombinedTags() {
     // Deletions don't need tags
     if (operation == UploadOperation.delete || profile == null) {
@@ -233,15 +236,21 @@ class PendingUpload {
     
     final tags = Map<String, String>.from(profile!.tags);
     
+    // Add additional existing tags first (these have lower precedence)
+    tags.addAll(additionalExistingTags);
+    
+    // Apply profile tags again to ensure they take precedence over additional existing tags
+    tags.addAll(profile!.tags);
+    
     // Apply refined tags (these fill in empty values from the profile)
     for (final entry in refinedTags.entries) {
       // Only apply refined tags if the profile tag value is empty
-      if (tags.containsKey(entry.key) && tags[entry.key]?.trim().isEmpty == true) {
+      if (profile!.tags.containsKey(entry.key) && profile!.tags[entry.key]?.trim().isEmpty == true) {
         tags[entry.key] = entry.value;
       }
     }
     
-    // Add operator profile tags (they override node profile tags if there are conflicts)
+    // Add operator profile tags (they override everything if there are conflicts)
     if (operatorProfile != null) {
       tags.addAll(operatorProfile!.tags);
     }
@@ -271,6 +280,7 @@ class PendingUpload {
         'profile': profile?.toJson(),
         'operatorProfile': operatorProfile?.toJson(),
         'refinedTags': refinedTags,
+        'additionalExistingTags': additionalExistingTags,
         'changesetComment': changesetComment,
         'uploadMode': uploadMode.index,
         'operation': operation.index,
@@ -301,6 +311,9 @@ class PendingUpload {
             : null,
         refinedTags: j['refinedTags'] != null 
             ? Map<String, String>.from(j['refinedTags'])
+            : {}, // Default empty map for legacy entries
+        additionalExistingTags: j['additionalExistingTags'] != null 
+            ? Map<String, String>.from(j['additionalExistingTags'])
             : {}, // Default empty map for legacy entries
         changesetComment: j['changesetComment'] ?? _generateLegacyComment(j), // Default for legacy entries
         uploadMode: j['uploadMode'] != null 

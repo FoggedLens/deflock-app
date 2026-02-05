@@ -14,6 +14,7 @@ class AddNodeSession {
   List<double> directions;          // All directions [90, 180, 270]
   int currentDirectionIndex;        // Which direction we're editing (e.g. 1 = editing the 180°)
   Map<String, String> refinedTags;  // User-selected values for empty profile tags
+  Map<String, String> additionalExistingTags; // For consistency (always empty for new nodes)
   String changesetComment;          // User-editable changeset comment
   
   AddNodeSession({
@@ -22,10 +23,12 @@ class AddNodeSession {
     this.operatorProfile,
     this.target,
     Map<String, String>? refinedTags,
+    Map<String, String>? additionalExistingTags,
     String? changesetComment,
   }) : directions = [initialDirection],
        currentDirectionIndex = 0,
        refinedTags = refinedTags ?? {},
+       additionalExistingTags = additionalExistingTags ?? {}, // Always empty for new nodes
        changesetComment = changesetComment ?? '';
   
   // Slider always shows the current direction being edited
@@ -50,6 +53,7 @@ class EditNodeSession {
   int currentDirectionIndex;        // Which direction we're editing (e.g. 1 = editing the 180°)
   bool extractFromWay; // True if user wants to extract this constrained node
   Map<String, String> refinedTags;  // User-selected values for empty profile tags
+  Map<String, String> additionalExistingTags; // Tags that exist on node but not in profile
   String changesetComment;          // User-editable changeset comment
   
   EditNodeSession({
@@ -61,10 +65,12 @@ class EditNodeSession {
     required this.target,
     this.extractFromWay = false,
     Map<String, String>? refinedTags,
+    Map<String, String>? additionalExistingTags,
     String? changesetComment,
   }) : directions = [initialDirection],
        currentDirectionIndex = 0,
        refinedTags = refinedTags ?? {},
+       additionalExistingTags = additionalExistingTags ?? {},
        changesetComment = changesetComment ?? '';
   
   // Slider always shows the current direction being edited
@@ -97,7 +103,7 @@ class SessionState extends ChangeNotifier {
   }
 
   void startEditSession(OsmNode node, List<NodeProfile> enabledProfiles, List<OperatorProfile> operatorProfiles) {
-    // Always create and pre-select the temporary "existing tags" profile
+    // Always create and pre-select the temporary "existing tags" profile (now empty)
     final existingTagsProfile = NodeProfile.createExistingTagsProfile(node);
     
     // Detect and store operator profile (persists across profile changes)
@@ -108,6 +114,13 @@ class SessionState extends ChangeNotifier {
     final initialDirection = existingDirections.isNotEmpty ? existingDirections.first : 0.0;
     final originalHadDirections = existingDirections.isNotEmpty;
     
+    // Since the "existing tags" profile is now empty, all existing node tags 
+    // (minus special ones) should go into additionalExistingTags
+    final initialAdditionalTags = _calculateAdditionalExistingTags(existingTagsProfile, node);
+    
+    // Auto-populate refined tags (empty profile means no refined tags initially)
+    final initialRefinedTags = _calculateRefinedTags(existingTagsProfile, node);
+    
     _editSession = EditNodeSession(
       originalNode: node,
       originalHadDirections: originalHadDirections,
@@ -115,6 +128,8 @@ class SessionState extends ChangeNotifier {
       operatorProfile: _detectedOperatorProfile,
       initialDirection: initialDirection,
       target: node.coord,
+      additionalExistingTags: initialAdditionalTags,
+      refinedTags: initialRefinedTags,
       changesetComment: 'Update a surveillance node', // Default comment for existing tags profile
     );
     
@@ -135,12 +150,80 @@ class SessionState extends ChangeNotifier {
     return true;
   }
 
+  /// Calculate additional existing tags for a given profile change
+  Map<String, String> _calculateAdditionalExistingTags(NodeProfile? newProfile, OsmNode originalNode) {
+    final additionalTags = <String, String>{};
+    
+    // Skip if no profile
+    if (newProfile == null) {
+      return additionalTags;
+    }
+    
+    // Get tags from the original node that are not in the selected profile
+    final profileTagKeys = newProfile.tags.keys.toSet();
+    final originalTags = originalNode.tags;
+    
+    for (final entry in originalTags.entries) {
+      final key = entry.key;
+      final value = entry.value;
+      
+      // Skip tags that are handled elsewhere
+      if (_shouldSkipTag(key)) continue;
+      
+      // Skip tags that exist in the selected profile
+      if (profileTagKeys.contains(key)) continue;
+      
+      // Include this tag as an additional existing tag
+      additionalTags[key] = value;
+    }
+    
+    return additionalTags;
+  }
+  
+  /// Auto-populate refined tags with existing values from the original node
+  Map<String, String> _calculateRefinedTags(NodeProfile? profile, OsmNode originalNode) {
+    final refinedTags = <String, String>{};
+    
+    if (profile == null) return refinedTags;
+    
+    // For each empty-value tag in the profile, check if original node has a value
+    for (final entry in profile.tags.entries) {
+      final tagKey = entry.key;
+      final profileValue = entry.value;
+      
+      // Only auto-populate if profile tag value is empty
+      if (profileValue.trim().isEmpty) {
+        final existingValue = originalNode.tags[tagKey];
+        if (existingValue != null && existingValue.trim().isNotEmpty) {
+          refinedTags[tagKey] = existingValue;
+        }
+      }
+    }
+    
+    return refinedTags;
+  }
+  
+  /// Check if a tag should be skipped from additional existing tags
+  bool _shouldSkipTag(String key) {
+    // Skip direction tags (handled separately)
+    if (key == 'direction' || key == 'camera:direction') return true;
+    
+    // Skip operator tags (handled by operator profile)
+    if (key == 'operator' || key.startsWith('operator:')) return true;
+    
+    // Skip internal cache tags
+    if (key.startsWith('_')) return true;
+    
+    return false;
+  }
+
   void updateSession({
     double? directionDeg,
     NodeProfile? profile,
     OperatorProfile? operatorProfile,
     LatLng? target,
     Map<String, String>? refinedTags,
+    Map<String, String>? additionalExistingTags,
     String? changesetComment,
   }) {
     if (_session == null) return;
@@ -171,6 +254,10 @@ class SessionState extends ChangeNotifier {
       _session!.refinedTags = Map<String, String>.from(refinedTags);
       dirty = true;
     }
+    if (additionalExistingTags != null) {
+      _session!.additionalExistingTags = Map<String, String>.from(additionalExistingTags);
+      dirty = true;
+    }
     if (changesetComment != null) {
       _session!.changesetComment = changesetComment;
       dirty = true;
@@ -185,6 +272,7 @@ class SessionState extends ChangeNotifier {
     LatLng? target,
     bool? extractFromWay,
     Map<String, String>? refinedTags,
+    Map<String, String>? additionalExistingTags,
     String? changesetComment,
   }) {
     if (_editSession == null) return;
@@ -208,6 +296,18 @@ class SessionState extends ChangeNotifier {
       // restore the detected operator profile (if any)
       if (operatorProfile == null && _detectedOperatorProfile != null) {
         _editSession!.operatorProfile = _detectedOperatorProfile;
+      }
+      
+      // Calculate additional existing tags for non-existing-tags profiles
+      // Only do this if additionalExistingTags wasn't explicitly provided
+      if (additionalExistingTags == null) {
+        _editSession!.additionalExistingTags = _calculateAdditionalExistingTags(profile, _editSession!.originalNode);
+      }
+      
+      // Auto-populate refined tags with existing values for empty profile tags
+      // Only do this if refinedTags wasn't explicitly provided
+      if (refinedTags == null) {
+        _editSession!.refinedTags = _calculateRefinedTags(profile, _editSession!.originalNode);
       }
       
       // Regenerate changeset comment when profile changes
@@ -240,6 +340,10 @@ class SessionState extends ChangeNotifier {
     }
     if (refinedTags != null) {
       _editSession!.refinedTags = Map<String, String>.from(refinedTags);
+      dirty = true;
+    }
+    if (additionalExistingTags != null) {
+      _editSession!.additionalExistingTags = Map<String, String>.from(additionalExistingTags);
       dirty = true;
     }
     if (changesetComment != null) {
@@ -350,9 +454,9 @@ class SessionState extends ChangeNotifier {
   int _getMinimumDirections() {
     if (_editSession == null) return 1;
     
-    // Minimum = 0 only if original had no directions AND currently using existing tags profile
-    final isExistingTags = _editSession!.profile?.isExistingTagsProfile == true;
-    return (_editSession!.originalHadDirections || !isExistingTags) ? 1 : 0;
+    // Minimum = 0 only if original node had no directions
+    // Allow preserving the original state (directionless nodes can stay directionless)
+    return _editSession!.originalHadDirections ? 1 : 0;
   }
 
   /// Check if remove direction button should be enabled for edit session

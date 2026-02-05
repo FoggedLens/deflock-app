@@ -130,6 +130,7 @@ class UploadQueueState extends ChangeNotifier {
       profile: session.profile!,  // Safe to use ! because commitSession() checks for null
       operatorProfile: session.operatorProfile,
       refinedTags: session.refinedTags,
+      additionalExistingTags: session.additionalExistingTags, // Always empty for new nodes
       changesetComment: session.changesetComment,
       uploadMode: uploadMode,
       operation: UploadOperation.create,
@@ -188,6 +189,7 @@ class UploadQueueState extends ChangeNotifier {
       profile: session.profile!,  // Safe to use ! because commitEditSession() checks for null
       operatorProfile: session.operatorProfile,
       refinedTags: session.refinedTags,
+      additionalExistingTags: session.additionalExistingTags,
       changesetComment: session.changesetComment,
       uploadMode: uploadMode,
       operation: operation,

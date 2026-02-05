@@ -445,6 +445,7 @@ class AppState extends ChangeNotifier {
     OperatorProfile? operatorProfile,
     LatLng? target,
     Map<String, String>? refinedTags,
+    Map<String, String>? additionalExistingTags,
     String? changesetComment,
   }) {
     _sessionState.updateSession(
@@ -453,6 +454,7 @@ class AppState extends ChangeNotifier {
       operatorProfile: operatorProfile,
       target: target,
       refinedTags: refinedTags,
+      additionalExistingTags: additionalExistingTags,
       changesetComment: changesetComment,
     );
     
@@ -469,6 +471,7 @@ class AppState extends ChangeNotifier {
     LatLng? target,
     bool? extractFromWay,
     Map<String, String>? refinedTags,
+    Map<String, String>? additionalExistingTags,
     String? changesetComment,
   }) {
     _sessionState.updateEditSession(
@@ -478,6 +481,7 @@ class AppState extends ChangeNotifier {
       target: target,
       extractFromWay: extractFromWay,
       refinedTags: refinedTags,
+      additionalExistingTags: additionalExistingTags,
       changesetComment: changesetComment,
     );
     

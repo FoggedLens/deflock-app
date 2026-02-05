@@ -154,28 +154,40 @@ class _EditNodeSheetState extends State<EditNodeSheet> {
 
   /// Check if the edit session has any actual changes compared to the original node
   bool _hasActualChanges(EditNodeSession session) {
+    debugPrint('EditNodeSheet: Checking for actual changes...');
+    
     // Extract operation is always a change
-    if (session.extractFromWay) return true;
+    if (session.extractFromWay) {
+      debugPrint('EditNodeSheet: Extract operation detected - changes found');
+      return true;
+    }
     
     // Check location change
     const double tolerance = 0.0000001; // ~1cm precision
     if ((session.target.latitude - session.originalNode.coord.latitude).abs() > tolerance ||
         (session.target.longitude - session.originalNode.coord.longitude).abs() > tolerance) {
+      debugPrint('EditNodeSheet: Location change detected - changes found');
       return true;
     }
     
     // Check direction changes
     if (!_directionsEqual(session.directions, session.originalNode.directionDeg)) {
+      debugPrint('EditNodeSheet: Direction change detected - changes found');
       return true;
     }
     
     // Check tag changes (including operator profile)
     final originalTags = session.originalNode.tags;
     final newTags = _getSessionCombinedTags(session);
+    debugPrint('EditNodeSheet: Original tags: $originalTags');
+    debugPrint('EditNodeSheet: New combined tags: $newTags');
+    
     if (!_tagsEqual(originalTags, newTags)) {
+      debugPrint('EditNodeSheet: Tag changes detected - changes found');
       return true;
     }
     
+    debugPrint('EditNodeSheet: No changes detected');
     return false;
   }
 
@@ -238,9 +250,11 @@ class _EditNodeSheetState extends State<EditNodeSheet> {
       profile: session.profile,
       operatorProfile: session.operatorProfile,
       refinedTags: session.refinedTags,
+      additionalExistingTags: session.additionalExistingTags, // Include additional existing tags!
       changesetComment: session.changesetComment, // Required parameter
       uploadMode: UploadMode.production, // Mode doesn't matter for tag combination
       operation: UploadOperation.modify,
+      originalNodeId: session.originalNode.id, // Required for modify operations
     );
     
     return tempUpload.getCombinedTags();
@@ -491,6 +505,7 @@ class _EditNodeSheetState extends State<EditNodeSheet> {
                 selectedOperatorProfile: session.operatorProfile,
                 selectedProfile: session.profile,
                 currentRefinedTags: session.refinedTags,
+                currentAdditionalExistingTags: session.additionalExistingTags,
                 originalNodeTags: session.originalNode.tags,
                 operation: session.extractFromWay ? UploadOperation.extract : UploadOperation.modify,
               ),
@@ -498,24 +513,17 @@ class _EditNodeSheetState extends State<EditNodeSheet> {
             ),
           );
           if (result != null) {
-            if (result.editedTags != null && session.profile?.isExistingTagsProfile == true) {
-              // Update the existing tags profile with the edited tags
-              final updatedProfile = session.profile!.copyWith(
-                tags: result.editedTags,
-              );
-              appState.updateEditSession(
-                profile: updatedProfile,
-                operatorProfile: result.operatorProfile,
-                refinedTags: result.refinedTags,
-                changesetComment: result.changesetComment,
-              );
-            } else {
-              appState.updateEditSession(
-                operatorProfile: result.operatorProfile,
-                refinedTags: result.refinedTags,
-                changesetComment: result.changesetComment,
-              );
-            }
+            debugPrint('EditNodeSheet: Updating session from refine tags result');
+            debugPrint('EditNodeSheet: Profile: ${session.profile?.name}');
+            debugPrint('EditNodeSheet: AdditionalExistingTags: ${result.additionalExistingTags}');
+            debugPrint('EditNodeSheet: Current session additionalExistingTags: ${session.additionalExistingTags}');
+            
+            appState.updateEditSession(
+              operatorProfile: result.operatorProfile,
+              refinedTags: result.refinedTags,
+              additionalExistingTags: result.additionalExistingTags,
+              changesetComment: result.changesetComment,
+            );
           }
         }
 
@@ -749,7 +757,7 @@ class _EditNodeSheetState extends State<EditNodeSheet> {
     // Display name for the current profile - localize the existing tags profile
     String getDisplayName(NodeProfile? profile) {
       if (profile == null) return locService.t('editNode.selectProfile');
-      if (profile.isExistingTagsProfile) {
+      if (profile.id.startsWith('temp-empty-')) {
         return locService.t('editNode.existingTags');
       }
       return profile.name;

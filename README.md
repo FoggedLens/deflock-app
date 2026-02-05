@@ -104,8 +104,9 @@ cp lib/keys.dart.example lib/keys.dart
 ## Roadmap
 
 ### Needed Bugfixes
+- Temp. "existing" profile should pick up FOV if available from each direction
 - Imperial units
-- Pass through tags on existing nodes which are not included in selected profile to the refine tags page, much like we do for all tags when "existing tags" profile is selected
+- Clear search box after selecting first nav point
 - Make submission guide scarier
 - Tile cache trimming? Does fluttermap handle?
 - Filter NSI suggestions based on what has already been typed in
@@ -121,6 +122,7 @@ cp lib/keys.dart.example lib/keys.dart
 - Import default profiles from the website to capture changes without pushing an update?
 
 ### Future Features & Wishlist
+- Tap direction slider to enter integer directly
 - Tap pending queue item to edit again before submitting
 - Optional reason message when deleting
 - Update offline area data while browsing?

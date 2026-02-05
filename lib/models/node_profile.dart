@@ -266,22 +266,14 @@ class NodeProfile {
   @override
   int get hashCode => id.hashCode;
 
-  /// Create a temporary profile representing the existing tags on a node (minus direction and operator)
+  /// Create a temporary empty profile for editing existing nodes
   /// Used as the default "<Existing tags>" option when editing nodes
+  /// All existing tags will flow through as additionalExistingTags
   static NodeProfile createExistingTagsProfile(OsmNode node) {
-    final tagsWithoutSpecial = Map<String, String>.from(node.tags);
-    // Remove direction tags (handled separately)
-    tagsWithoutSpecial.remove('direction');
-    tagsWithoutSpecial.remove('camera:direction');
-    
-    // Remove operator tags (handled separately by operator profile)
-    tagsWithoutSpecial.removeWhere((key, value) => 
-        key == 'operator' || key.startsWith('operator:'));
-    
     return NodeProfile(
-      id: 'temp-no-change-${node.id}',
+      id: 'temp-empty-${node.id}',
       name: '<Existing tags>', // Will be localized in UI
-      tags: tagsWithoutSpecial,
+      tags: {}, // Completely empty - all existing tags become additional
       builtin: false,
       requiresDirection: true,
       submittable: true,
@@ -289,7 +281,6 @@ class NodeProfile {
     );
   }
 
-  /// Returns true if this is a temporary "existing tags" profile
-  bool get isExistingTagsProfile => id.startsWith('temp-no-change-');
+
 }
 
