@@ -104,7 +104,6 @@ cp lib/keys.dart.example lib/keys.dart
 ## Roadmap
 
 ### Needed Bugfixes
-- Temp. "existing" profile should pick up FOV if available from each direction
 - Imperial units
 - Clear search box after selecting first nav point
 - Make submission guide scarier
@@ -119,7 +118,7 @@ cp lib/keys.dart.example lib/keys.dart
 - Add ability to downvote suspected locations which are old enough
 - Turn by turn navigation or at least swipe nav sheet up to see a list
 - Import/Export map providers
-- Import default profiles from the website to capture changes without pushing an update?
+- Update default profiles from the website on launch to capture changes
 
 ### Future Features & Wishlist
 - Tap direction slider to enter integer directly
@@ -130,15 +129,14 @@ cp lib/keys.dart.example lib/keys.dart
 - Offline navigation (pending vector map tiles)
 
 ### Maybes
-- "Universal Links" for better handling of profile import when app not installed?
+- Icons/glyphs for profiles
+- "Universal Links" for better handling of profile import when app is not installed
 - Yellow ring for devices missing specific tag details
 - Android Auto / CarPlay
-- "Cache accumulating" offline area?
-- "Offline areas" as tile provider?
+- "Cache accumulating" offline area? Most recent / most viewed?
 - Grab the full latest database for each profile just like for suspected locations (instead of overpass)?
-- Optional custom icons for profiles to aid identification
-- Custom device providers and OSM/Overpass alternatives
-- Offer options for extracting nodes which are attached to a way/relation:
+- Custom data providers? (OSM/Overpass alternatives)
+- Offer options for extracting nodes which are attached to a way/relation?
   - Auto extract (how?)
   - Leave it alone (wrong answer unless user chooses intentionally)
   - Manual cleanup (cognitive load for users)

@@ -154,40 +154,28 @@ class _EditNodeSheetState extends State<EditNodeSheet> {
 
   /// Check if the edit session has any actual changes compared to the original node
   bool _hasActualChanges(EditNodeSession session) {
-    debugPrint('EditNodeSheet: Checking for actual changes...');
-    
     // Extract operation is always a change
-    if (session.extractFromWay) {
-      debugPrint('EditNodeSheet: Extract operation detected - changes found');
-      return true;
-    }
+    if (session.extractFromWay) return true;
     
     // Check location change
     const double tolerance = 0.0000001; // ~1cm precision
     if ((session.target.latitude - session.originalNode.coord.latitude).abs() > tolerance ||
         (session.target.longitude - session.originalNode.coord.longitude).abs() > tolerance) {
-      debugPrint('EditNodeSheet: Location change detected - changes found');
       return true;
     }
     
     // Check direction changes
     if (!_directionsEqual(session.directions, session.originalNode.directionDeg)) {
-      debugPrint('EditNodeSheet: Direction change detected - changes found');
       return true;
     }
     
-    // Check tag changes (including operator profile)
+    // Check tag changes (including operator profile and additional existing tags)
     final originalTags = session.originalNode.tags;
     final newTags = _getSessionCombinedTags(session);
-    debugPrint('EditNodeSheet: Original tags: $originalTags');
-    debugPrint('EditNodeSheet: New combined tags: $newTags');
-    
     if (!_tagsEqual(originalTags, newTags)) {
-      debugPrint('EditNodeSheet: Tag changes detected - changes found');
       return true;
     }
     
-    debugPrint('EditNodeSheet: No changes detected');
     return false;
   }
 
@@ -513,11 +501,6 @@ class _EditNodeSheetState extends State<EditNodeSheet> {
             ),
           );
           if (result != null) {
-            debugPrint('EditNodeSheet: Updating session from refine tags result');
-            debugPrint('EditNodeSheet: Profile: ${session.profile?.name}');
-            debugPrint('EditNodeSheet: AdditionalExistingTags: ${result.additionalExistingTags}');
-            debugPrint('EditNodeSheet: Current session additionalExistingTags: ${session.additionalExistingTags}');
-            
             appState.updateEditSession(
               operatorProfile: result.operatorProfile,
               refinedTags: result.refinedTags,

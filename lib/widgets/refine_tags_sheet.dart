@@ -101,7 +101,6 @@ class _RefineTagsSheetState extends State<RefineTagsSheet> {
     // Use the additional existing tags calculated by SessionState when profile changed
     if (widget.currentAdditionalExistingTags != null) {
       _additionalExistingTags = widget.currentAdditionalExistingTags!.entries.toList();
-      debugPrint('RefineTagsSheet: Loaded ${_additionalExistingTags.length} additional existing tags from session');
       return;
     }
     
@@ -130,8 +129,6 @@ class _RefineTagsSheetState extends State<RefineTagsSheet> {
       // Include this tag as an additional existing tag
       _additionalExistingTags.add(MapEntry(key, value));
     }
-    
-    debugPrint('RefineTagsSheet: Fallback calculated ${_additionalExistingTags.length} additional existing tags');
   }
   
   /// Check if a tag should be skipped from additional existing tags
@@ -202,11 +199,6 @@ class _RefineTagsSheetState extends State<RefineTagsSheet> {
               final additionalTags = _hasAdditionalExistingTagsToManage 
                   ? Map<String, String>.fromEntries(_additionalExistingTags.where((e) => e.key.isNotEmpty))
                   : null;
-              
-              debugPrint('RefineTagsSheet: Returning result');
-              debugPrint('RefineTagsSheet: additionalTags: $additionalTags');
-              debugPrint('RefineTagsSheet: _additionalExistingTags: $_additionalExistingTags');
-              debugPrint('RefineTagsSheet: _shouldShowAdditionalExistingTags: $_shouldShowAdditionalExistingTags');
               
               Navigator.pop(context, RefineTagsResult(
                 operatorProfile: _selectedOperatorProfile,

@@ -319,9 +319,9 @@ class SessionState extends ChangeNotifier {
       
       dirty = true;
     }
-    // Only update operator profile if explicitly provided or different from current
-    if (operatorProfile != null && operatorProfile != _editSession!.operatorProfile) {
-      _editSession!.operatorProfile = operatorProfile;
+    // Only update operator profile if explicitly provided (including null) and different from current
+    if (operatorProfile != _editSession!.operatorProfile) {
+      _editSession!.operatorProfile = operatorProfile; // This can be null
       dirty = true;
     }
     if (target != null && target != _editSession!.target) {

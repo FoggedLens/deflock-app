@@ -270,6 +270,19 @@ class NodeProfile {
   /// Used as the default "<Existing tags>" option when editing nodes
   /// All existing tags will flow through as additionalExistingTags
   static NodeProfile createExistingTagsProfile(OsmNode node) {
+    // Calculate FOV from existing direction ranges if applicable
+    double? calculatedFov;
+    
+    // If node has direction/FOV pairs, check if they all have the same FOV
+    if (node.directionFovPairs.isNotEmpty) {
+      final firstFov = node.directionFovPairs.first.fovDegrees;
+      
+      // If all directions have the same FOV, use it for the profile
+      if (node.directionFovPairs.every((df) => df.fovDegrees == firstFov)) {
+        calculatedFov = firstFov;
+      }
+    }
+    
     return NodeProfile(
       id: 'temp-empty-${node.id}',
       name: '<Existing tags>', // Will be localized in UI
@@ -278,6 +291,7 @@ class NodeProfile {
       requiresDirection: true,
       submittable: true,
       editable: false,
+      fov: calculatedFov, // Use calculated FOV from existing direction ranges
     );
   }
 
