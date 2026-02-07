@@ -104,7 +104,6 @@ cp lib/keys.dart.example lib/keys.dart
 ## Roadmap
 
 ### Needed Bugfixes
-- Clear search box after selecting first nav point
 - Make submission guide scarier
 - Tile cache trimming? Does fluttermap handle?
 - Filter NSI suggestions based on what has already been typed in

@@ -2,7 +2,8 @@
   "2.6.4": {
     "content": [
       "• Added imperial units support (miles, feet) in addition to metric units (km, meters)",
-      "• Moved units setting from Navigation to Language & Region settings page"
+      "• Moved units setting from Navigation to Language & Region settings page",
+      "• Search text now automatically clears when route planning starts"
     ]
   },
   "2.6.3": {

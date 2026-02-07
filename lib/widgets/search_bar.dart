@@ -26,6 +26,7 @@ class _LocationSearchBarState extends State<LocationSearchBar> {
   final Debouncer _searchDebouncer = Debouncer(const Duration(milliseconds: 500));
   
   bool _showResults = false;
+  bool _wasSettingSecondPoint = false; // Track previous state to detect changes
   
   @override
   void initState() {
@@ -161,6 +162,19 @@ class _LocationSearchBarState extends State<LocationSearchBar> {
   Widget build(BuildContext context) {
     return Consumer<AppState>(
       builder: (context, appState, child) {
+        // BRUTALIST: Clear search box when route planning starts
+        final isNowSettingSecondPoint = appState.isSettingSecondPoint;
+        if (isNowSettingSecondPoint && !_wasSettingSecondPoint) {
+          // Route planning just started - clear the search box
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            _controller.clear();
+            setState(() {
+              _showResults = false;
+            });
+          });
+        }
+        _wasSettingSecondPoint = isNowSettingSecondPoint;
+        
         return Column(
           children: [
             Container(
