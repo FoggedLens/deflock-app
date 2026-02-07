@@ -5,6 +5,8 @@ import 'package:provider/provider.dart';
 import '../../../app_state.dart';
 import '../../../services/localization_service.dart';
 import '../../../services/proximity_alert_service.dart';
+import '../../../services/distance_service.dart';
+import '../../../state/settings_state.dart';
 import '../../../dev_config.dart';
 
 /// Settings section for proximity alerts configuration
@@ -25,8 +27,13 @@ class _ProximityAlertsSectionState extends State<ProximityAlertsSection> {
   void initState() {
     super.initState();
     final appState = context.read<AppState>();
+    // Convert meters to display units for the text field
+    final displayValue = DistanceService.convertFromMeters(
+      appState.proximityAlertDistance.toDouble(), 
+      appState.distanceUnit
+    );
     _distanceController = TextEditingController(
-      text: appState.proximityAlertDistance.toString(),
+      text: displayValue.round().toString(),
     );
     _checkNotificationPermissions();
   }
@@ -69,12 +76,18 @@ class _ProximityAlertsSectionState extends State<ProximityAlertsSection> {
 
   void _updateDistance(AppState appState) {
     final text = _distanceController.text.trim();
-    final distance = int.tryParse(text);
-    if (distance != null) {
-      appState.setProximityAlertDistance(distance);
+    final displayValue = double.tryParse(text);
+    if (displayValue != null) {
+      // Convert from display units back to meters for storage
+      final metersValue = DistanceService.convertToMeters(displayValue, appState.distanceUnit, isSmallDistance: true);
+      appState.setProximityAlertDistance(metersValue.round());
     } else {
       // Reset to current value if invalid
-      _distanceController.text = appState.proximityAlertDistance.toString();
+      final displayValue = DistanceService.convertFromMeters(
+        appState.proximityAlertDistance.toDouble(), 
+        appState.distanceUnit
+      );
+      _distanceController.text = displayValue.round().toString();
     }
   }
 
@@ -83,6 +96,15 @@ class _ProximityAlertsSectionState extends State<ProximityAlertsSection> {
     return Consumer<AppState>(
       builder: (context, appState, child) {
         final locService = LocalizationService.instance;
+        
+        // Update the text field when the unit or distance changes
+        final displayValue = DistanceService.convertFromMeters(
+          appState.proximityAlertDistance.toDouble(), 
+          appState.distanceUnit
+        );
+        if (_distanceController.text != displayValue.round().toString()) {
+          _distanceController.text = displayValue.round().toString();
+        }
         
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -171,49 +193,50 @@ class _ProximityAlertsSectionState extends State<ProximityAlertsSection> {
               ),
             ],
             
-            // Distance setting (only show when enabled)
-            if (appState.proximityAlertsEnabled) ...[
-              const SizedBox(height: 12),
-              Row(
-                children: [
-                  Text(locService.t('proximityAlerts.alertDistance')),
-                  SizedBox(
-                    width: 80,
-                    child: TextField(
-                      controller: _distanceController,
-                      keyboardType: const TextInputType.numberWithOptions(signed: true, decimal: true),
-                      textInputAction: TextInputAction.done,
-                      inputFormatters: [
-                        FilteringTextInputFormatter.digitsOnly,
-                      ],
-                      decoration: const InputDecoration(
-                        isDense: true,
-                        contentPadding: EdgeInsets.symmetric(
-                          horizontal: 8, 
-                          vertical: 8,
+              // Distance setting (only show when enabled)
+              if (appState.proximityAlertsEnabled) ...[
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    Text(locService.t('proximityAlerts.alertDistance')),
+                    SizedBox(
+                      width: 80,
+                      child: TextField(
+                        controller: _distanceController,
+                        keyboardType: const TextInputType.numberWithOptions(signed: true, decimal: true),
+                        textInputAction: TextInputAction.done,
+                        inputFormatters: [
+                          FilteringTextInputFormatter.digitsOnly,
+                        ],
+                        decoration: const InputDecoration(
+                          isDense: true,
+                          contentPadding: EdgeInsets.symmetric(
+                            horizontal: 8, 
+                            vertical: 8,
+                          ),
+                          border: OutlineInputBorder(),
                         ),
-                        border: OutlineInputBorder(),
+                        onSubmitted: (_) => _updateDistance(appState),
+                        onEditingComplete: () => _updateDistance(appState),
                       ),
-                      onSubmitted: (_) => _updateDistance(appState),
-                      onEditingComplete: () => _updateDistance(appState),
                     ),
-                  ),
-                  const SizedBox(width: 8),
-                  Text(locService.t('proximityAlerts.meters')),
-                ],
-              ),
-              const SizedBox(height: 8),
-              Text(
-                locService.t('proximityAlerts.rangeInfo', params: [
-                  kProximityAlertMinDistance.toString(),
-                  kProximityAlertMaxDistance.toString(),
-                  kProximityAlertDefaultDistance.toString(),
-                ]),
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: Theme.of(context).textTheme.bodySmall?.color?.withOpacity(0.6),
+                    const SizedBox(width: 8),
+                    Text(locService.t('units.${appState.distanceUnit == DistanceUnit.metric ? 'metersLong' : 'feetLong'}')),
+                  ],
                 ),
-              ),
-            ],
+                const SizedBox(height: 8),
+                Text(
+                  locService.t('proximityAlerts.rangeInfo', params: [
+                    DistanceService.convertFromMeters(kProximityAlertMinDistance.toDouble(), appState.distanceUnit).round().toString(),
+                    DistanceService.convertFromMeters(kProximityAlertMaxDistance.toDouble(), appState.distanceUnit).round().toString(),
+                    locService.t('units.${appState.distanceUnit == DistanceUnit.metric ? 'metersLong' : 'feetLong'}'),
+                    DistanceService.convertFromMeters(kProximityAlertDefaultDistance.toDouble(), appState.distanceUnit).round().toString(),
+                  ]),
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: Theme.of(context).textTheme.bodySmall?.color?.withOpacity(0.6),
+                  ),
+                ),
+              ],
           ],
         );
       },

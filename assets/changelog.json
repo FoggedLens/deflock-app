@@ -1,8 +1,13 @@
 {
+  "2.6.4": {
+    "content": [
+      "• Added imperial units support (miles, feet) in addition to metric units (km, meters)",
+      "• Moved units setting from Navigation to Language & Region settings page"
+    ]
+  },
   "2.6.3": {
     "content": [
       "• Improved first launch experience - location permission is now requested immediately after welcome dialog",
-      "• Notification permission is now requested only when user enables proximity alerts (better UX)",
       "• Prevent edit submissions where nothing (location, tags, direction) has been changed",
       "• Allow customizing changeset comment on refine tags page",
       "• Moved upload queue pause toggle to upload queue screen for better discoverability"
@@ -10,12 +15,9 @@
   },
   "2.6.2": {
     "content": [
-      "• Enhanced edit workflow - existing device properties are preserved by default, reducing accidental tag loss during edits",
-      "• New '<Existing tags>' profile when editing nodes; preserves current device tags while allowing direction and location edits",
+      "• Enhanced edit workflow; new '<Existing tags>' profile preserves current tags while allowing direction and location edits",
       "• New '<Existing operator>' profile when editing nodes with operator tags; preserves operator details automatically", 
-      "• Tag pre-population; when switching profiles, existing node values automatically fill empty profile tags to prevent data loss",
-      "• Smart operator matching - existing operator tags automatically match saved operator profiles when possible",
-      "• Operator profile selection now persists across main profile selection changes"
+      "• Tag pre-population; existing node values automatically fill empty profile tags to prevent data loss"
     ]
   },
   "2.6.1": {

@@ -6,6 +6,7 @@ import 'package:latlong2/latlong.dart';
 import '../app_state.dart';
 import '../dev_config.dart';
 import '../services/localization_service.dart';
+import '../services/distance_service.dart';
 
 class NavigationSheet extends StatelessWidget {
   final VoidCallback? onStartRoute;
@@ -166,7 +167,7 @@ class NavigationSheet extends StatelessWidget {
                 // Show distance from first point
                 if (appState.distanceFromFirstPoint != null) ...[
                   Text(
-                    'Distance: ${(appState.distanceFromFirstPoint! / 1000).toStringAsFixed(1)} km',
+                    'Distance: ${DistanceService.formatRouteDistance(appState.distanceFromFirstPoint!.toDouble(), appState.distanceUnit)}',
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w500,
@@ -192,7 +193,7 @@ class NavigationSheet extends StatelessWidget {
                         const SizedBox(width: 8),
                         Expanded(
                           child: Text(
-                            'Trips longer than ${(kNavigationDistanceWarningThreshold / 1000).toStringAsFixed(0)} km are likely to time out. We are working to improve this; stay tuned.',
+                            'Trips longer than ${DistanceService.formatRouteDistance(kNavigationDistanceWarningThreshold.toDouble(), appState.distanceUnit)} are likely to time out. We are working to improve this; stay tuned.',
                             style: TextStyle(
                               fontSize: 14,
                               color: Colors.amber[700],
@@ -343,7 +344,7 @@ class NavigationSheet extends StatelessWidget {
                 ],
                 if (appState.routeDistance != null) ...[
                   Text(
-                    LocalizationService.instance.t('navigation.distance', params: [(appState.routeDistance! / 1000).toStringAsFixed(1)]),
+                    'Distance: ${DistanceService.formatRouteDistance(appState.routeDistance!.toDouble(), appState.distanceUnit)}',
                     style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 16),

@@ -89,7 +89,11 @@
     "aboutInfo": "关于 / 信息",
     "aboutThisApp": "关于此应用",
     "aboutSubtitle": "应用程序信息和鸣谢",
-    "languageSubtitle": "选择您的首选语言",
+    "languageSubtitle": "选择您的首选语言和单位",
+    "distanceUnit": "距离单位",
+    "distanceUnitSubtitle": "选择公制 (公里/米) 或英制 (英里/英尺) 单位",
+    "metricUnits": "公制 (公里, 米)",
+    "imperialUnits": "英制 (英里, 英尺)",
     "maxNodes": "最大节点绘制数",
     "maxNodesSubtitle": "设置地图上节点数量的上限。",
     "maxNodesWarning": "除非您确定有充分的理由，否则您可能不想这样做。",
@@ -119,8 +123,7 @@
     "enableNotifications": "启用通知",
     "checkingPermissions": "检查权限中...",
     "alertDistance": "警报距离：",
-    "meters": "米",
-    "rangeInfo": "范围：{}-{} 米（默认：{}）"
+    "rangeInfo": "范围：{}-{} {}（默认：{}）"
   },
   "node": {
     "title": "节点 #{}",
@@ -498,13 +501,7 @@
     "avoidanceDistance": "回避距离",
     "avoidanceDistanceSubtitle": "与监控设备保持的最小距离",
     "searchHistory": "最大搜索历史",
-    "searchHistorySubtitle": "要记住的最近搜索次数",
-    "units": "单位",
-    "unitsSubtitle": "距离和测量的显示单位",
-    "metric": "公制（公里，米）",
-    "imperial": "英制（英里，英尺）",
-    "meters": "米",
-    "feet": "英尺"
+    "searchHistorySubtitle": "要记住的最近搜索次数"
   },
   "suspectedLocations": {
     "title": "疑似位置",
@@ -540,5 +537,19 @@
     "url": "网址",
     "coordinates": "坐标",
     "noAddressAvailable": "无可用地址"
+  },
+  "units": {
+    "meters": "米",
+    "feet": "英尺",
+    "kilometers": "公里",
+    "miles": "英里",
+    "metersLong": "米",
+    "feetLong": "英尺",
+    "kilometersLong": "公里",
+    "milesLong": "英里",
+    "metric": "公制",
+    "imperial": "英制",
+    "metricDescription": "公制 (公里, 米)",
+    "imperialDescription": "英制 (英里, 英尺)"
   }
 }

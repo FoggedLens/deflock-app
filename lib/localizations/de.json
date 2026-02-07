@@ -47,12 +47,16 @@
   },
   "settings": {
     "title": "Einstellungen",
-    "language": "Sprache",
+    "language": "Sprache & Region",
     "systemDefault": "Systemstandard",
     "aboutInfo": "Über / Informationen",
     "aboutThisApp": "Über Diese App",
     "aboutSubtitle": "App-Informationen und Credits",
-    "languageSubtitle": "Wählen Sie Ihre bevorzugte Sprache",
+    "languageSubtitle": "Wählen Sie Ihre bevorzugte Sprache und Einheiten",
+    "distanceUnit": "Entfernungseinheiten",
+    "distanceUnitSubtitle": "Wählen Sie zwischen metrischen (km/m) oder imperialen (mi/ft) Einheiten",
+    "metricUnits": "Metrisch (km, m)",
+    "imperialUnits": "Imperial (mi, ft)",
     "maxNodes": "Max. angezeigte Knoten",
     "maxNodesSubtitle": "Obergrenze für die Anzahl der Knoten auf der Karte festlegen.",
     "maxNodesWarning": "Sie möchten das wahrscheinlich nicht tun, es sei denn, Sie sind absolut sicher, dass Sie einen guten Grund dafür haben.",
@@ -82,8 +86,7 @@
     "enableNotifications": "Benachrichtigungen Aktivieren",
     "checkingPermissions": "Berechtigungen prüfen...",
     "alertDistance": "Warnentfernung: ",
-    "meters": "Meter",
-    "rangeInfo": "Bereich: {}-{} Meter (Standard: {})"
+    "rangeInfo": "Bereich: {}-{} {} (Standard: {})"
   },
   "node": {
     "title": "Knoten #{}",
@@ -498,13 +501,7 @@
     "avoidanceDistance": "Vermeidungsabstand",
     "avoidanceDistanceSubtitle": "Mindestabstand zu Überwachungsgeräten",
     "searchHistory": "Max. Suchverlauf",
-    "searchHistorySubtitle": "Maximale Anzahl kürzlicher Suchen zum Merken",
-    "units": "Einheiten",
-    "unitsSubtitle": "Anzeigeeinheiten für Entfernungen und Messungen",
-    "metric": "Metrisch (km, m)",
-    "imperial": "Britisch (mi, ft)",
-    "meters": "Meter",
-    "feet": "Fuß"
+    "searchHistorySubtitle": "Maximale Anzahl kürzlicher Suchen zum Merken"
   },
   "suspectedLocations": {
     "title": "Verdächtige Standorte",
@@ -540,5 +537,19 @@
     "url": "URL",
     "coordinates": "Koordinaten",
     "noAddressAvailable": "Keine Adresse verfügbar"
+  },
+  "units": {
+    "meters": "m",
+    "feet": "ft",
+    "kilometers": "km",
+    "miles": "mi",
+    "metersLong": "Meter",
+    "feetLong": "Fuß",
+    "kilometersLong": "Kilometer",
+    "milesLong": "Meilen",
+    "metric": "Metrisch",
+    "imperial": "Imperial",
+    "metricDescription": "Metrisch (km, m)",
+    "imperialDescription": "Imperial (mi, ft)"
   }
 }

@@ -104,7 +104,6 @@ cp lib/keys.dart.example lib/keys.dart
 ## Roadmap
 
 ### Needed Bugfixes
-- Imperial units
 - Clear search box after selecting first nav point
 - Make submission guide scarier
 - Tile cache trimming? Does fluttermap handle?

@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../app_state.dart';
 import '../../../services/localization_service.dart';
+import '../../../services/distance_service.dart';
+import '../../../state/settings_state.dart';
 
 class SuspectedLocationsSection extends StatefulWidget {
   const SuspectedLocationsSection({super.key});
@@ -188,22 +190,28 @@ class _SuspectedLocationsSectionState extends State<SuspectedLocationsSection> {
               ListTile(
                 leading: const Icon(Icons.social_distance),
                 title: Text(locService.t('suspectedLocations.minimumDistance')),
-                subtitle: Text(locService.t('suspectedLocations.minimumDistanceSubtitle', params: [appState.suspectedLocationMinDistance.toString()])),
+                subtitle: Text(locService.t('suspectedLocations.minimumDistanceSubtitle', params: [
+                  DistanceService.formatDistance(appState.suspectedLocationMinDistance.toDouble(), appState.distanceUnit)
+                ])),
                 trailing: SizedBox(
                   width: 80,
                   child: TextFormField(
-                    initialValue: appState.suspectedLocationMinDistance.toString(),
+                    initialValue: DistanceService.convertFromMeters(
+                      appState.suspectedLocationMinDistance.toDouble(),
+                      appState.distanceUnit
+                    ).round().toString(),
                     keyboardType: const TextInputType.numberWithOptions(signed: true, decimal: true),
                     textInputAction: TextInputAction.done,
-                    decoration: const InputDecoration(
+                    decoration: InputDecoration(
                       isDense: true,
-                      contentPadding: EdgeInsets.symmetric(vertical: 6, horizontal: 8),
-                      border: OutlineInputBorder(),
-                      suffixText: 'm',
+                      contentPadding: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
+                      border: const OutlineInputBorder(),
+                      suffixText: DistanceService.getSmallDistanceUnit(appState.distanceUnit),
                     ),
                     onFieldSubmitted: (value) {
-                      final distance = int.tryParse(value) ?? 100;
-                      appState.setSuspectedLocationMinDistance(distance.clamp(0, 1000));
+                      final displayValue = double.tryParse(value) ?? (appState.distanceUnit == DistanceUnit.metric ? 100.0 : 328.0);
+                      final metersValue = DistanceService.convertToMeters(displayValue, appState.distanceUnit, isSmallDistance: true);
+                      appState.setSuspectedLocationMinDistance(metersValue.round().clamp(0, 1000));
                     },
                   ),
                 ),

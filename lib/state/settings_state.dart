@@ -16,6 +16,12 @@ enum FollowMeMode {
   rotating, // Follow position and rotation based on heading
 }
 
+// Enum for distance units
+enum DistanceUnit {
+  metric,   // kilometers, meters
+  imperial, // miles, feet
+}
+
 class SettingsState extends ChangeNotifier {
   static const String _offlineModePrefsKey = 'offline_mode';
   static const String _maxNodesPrefsKey = 'max_nodes';
@@ -30,6 +36,7 @@ class SettingsState extends ChangeNotifier {
   static const String _suspectedLocationMinDistancePrefsKey = 'suspected_location_min_distance';
   static const String _pauseQueueProcessingPrefsKey = 'pause_queue_processing';
   static const String _navigationAvoidanceDistancePrefsKey = 'navigation_avoidance_distance';
+  static const String _distanceUnitPrefsKey = 'distance_unit';
 
   bool _offlineMode = false;
   bool _pauseQueueProcessing = false;
@@ -43,6 +50,7 @@ class SettingsState extends ChangeNotifier {
   List<TileProvider> _tileProviders = [];
   String _selectedTileTypeId = '';
   int _navigationAvoidanceDistance = 250; // meters
+  DistanceUnit _distanceUnit = DistanceUnit.metric;
 
   // Getters
   bool get offlineMode => _offlineMode;
@@ -57,6 +65,7 @@ class SettingsState extends ChangeNotifier {
   List<TileProvider> get tileProviders => List.unmodifiable(_tileProviders);
   String get selectedTileTypeId => _selectedTileTypeId;
   int get navigationAvoidanceDistance => _navigationAvoidanceDistance;
+  DistanceUnit get distanceUnit => _distanceUnit;
   
   /// Get the currently selected tile type
   TileType? get selectedTileType {
@@ -107,6 +116,14 @@ class SettingsState extends ChangeNotifier {
     // Load navigation avoidance distance
     if (prefs.containsKey(_navigationAvoidanceDistancePrefsKey)) {
       _navigationAvoidanceDistance = prefs.getInt(_navigationAvoidanceDistancePrefsKey) ?? 250;
+    }
+    
+    // Load distance unit
+    if (prefs.containsKey(_distanceUnitPrefsKey)) {
+      final unitIndex = prefs.getInt(_distanceUnitPrefsKey) ?? 0;
+      if (unitIndex >= 0 && unitIndex < DistanceUnit.values.length) {
+        _distanceUnit = DistanceUnit.values[unitIndex];
+      }
     }
     
     // Load proximity alerts settings
@@ -365,6 +382,16 @@ class SettingsState extends ChangeNotifier {
       _navigationAvoidanceDistance = distance;
       final prefs = await SharedPreferences.getInstance();
       await prefs.setInt(_navigationAvoidanceDistancePrefsKey, distance);
+      notifyListeners();
+    }
+  }
+
+  /// Set distance unit (metric or imperial)
+  Future<void> setDistanceUnit(DistanceUnit unit) async {
+    if (_distanceUnit != unit) {
+      _distanceUnit = unit;
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setInt(_distanceUnitPrefsKey, unit.index);
       notifyListeners();
     }
   }

@@ -30,6 +30,7 @@ import 'proximity_alert_banner.dart';
 import '../dev_config.dart';
 import '../services/proximity_alert_service.dart';
 import 'sheet_aware_map.dart';
+import 'custom_scale_bar.dart';
 
 class MapView extends StatefulWidget {
   final AnimatedMapController controller;
@@ -498,20 +499,18 @@ class MapViewState extends State<MapView> {
               selectedTileType: appState.selectedTileType,
             ),
             cameraLayers,
-            // Built-in scale bar from flutter_map, positioned relative to button bar with safe area
+            // Custom scale bar that respects user's distance unit preference
             Builder(
               builder: (context) {
                 final safeArea = MediaQuery.of(context).padding;
-                return Scalebar(
+                return CustomScaleBar(
                   alignment: Alignment.bottomLeft,
                   padding: EdgeInsets.only(
                     left: leftPositionWithSafeArea(8, safeArea), 
                     bottom: bottomPositionFromButtonBar(kScaleBarSpacingAboveButtonBar, safeArea.bottom)
                   ),
-                  textStyle: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
-                  lineColor: Colors.black,
-                  strokeWidth: 3,
-                  // backgroundColor removed in flutter_map >=8 (wrap in Container if needed)
+                  maxWidthPx: 120,
+                  barHeight: 8,
                 );
               },
             ),

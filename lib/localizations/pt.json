@@ -89,7 +89,11 @@
     "aboutInfo": "Sobre / Informações",
     "aboutThisApp": "Sobre este App",
     "aboutSubtitle": "Informações do aplicativo e créditos",
-    "languageSubtitle": "Escolha seu idioma preferido",
+    "languageSubtitle": "Escolha seu idioma preferido e unidades",
+    "distanceUnit": "Unidades de Distância",
+    "distanceUnitSubtitle": "Escolha entre unidades métricas (km/m) ou imperiais (mi/ft)",
+    "metricUnits": "Métrico (km, m)",
+    "imperialUnits": "Imperial (mi, ft)",
     "maxNodes": "Máx. de nós desenhados",
     "maxNodesSubtitle": "Definir um limite superior para o número de nós no mapa.",
     "maxNodesWarning": "Você provavelmente não quer fazer isso a menos que tenha certeza absoluta de que tem uma boa razão para isso.",
@@ -119,8 +123,7 @@
     "enableNotifications": "Habilitar Notificações",
     "checkingPermissions": "Verificando permissões...",
     "alertDistance": "Distância de alerta: ",
-    "meters": "metros",
-    "rangeInfo": "Faixa: {}-{} metros (padrão: {})"
+    "rangeInfo": "Faixa: {}-{} {} (padrão: {})"
   },
   "node": {
     "title": "Nó #{}",
@@ -498,13 +501,7 @@
     "avoidanceDistance": "Distância de evasão",
     "avoidanceDistanceSubtitle": "Distância mínima para ficar longe de dispositivos de vigilância",
     "searchHistory": "Histórico máximo de busca",
-    "searchHistorySubtitle": "Número máximo de buscas recentes para lembrar",
-    "units": "Unidades",
-    "unitsSubtitle": "Unidades de exibição para distâncias e medidas",
-    "metric": "Métrico (km, m)",
-    "imperial": "Imperial (mi, ft)",
-    "meters": "metros",
-    "feet": "pés"
+    "searchHistorySubtitle": "Número máximo de buscas recentes para lembrar"
   },
   "suspectedLocations": {
     "title": "Localizações Suspeitas",
@@ -540,5 +537,19 @@
     "url": "URL",
     "coordinates": "Coordenadas",
     "noAddressAvailable": "Nenhum endereço disponível"
+  },
+  "units": {
+    "meters": "m",
+    "feet": "ft",
+    "kilometers": "km",
+    "miles": "mi",
+    "metersLong": "metros",
+    "feetLong": "pés",
+    "kilometersLong": "quilômetros",
+    "milesLong": "milhas",
+    "metric": "Métrico",
+    "imperial": "Imperial",
+    "metricDescription": "Métrico (km, m)",
+    "imperialDescription": "Imperial (mi, ft)"
   }
 }
