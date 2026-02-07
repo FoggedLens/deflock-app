@@ -112,7 +112,7 @@ class QueueSection extends StatelessWidget {
                               ? Colors.red 
                               : _getUploadModeColor(upload.uploadMode),
                         ),
-                        title: Text(locService.t('queue.cameraWithIndex', params: [(index + 1).toString()]) +
+                        title: Text(locService.t('queue.itemWithIndex', params: [(index + 1).toString()]) +
                             (upload.error ? locService.t('queue.error') : "") +
                             (upload.completing ? locService.t('queue.completing') : "")),
                         subtitle: Text(

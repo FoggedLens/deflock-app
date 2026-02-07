@@ -25,42 +25,32 @@ class LocalizationService extends ChangeNotifier {
 
   Future<void> _discoverAvailableLanguages() async {
     _availableLanguages = [];
-    
+
     try {
-      // Get the asset manifest to find all localization files
-      final manifestContent = await rootBundle.loadString('AssetManifest.json');
-      final Map<String, dynamic> manifestMap = json.decode(manifestContent);
-      
-      // Find all .json files in lib/localizations/
-      final localizationFiles = manifestMap.keys
-          .where((String key) => key.startsWith('lib/localizations/') && key.endsWith('.json'))
+      final assetManifest = await AssetManifest.loadFromAssetBundle(rootBundle);
+      final localizationAssets = assetManifest.listAssets()
+          .where((path) => path.startsWith('lib/localizations/') && path.endsWith('.json'))
           .toList();
-      
-      for (final filePath in localizationFiles) {
-        // Extract language code from filename (e.g., 'lib/localizations/pt.json' -> 'pt')
-        final fileName = filePath.split('/').last;
-        final languageCode = fileName.substring(0, fileName.length - 5); // Remove '.json'
-        
+
+      for (final assetPath in localizationAssets) {
         try {
-          // Try to load and parse the file to ensure it's valid
-          final jsonString = await rootBundle.loadString(filePath);
+          final jsonString = await rootBundle.loadString(assetPath);
           final parsedJson = json.decode(jsonString);
-          
-          // Basic validation - ensure it has the expected structure
+
           if (parsedJson is Map && parsedJson.containsKey('language')) {
+            final languageCode = assetPath.split('/').last.replaceAll('.json', '');
             _availableLanguages.add(languageCode);
             debugPrint('Found localization: $languageCode');
           }
         } catch (e) {
-          debugPrint('Failed to load localization file $filePath: $e');
+          debugPrint('Failed to load localization file $assetPath: $e');
         }
       }
     } catch (e) {
-      debugPrint('Failed to read AssetManifest.json: $e');
-      // If manifest reading fails, we'll have an empty list
-      // The system will handle this gracefully by falling back to 'en' in _loadSavedLanguage
+      debugPrint('Failed to load asset manifest: $e');
+      _availableLanguages = ['en'];
     }
-    
+
     debugPrint('Available languages: $_availableLanguages');
   }
 
@@ -119,28 +109,31 @@ class LocalizationService extends ChangeNotifier {
     notifyListeners();
   }
 
-  String t(String key, {List<String>? params}) {
+  String t(String key, {List<String>? params}) =>
+      lookup(_strings, key, params: params);
+
+  /// Pure lookup function used by [t] and available for testing.
+  static String lookup(Map<String, dynamic> strings, String key,
+      {List<String>? params}) {
     List<String> keys = key.split('.');
-    dynamic current = _strings;
-    
+    dynamic current = strings;
+
     for (String k in keys) {
       if (current is Map && current.containsKey(k)) {
         current = current[k];
       } else {
-        // Return the key as fallback for missing translations
         return key;
       }
     }
-    
+
     String result = current is String ? current : key;
-    
-    // Replace parameters if provided - replace first occurrence only for each parameter
+
     if (params != null) {
       for (int i = 0; i < params.length; i++) {
         result = result.replaceFirst('{}', params[i]);
       }
     }
-    
+
     return result;
   }
 
