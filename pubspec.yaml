@@ -38,6 +38,9 @@ dependencies:
   csv: ^6.0.0
 
 dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  mocktail: ^1.0.4
   flutter_launcher_icons: ^0.14.4
   flutter_native_splash: ^2.4.6
 

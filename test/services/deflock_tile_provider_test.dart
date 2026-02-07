@@ -21,6 +21,11 @@ void main() {
       AppState.instance = mockAppState;
     });
 
+    tearDown(() {
+      // Reset to a clean mock so stubbed state doesn't leak to other tests
+      AppState.instance = MockAppState();
+    });
+
     test('creates image provider for tile coordinates', () {
       const coordinates = TileCoordinates(0, 0, 0);
       final options = TileLayer(
