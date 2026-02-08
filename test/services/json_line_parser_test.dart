@@ -138,6 +138,14 @@ void main() {
       expect(parser.events.first['event'], 'target_detected');
     });
 
+    test('detection event is emitted', () {
+      final json = jsonEncode(makeFlockyouDetectionJson());
+      parser.processBytes(_encode('$json\n'));
+
+      expect(parser.events, hasLength(1));
+      expect(parser.events.first['event'], 'detection');
+    });
+
     test('other event types are ignored', () {
       final json = jsonEncode(makeDetectionJson(event: 'status_update'));
       parser.processBytes(_encode('$json\n'));
