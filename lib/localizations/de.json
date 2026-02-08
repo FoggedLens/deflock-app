@@ -43,7 +43,8 @@
   "followMe": {
     "off": "Verfolgung aktivieren",
     "follow": "Verfolgung aktivieren (Rotation)",
-    "rotating": "Verfolgung deaktivieren"
+    "rotating": "Verfolgung deaktivieren",
+    "searchingGps": "GPS-Signal wird gesucht..."
   },
   "settings": {
     "title": "Einstellungen",
@@ -537,6 +538,11 @@
     "url": "URL",
     "coordinates": "Koordinaten",
     "noAddressAvailable": "Keine Adresse verfügbar"
+  },
+  "gpsProvider": {
+    "title": "GPS-Standortanbieter",
+    "useGoogleLocation": "Google-Standortdienste verwenden",
+    "useGoogleLocationSubtitle": "Nutzt WLAN und Mobilfunkmasten für schnellere Ortung und bessere Akkulaufzeit. Deaktivieren für reines GPS (erforderlich auf GrapheneOS oder Geräten ohne Google Play Services)."
   },
   "units": {
     "meters": "m",

@@ -3,6 +3,7 @@ import 'settings/sections/max_nodes_section.dart';
 import 'settings/sections/proximity_alerts_section.dart';
 import 'settings/sections/suspected_locations_section.dart';
 import 'settings/sections/tile_provider_section.dart';
+import 'settings/sections/gps_provider_section.dart';
 import '../services/localization_service.dart';
 
 class AdvancedSettingsScreen extends StatelessWidget {
@@ -34,6 +35,8 @@ class AdvancedSettingsScreen extends StatelessWidget {
             Divider(),
             // NetworkStatusSection(), // Commented out - network status indicator now defaults to enabled
             // Divider(),
+            GpsProviderSection(),
+            Divider(),
             TileProviderSection(),
           ],
         ),

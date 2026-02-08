@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io' show Platform;
 import 'package:flutter/material.dart';
 import 'package:flutter_map_animations/flutter_map_animations.dart';
 import 'package:geolocator/geolocator.dart';
@@ -32,6 +33,7 @@ class GpsController {
   List<OsmNode> Function()? _getNearbyNodes;
   List<NodeProfile> Function()? _getEnabledProfiles;
   VoidCallback? _onMapMovedProgrammatically;
+  bool Function()? _getForceLocationManager;
 
   /// Get the current GPS location (if available)
   LatLng? get currentLocation => _currentLocation;
@@ -49,6 +51,7 @@ class GpsController {
     required List<OsmNode> Function() getNearbyNodes,
     required List<NodeProfile> Function() getEnabledProfiles,
     VoidCallback? onMapMovedProgrammatically,
+    bool Function()? getForceLocationManager,
   }) async {
     debugPrint('[GpsController] Initializing GPS controller');
     
@@ -61,6 +64,7 @@ class GpsController {
     _getNearbyNodes = getNearbyNodes;
     _getEnabledProfiles = getEnabledProfiles;
     _onMapMovedProgrammatically = onMapMovedProgrammatically;
+    _getForceLocationManager = getForceLocationManager;
     
     // Start location tracking
     await _startLocationTracking();
@@ -78,6 +82,14 @@ class GpsController {
     
     // Handle initial animation when follow-me is first enabled
     _handleInitialFollowMeAnimation(newMode, oldMode);
+  }
+
+  /// Restart the location provider (e.g., after changing forceLocationManager setting)
+  void restartLocationProvider() {
+    if (_positionSub == null) return; // No active stream to restart
+    debugPrint('[GpsController] Restarting location provider for setting change');
+    _stopLocationTracking();
+    _startPositionStream();
   }
 
   /// Manual retry (e.g., user pressed follow-me button)
@@ -142,15 +154,24 @@ class GpsController {
   void _startPositionStream() {
     final followMeMode = _getCurrentFollowMeMode?.call() ?? FollowMeMode.off;
     final distanceFilter = followMeMode == FollowMeMode.off ? 5 : 1; // 5m normal, 1m follow-me
-    
-    debugPrint('[GpsController] Starting GPS position stream (${distanceFilter}m filter)');
-    
+    final forceLocationManager = _getForceLocationManager?.call() ?? true;
+
+    debugPrint('[GpsController] Starting GPS position stream (${distanceFilter}m filter, forceLocationManager: $forceLocationManager)');
+
     try {
+      final LocationSettings locationSettings = Platform.isAndroid
+          ? AndroidSettings(
+              accuracy: LocationAccuracy.high,
+              distanceFilter: distanceFilter,
+              forceLocationManager: forceLocationManager,
+            )
+          : LocationSettings(
+              accuracy: LocationAccuracy.high,
+              distanceFilter: distanceFilter,
+            );
+
       _positionSub = Geolocator.getPositionStream(
-        locationSettings: LocationSettings(
-          accuracy: LocationAccuracy.high, // Request best, accept what we get
-          distanceFilter: distanceFilter,
-        ),
+        locationSettings: locationSettings,
       ).listen(
         _onPositionReceived,
         onError: _onPositionError,
@@ -352,5 +373,6 @@ class GpsController {
     _getNearbyNodes = null;
     _getEnabledProfiles = null;
     _onMapMovedProgrammatically = null;
+    _getForceLocationManager = null;
   }
 }
