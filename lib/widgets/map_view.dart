@@ -202,10 +202,10 @@ class MapViewState extends State<MapView> {
             return context.read<AppState>().forceLocationManager;
           } catch (e) {
             debugPrint('[MapView] Could not read forceLocationManager: $e');
-            return true;
+            return false;
           }
         }
-        return true;
+        return false;
       },
     );
 

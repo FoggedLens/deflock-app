@@ -157,7 +157,7 @@ class GpsController {
   void _startPositionStream() {
     final followMeMode = _getCurrentFollowMeMode?.call() ?? FollowMeMode.off;
     final distanceFilter = followMeMode == FollowMeMode.off ? 5 : 1; // 5m normal, 1m follow-me
-    final forceLocationManager = _getForceLocationManager?.call() ?? true;
+    final forceLocationManager = _getForceLocationManager?.call() ?? false;
 
     debugPrint('[GpsController] Starting GPS position stream (${distanceFilter}m filter, forceLocationManager: $forceLocationManager)');
 
