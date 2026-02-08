@@ -32,6 +32,7 @@ class GpsController {
   List<OsmNode> Function()? _getNearbyNodes;
   List<NodeProfile> Function()? _getEnabledProfiles;
   VoidCallback? _onMapMovedProgrammatically;
+  bool Function()? _isUserInteracting;
 
   /// Get the current GPS location (if available)
   LatLng? get currentLocation => _currentLocation;
@@ -49,6 +50,7 @@ class GpsController {
     required List<OsmNode> Function() getNearbyNodes,
     required List<NodeProfile> Function() getEnabledProfiles,
     VoidCallback? onMapMovedProgrammatically,
+    bool Function()? isUserInteracting,
   }) async {
     debugPrint('[GpsController] Initializing GPS controller');
     
@@ -61,7 +63,8 @@ class GpsController {
     _getNearbyNodes = getNearbyNodes;
     _getEnabledProfiles = getEnabledProfiles;
     _onMapMovedProgrammatically = onMapMovedProgrammatically;
-    
+    _isUserInteracting = isUserInteracting;
+
     // Start location tracking
     await _startLocationTracking();
   }
@@ -235,9 +238,10 @@ class GpsController {
     if (followMeMode == FollowMeMode.off || _mapController == null) {
       return;
     }
-    
     WidgetsBinding.instance.addPostFrameCallback((_) {
       try {
+        if (_isUserInteracting?.call() == true) return;
+
         if (followMeMode == FollowMeMode.follow) {
           // Follow position, preserve rotation
           _mapController!.animateTo(
@@ -352,5 +356,6 @@ class GpsController {
     _getNearbyNodes = null;
     _getEnabledProfiles = null;
     _onMapMovedProgrammatically = null;
+    _isUserInteracting = null;
   }
 }
