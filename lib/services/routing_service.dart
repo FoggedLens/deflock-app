@@ -30,7 +30,9 @@ class RoutingService {
   final http.Client _client;
 
   RoutingService({http.Client? client}) : _client = client ?? http.Client();
-  
+
+  void close() => _client.close();
+
   // Calculate route between two points using alprwatch
   Future<RouteResult> calculateRoute({
     required LatLng start,
@@ -80,7 +82,16 @@ class RoutingService {
       ).timeout(kNavigationRoutingTimeout);
 
       if (response.statusCode != 200) {
-        debugPrint('[RoutingService] Error response body: ${response.body}');
+        if (kDebugMode) {
+          debugPrint('[RoutingService] Error response body: ${response.body}');
+        } else {
+          const maxLen = 500;
+          final body = response.body;
+          final truncated = body.length > maxLen
+              ? '${body.substring(0, maxLen)}… [truncated]'
+              : body;
+          debugPrint('[RoutingService] Error response body ($maxLen char max): $truncated');
+        }
         throw RoutingException('HTTP ${response.statusCode}: ${response.reasonPhrase}');
       }
       

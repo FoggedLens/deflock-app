@@ -376,4 +376,10 @@ class NavigationState extends ChangeNotifier {
       notifyListeners();
     }
   }
+
+  @override
+  void dispose() {
+    _routingService.close();
+    super.dispose();
+  }
 }
