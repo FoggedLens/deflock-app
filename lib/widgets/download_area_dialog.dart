@@ -118,16 +118,20 @@ class _DownloadAreaDialogState extends State<DownloadAreaDialog> {
   Future<void> _startDownload() async {
     final locService = LocalizationService.instance;
     final bounds = widget.controller.camera.visibleBounds;
+
+    // Capture state and navigator before async gap — after Navigator.pop(),
+    // this dialog's context is being disposed, so we use the captured navigator
+    // to push follow-up dialogs directly instead of calling showDialog(context:).
+    final currentAppState = context.read<AppState>();
+    final selectedProvider = currentAppState.selectedTileProvider;
+    final selectedTileType = currentAppState.selectedTileType;
+    final navigator = Navigator.of(context, rootNavigator: true);
+
     try {
       final id = DateTime.now().toIso8601String().replaceAll(':', '-');
       final appDocDir = await OfflineAreaService().getOfflineAreaDir();
       if (!mounted) return;
       final dir = "${appDocDir.path}/$id";
-
-      // Get current tile provider info
-      final appState = context.read<AppState>();
-      final selectedProvider = appState.selectedTileProvider;
-      final selectedTileType = appState.selectedTileType;
 
       // Fire and forget: don't await download, so dialog closes immediately
       // ignore: unawaited_futures
@@ -144,16 +148,16 @@ class _DownloadAreaDialogState extends State<DownloadAreaDialog> {
         tileTypeId: selectedTileType?.id,
         tileTypeName: selectedTileType?.name,
       );
-      Navigator.pop(context);
-      showDialog(
-        context: context,
+      navigator.pop();
+      navigator.push(DialogRoute(
+        context: navigator.context,
         builder: (context) => const DownloadStartedDialog(),
-      );
+      ));
     } catch (e) {
       if (!mounted) return;
-      Navigator.pop(context);
-      showDialog(
-        context: context,
+      navigator.pop();
+      navigator.push(DialogRoute(
+        context: navigator.context,
         builder: (context) => AlertDialog(
           title: Row(
             children: [
@@ -170,7 +174,7 @@ class _DownloadAreaDialogState extends State<DownloadAreaDialog> {
             ),
           ],
         ),
-      );
+      ));
     }
   }
 
