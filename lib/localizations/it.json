@@ -80,7 +80,8 @@
   "followMe": {
     "off": "Attiva seguimi",
     "follow": "Attiva seguimi (rotazione)",
-    "rotating": "Disattiva seguimi"
+    "rotating": "Disattiva seguimi",
+    "searchingGps": "Ricerca del segnale GPS..."
   },
   "settings": {
     "title": "Impostazioni",
@@ -537,6 +538,11 @@
     "url": "URL",
     "coordinates": "Coordinate",
     "noAddressAvailable": "Nessun indirizzo disponibile"
+  },
+  "gpsProvider": {
+    "title": "Fornitore di posizione GPS",
+    "useGoogleLocation": "Usa i servizi di localizzazione Google",
+    "useGoogleLocationSubtitle": "Utilizza Wi-Fi e torri cellulari per una localizzazione più rapida e una migliore durata della batteria. Disattivare per GPS puro (necessario su GrapheneOS o dispositivi senza Google Play Services)."
   },
   "units": {
     "meters": "m",

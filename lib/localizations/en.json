@@ -80,7 +80,8 @@
   "followMe": {
     "off": "Enable follow-me",
     "follow": "Enable follow-me (rotating)",
-    "rotating": "Disable follow-me"
+    "rotating": "Disable follow-me",
+    "searchingGps": "Searching for GPS signal..."
   },
   "settings": {
     "title": "Settings",
@@ -537,6 +538,11 @@
     "url": "URL",
     "coordinates": "Coordinates",
     "noAddressAvailable": "No address available"
+  },
+  "gpsProvider": {
+    "title": "GPS Location Provider",
+    "useGoogleLocation": "Use Google Location Services",
+    "useGoogleLocationSubtitle": "Uses Wi-Fi and cell towers for faster fixes and better battery life. Disable for raw GPS (required on GrapheneOS or devices without Google Play Services)."
   },
   "units": {
     "meters": "m",

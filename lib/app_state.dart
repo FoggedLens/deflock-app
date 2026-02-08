@@ -161,6 +161,7 @@ class AppState extends ChangeNotifier {
   int get proximityAlertDistance => _settingsState.proximityAlertDistance;
   bool get networkStatusIndicatorEnabled => _settingsState.networkStatusIndicatorEnabled;
   int get suspectedLocationMinDistance => _settingsState.suspectedLocationMinDistance;
+  bool get forceLocationManager => _settingsState.forceLocationManager;
   
   // Messages state
   int? get unreadMessageCount => _messagesState.unreadCount;
@@ -747,6 +748,11 @@ class AppState extends ChangeNotifier {
 
   Future<void> setDistanceUnit(DistanceUnit unit) async {
     await _settingsState.setDistanceUnit(unit);
+  }
+
+  /// Set whether to force Android LocationManager instead of Google Fused Location Provider
+  Future<void> setForceLocationManager(bool enabled) async {
+    await _settingsState.setForceLocationManager(enabled);
   }
 
   // ---------- Queue Methods ----------
