@@ -52,7 +52,7 @@ class SettingsState extends ChangeNotifier {
   String _selectedTileTypeId = '';
   int _navigationAvoidanceDistance = 250; // meters
   DistanceUnit _distanceUnit = DistanceUnit.metric;
-  bool _forceLocationManager = true;
+  bool _forceLocationManager = false;
 
   // Getters
   bool get offlineMode => _offlineMode;
@@ -139,8 +139,8 @@ class SettingsState extends ChangeNotifier {
     // Load suspected location minimum distance
     _suspectedLocationMinDistance = prefs.getInt(_suspectedLocationMinDistancePrefsKey) ?? 100;
 
-    // Load force location manager setting (default true for GrapheneOS compatibility)
-    _forceLocationManager = prefs.getBool(_forceLocationManagerPrefsKey) ?? true;
+    // Load force location manager setting (default false = use Google Fused Location)
+    _forceLocationManager = prefs.getBool(_forceLocationManagerPrefsKey) ?? false;
     
     // Load upload mode (including migration from old test_mode bool)
     if (prefs.containsKey(_uploadModePrefsKey)) {
