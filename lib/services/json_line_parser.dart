@@ -44,7 +44,7 @@ mixin JsonLineParser {
       final json = jsonDecode(line) as Map<String, dynamic>;
       final event = json['event'] as String?;
 
-      if (event == 'target_detected') {
+      if (event == 'target_detected' || event == 'detection') {
         onJsonEvent(json);
       }
     } catch (e) {

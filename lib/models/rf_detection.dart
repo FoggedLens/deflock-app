@@ -46,24 +46,44 @@ class RfDetection {
     this.bestPosition,
   });
 
-  /// Parse from FlockSquawk serial JSON + phone GPS position.
+  /// Parse from scanner serial JSON + phone GPS position.
   ///
-  /// Expected JSON shape (from TelemetryReporter.h):
+  /// Supports two formats:
+  ///
+  /// **FlockSquawk** (nested, `event: "target_detected"`):
   /// ```json
   /// {
   ///   "event": "target_detected",
   ///   "source": { "radio": "WiFi"|"BLE", "channel": 6, "rssi": -45 },
-  ///   "target": {
-  ///     "mac": "b4:1e:52:aa:bb:cc",
-  ///     "label": "Flock-a1b2c3",
-  ///     "certainty": 90,
-  ///     "alert_level": 3,
-  ///     "category": "flock_safety_camera",
-  ///     "detectors": { "ssid_format": 75, "flock_oui": 90 }
-  ///   }
+  ///   "target": { "mac": "b4:1e:52:aa:bb:cc", "label": "Flock-a1b2c3",
+  ///     "certainty": 90, "alert_level": 3, "category": "flock_safety_camera",
+  ///     "detectors": { "ssid_format": 75, "flock_oui": 90 } }
+  /// }
+  /// ```
+  ///
+  /// **flock-you** (flat, `event: "detection"`):
+  /// ```json
+  /// {
+  ///   "event": "detection", "detection_method": "mac_prefix",
+  ///   "protocol": "bluetooth_le", "mac_address": "58:8e:81:fd:9b:ca",
+  ///   "device_name": "FS Ext Battery", "rssi": -65,
+  ///   "is_raven": false, "raven_fw": ""
   /// }
   /// ```
   factory RfDetection.fromSerialJson(
+    Map<String, dynamic> json,
+    LatLng gpsPos,
+    DateTime now,
+  ) {
+    // Detect format: flock-you has "mac_address" at top level, FlockSquawk has "target"
+    if (json.containsKey('mac_address')) {
+      return RfDetection._fromFlockyouJson(json, gpsPos, now);
+    }
+    return RfDetection._fromFlockSquawkJson(json, gpsPos, now);
+  }
+
+  /// Parse FlockSquawk nested format.
+  factory RfDetection._fromFlockSquawkJson(
     Map<String, dynamic> json,
     LatLng gpsPos,
     DateTime now,
@@ -100,6 +120,57 @@ class RfDetection {
       matchFlags: matchFlags,
       detectorData: detectorData,
       ssid: radioType == 'WiFi' ? label : null,
+      bleName: radioType == 'BLE' ? label : null,
+      firstSeenAt: now,
+      lastSeenAt: now,
+      sightingCount: 1,
+      bestPosition: gpsPos,
+    );
+  }
+
+  /// Parse flock-you flat format.
+  factory RfDetection._fromFlockyouJson(
+    Map<String, dynamic> json,
+    LatLng gpsPos,
+    DateTime now,
+  ) {
+    final mac = (json['mac_address'] as String).toLowerCase();
+    final oui = mac.substring(0, 8);
+    final label = json['device_name'] as String? ?? mac;
+    final method = json['detection_method'] as String? ?? '';
+    final isRaven = json['is_raven'] as bool? ?? false;
+    final ravenFw = json['raven_fw'] as String? ?? '';
+
+    // Map protocol string to radio type
+    final protocol = json['protocol'] as String? ?? '';
+    final radioType = protocol == 'bluetooth_le' ? 'BLE' : protocol;
+
+    // Map detection_method → matchFlags bit + certainty + alert_level
+    int matchFlags = 0;
+    final methodBit = _flockyouMethodToBit(method);
+    if (methodBit >= 0) matchFlags = 1 << methodBit;
+
+    final certainty = _flockyouMethodCertainty(method);
+    final alertLevel = _flockyouMethodAlertLevel(method);
+
+    // Build detector data
+    final Map<String, int> detectorData = {method: certainty};
+    if (isRaven && ravenFw.isNotEmpty) {
+      detectorData['raven_fw'] = 0; // metadata flag — fw version stored as key
+    }
+
+    final category = isRaven ? 'acoustic_detector' : 'unknown';
+
+    return RfDetection(
+      mac: mac,
+      oui: oui,
+      label: label,
+      radioType: radioType,
+      category: category,
+      alertLevel: alertLevel,
+      maxCertainty: certainty,
+      matchFlags: matchFlags,
+      detectorData: detectorData,
       bleName: radioType == 'BLE' ? label : null,
       firstSeenAt: now,
       lastSeenAt: now,
@@ -183,6 +254,39 @@ class RfDetection {
     };
     return mapping[name] ?? -1;
   }
+
+  /// Map flock-you detection_method strings to matchFlags bit positions.
+  static int _flockyouMethodToBit(String method) {
+    const mapping = {
+      'mac_prefix': 7,    // same as flock_oui
+      'ble_name': 3,      // same as ble_name
+      'ble_mfr_id': 8,    // same as surveillance_oui
+      'raven_uuid': 4,    // same as raven_custom_uuid
+    };
+    return mapping[method] ?? -1;
+  }
+
+  /// Map flock-you detection_method to certainty score.
+  static int _flockyouMethodCertainty(String method) {
+    const mapping = {
+      'mac_prefix': 20,
+      'ble_name': 55,
+      'ble_mfr_id': 45,
+      'raven_uuid': 80,
+    };
+    return mapping[method] ?? 10;
+  }
+
+  /// Map flock-you detection_method to alert level.
+  static int _flockyouMethodAlertLevel(String method) {
+    const mapping = {
+      'mac_prefix': 2,
+      'ble_name': 2,
+      'ble_mfr_id': 2,
+      'raven_uuid': 3,
+    };
+    return mapping[method] ?? 2;
+  }
 }
 
 /// A single GPS-stamped sighting of an RF device.
@@ -214,6 +318,19 @@ class RfSighting {
     double? gpsAccuracy,
     DateTime now,
   ) {
+    // Detect format: flock-you has "mac_address" at top level
+    if (json.containsKey('mac_address')) {
+      final mac = (json['mac_address'] as String).toLowerCase();
+      return RfSighting(
+        mac: mac,
+        coord: gpsPos,
+        gpsAccuracy: gpsAccuracy,
+        rssi: (json['rssi'] as num).toInt(),
+        seenAt: now,
+        rawJson: jsonEncode(json),
+      );
+    }
+
     final target = json['target'] as Map<String, dynamic>;
     final source = json['source'] as Map<String, dynamic>;
     final mac = (target['mac'] as String).toLowerCase();
