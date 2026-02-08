@@ -120,6 +120,127 @@ void main() {
   });
 
   // ---------------------------------------------------------------------------
+  // RfDetection.fromSerialJson — flock-you format
+  // ---------------------------------------------------------------------------
+  group('RfDetection.fromSerialJson (flock-you format)', () {
+    final gps = LatLng(45.0, -93.0);
+    final now = DateTime(2025, 6, 1, 12, 0, 0);
+
+    test('parses mac_prefix detection', () {
+      final json = makeFlockyouDetectionJson();
+      final d = RfDetection.fromSerialJson(json, gps, now);
+
+      expect(d.mac, '58:8e:81:fd:9b:ca');
+      expect(d.oui, '58:8e:81');
+      expect(d.label, 'FS Ext Battery');
+      expect(d.radioType, 'BLE');
+      expect(d.alertLevel, 2);
+      expect(d.maxCertainty, 20);
+      expect(d.category, 'unknown');
+      expect(d.bleName, 'FS Ext Battery');
+      expect(d.firstSeenAt, now);
+      expect(d.lastSeenAt, now);
+      expect(d.sightingCount, 1);
+      expect(d.bestPosition, gps);
+    });
+
+    test('parses ble_name detection', () {
+      final json = makeFlockyouDetectionJson(
+        detectionMethod: 'ble_name',
+        macAddress: 'AA:BB:CC:DD:EE:FF',
+        deviceName: 'Flock Camera',
+      );
+      final d = RfDetection.fromSerialJson(json, gps, now);
+
+      expect(d.mac, 'aa:bb:cc:dd:ee:ff');
+      expect(d.label, 'Flock Camera');
+      expect(d.maxCertainty, 55);
+      expect(d.alertLevel, 2);
+    });
+
+    test('parses ble_mfr_id detection', () {
+      final json = makeFlockyouDetectionJson(detectionMethod: 'ble_mfr_id');
+      final d = RfDetection.fromSerialJson(json, gps, now);
+
+      expect(d.maxCertainty, 45);
+      expect(d.alertLevel, 2);
+    });
+
+    test('parses raven_uuid detection', () {
+      final json = makeFlockyouDetectionJson(
+        detectionMethod: 'raven_uuid',
+        isRaven: true,
+        ravenFw: '1.3.x',
+        deviceName: 'Raven-ABC',
+      );
+      final d = RfDetection.fromSerialJson(json, gps, now);
+
+      expect(d.category, 'acoustic_detector');
+      expect(d.maxCertainty, 80);
+      expect(d.alertLevel, 3);
+      expect(d.detectorData.containsKey('raven_fw'), isTrue);
+    });
+
+    test('lowercases MAC address', () {
+      final json = makeFlockyouDetectionJson(macAddress: 'AA:BB:CC:DD:EE:FF');
+      final d = RfDetection.fromSerialJson(json, gps, now);
+      expect(d.mac, 'aa:bb:cc:dd:ee:ff');
+    });
+
+    test('maps bluetooth_le protocol to BLE', () {
+      final json = makeFlockyouDetectionJson(protocol: 'bluetooth_le');
+      final d = RfDetection.fromSerialJson(json, gps, now);
+      expect(d.radioType, 'BLE');
+    });
+
+    test('defaults label to MAC when device_name missing', () {
+      final json = makeFlockyouDetectionJson();
+      json.remove('device_name');
+      final d = RfDetection.fromSerialJson(json, gps, now);
+      expect(d.label, d.mac);
+    });
+
+    test('matchFlags set for mac_prefix', () {
+      final json = makeFlockyouDetectionJson(detectionMethod: 'mac_prefix');
+      final d = RfDetection.fromSerialJson(json, gps, now);
+      expect(d.matchFlags, 1 << 7); // flock_oui bit
+    });
+
+    test('matchFlags set for raven_uuid', () {
+      final json = makeFlockyouDetectionJson(detectionMethod: 'raven_uuid');
+      final d = RfDetection.fromSerialJson(json, gps, now);
+      expect(d.matchFlags, 1 << 4); // raven_custom_uuid bit
+    });
+  });
+
+  // ---------------------------------------------------------------------------
+  // RfSighting.fromSerialJson — flock-you format
+  // ---------------------------------------------------------------------------
+  group('RfSighting.fromSerialJson (flock-you format)', () {
+    final gps = LatLng(45.0, -93.0);
+    final now = DateTime(2025, 6, 1, 12, 0, 0);
+
+    test('parses all fields', () {
+      final json = makeFlockyouDetectionJson(rssi: -72);
+      final s = RfSighting.fromSerialJson(json, gps, 5.0, now);
+
+      expect(s.mac, '58:8e:81:fd:9b:ca');
+      expect(s.coord, gps);
+      expect(s.gpsAccuracy, 5.0);
+      expect(s.rssi, -72);
+      expect(s.channel, isNull);
+      expect(s.seenAt, now);
+      expect(s.rawJson, isNotNull);
+    });
+
+    test('lowercases MAC', () {
+      final json = makeFlockyouDetectionJson(macAddress: 'AA:BB:CC:DD:EE:FF');
+      final s = RfSighting.fromSerialJson(json, gps, null, now);
+      expect(s.mac, 'aa:bb:cc:dd:ee:ff');
+    });
+  });
+
+  // ---------------------------------------------------------------------------
   // _detectorNameToBit (via fromSerialJson matchFlags)
   // ---------------------------------------------------------------------------
   group('matchFlags bit mapping', () {
