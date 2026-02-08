@@ -143,6 +143,7 @@ class _NSITagValueFieldState extends State<NSITagValueField> {
         AutocompleteOnSelected<String> onSelected,
         Iterable<String> options,
       ) {
+        final optionList = options.toList(growable: false);
         return Align(
           alignment: Alignment.topLeft,
           child: Material(
@@ -153,9 +154,9 @@ class _NSITagValueFieldState extends State<NSITagValueField> {
               child: ListView.builder(
                 padding: EdgeInsets.zero,
                 shrinkWrap: true,
-                itemCount: options.length,
+                itemCount: optionList.length,
                 itemBuilder: (context, index) {
-                  final option = options.elementAt(index);
+                  final option = optionList[index];
                   return ListTile(
                     dense: true,
                     title: Text(option, style: const TextStyle(fontSize: 14)),
