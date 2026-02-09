@@ -160,7 +160,7 @@ class MapViewState extends State<MapView> {
       getNearbyNodes: () {
         if (mounted) {
           try {
-            LatLngBounds? mapBounds;
+            final LatLngBounds mapBounds;
             try {
               mapBounds = _controller.mapController.camera.visibleBounds;
             } catch (_) {
