@@ -813,7 +813,7 @@ class AppState extends ChangeNotifier {
   // ---------- Utility Methods ----------
 
   /// Generate a default changeset comment for a submission
-  /// Handles special case of <Existing tags> profile by using "a" instead
+  /// Handles special case of `<Existing tags>` profile by using "a" instead
   static String generateDefaultChangesetComment({
     required NodeProfile? profile,
     required UploadOperation operation,

@@ -140,16 +140,6 @@ class SessionState extends ChangeNotifier {
     notifyListeners();
   }
 
-  bool _profileMatchesTags(NodeProfile profile, Map<String, String> tags) {
-    // Simple matching: check if all profile tags are present in node tags
-    for (final entry in profile.tags.entries) {
-      if (tags[entry.key] != entry.value) {
-        return false;
-      }
-    }
-    return true;
-  }
-
   /// Calculate additional existing tags for a given profile change
   Map<String, String> _calculateAdditionalExistingTags(NodeProfile? newProfile, OsmNode originalNode) {
     final additionalTags = <String, String>{};
@@ -479,7 +469,7 @@ class SessionState extends ChangeNotifier {
   }
 
   /// Generate a default changeset comment for a submission
-  /// Handles special case of <Existing tags> profile by using "a" instead
+  /// Handles special case of `<Existing tags>` profile by using "a" instead
   String _generateDefaultChangesetComment({
     required NodeProfile? profile,
     required UploadOperation operation,

@@ -4,15 +4,11 @@ import 'package:flutter_map_animations/flutter_map_animations.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:provider/provider.dart';
 
-import '../app_state.dart' show AppState, FollowMeMode, UploadMode;
+import '../app_state.dart' show AppState, FollowMeMode;
 import '../services/offline_area_service.dart';
-import '../services/network_status.dart';
 
 import '../models/osm_node.dart';
-import '../models/node_profile.dart';
 import '../models/suspected_location.dart';
-import '../models/tile_provider.dart';
-import '../state/session_state.dart';
 import 'debouncer.dart';
 import 'node_provider_with_cache.dart';
 import 'map/map_overlays.dart';
@@ -170,9 +166,7 @@ class MapViewState extends State<MapView> {
             } catch (_) {
               return [];
             }
-            return mapBounds != null 
-                ? NodeProviderWithCache.instance.getCachedNodesForBounds(mapBounds)
-                : [];
+            return NodeProviderWithCache.instance.getCachedNodesForBounds(mapBounds);
           } catch (e) {
             debugPrint('[MapView] Could not get nearby nodes: $e');
             return [];

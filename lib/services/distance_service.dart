@@ -8,7 +8,6 @@ class DistanceService {
   // Conversion constants
   static const double _metersToFeet = 3.28084;
   static const double _metersToMiles = 0.000621371;
-  static const double _kmToMiles = 0.621371;
 
   /// Format distance for display based on unit preference
   /// 

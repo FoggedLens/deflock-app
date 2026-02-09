@@ -266,7 +266,7 @@ class NodeProfile {
   int get hashCode => id.hashCode;
 
   /// Create a temporary empty profile for editing existing nodes
-  /// Used as the default "<Existing tags>" option when editing nodes
+  /// Used as the default `<Existing tags>` option when editing nodes
   /// All existing tags will flow through as additionalExistingTags
   static NodeProfile createExistingTagsProfile(OsmNode node) {
     // Calculate FOV from existing direction ranges if applicable

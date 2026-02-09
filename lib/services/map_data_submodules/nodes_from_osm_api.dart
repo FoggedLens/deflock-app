@@ -7,7 +7,6 @@ import 'package:xml/xml.dart';
 import '../../models/node_profile.dart';
 import '../../models/osm_node.dart';
 import '../../app_state.dart';
-import '../network_status.dart';
 
 /// Fetches surveillance nodes from the direct OSM API using bbox query.
 /// This is a fallback for when Overpass is not available (e.g., sandbox mode).
