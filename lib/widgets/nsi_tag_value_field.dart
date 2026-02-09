@@ -110,12 +110,9 @@ class _NSITagValueFieldState extends State<NSITagValueField> {
       focusNode: _focusNode,
       optionsBuilder: (TextEditingValue textEditingValue) {
         if (_suggestions.isEmpty) return const Iterable<String>.empty();
-        if (textEditingValue.text.isEmpty) {
-          return _suggestions.take(10);
-        }
+        if (textEditingValue.text.isEmpty) return _suggestions;
         return _suggestions
-            .where((s) => s.contains(textEditingValue.text))
-            .take(10);
+            .where((s) => s.contains(textEditingValue.text));
       },
       onSelected: (String selection) {
         widget.onChanged(selection);

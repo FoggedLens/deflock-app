@@ -84,8 +84,7 @@ class NSIService {
         }
       }
       
-      // Limit to top 10 suggestions for UI performance
-      if (suggestions.length >= 10) break;
+      if (suggestions.length >= kNSIMaxSuggestions) break;
     }
     
     return suggestions;
