@@ -93,13 +93,6 @@ OsmNode _constrainedNode() => OsmNode(
 List<NodeProfile> _enabledProfiles() => [_flockProfile(), _gunshotProfile()];
 List<OperatorProfile> _operatorProfiles() => [_operatorProfile()];
 
-/// Counts notification calls from a ChangeNotifier.
-int _attachCounter(SessionState s) {
-  int count = 0;
-  s.addListener(() => count++);
-  return count; // always 0 – call again after the action
-}
-
 // ---------------------------------------------------------------------------
 // Tests
 // ---------------------------------------------------------------------------
