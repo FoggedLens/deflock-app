@@ -800,33 +800,104 @@ The app uses a **clean, release-triggered workflow** that rebuilds from scratch 
 ## Build & Development Setup
 
 ### Prerequisites
-- **Flutter SDK**: Latest stable version
-- **Xcode**: For iOS builds (macOS only)
-- **Android Studio**: For Android builds
-- **Git**: For version control
+
+**macOS** (required for iOS builds; Android-only contributors can use macOS or Linux):
+
+| Tool | Install | Notes |
+|------|---------|-------|
+| **Homebrew** | [brew.sh](https://brew.sh) | Package manager for macOS |
+| **Flutter SDK** | `brew install --cask flutter` | Installs Flutter + Dart |
+| **Xcode** | Mac App Store | Required for iOS builds |
+| **CocoaPods** | `brew install cocoapods` | Required for iOS plugin resolution |
+| **Android SDK** | See below | Required for Android builds |
+| **Java 17+** | `brew install --cask temurin` | Required by Android toolchain (skip if already installed) |
+
+After installing, verify with:
+```bash
+flutter doctor    # All checks should be green
+```
+
+### Android SDK Setup (without Android Studio)
+
+You don't need the full Android Studio IDE. Install the command-line tools and let Flutter's build system pull what it needs:
+
+```bash
+# 1. Install command-line tools
+brew install --cask android-commandlinetools
+
+# 2. Create the SDK directory and install required components
+mkdir -p ~/Library/Android/sdk/licenses
+# Write license acceptance hashes
+printf "\n24333f8a63b6825ea9c5514f83c2829b004d1fee" > ~/Library/Android/sdk/licenses/android-sdk-license
+printf "\n84831b9409646a918e30573bab4c9c91346d8abd" > ~/Library/Android/sdk/licenses/android-sdk-preview-license
+
+# 3. Install platform tools and the SDK platform Flutter needs
+/opt/homebrew/share/android-commandlinetools/cmdline-tools/latest/bin/sdkmanager \
+  --sdk_root=/Users/$USER/Library/Android/sdk \
+  "platform-tools" "platforms;android-36" "build-tools;35.0.0"
+
+# 4. Copy cmdline-tools into the SDK root (Flutter expects them there)
+mkdir -p ~/Library/Android/sdk/cmdline-tools
+cp -R /opt/homebrew/share/android-commandlinetools/cmdline-tools/latest \
+  ~/Library/Android/sdk/cmdline-tools/latest
+
+# 5. Point Flutter at the SDK and accept licenses
+flutter config --android-sdk ~/Library/Android/sdk
+yes | flutter doctor --android-licenses
+```
+
+> **Note:** The first `flutter build apk` will auto-download additional components it needs (NDK, CMake, etc). This is normal and only happens once.
 
 ### OAuth2 Setup
 
-**Required registrations:**
+To run the app with working OSM authentication, register OAuth2 applications:
+
 1. **Production OSM**: https://www.openstreetmap.org/oauth2/applications
 2. **Sandbox OSM**: https://master.apis.dev.openstreetmap.org/oauth2/applications
 
-**Configuration:**
+For local builds, create `build_keys.conf` (gitignored):
 ```bash
-cp lib/keys.dart.example lib/keys.dart
-# Edit keys.dart with your OAuth2 client IDs
+cp build_keys.conf.example build_keys.conf
+# Edit build_keys.conf with your OAuth2 client IDs
 ```
 
-### iOS Setup
+You can also pass keys directly via `--dart-define`:
 ```bash
-cd ios && pod install
+flutter run --dart-define=OSM_PROD_CLIENTID=your_id --dart-define=OSM_SANDBOX_CLIENTID=your_id
 ```
+
+### First Build
+
+```bash
+# 1. Install dependencies
+flutter pub get
+
+# 2. Generate icons and splash screens (gitignored, must be regenerated)
+./gen_icons_splashes.sh
+
+# 3. Build Android
+flutter build apk --debug \
+  --dart-define=OSM_PROD_CLIENTID=your_id \
+  --dart-define=OSM_SANDBOX_CLIENTID=your_id
+
+# 4. Build iOS (macOS only, no signing needed for testing)
+flutter build ios --no-codesign \
+  --dart-define=OSM_PROD_CLIENTID=your_id \
+  --dart-define=OSM_SANDBOX_CLIENTID=your_id
+```
+
+> **Important:** You must run `./gen_icons_splashes.sh` before the first build. The generated icons and splash screen assets are gitignored, so the build will fail without this step.
 
 ### Running
+
 ```bash
-flutter pub get
-./gen_icons_splashes.sh
-flutter run --dart-define=OSM_PROD_CLIENT_ID=[your OAuth2 client ID]
+# Run on connected device or simulator
+flutter run --dart-define=OSM_PROD_CLIENTID=your_id --dart-define=OSM_SANDBOX_CLIENTID=your_id
+
+# Or use the build script (reads keys from build_keys.conf)
+./do_builds.sh              # Both platforms
+./do_builds.sh --android    # Android only
+./do_builds.sh --ios        # iOS only
 ```
 
 ### Testing
