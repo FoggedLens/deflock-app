@@ -1,4 +1,3 @@
-import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:mocktail/mocktail.dart';
@@ -8,7 +7,6 @@ import 'package:deflockapp/state/upload_queue_state.dart';
 import 'package:deflockapp/state/session_state.dart';
 import 'package:deflockapp/state/settings_state.dart';
 import 'package:deflockapp/models/node_profile.dart';
-import 'package:deflockapp/models/operator_profile.dart';
 import 'package:deflockapp/models/osm_node.dart';
 import 'package:deflockapp/models/pending_upload.dart';
 import 'package:deflockapp/services/map_data_provider.dart';
@@ -63,12 +61,6 @@ NodeProfile _omniProfile() => NodeProfile(
       submittable: true,
       requiresDirection: true,
       fov: 360,
-    );
-
-OperatorProfile _operatorProfile() => OperatorProfile(
-      id: 'lowes',
-      name: "Lowe's",
-      tags: const {'operator': "Lowe's"},
     );
 
 OsmNode _testNode() => OsmNode(
