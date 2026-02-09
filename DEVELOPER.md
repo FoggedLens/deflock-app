@@ -806,7 +806,7 @@ The app uses a **clean, release-triggered workflow** that rebuilds from scratch 
 | Tool | Install | Notes |
 |------|---------|-------|
 | **Homebrew** | [brew.sh](https://brew.sh) | Package manager for macOS |
-| **Flutter SDK** | `brew install --cask flutter` | Installs Flutter + Dart |
+| **Flutter SDK 3.35+** | `brew install --cask flutter` | Installs Flutter + Dart (3.35+ required for RadioGroup widget) |
 | **Xcode** | Mac App Store | Required for iOS builds |
 | **CocoaPods** | `brew install cocoapods` | Required for iOS plugin resolution |
 | **Android SDK** | See below | Required for Android builds |
