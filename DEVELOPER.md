@@ -832,13 +832,13 @@ printf "\n24333f8a63b6825ea9c5514f83c2829b004d1fee" > ~/Library/Android/sdk/lice
 printf "\n84831b9409646a918e30573bab4c9c91346d8abd" > ~/Library/Android/sdk/licenses/android-sdk-preview-license
 
 # 3. Install platform tools and the SDK platform Flutter needs
-/opt/homebrew/share/android-commandlinetools/cmdline-tools/latest/bin/sdkmanager \
-  --sdk_root=/Users/$USER/Library/Android/sdk \
+"$(brew --prefix android-commandlinetools)/cmdline-tools/latest/bin/sdkmanager" \
+  --sdk_root="$HOME/Library/Android/sdk" \
   "platform-tools" "platforms;android-36" "build-tools;35.0.0"
 
 # 4. Copy cmdline-tools into the SDK root (Flutter expects them there)
 mkdir -p ~/Library/Android/sdk/cmdline-tools
-cp -R /opt/homebrew/share/android-commandlinetools/cmdline-tools/latest \
+cp -R "$(brew --prefix android-commandlinetools)/cmdline-tools/latest" \
   ~/Library/Android/sdk/cmdline-tools/latest
 
 # 5. Point Flutter at the SDK and accept licenses

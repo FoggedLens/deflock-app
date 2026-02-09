@@ -39,7 +39,7 @@ android {
         // ────────────────────────────────────────────────────────────
         // oauth2_client 4.x & flutter_web_auth_2 5.x require minSdk 23
         // ────────────────────────────────────────────────────────────
-        minSdk = flutter.minSdkVersion
+        minSdk = maxOf(flutter.minSdkVersion, 23)
         targetSdk = 36
 
         // Flutter tool injects these during `flutter build`

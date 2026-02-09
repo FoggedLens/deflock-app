@@ -90,7 +90,7 @@ A comprehensive Flutter app for mapping public surveillance infrastructure with 
 - Code organization and contribution guidelines
 - Debugging tips and troubleshooting
 
-**Quick setup:**
+**Quick setup (macOS with Homebrew):**
 ```shell
 brew install --cask flutter        # Install Flutter SDK
 brew install cocoapods             # Required for iOS
@@ -99,6 +99,7 @@ flutter pub get                    # Install dependencies
 cp build_keys.conf.example build_keys.conf  # Add your OSM OAuth2 client IDs
 ./do_builds.sh                     # Build both platforms
 ```
+See [DEVELOPER.md](DEVELOPER.md) for cross-platform instructions and Android SDK setup.
 
 **Releases**: The app uses GitHub's release system for automated building and store uploads. Simply create a GitHub release and use the "pre-release" checkbox to control whether builds go to app stores - checked for beta releases, unchecked for production releases.
 
