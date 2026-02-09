@@ -293,7 +293,7 @@ class _DetectionListState extends State<_DetectionList> {
       },
       child: ListView.separated(
         itemCount: _detections!.length,
-        separatorBuilder: (_, __) => const Divider(height: 1),
+        separatorBuilder: (_, _) => const Divider(height: 1),
         itemBuilder: (context, index) {
           final detection = _detections![index];
           return _DetectionTile(
