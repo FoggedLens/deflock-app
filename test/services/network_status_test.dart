@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import '../../lib/services/network_status.dart';
+import 'package:deflockapp/services/network_status.dart';
 
 void main() {
   group('NetworkStatus', () {

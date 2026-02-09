@@ -62,7 +62,6 @@ void main() {
           data = json.decode(content) as Map<String, dynamic>;
         } catch (e) {
           fail('$name is not valid JSON: $e');
-          return; // unreachable, keeps analyzer happy
         }
         expect(
           data['language'],

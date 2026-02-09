@@ -54,23 +54,6 @@ class Uploader {
         return UploadResult.failure(errorMessage: errorMsg);
       }
       
-      // Generate changeset XML
-      String action;
-      switch (p.operation) {
-        case UploadOperation.create:
-          action = 'Add';
-          break;
-        case UploadOperation.modify:
-          action = 'Update';
-          break;
-        case UploadOperation.delete:
-          action = 'Delete';
-          break;
-        case UploadOperation.extract:
-          action = 'Extract';
-          break;
-      }
-      
       // Use the user's changeset comment, with XML sanitization
       final sanitizedComment = _sanitizeXmlText(p.changesetComment);
       final csXml = '''
