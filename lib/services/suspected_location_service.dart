@@ -1,5 +1,3 @@
-import 'dart:convert';
-import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:http/http.dart' as http;
@@ -208,7 +206,7 @@ class SuspectedLocationService {
               validRows++;
             }
             
-          } catch (e, stackTrace) {
+          } catch (e) {
             // Skip rows that can't be parsed
             debugPrint('[SuspectedLocationService] Error parsing row $rowIndex: $e');
             continue;

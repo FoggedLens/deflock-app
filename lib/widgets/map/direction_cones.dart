@@ -6,7 +6,6 @@ import 'package:latlong2/latlong.dart';
 import '../../app_state.dart';
 import '../../dev_config.dart';
 import '../../models/osm_node.dart';
-import '../../models/direction_fov.dart';
 
 /// Helper class to build direction cone polygons for cameras
 class DirectionConesBuilder {
@@ -113,11 +112,6 @@ class DirectionConesBuilder {
            node.coord.longitude.abs() <= 180;
   }
 
-  static bool _isPendingUpload(OsmNode node) {
-    return node.tags.containsKey('_pending_upload') && 
-           node.tags['_pending_upload'] == 'true';
-  }
-
   /// Build cone with variable FOV width - new method for range notation support
   static Polygon _buildConeWithFov(
     LatLng origin, 
@@ -133,28 +127,6 @@ class DirectionConesBuilder {
       origin: origin,
       bearingDeg: bearingDeg,
       halfAngleDeg: fovDegrees / 2,
-      zoom: zoom,
-      context: context,
-      isPending: isPending,
-      isSession: isSession,
-      isActiveDirection: isActiveDirection,
-    );
-  }
-
-  /// Legacy method for backward compatibility - uses dev_config FOV
-  static Polygon _buildCone(
-    LatLng origin, 
-    double bearingDeg, 
-    double zoom, {
-    required BuildContext context,
-    bool isPending = false,
-    bool isSession = false,
-    bool isActiveDirection = true,
-  }) {
-    return _buildConeInternal(
-      origin: origin,
-      bearingDeg: bearingDeg,
-      halfAngleDeg: kDirectionConeHalfAngle,
       zoom: zoom,
       context: context,
       isPending: isPending,
@@ -231,7 +203,7 @@ class DirectionConesBuilder {
 
     return Polygon(
       points: points,
-      color: kDirectionConeColor.withOpacity(opacity),
+      color: kDirectionConeColor.withValues(alpha: opacity),
       borderColor: kDirectionConeColor,
       borderStrokeWidth: getDirectionConeBorderWidth(context),
     );
@@ -279,7 +251,7 @@ class DirectionConesBuilder {
 
     return Polygon(
       points: points,
-      color: kDirectionConeColor.withOpacity(opacity),
+      color: kDirectionConeColor.withValues(alpha: opacity),
       borderColor: kDirectionConeColor,
       borderStrokeWidth: getDirectionConeBorderWidth(context),
     );

@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:math';
 import 'package:flutter/material.dart';
-import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_map_animations/flutter_map_animations.dart';
 import 'package:provider/provider.dart';
 
@@ -97,8 +96,8 @@ class _CompassIndicatorState extends State<CompassIndicator> {
               height: 52,
               decoration: BoxDecoration(
                 color: isDisabled 
-                    ? Colors.grey.withOpacity(0.8)
-                    : Colors.white.withOpacity(0.95),
+                    ? Colors.grey.withValues(alpha: 0.8)
+                    : Colors.white.withValues(alpha: 0.95),
                 shape: BoxShape.circle,
                 border: Border.all(
                   color: isDisabled 
@@ -108,7 +107,7 @@ class _CompassIndicatorState extends State<CompassIndicator> {
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.25),
+                    color: Colors.black.withValues(alpha: 0.25),
                     blurRadius: 6,
                     offset: const Offset(0, 3),
                   ),

@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:developer';
-import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:oauth2_client/oauth2_client.dart';
 import 'package:oauth2_client/oauth2_helper.dart';
 import 'package:http/http.dart' as http;
@@ -30,7 +30,6 @@ class AuthService {
       case UploadMode.sandbox:
         return 'osm_token_sandbox';
       case UploadMode.simulate:
-      default:
         return 'osm_token_simulate';
     }
   }
@@ -97,10 +96,10 @@ class AuthService {
       final tokenJson = jsonEncode(tokenMap);
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString(_tokenKey, tokenJson); // Save token for current mode
-      _displayName = await _fetchUsername(token!.accessToken!);
+      _displayName = await _fetchUsername(token.accessToken!);
       return _displayName;
     } catch (e) {
-      print('AuthService: OAuth login failed: $e');
+      debugPrint('AuthService: OAuth login failed: $e');
       log('OAuth login failed: $e');
       rethrow;
     }
@@ -128,7 +127,7 @@ class AuthService {
       _displayName = await _fetchUsername(accessToken);
       return _displayName;
     } catch (e) {
-      print('AuthService: Error restoring login with stored token: $e');
+      debugPrint('AuthService: Error restoring login with stored token: $e');
       log('Error restoring login with stored token: $e');
       // Token might be expired or invalid, clear it
       await logout();
@@ -194,7 +193,7 @@ class AuthService {
       final displayName = userData['user']?['display_name'];
       return displayName;
     } catch (e) {
-      print('AuthService: Error fetching username: $e');
+      debugPrint('AuthService: Error fetching username: $e');
       log('Error fetching username: $e');
       return null;
     }

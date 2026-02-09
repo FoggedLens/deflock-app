@@ -102,7 +102,7 @@ class SettingsScreen extends StatelessWidget {
               child: Text(
                 'Version: ${VersionService().version}',
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: Theme.of(context).textTheme.bodySmall?.color?.withOpacity(0.6),
+                  color: Theme.of(context).textTheme.bodySmall?.color?.withValues(alpha: 0.6),
                 ),
                 textAlign: TextAlign.center,
               ),

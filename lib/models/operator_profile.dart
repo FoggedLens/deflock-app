@@ -1,4 +1,3 @@
-import 'package:uuid/uuid.dart';
 import 'osm_node.dart';
 
 /// A bundle of OSM tags that describe a particular surveillance operator.

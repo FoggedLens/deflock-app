@@ -8,15 +8,15 @@ class NuclearResetDialog extends StatelessWidget {
   final String errorReport;
 
   const NuclearResetDialog({
-    Key? key,
+    super.key,
     required this.errorReport,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
-    return WillPopScope(
+    return PopScope(
       // Prevent back button from closing dialog
-      onWillPop: () async => false,
+      canPop: false,
       child: AlertDialog(
         title: const Row(
           children: [
@@ -96,7 +96,8 @@ class NuclearResetDialog extends StatelessWidget {
     
     // Clear all app data
     await NuclearResetService.clearEverything();
-    
+
+    if (!context.mounted) return;
     // Show non-dismissible dialog
     await showDialog(
       context: context,

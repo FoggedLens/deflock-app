@@ -107,7 +107,7 @@ class _LocationSearchBarState extends State<LocationSearchBar> {
         borderRadius: const BorderRadius.vertical(bottom: Radius.circular(12)),
         boxShadow: [
           BoxShadow(
-            color: Theme.of(context).shadowColor.withOpacity(0.2),
+            color: Theme.of(context).shadowColor.withValues(alpha: 0.2),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -152,7 +152,7 @@ class _LocationSearchBarState extends State<LocationSearchBar> {
                   : null,
               dense: true,
               onTap: () => _onResultTap(result),
-            )).toList(),
+            )),
         ],
       ),
     );
@@ -184,7 +184,7 @@ class _LocationSearchBarState extends State<LocationSearchBar> {
                 borderRadius: BorderRadius.circular(12),
                 boxShadow: [
                   BoxShadow(
-                    color: Theme.of(context).shadowColor.withOpacity(0.2),
+                    color: Theme.of(context).shadowColor.withValues(alpha: 0.2),
                     blurRadius: 8,
                     offset: const Offset(0, 2),
                   ),

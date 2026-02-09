@@ -105,7 +105,6 @@ class _OperatorProfileEditorState extends State<OperatorProfileEditor> {
     
     return List.generate(_tags.length, (i) {
       final keyController = TextEditingController(text: _tags[i].key);
-      final valueController = TextEditingController(text: _tags[i].value);
       
       return Padding(
         padding: const EdgeInsets.only(bottom: 8.0),

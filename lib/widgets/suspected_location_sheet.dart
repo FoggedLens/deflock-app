@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../models/suspected_location.dart';
-import '../app_state.dart';
 import '../services/localization_service.dart';
 import '../dev_config.dart';
 
@@ -17,7 +15,6 @@ class SuspectedLocationSheet extends StatelessWidget {
     return AnimatedBuilder(
       animation: LocalizationService.instance,
       builder: (context, child) {
-        final appState = context.watch<AppState>();
         final locService = LocalizationService.instance;
 
         // Get all fields except location and ticket_no
@@ -97,7 +94,7 @@ class SuspectedLocationSheet extends StatelessWidget {
                                       : Text(
                                           e.value,
                                           style: TextStyle(
-                                            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+                                            color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
                                           ),
                                           softWrap: true,
                                         ),
@@ -131,7 +128,7 @@ class SuspectedLocationSheet extends StatelessWidget {
                         child: Text(
                           '${location.centroid.latitude.toStringAsFixed(6)}, ${location.centroid.longitude.toStringAsFixed(6)}',
                           style: TextStyle(
-                            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+                            color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
                           ),
                           softWrap: true,
                         ),

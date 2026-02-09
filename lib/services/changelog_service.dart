@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -304,8 +303,8 @@ class ChangelogService {
       final v2Parts = v2.split('.').map(int.parse).toList();
       
       // Ensure we have at least 3 parts (major.minor.patch)
-      while (v1Parts.length < 3) v1Parts.add(0);
-      while (v2Parts.length < 3) v2Parts.add(0);
+      while (v1Parts.length < 3) { v1Parts.add(0); }
+      while (v2Parts.length < 3) { v2Parts.add(0); }
       
       // Compare major version first
       if (v1Parts[0] < v2Parts[0]) return -1;

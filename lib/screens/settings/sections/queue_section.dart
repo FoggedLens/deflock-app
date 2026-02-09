@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../app_state.dart';
 import '../../../services/localization_service.dart';
-import '../../../state/settings_state.dart';
 
 class QueueSection extends StatelessWidget {
   const QueueSection({super.key});
@@ -116,16 +115,16 @@ class QueueSection extends StatelessWidget {
                             (upload.error ? locService.t('queue.error') : "") +
                             (upload.completing ? locService.t('queue.completing') : "")),
                         subtitle: Text(
-                          locService.t('queue.destination', params: [_getUploadModeDisplayName(upload.uploadMode)]) + '\n' +
-                          locService.t('queue.latitude', params: [upload.coord.latitude.toStringAsFixed(6)]) + '\n' +
-                          locService.t('queue.longitude', params: [upload.coord.longitude.toStringAsFixed(6)]) + '\n' +
-                          locService.t('queue.direction', params: [
-                            upload.direction is String 
+                          '${locService.t('queue.destination', params: [_getUploadModeDisplayName(upload.uploadMode)])}\n'
+                          '${locService.t('queue.latitude', params: [upload.coord.latitude.toStringAsFixed(6)])}\n'
+                          '${locService.t('queue.longitude', params: [upload.coord.longitude.toStringAsFixed(6)])}\n'
+                          '${locService.t('queue.direction', params: [
+                            upload.direction is String
                                 ? upload.direction.toString()
                                 : upload.direction.round().toString()
-                          ]) + '\n' +
-                          locService.t('queue.attempts', params: [upload.attempts.toString()]) +
-                          (upload.error ? "\n${locService.t('queue.uploadFailedRetry')}" : "")
+                          ])}\n'
+                          '${locService.t('queue.attempts', params: [upload.attempts.toString()])}'
+                          '${upload.error ? "\n${locService.t('queue.uploadFailedRetry')}" : ""}'
                         ),
                         trailing: Row(
                           mainAxisSize: MainAxisSize.min,

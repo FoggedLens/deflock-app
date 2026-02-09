@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'package:app_links/app_links.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
 
 import '../models/node_profile.dart';
 import 'profile_import_service.dart';
@@ -87,7 +86,7 @@ class DeepLinkService {
     }
   }
   
-  /// Handle profile add deep link: deflockapp://profiles/add?p=<base64>
+  /// Handle profile add deep link: `deflockapp://profiles/add?p=<base64>`
   void _handleAddProfileLink(Uri uri) {
     final base64Data = uri.queryParameters['p'];
     

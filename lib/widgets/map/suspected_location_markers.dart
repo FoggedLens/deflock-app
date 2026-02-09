@@ -20,8 +20,8 @@ class SuspectedLocationMapMarker extends StatefulWidget {
     required this.mapController, 
     this.onLocationTap,
     this.enabled = true,
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   @override
   State<SuspectedLocationMapMarker> createState() => _SuspectedLocationMapMarkerState();

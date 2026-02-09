@@ -33,15 +33,18 @@ dependencies:
   shared_preferences: ^2.2.2
   sqflite: ^2.4.1
   path: ^1.8.3
+  path_provider: ^2.1.0
   uuid: ^4.0.0
   package_info_plus: ^8.0.0
   csv: ^6.0.0
+  collection: ^1.18.0
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   mocktail: ^1.0.4
   flutter_launcher_icons: ^0.14.4
+  flutter_lints: ^6.0.0
   flutter_native_splash: ^2.4.6
 
 flutter:

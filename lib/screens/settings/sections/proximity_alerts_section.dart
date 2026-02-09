@@ -140,9 +140,9 @@ class _ProximityAlertsSectionState extends State<ProximityAlertsSection> {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: Colors.orange.withOpacity(0.1),
+                  color: Colors.orange.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.orange.withOpacity(0.3)),
+                  border: Border.all(color: Colors.orange.withValues(alpha: 0.3)),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -233,7 +233,7 @@ class _ProximityAlertsSectionState extends State<ProximityAlertsSection> {
                     DistanceService.convertFromMeters(kProximityAlertDefaultDistance.toDouble(), appState.distanceUnit).round().toString(),
                   ]),
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Theme.of(context).textTheme.bodySmall?.color?.withOpacity(0.6),
+                    color: Theme.of(context).textTheme.bodySmall?.color?.withValues(alpha: 0.6),
                   ),
                 ),
               ],

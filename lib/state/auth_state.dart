@@ -21,7 +21,7 @@ class AuthState extends ChangeNotifier {
         _username = await _auth.restoreLogin();
       }
     } catch (e) {
-      print("AuthState: Error during auth initialization: $e");
+      debugPrint("AuthState: Error during auth initialization: $e");
     }
   }
 
@@ -29,7 +29,7 @@ class AuthState extends ChangeNotifier {
     try {
       _username = await _auth.login();
     } catch (e) {
-      print("AuthState: Login error: $e");
+      debugPrint("AuthState: Login error: $e");
       _username = null;
     }
     notifyListeners();
@@ -49,7 +49,7 @@ class AuthState extends ChangeNotifier {
         _username = null;
       }
     } catch (e) {
-      print("AuthState: Auth refresh error: $e");
+      debugPrint("AuthState: Auth refresh error: $e");
       _username = null;
     }
     notifyListeners();
@@ -59,7 +59,7 @@ class AuthState extends ChangeNotifier {
     try {
       _username = await _auth.forceLogin();
     } catch (e) {
-      print("AuthState: Forced login error: $e");
+      debugPrint("AuthState: Forced login error: $e");
       _username = null;
     }
     notifyListeners();
@@ -69,7 +69,7 @@ class AuthState extends ChangeNotifier {
     try {
       return await _auth.isLoggedIn();
     } catch (e) {
-      print("AuthState: Token validation error: $e");
+      debugPrint("AuthState: Token validation error: $e");
       return false;
     }
   }
@@ -92,7 +92,7 @@ class AuthState extends ChangeNotifier {
       }
     } catch (e) {
       _username = null;
-      print("AuthState: Mode change user restoration error: $e");
+      debugPrint("AuthState: Mode change user restoration error: $e");
     }
     notifyListeners();
   }

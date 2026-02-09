@@ -7,14 +7,11 @@ import 'package:flutter_map/flutter_map.dart';
 import '../app_state.dart';
 import '../dev_config.dart';
 import '../models/node_profile.dart';
-import '../models/operator_profile.dart';
 import '../models/pending_upload.dart';
 import '../services/localization_service.dart';
 import '../services/map_data_provider.dart';
 import '../services/node_data_manager.dart';
 import '../services/changelog_service.dart';
-import '../state/settings_state.dart';
-import '../state/session_state.dart';
 import 'refine_tags_sheet.dart';
 import 'advanced_edit_options_sheet.dart';
 import 'proximity_warning_dialog.dart';
@@ -95,7 +92,8 @@ class _EditNodeSheetState extends State<EditNodeSheet> {
   void _checkSubmissionGuideAndProceed(BuildContext context, AppState appState, LocalizationService locService) async {
     // Check if user has seen the submission guide
     final hasSeenGuide = await ChangelogService().hasSeenSubmissionGuide();
-    
+    if (!context.mounted) return;
+
     if (!hasSeenGuide) {
       // Show submission guide dialog first
       final shouldProceed = await showDialog<bool>(
@@ -103,13 +101,14 @@ class _EditNodeSheetState extends State<EditNodeSheet> {
         barrierDismissible: false,
         builder: (context) => const SubmissionGuideDialog(),
       );
-      
+      if (!context.mounted) return;
+
       // If user canceled the submission guide, don't proceed with submission
       if (shouldProceed != true) {
         return;
       }
     }
-    
+
     // Now proceed with proximity check
     _checkProximityOnly(context, appState, locService);
   }
@@ -435,25 +434,23 @@ class _EditNodeSheetState extends State<EditNodeSheet> {
         final locService = LocalizationService.instance;
         final appState = context.watch<AppState>();
 
-        void _commit() {
+        void commit() {
           // Check if there are any actual changes to submit
           if (!_hasActualChanges(widget.session)) {
             _showNoChangesDialog(context, locService);
             return;
           }
-          
+
           _checkProximityAndCommit(context, appState, locService);
         }
 
-        void _cancel() {
+        void cancel() {
           appState.cancelEditSession();
           Navigator.pop(context);
         }
 
         final session = widget.session;
         final submittableProfiles = appState.enabledProfiles.where((p) => p.isSubmittable).toList();
-        final isSandboxMode = appState.uploadMode == UploadMode.sandbox;
-        
         // Check if we have good cache coverage around the node position
         bool hasGoodCoverage = true;
         final nodeCoord = session.originalNode.coord;
@@ -481,11 +478,11 @@ class _EditNodeSheetState extends State<EditNodeSheet> {
             session.profile!.isSubmittable &&
             hasGoodCoverage;
         
-        void _navigateToLogin() {
+        void navigateToLogin() {
           Navigator.pushNamed(context, '/settings/osm-account');
         }
-        
-        void _openRefineTags() async {
+
+        void openRefineTags() async {
           final result = await Navigator.push<RefineTagsResult?>(
             context,
             MaterialPageRoute(
@@ -694,7 +691,7 @@ class _EditNodeSheetState extends State<EditNodeSheet> {
                 child: SizedBox(
                   width: double.infinity,
                   child: OutlinedButton.icon(
-                    onPressed: session.profile != null ? _openRefineTags : null, // Disabled when no profile selected
+                    onPressed: session.profile != null ? openRefineTags : null, // Disabled when no profile selected
                     icon: const Icon(Icons.tune),
                     label: Text(locService.t('editNode.refineTags')),
                   ),
@@ -707,14 +704,14 @@ class _EditNodeSheetState extends State<EditNodeSheet> {
                   children: [
                     Expanded(
                       child: OutlinedButton(
-                        onPressed: _cancel,
+                        onPressed: cancel,
                         child: Text(locService.cancel),
                       ),
                     ),
                     const SizedBox(width: 12),
                     Expanded(
                       child: ElevatedButton(
-                        onPressed: !appState.isLoggedIn ? _navigateToLogin : (allowSubmit ? _commit : null),
+                        onPressed: !appState.isLoggedIn ? navigateToLogin : (allowSubmit ? commit : null),
                         child: Text(!appState.isLoggedIn ? locService.t('actions.logIn') : locService.t('actions.saveEdit')),
                       ),
                     ),

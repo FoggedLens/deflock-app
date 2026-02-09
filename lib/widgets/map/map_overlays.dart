@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_map_animations/flutter_map_animations.dart';
 import 'package:provider/provider.dart';
 
 import '../../app_state.dart';
 import '../../dev_config.dart';
 import '../../services/localization_service.dart';
-import '../camera_icon.dart';
 import '../compass_indicator.dart';
 import 'layer_selector_button.dart';
 
@@ -64,8 +62,8 @@ class MapOverlays extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
               decoration: BoxDecoration(
                 color: uploadMode == UploadMode.sandbox
-                    ? Colors.orange.withOpacity(0.90)
-                    : Colors.deepPurple.withOpacity(0.80),
+                    ? Colors.orange.withValues(alpha: 0.90)
+                    : Colors.deepPurple.withValues(alpha: 0.80),
                 borderRadius: BorderRadius.circular(8),
                 boxShadow: const [
                   BoxShadow(color: Colors.black26, blurRadius: 5, offset: Offset(0,2)),
@@ -98,7 +96,7 @@ class MapOverlays extends StatelessWidget {
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
             decoration: BoxDecoration(
-              color: Colors.black.withOpacity(0.52),
+              color: Colors.black.withValues(alpha: 0.52),
               borderRadius: BorderRadius.circular(7),
             ),
             child: Builder(
@@ -131,7 +129,7 @@ class MapOverlays extends StatelessWidget {
               onTap: () => _showAttributionDialog(context, attribution!),
               child: Container(
                 decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.surface.withOpacity(0.9),
+                  color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.9),
                   borderRadius: BorderRadius.circular(4),
                 ),
                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),

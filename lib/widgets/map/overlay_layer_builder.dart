@@ -4,7 +4,6 @@ import 'package:latlong2/latlong.dart';
 
 import '../../models/osm_node.dart';
 import '../../app_state.dart';
-import '../../state/session_state.dart';
 import '../../dev_config.dart';
 import 'direction_cones.dart';
 
@@ -38,7 +37,7 @@ class OverlayLayerBuilder {
         overlays.add(
           Polygon(
             points: selectedLocation.bounds,
-            color: Colors.orange.withOpacity(0.3),
+            color: Colors.orange.withValues(alpha: 0.3),
             borderColor: Colors.orange,
             borderStrokeWidth: 2.0,
           ),

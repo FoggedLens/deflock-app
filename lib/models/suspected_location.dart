@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:latlong2/latlong.dart';
 
 /// A suspected surveillance location from the CSV data
@@ -35,8 +36,8 @@ class SuspectedLocation {
         bounds = coordinates.bounds;
       } catch (e) {
         // If GeoJSON parsing fails, use default coordinates
-        print('[SuspectedLocation] Failed to parse GeoJSON for ticket $ticketNo: $e');
-        print('[SuspectedLocation] Location string: $locationString');
+        debugPrint('[SuspectedLocation] Failed to parse GeoJSON for ticket $ticketNo: $e');
+        debugPrint('[SuspectedLocation] Location string: $locationString');
       }
     }
 
@@ -60,7 +61,7 @@ class SuspectedLocation {
       // The geoJson IS the geometry object (not wrapped in a 'geometry' property)
       final coordinates = geoJson['coordinates'] as List?;
       if (coordinates == null || coordinates.isEmpty) {
-        print('[SuspectedLocation] No coordinates found in GeoJSON');
+        debugPrint('[SuspectedLocation] No coordinates found in GeoJSON');
         return (centroid: const LatLng(0, 0), bounds: <LatLng>[]);
       }
 
@@ -109,7 +110,7 @@ class SuspectedLocation {
           }
           break;
         default:
-          print('Unsupported geometry type: $type');
+          debugPrint('Unsupported geometry type: $type');
       }
 
       if (points.isEmpty) {
@@ -127,7 +128,7 @@ class SuspectedLocation {
 
       return (centroid: centroid, bounds: points);
     } catch (e) {
-      print('Error extracting coordinates from GeoJSON: $e');
+      debugPrint('Error extracting coordinates from GeoJSON: $e');
       return (centroid: const LatLng(0, 0), bounds: <LatLng>[]);
     }
   }

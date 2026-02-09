@@ -99,7 +99,7 @@ class _ReleaseNotesScreenState extends State<ReleaseNotesScreen> {
                         color: Theme.of(context).colorScheme.primaryContainer,
                         borderRadius: BorderRadius.circular(8),
                         border: Border.all(
-                          color: Theme.of(context).colorScheme.primary.withOpacity(0.3),
+                          color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.3),
                         ),
                       ),
                       child: Row(
@@ -142,8 +142,8 @@ class _ReleaseNotesScreenState extends State<ReleaseNotesScreen> {
         decoration: BoxDecoration(
           border: Border.all(
             color: isCurrentVersion
-                ? Theme.of(context).colorScheme.primary.withOpacity(0.3)
-                : Theme.of(context).dividerColor.withOpacity(0.3),
+                ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.3)
+                : Theme.of(context).dividerColor.withValues(alpha: 0.3),
           ),
           borderRadius: BorderRadius.circular(8),
         ),

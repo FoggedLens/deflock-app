@@ -30,7 +30,7 @@ class PositioningTutorialOverlay extends StatelessWidget {
               ),
               child: Container(
                 decoration: BoxDecoration(
-                  color: Colors.black.withOpacity(0.3), // Semi-transparent overlay
+                  color: Colors.black.withValues(alpha: 0.3), // Semi-transparent overlay
                 ),
                 child: Center(
                   child: Padding(
@@ -73,7 +73,7 @@ class PositioningTutorialOverlay extends StatelessWidget {
                         Text(
                           locService.t('positioningTutorial.hint'),
                           style: TextStyle(
-                            color: Colors.white.withOpacity(0.8),
+                            color: Colors.white.withValues(alpha: 0.8),
                             fontSize: 14,
                             fontStyle: FontStyle.italic,
                           ),

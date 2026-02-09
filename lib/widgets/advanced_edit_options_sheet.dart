@@ -185,6 +185,7 @@ class AdvancedEditOptionsSheet extends StatelessWidget {
     }
     
     // No custom scheme or app launch failed - redirect to app store
+    if (!context.mounted) return;
     await _redirectToAppStore(context, editor);
   }
 

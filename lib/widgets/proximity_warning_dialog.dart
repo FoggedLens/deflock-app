@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:latlong2/latlong.dart';
 
 import '../models/osm_node.dart';
 import '../services/localization_service.dart';

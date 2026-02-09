@@ -1,17 +1,14 @@
 import 'dart:io';
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
-import 'package:latlong2/latlong.dart';
 import 'package:flutter_map/flutter_map.dart' show LatLngBounds;
 import 'package:path_provider/path_provider.dart';
 import 'offline_areas/offline_area_models.dart';
 import 'offline_areas/offline_tile_utils.dart';
 import 'offline_areas/offline_area_downloader.dart';
 
-import '../models/osm_node.dart';
 import '../app_state.dart';
 import 'map_data_provider.dart';
-import 'package:deflockapp/dev_config.dart';
 
 /// Service for managing download, storage, and retrieval of offline map areas and cameras.
 class OfflineAreaService {

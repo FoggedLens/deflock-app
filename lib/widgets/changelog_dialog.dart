@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../services/changelog_service.dart';
 import '../services/version_service.dart';
 
 class ChangelogDialog extends StatelessWidget {

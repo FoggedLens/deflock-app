@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:flutter/foundation.dart';
 import 'package:latlong2/latlong.dart';
@@ -81,7 +80,7 @@ Future<List<OsmNode>> _fetchFromOsmApi({
     debugPrint('[fetchOsmApiNodes] Exception: $e');
     
     // Don't report status here - let the top level handle it
-    throw e; // Re-throw to let caller handle
+    rethrow; // Re-throw to let caller handle
   }
 }
 

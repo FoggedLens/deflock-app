@@ -9,7 +9,7 @@ class DirectionFov {
   DirectionFov(this.centerDegrees, this.fovDegrees);
   
   @override
-  String toString() => 'DirectionFov(center: ${centerDegrees}°, fov: ${fovDegrees}°)';
+  String toString() => 'DirectionFov(center: $centerDegrees°, fov: $fovDegrees°)';
   
   @override
   bool operator ==(Object other) =>
