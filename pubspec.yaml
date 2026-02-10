@@ -22,7 +22,7 @@ dependencies:
   flutter_local_notifications: ^17.2.2
   url_launcher: ^6.3.0
   flutter_linkify: ^6.0.0
-  app_links: ^6.1.4
+  app_links: ^7.0.0
 
   # Auth, storage, prefs
   oauth2_client: ^4.2.0
@@ -35,7 +35,7 @@ dependencies:
   path: ^1.8.3
   path_provider: ^2.1.0
   uuid: ^4.0.0
-  package_info_plus: ^8.0.0
+  package_info_plus: ^9.0.0
   csv: ^6.0.0
   collection: ^1.18.0
 
