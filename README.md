@@ -107,43 +107,7 @@ See [DEVELOPER.md](DEVELOPER.md) for cross-platform instructions and Android SDK
 
 ## Roadmap
 
-### Needed Bugfixes
-- Make submission guide scarier
-- Tile cache trimming? Does fluttermap handle?
-- Filter NSI suggestions based on what has already been typed in
-- NSI sometimes doesn't populate a dropdown, maybe always on the second tag added during an edit session?
-- Clean cache when nodes have been deleted by others
-
-### Current Development
-- Support check_date= tag, update on all edits, quick button to update that only
-- Support source= tag, default to survey, let user pick a different value
-- Add ability to downvote suspected locations which are old enough
-- Turn by turn navigation or at least swipe nav sheet up to see a list
-- Import/Export map providers
-- Update default profiles from the website on launch to capture changes
-
-### Future Features & Wishlist
-- Tap direction slider to enter integer directly
-- Tap pending queue item to edit again before submitting
-- Optional reason message when deleting
-- Update offline area data while browsing?
-- Save named locations to more easily navigate to home or work
-- Offline navigation (pending vector map tiles)
-
-### Maybes
-- Icons/glyphs for profiles
-- "Universal Links" for better handling of profile import when app is not installed
-- Yellow ring for devices missing specific tag details
-- Android Auto / CarPlay
-- "Cache accumulating" offline area? Most recent / most viewed?
-- Grab the full latest database for each profile just like for suspected locations (instead of overpass)?
-- Custom data providers? (OSM/Overpass alternatives)
-- Offer options for extracting nodes which are attached to a way/relation?
-  - Auto extract (how?)
-  - Leave it alone (wrong answer unless user chooses intentionally)
-  - Manual cleanup (cognitive load for users)
-  - Delete the old one (also wrong answer unless user chooses intentionally)
-  - Give multiple of these options??
+See [GitHub Issues](https://github.com/FoggedLens/deflock-app/issues) for the full list of planned features, known bugs, and ideas.
 
 ---
 
