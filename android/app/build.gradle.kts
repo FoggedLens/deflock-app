@@ -17,7 +17,6 @@ if (keystorePropertiesFile.exists()) {
 android {
     namespace = "me.deflock.deflockapp"
 
-    // Matches current stable Flutter (compileSdk 34 as of July 2025)
     compileSdk = 36
 
     // NDK only needed if you build native plugins; keep your pinned version
@@ -28,17 +27,17 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
         isCoreLibraryDesugaringEnabled = true
     }
-    kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_17.toString()
+    kotlin {
+        compilerOptions {
+            jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17
+        }
     }
 
     defaultConfig {
         // Application ID (package name)
         applicationId = "me.deflock.deflockapp"
 
-        // ────────────────────────────────────────────────────────────
-        // oauth2_client 4.x & flutter_web_auth_2 5.x require minSdk 23
-        // ────────────────────────────────────────────────────────────
+        // oauth2_client 4.x & flutter_web_auth_2 5.x require minSdk 23
         minSdk = maxOf(flutter.minSdkVersion, 23)
         targetSdk = 36
 
@@ -76,6 +75,5 @@ flutter {
 }
 
 dependencies {
-    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.4")
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.5")
 }
-

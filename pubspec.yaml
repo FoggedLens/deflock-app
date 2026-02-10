@@ -4,7 +4,7 @@ publish_to: "none"
 version: 2.7.2+48   # The thing after the + is the version code, incremented with each release
 
 environment:
-  sdk: ">=3.8.0 <4.0.0"   # RadioGroup widget requires Dart 3.8+ (Flutter 3.35+)
+  sdk: ">=3.10.3 <4.0.0"   # Resolved dependency floor (Dart 3.10.3 = Flutter 3.38+)
 
 dependencies:
   flutter:
