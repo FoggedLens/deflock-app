@@ -80,7 +80,10 @@ class MapViewState extends State<MapView> {
   
   // State for proximity alert banner
   bool _showProximityBanner = false;
-  
+
+  // Track forceLocationManager to detect changes
+  bool? _lastForceLocationManager;
+
 
 
   @override
@@ -189,6 +192,17 @@ class MapViewState extends State<MapView> {
         // Refresh nodes when GPS controller moves the map
         _refreshNodesFromProvider();
       },
+      getForceLocationManager: () {
+        if (mounted) {
+          try {
+            return context.read<AppState>().forceLocationManager;
+          } catch (e) {
+            debugPrint('[MapView] Could not read forceLocationManager: $e');
+            return false;
+          }
+        }
+        return false;
+      },
     );
 
     // Fetch initial cameras
@@ -279,6 +293,12 @@ class MapViewState extends State<MapView> {
       currentEnabledProfiles: appState.enabledProfiles,
       onProfilesChanged: _refreshNodesFromProvider,
     );
+
+    // Restart GPS location provider if forceLocationManager setting changed
+    if (_lastForceLocationManager != null && appState.forceLocationManager != _lastForceLocationManager) {
+      _gpsController.restartLocationProvider();
+    }
+    _lastForceLocationManager = appState.forceLocationManager;
 
     // Check if tile type OR offline mode changed and clear cache if needed
     final cacheCleared = _tileManager.checkAndClearCacheIfNeeded(

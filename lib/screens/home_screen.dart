@@ -433,8 +433,17 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           ),
           actions: [
             IconButton(
-              tooltip: _getFollowMeTooltip(appState.followMeMode),
-              icon: Icon(_getFollowMeIcon(appState.followMeMode)),
+              tooltip: _mapViewKey.currentState?.hasLocation != true
+                  ? LocalizationService.instance.t('followMe.searchingGps')
+                  : _getFollowMeTooltip(appState.followMeMode),
+              icon: Icon(
+                _mapViewKey.currentState?.hasLocation != true
+                    ? Icons.gps_not_fixed
+                    : _getFollowMeIcon(appState.followMeMode),
+                color: _mapViewKey.currentState?.hasLocation != true
+                    ? Colors.orange
+                    : null,
+              ),
               onPressed: (_mapViewKey.currentState?.hasLocation == true && !_sheetCoordinator.hasActiveNodeSheet)
                   ? () {
                       final oldMode = appState.followMeMode;

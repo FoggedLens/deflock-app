@@ -80,7 +80,8 @@
   "followMe": {
     "off": "启用跟随模式",
     "follow": "启用跟随模式（旋转）",
-    "rotating": "禁用跟随模式"
+    "rotating": "禁用跟随模式",
+    "searchingGps": "正在搜索GPS信号..."
   },
   "settings": {
     "title": "设置",
@@ -537,6 +538,11 @@
     "url": "网址",
     "coordinates": "坐标",
     "noAddressAvailable": "无可用地址"
+  },
+  "gpsProvider": {
+    "title": "GPS定位提供商",
+    "useGoogleLocation": "使用Google定位服务",
+    "useGoogleLocationSubtitle": "使用Wi-Fi和基站进行更快的定位和更好的电池续航。禁用以使用原始GPS（GrapheneOS或没有Google Play服务的设备需要禁用）。"
   },
   "units": {
     "meters": "米",
