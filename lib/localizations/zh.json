@@ -358,7 +358,9 @@
     "keyHint": "键",
     "valueHint": "值",
     "atLeastOneTagRequired": "至少需要一个标签",
-    "profileSaved": "配置文件 \"{}\" 已保存"
+    "profileSaved": "配置文件 \"{}\" 已保存",
+    "removeTagTitle": "删除标签？",
+    "removeTagMessage": "从此配置文件中删除 \"{}\"？"
   },
   "operatorProfileEditor": {
     "newOperatorProfile": "新建运营商配置文件",
@@ -429,7 +431,9 @@
     "existingTagsTitle": "现有标签",
     "existingTagsDescription": "编辑此设备上的现有标签。添加、删除或修改任何标签：",
     "existingOperator": "<现有运营商>",
-    "existingOperatorTags": "现有运营商标签"
+    "existingOperatorTags": "现有运营商标签",
+    "removeTagTitle": "删除标签？",
+    "removeTagMessage": "从此节点中删除 \"{}\"？"
   },
   "layerSelector": {
     "cannotChangeTileTypes": "在下载离线区域时无法更改瓦片类型",

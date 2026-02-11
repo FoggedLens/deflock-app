@@ -358,7 +358,9 @@
     "keyHint": "clave",
     "valueHint": "valor",
     "atLeastOneTagRequired": "Se requiere al menos una etiqueta",
-    "profileSaved": "Perfil \"{}\" guardado"
+    "profileSaved": "Perfil \"{}\" guardado",
+    "removeTagTitle": "¿Eliminar etiqueta?",
+    "removeTagMessage": "¿Eliminar \"{}\" de este perfil?"
   },
   "operatorProfileEditor": {
     "newOperatorProfile": "Nuevo Perfil de Operador",
@@ -429,7 +431,9 @@
     "existingTagsTitle": "Etiquetas Existentes",
     "existingTagsDescription": "Edite las etiquetas existentes en este dispositivo. Agregue, elimine o modifique cualquier etiqueta:",
     "existingOperator": "<Operador existente>",
-    "existingOperatorTags": "etiquetas de operador existentes"
+    "existingOperatorTags": "etiquetas de operador existentes",
+    "removeTagTitle": "¿Eliminar etiqueta?",
+    "removeTagMessage": "¿Eliminar \"{}\" de este nodo?"
   },
   "layerSelector": {
     "cannotChangeTileTypes": "No se pueden cambiar los tipos de teselas mientras se descargan áreas sin conexión",

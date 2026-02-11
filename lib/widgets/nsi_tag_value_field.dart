@@ -135,7 +135,7 @@ class _NSITagValueFieldState extends State<NSITagValueField> {
             widget.onChanged(value);
           },
           onSubmitted: (_) {
-            if (controller.text.isNotEmpty) {
+            if (controller.text.trim().isNotEmpty) {
               onFieldSubmitted();
             } else {
               widget.onCleared?.call();

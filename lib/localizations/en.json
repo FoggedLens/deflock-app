@@ -358,7 +358,9 @@
     "keyHint": "key",
     "valueHint": "value",
     "atLeastOneTagRequired": "At least one tag is required",
-    "profileSaved": "Profile \"{}\" saved"
+    "profileSaved": "Profile \"{}\" saved",
+    "removeTagTitle": "Remove tag?",
+    "removeTagMessage": "Remove \"{}\" from this profile?"
   },
   "operatorProfileEditor": {
     "newOperatorProfile": "New Operator Profile",
@@ -429,7 +431,9 @@
     "existingTagsTitle": "Existing Tags",
     "existingTagsDescription": "Edit the existing tags on this device. Add, remove, or modify any tag:",
     "existingOperator": "<Existing operator>",
-    "existingOperatorTags": "existing operator tags"
+    "existingOperatorTags": "existing operator tags",
+    "removeTagTitle": "Remove tag?",
+    "removeTagMessage": "Remove \"{}\" from this node?"
   },
   "layerSelector": {
     "cannotChangeTileTypes": "Cannot change tile types while downloading offline areas",

@@ -358,7 +358,9 @@
     "keyHint": "clé",
     "valueHint": "valeur",
     "atLeastOneTagRequired": "Au moins une balise est requise",
-    "profileSaved": "Profil \"{}\" sauvegardé"
+    "profileSaved": "Profil \"{}\" sauvegardé",
+    "removeTagTitle": "Supprimer la balise ?",
+    "removeTagMessage": "Supprimer \"{}\" de ce profil ?"
   },
   "operatorProfileEditor": {
     "newOperatorProfile": "Nouveau Profil d'Opérateur",
@@ -429,7 +431,9 @@
     "existingTagsTitle": "Balises Existantes",
     "existingTagsDescription": "Modifiez les balises existantes sur cet appareil. Ajoutez, supprimez ou modifiez n'importe quelle balise :",
     "existingOperator": "<Opérateur existant>",
-    "existingOperatorTags": "balises d'opérateur existantes"
+    "existingOperatorTags": "balises d'opérateur existantes",
+    "removeTagTitle": "Supprimer la balise ?",
+    "removeTagMessage": "Supprimer \"{}\" de ce nœud ?"
   },
   "layerSelector": {
     "cannotChangeTileTypes": "Impossible de changer les types de tuiles pendant le téléchargement des zones hors ligne",

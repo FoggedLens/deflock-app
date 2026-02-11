@@ -146,19 +146,20 @@ class _OperatorProfileEditorState extends State<OperatorProfileEditor> {
 
   void _confirmRemoveTag(int index) async {
     final tagKey = _tags[index].key;
+    final locService = LocalizationService.instance;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Remove tag?'),
-        content: Text('Remove "$tagKey" from this profile?'),
+        title: Text(locService.t('profileEditor.removeTagTitle')),
+        content: Text(locService.t('profileEditor.removeTagMessage', params: [tagKey])),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: Text(LocalizationService.instance.t('common.cancel')),
+            child: Text(locService.cancel),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: Text(LocalizationService.instance.t('common.delete')),
+            child: Text(locService.t('actions.delete')),
           ),
         ],
       ),

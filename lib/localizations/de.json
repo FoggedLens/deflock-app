@@ -321,7 +321,9 @@
     "keyHint": "Schlüssel",
     "valueHint": "Wert",
     "atLeastOneTagRequired": "Mindestens ein Tag ist erforderlich",
-    "profileSaved": "Profil \"{}\" gespeichert"
+    "profileSaved": "Profil \"{}\" gespeichert",
+    "removeTagTitle": "Tag entfernen?",
+    "removeTagMessage": "\"{}\" von diesem Profil entfernen?"
   },
   "operatorProfileEditor": {
     "newOperatorProfile": "Neues Betreiber-Profil",
@@ -392,7 +394,9 @@
     "existingTagsTitle": "Vorhandene Tags",
     "existingTagsDescription": "Bearbeiten Sie die vorhandenen Tags auf diesem Gerät. Hinzufügen, entfernen oder ändern Sie beliebige Tags:",
     "existingOperator": "<Vorhandener Betreiber>",
-    "existingOperatorTags": "vorhandene Betreiber-Tags"
+    "existingOperatorTags": "vorhandene Betreiber-Tags",
+    "removeTagTitle": "Tag entfernen?",
+    "removeTagMessage": "\"{}\" von diesem Knoten entfernen?"
   },
   "layerSelector": {
     "cannotChangeTileTypes": "Kachel-Typen können während des Herunterladens von Offline-Bereichen nicht geändert werden",

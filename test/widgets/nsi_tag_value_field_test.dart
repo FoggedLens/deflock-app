@@ -38,7 +38,7 @@ void main() {
                 focusNode: focusNode,
                 onChanged: onChanged,
                 onSubmitted: (_) {
-                  if (controller.text.isNotEmpty) {
+                  if (controller.text.trim().isNotEmpty) {
                     onFieldSubmitted();
                   } else {
                     onCleared?.call();
@@ -153,6 +153,34 @@ void main() {
           reason: 'onCleared should not fire when field has text');
       expect(controller.text, equals('Axis'),
           reason: 'Should auto-complete partial text');
+    });
+
+    testWidgets('pressing Done on whitespace-only field calls onCleared',
+        (tester) async {
+      bool clearedCalled = false;
+      final controller = TextEditingController();
+      final focusNode = FocusNode();
+
+      await tester.pumpWidget(buildAutocompleteField(
+        controller: controller,
+        focusNode: focusNode,
+        suggestions: ['Axis', 'Dahua', 'Hikvision'],
+        onChanged: (_) {},
+        onSelected: (_) {},
+        onCleared: () => clearedCalled = true,
+      ));
+
+      await tester.tap(find.byType(TextField));
+      await tester.pump();
+
+      await tester.enterText(find.byType(TextField), '   ');
+      await tester.pump();
+
+      await tester.testTextInput.receiveAction(TextInputAction.done);
+      await tester.pump();
+
+      expect(clearedCalled, isTrue,
+          reason: 'onCleared should fire when Done pressed on whitespace-only field');
     });
 
     testWidgets('onCleared not provided — Done on empty field is a no-op',

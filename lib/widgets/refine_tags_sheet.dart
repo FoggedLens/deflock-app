@@ -548,19 +548,20 @@ class _RefineTagsSheetState extends State<RefineTagsSheet> {
 
   void _confirmRemoveAdditionalTag(int index) async {
     final tagKey = _additionalExistingTags[index].key;
+    final locService = LocalizationService.instance;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Remove tag?'),
-        content: Text('Remove "$tagKey" from this node?'),
+        title: Text(locService.t('refineTagsSheet.removeTagTitle')),
+        content: Text(locService.t('refineTagsSheet.removeTagMessage', params: [tagKey])),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: Text(LocalizationService.instance.t('common.cancel')),
+            child: Text(locService.cancel),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: Text(LocalizationService.instance.t('common.delete')),
+            child: Text(locService.t('actions.delete')),
           ),
         ],
       ),

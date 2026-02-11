@@ -358,7 +358,9 @@
     "keyHint": "chave",
     "valueHint": "valor",
     "atLeastOneTagRequired": "Pelo menos uma tag é obrigatória",
-    "profileSaved": "Perfil \"{}\" salvo"
+    "profileSaved": "Perfil \"{}\" salvo",
+    "removeTagTitle": "Remover tag?",
+    "removeTagMessage": "Remover \"{}\" deste perfil?"
   },
   "operatorProfileEditor": {
     "newOperatorProfile": "Novo Perfil de Operador",
@@ -429,7 +431,9 @@
     "existingTagsTitle": "Tags Existentes",
     "existingTagsDescription": "Edite as tags existentes neste dispositivo. Adicione, remova ou modifique qualquer tag:",
     "existingOperator": "<Operador existente>",
-    "existingOperatorTags": "tags de operador existentes"
+    "existingOperatorTags": "tags de operador existentes",
+    "removeTagTitle": "Remover tag?",
+    "removeTagMessage": "Remover \"{}\" deste nó?"
   },
   "layerSelector": {
     "cannotChangeTileTypes": "Não é possível alterar tipos de tiles durante o download de áreas offline",
