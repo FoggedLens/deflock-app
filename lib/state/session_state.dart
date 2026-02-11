@@ -215,6 +215,7 @@ class SessionState extends ChangeNotifier {
     Map<String, String>? refinedTags,
     Map<String, String>? additionalExistingTags,
     String? changesetComment,
+    bool updateOperatorProfile = false,
   }) {
     if (_session == null) return;
 
@@ -232,7 +233,8 @@ class SessionState extends ChangeNotifier {
       );
       dirty = true;
     }
-    if (operatorProfile != _session!.operatorProfile) {
+    // Only update operator profile when explicitly requested
+    if (updateOperatorProfile && operatorProfile != _session!.operatorProfile) {
       _session!.operatorProfile = operatorProfile;
       dirty = true;
     }
@@ -264,6 +266,7 @@ class SessionState extends ChangeNotifier {
     Map<String, String>? refinedTags,
     Map<String, String>? additionalExistingTags,
     String? changesetComment,
+    bool updateOperatorProfile = false,
   }) {
     if (_editSession == null) return;
 
@@ -282,9 +285,9 @@ class SessionState extends ChangeNotifier {
       // Handle direction requirements when profile changes
       _handleDirectionRequirementsOnProfileChange(oldProfile, profile);
       
-      // When profile changes but operator profile not explicitly provided,
+      // When profile changes and operator profile not being explicitly updated,
       // restore the detected operator profile (if any)
-      if (operatorProfile == null && _detectedOperatorProfile != null) {
+      if (!updateOperatorProfile && _detectedOperatorProfile != null) {
         _editSession!.operatorProfile = _detectedOperatorProfile;
       }
       
@@ -309,8 +312,8 @@ class SessionState extends ChangeNotifier {
       
       dirty = true;
     }
-    // Only update operator profile if explicitly provided (including null) and different from current
-    if (operatorProfile != _editSession!.operatorProfile) {
+    // Only update operator profile when explicitly requested
+    if (updateOperatorProfile && operatorProfile != _editSession!.operatorProfile) {
       _editSession!.operatorProfile = operatorProfile; // This can be null
       dirty = true;
     }

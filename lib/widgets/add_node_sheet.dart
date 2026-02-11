@@ -448,6 +448,7 @@ class _AddNodeSheetState extends State<AddNodeSheet> {
               operatorProfile: result.operatorProfile,
               refinedTags: result.refinedTags,
               changesetComment: result.changesetComment,
+              updateOperatorProfile: true,
             );
           }
         }

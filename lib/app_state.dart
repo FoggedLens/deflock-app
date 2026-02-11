@@ -447,6 +447,7 @@ class AppState extends ChangeNotifier {
     Map<String, String>? refinedTags,
     Map<String, String>? additionalExistingTags,
     String? changesetComment,
+    bool updateOperatorProfile = false,
   }) {
     _sessionState.updateSession(
       directionDeg: directionDeg,
@@ -456,6 +457,7 @@ class AppState extends ChangeNotifier {
       refinedTags: refinedTags,
       additionalExistingTags: additionalExistingTags,
       changesetComment: changesetComment,
+      updateOperatorProfile: updateOperatorProfile,
     );
     
     // Check tutorial completion if position changed
@@ -473,6 +475,7 @@ class AppState extends ChangeNotifier {
     Map<String, String>? refinedTags,
     Map<String, String>? additionalExistingTags,
     String? changesetComment,
+    bool updateOperatorProfile = false,
   }) {
     _sessionState.updateEditSession(
       directionDeg: directionDeg,
@@ -483,6 +486,7 @@ class AppState extends ChangeNotifier {
       refinedTags: refinedTags,
       additionalExistingTags: additionalExistingTags,
       changesetComment: changesetComment,
+      updateOperatorProfile: updateOperatorProfile,
     );
     
     // Check tutorial completion if position changed
