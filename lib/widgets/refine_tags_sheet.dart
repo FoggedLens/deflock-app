@@ -517,6 +517,7 @@ class _RefineTagsSheetState extends State<RefineTagsSheet> {
                   _additionalExistingTags[index] = MapEntry(_additionalExistingTags[index].key, newValue);
                 });
               },
+              onCleared: () => _confirmRemoveAdditionalTag(index),
             ),
           ),
           const SizedBox(width: 8),
@@ -543,5 +544,29 @@ class _RefineTagsSheetState extends State<RefineTagsSheet> {
     setState(() {
       _additionalExistingTags.removeAt(index);
     });
+  }
+
+  void _confirmRemoveAdditionalTag(int index) async {
+    final tagKey = _additionalExistingTags[index].key;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Remove tag?'),
+        content: Text('Remove "$tagKey" from this node?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text(LocalizationService.instance.t('common.cancel')),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: Text(LocalizationService.instance.t('common.delete')),
+          ),
+        ],
+      ),
+    );
+    if (confirmed == true && mounted) {
+      _removeAdditionalTag(index);
+    }
   }
 }

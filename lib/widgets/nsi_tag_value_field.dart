@@ -11,6 +11,7 @@ class NSITagValueField extends StatefulWidget {
     required this.onChanged,
     this.readOnly = false,
     this.hintText,
+    this.onCleared,
   });
 
   final String tagKey;
@@ -18,6 +19,7 @@ class NSITagValueField extends StatefulWidget {
   final ValueChanged<String> onChanged;
   final bool readOnly;
   final String? hintText;
+  final VoidCallback? onCleared;
 
   @override
   State<NSITagValueField> createState() => _NSITagValueFieldState();
@@ -133,11 +135,10 @@ class _NSITagValueFieldState extends State<NSITagValueField> {
             widget.onChanged(value);
           },
           onSubmitted: (_) {
-            // Only auto-complete when there's text to match against.
-            // Otherwise, pressing Done on an empty field would auto-select
-            // the first suggestion, preventing users from clearing values.
             if (controller.text.isNotEmpty) {
               onFieldSubmitted();
+            } else {
+              widget.onCleared?.call();
             }
           },
         );

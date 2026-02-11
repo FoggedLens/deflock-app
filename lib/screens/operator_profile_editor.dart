@@ -131,6 +131,7 @@ class _OperatorProfileEditorState extends State<OperatorProfileEditor> {
                 initialValue: _tags[i].value,
                 hintText: locService.t('profileEditor.valueHint'),
                 onChanged: (v) => setState(() => _tags[i] = MapEntry(_tags[i].key, v)),
+                onCleared: () => _confirmRemoveTag(i),
               ),
             ),
             IconButton(
@@ -141,6 +142,30 @@ class _OperatorProfileEditorState extends State<OperatorProfileEditor> {
         ),
       );
     });
+  }
+
+  void _confirmRemoveTag(int index) async {
+    final tagKey = _tags[index].key;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Remove tag?'),
+        content: Text('Remove "$tagKey" from this profile?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text(LocalizationService.instance.t('common.cancel')),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: Text(LocalizationService.instance.t('common.delete')),
+          ),
+        ],
+      ),
+    );
+    if (confirmed == true && mounted) {
+      setState(() => _tags.removeAt(index));
+    }
   }
 
   void _save() {
