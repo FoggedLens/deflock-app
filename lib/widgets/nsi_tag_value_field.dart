@@ -132,7 +132,14 @@ class _NSITagValueFieldState extends State<NSITagValueField> {
           onChanged: (value) {
             widget.onChanged(value);
           },
-          onSubmitted: (_) => onFieldSubmitted(),
+          onSubmitted: (_) {
+            // Only auto-complete when there's text to match against.
+            // Otherwise, pressing Done on an empty field would auto-select
+            // the first suggestion, preventing users from clearing values.
+            if (controller.text.isNotEmpty) {
+              onFieldSubmitted();
+            }
+          },
         );
       },
       optionsViewBuilder: (
