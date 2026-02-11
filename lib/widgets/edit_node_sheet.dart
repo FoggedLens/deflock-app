@@ -503,6 +503,7 @@ class _EditNodeSheetState extends State<EditNodeSheet> {
               refinedTags: result.refinedTags,
               additionalExistingTags: result.additionalExistingTags,
               changesetComment: result.changesetComment,
+              updateOperatorProfile: true,
             );
           }
         }

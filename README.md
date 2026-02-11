@@ -90,12 +90,16 @@ A comprehensive Flutter app for mapping public surveillance infrastructure with 
 - Code organization and contribution guidelines
 - Debugging tips and troubleshooting
 
-**Quick setup:**
+**Quick setup (macOS with Homebrew):**
 ```shell
-flutter pub get
-cp lib/keys.dart.example lib/keys.dart
-# Add OAuth2 client IDs, then: flutter run
+brew install --cask flutter        # Install Flutter SDK
+brew install cocoapods             # Required for iOS
+flutter pub get                    # Install dependencies
+./gen_icons_splashes.sh            # Generate icons & splash screens (required before first build)
+cp build_keys.conf.example build_keys.conf  # Add your OSM OAuth2 client IDs
+./do_builds.sh                     # Build both platforms
 ```
+See [DEVELOPER.md](DEVELOPER.md) for cross-platform instructions and Android SDK setup.
 
 **Releases**: The app uses GitHub's release system for automated building and store uploads. Simply create a GitHub release and use the "pre-release" checkbox to control whether builds go to app stores - checked for beta releases, unchecked for production releases.
 
@@ -103,43 +107,7 @@ cp lib/keys.dart.example lib/keys.dart
 
 ## Roadmap
 
-### Needed Bugfixes
-- Make submission guide scarier
-- Tile cache trimming? Does fluttermap handle?
-- Filter NSI suggestions based on what has already been typed in
-- NSI sometimes doesn't populate a dropdown, maybe always on the second tag added during an edit session?
-- Clean cache when nodes have been deleted by others
-
-### Current Development
-- Support check_date= tag, update on all edits, quick button to update that only
-- Support source= tag, default to survey, let user pick a different value
-- Add ability to downvote suspected locations which are old enough
-- Turn by turn navigation or at least swipe nav sheet up to see a list
-- Import/Export map providers
-- Update default profiles from the website on launch to capture changes
-
-### Future Features & Wishlist
-- Tap direction slider to enter integer directly
-- Tap pending queue item to edit again before submitting
-- Optional reason message when deleting
-- Update offline area data while browsing?
-- Save named locations to more easily navigate to home or work
-- Offline navigation (pending vector map tiles)
-
-### Maybes
-- Icons/glyphs for profiles
-- "Universal Links" for better handling of profile import when app is not installed
-- Yellow ring for devices missing specific tag details
-- Android Auto / CarPlay
-- "Cache accumulating" offline area? Most recent / most viewed?
-- Grab the full latest database for each profile just like for suspected locations (instead of overpass)?
-- Custom data providers? (OSM/Overpass alternatives)
-- Offer options for extracting nodes which are attached to a way/relation?
-  - Auto extract (how?)
-  - Leave it alone (wrong answer unless user chooses intentionally)
-  - Manual cleanup (cognitive load for users)
-  - Delete the old one (also wrong answer unless user chooses intentionally)
-  - Give multiple of these options??
+See [GitHub Issues](https://github.com/FoggedLens/deflock-app/issues) for the full list of planned features, known bugs, and ideas.
 
 ---
 

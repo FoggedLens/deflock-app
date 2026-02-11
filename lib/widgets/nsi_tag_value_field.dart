@@ -25,33 +25,26 @@ class NSITagValueField extends StatefulWidget {
 
 class _NSITagValueFieldState extends State<NSITagValueField> {
   late TextEditingController _controller;
-  List<String> _suggestions = [];
-  bool _showingSuggestions = false;
-  final LayerLink _layerLink = LayerLink();
-  late OverlayEntry _overlayEntry;
   final FocusNode _focusNode = FocusNode();
+  List<String> _suggestions = [];
 
   @override
   void initState() {
     super.initState();
     _controller = TextEditingController(text: widget.initialValue);
     _loadSuggestions();
-    
-    _focusNode.addListener(_onFocusChanged);
-    _controller.addListener(_onTextChanged);
   }
 
   @override
   void didUpdateWidget(NSITagValueField oldWidget) {
     super.didUpdateWidget(oldWidget);
-    
+
     // If the tag key changed, reload suggestions
     if (oldWidget.tagKey != widget.tagKey) {
-      _hideSuggestions(); // Hide old suggestions immediately
       _suggestions.clear();
-      _loadSuggestions(); // Load new suggestions for new key
+      _loadSuggestions();
     }
-    
+
     // If the initial value changed, update the controller
     if (oldWidget.initialValue != widget.initialValue) {
       _controller.text = widget.initialValue;
@@ -62,38 +55,17 @@ class _NSITagValueFieldState extends State<NSITagValueField> {
   void dispose() {
     _controller.dispose();
     _focusNode.dispose();
-    _hideSuggestions();
     super.dispose();
-  }
-
-  /// Get filtered suggestions based on current text input (case-sensitive)
-  List<String> _getFilteredSuggestions() {
-    final currentText = _controller.text;
-    if (currentText.isEmpty) {
-      return _suggestions;
-    }
-    
-    return _suggestions
-        .where((suggestion) => suggestion.contains(currentText))
-        .toList();
-  }
-
-  /// Handle text changes to update suggestion filtering
-  void _onTextChanged() {
-    if (_showingSuggestions) {
-      // Update the overlay with filtered suggestions
-      _updateSuggestionsOverlay();
-    }
   }
 
   void _loadSuggestions() async {
     if (widget.tagKey.trim().isEmpty) return;
-    
+
     try {
       final suggestions = await NSIService().getAllSuggestions(widget.tagKey);
       if (mounted) {
         setState(() {
-          _suggestions = suggestions.take(10).toList(); // Limit to 10 suggestions
+          _suggestions = suggestions;
         });
       }
     } catch (e) {
@@ -106,52 +78,78 @@ class _NSITagValueFieldState extends State<NSITagValueField> {
     }
   }
 
-  void _onFocusChanged() {
-    final filteredSuggestions = _getFilteredSuggestions();
-    if (_focusNode.hasFocus && filteredSuggestions.isNotEmpty && !widget.readOnly) {
-      _showSuggestions();
-    } else {
-      _hideSuggestions();
-    }
+  InputDecoration _buildDecoration({required bool showDropdownIcon}) {
+    return InputDecoration(
+      hintText: widget.hintText,
+      border: const OutlineInputBorder(),
+      isDense: true,
+      suffixIcon: showDropdownIcon
+          ? Icon(
+              Icons.arrow_drop_down,
+              color: _focusNode.hasFocus
+                  ? Theme.of(context).primaryColor
+                  : Colors.grey,
+            )
+          : null,
+    );
   }
 
-  void _showSuggestions() {
-    final filteredSuggestions = _getFilteredSuggestions();
-    if (_showingSuggestions || filteredSuggestions.isEmpty) return;
-
-    _overlayEntry = _buildSuggestionsOverlay(filteredSuggestions);
-    Overlay.of(context).insert(_overlayEntry);
-    setState(() {
-      _showingSuggestions = true;
-    });
-  }
-
-  /// Update the suggestions overlay with current filtered suggestions
-  void _updateSuggestionsOverlay() {
-    final filteredSuggestions = _getFilteredSuggestions();
-    
-    if (filteredSuggestions.isEmpty) {
-      _hideSuggestions();
-      return;
+  @override
+  Widget build(BuildContext context) {
+    if (widget.readOnly) {
+      return TextField(
+        controller: _controller,
+        focusNode: _focusNode,
+        readOnly: true,
+        decoration: _buildDecoration(showDropdownIcon: false),
+      );
     }
-    
-    if (_showingSuggestions) {
-      // Remove current overlay and create new one with filtered suggestions
-      _overlayEntry.remove();
-      _overlayEntry = _buildSuggestionsOverlay(filteredSuggestions);
-      Overlay.of(context).insert(_overlayEntry);
-    }
-  }
 
-  /// Build the suggestions overlay with the given suggestions list
-  OverlayEntry _buildSuggestionsOverlay(List<String> suggestions) {
-    return OverlayEntry(
-      builder: (context) => Positioned(
-        width: 250, // Slightly wider to fit more content in refine tags
-        child: CompositedTransformFollower(
-          link: _layerLink,
-          showWhenUnlinked: false,
-          offset: const Offset(0.0, 35.0), // Below the text field
+    return RawAutocomplete<String>(
+      textEditingController: _controller,
+      focusNode: _focusNode,
+      optionsBuilder: (TextEditingValue textEditingValue) {
+        if (_suggestions.isEmpty) return const Iterable<String>.empty();
+        if (textEditingValue.text.isEmpty) return _suggestions;
+        return _suggestions
+            .where((s) => s.contains(textEditingValue.text));
+      },
+      onSelected: (String selection) {
+        widget.onChanged(selection);
+      },
+      fieldViewBuilder: (
+        BuildContext context,
+        TextEditingController controller,
+        FocusNode focusNode,
+        VoidCallback onFieldSubmitted,
+      ) {
+        return TextField(
+          controller: controller,
+          focusNode: focusNode,
+          decoration: _buildDecoration(
+            showDropdownIcon: _suggestions.isNotEmpty,
+          ),
+          onChanged: (value) {
+            widget.onChanged(value);
+          },
+          onSubmitted: (_) {
+            // Only auto-complete when there's text to match against.
+            // Otherwise, pressing Done on an empty field would auto-select
+            // the first suggestion, preventing users from clearing values.
+            if (controller.text.isNotEmpty) {
+              onFieldSubmitted();
+            }
+          },
+        );
+      },
+      optionsViewBuilder: (
+        BuildContext context,
+        AutocompleteOnSelected<String> onSelected,
+        Iterable<String> options,
+      ) {
+        final optionList = options.toList(growable: false);
+        return Align(
+          alignment: Alignment.topLeft,
           child: Material(
             elevation: 4.0,
             borderRadius: BorderRadius.circular(8.0),
@@ -160,68 +158,20 @@ class _NSITagValueFieldState extends State<NSITagValueField> {
               child: ListView.builder(
                 padding: EdgeInsets.zero,
                 shrinkWrap: true,
-                itemCount: suggestions.length,
+                itemCount: optionList.length,
                 itemBuilder: (context, index) {
-                  final suggestion = suggestions[index];
+                  final option = optionList[index];
                   return ListTile(
                     dense: true,
-                    title: Text(suggestion, style: const TextStyle(fontSize: 14)),
-                    onTap: () => _selectSuggestion(suggestion),
+                    title: Text(option, style: const TextStyle(fontSize: 14)),
+                    onTap: () => onSelected(option),
                   );
                 },
               ),
             ),
           ),
-        ),
-      ),
-    );
-  }
-
-  void _hideSuggestions() {
-    if (!_showingSuggestions) return;
-
-    _overlayEntry.remove();
-    setState(() {
-      _showingSuggestions = false;
-    });
-  }
-
-  void _selectSuggestion(String suggestion) {
-    _controller.text = suggestion;
-    widget.onChanged(suggestion);
-    _hideSuggestions();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final filteredSuggestions = _getFilteredSuggestions();
-    
-    return CompositedTransformTarget(
-      link: _layerLink,
-      child: TextField(
-        controller: _controller,
-        focusNode: _focusNode,
-        readOnly: widget.readOnly,
-        decoration: InputDecoration(
-          hintText: widget.hintText,
-          border: const OutlineInputBorder(),
-          isDense: true,
-          suffixIcon: _suggestions.isNotEmpty && !widget.readOnly
-              ? Icon(
-                  Icons.arrow_drop_down,
-                  color: _showingSuggestions ? Theme.of(context).primaryColor : Colors.grey,
-                )
-              : null,
-        ),
-        onChanged: widget.readOnly ? null : (value) {
-          widget.onChanged(value);
-        },
-        onTap: () {
-          if (!widget.readOnly && filteredSuggestions.isNotEmpty) {
-            _showSuggestions();
-          }
-        },
-      ),
+        );
+      },
     );
   }
 }

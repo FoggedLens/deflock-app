@@ -1,4 +1,9 @@
 {
+  "2.7.1": {
+    "content": [
+      "• Fixed operator profile selection being lost when moving node position, adjusting direction, or changing profiles"
+    ]
+  },
   "2.6.4": {
     "content": [
       "• Added imperial units support (miles, feet) in addition to metric units (km, meters)",

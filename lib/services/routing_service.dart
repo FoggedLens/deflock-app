@@ -27,7 +27,12 @@ class RouteResult {
 class RoutingService {
   static const String _baseUrl = 'https://alprwatch.org/api/v1/deflock/directions';
   static const String _userAgent = 'DeFlock/1.0 (OSM surveillance mapping app)';
-  
+  final http.Client _client;
+
+  RoutingService({http.Client? client}) : _client = client ?? http.Client();
+
+  void close() => _client.close();
+
   // Calculate route between two points using alprwatch
   Future<RouteResult> calculateRoute({
     required LatLng start,
@@ -40,10 +45,12 @@ class RoutingService {
 
     final enabledProfiles = AppState.instance.enabledProfiles.map((p) {
       final full = p.toJson();
+      final tags = Map<String, String>.from(full['tags'] as Map);
+      tags.removeWhere((key, value) => value.isEmpty);
       return {
         'id': full['id'],
         'name': full['name'],
-        'tags': full['tags'],
+        'tags': tags,
       };
     }).toList();
     
@@ -65,7 +72,7 @@ class RoutingService {
     debugPrint('[RoutingService] alprwatch request: $uri $params');
     
     try {
-      final response = await http.post(
+      final response = await _client.post(
         uri,
         headers: {
           'User-Agent': _userAgent,
@@ -75,6 +82,16 @@ class RoutingService {
       ).timeout(kNavigationRoutingTimeout);
 
       if (response.statusCode != 200) {
+        if (kDebugMode) {
+          debugPrint('[RoutingService] Error response body: ${response.body}');
+        } else {
+          const maxLen = 500;
+          final body = response.body;
+          final truncated = body.length > maxLen
+              ? '${body.substring(0, maxLen)}… [truncated]'
+              : body;
+          debugPrint('[RoutingService] Error response body ($maxLen char max): $truncated');
+        }
         throw RoutingException('HTTP ${response.statusCode}: ${response.reasonPhrase}');
       }
       

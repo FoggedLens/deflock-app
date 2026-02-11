@@ -72,7 +72,7 @@ const Duration kOverpassQueryTimeout = Duration(seconds: 45); // Timeout for Ove
 const String kSuspectedLocationsCsvUrl = 'https://alprwatch.org/suspected-locations/deflock-latest.csv';
 
 // Development/testing features - set to false for production builds
-const bool kEnableDevelopmentModes = false; // Set to false to hide sandbox/simulate modes and force production mode
+const bool kEnableDevelopmentModes = true; // Set to false to hide sandbox/simulate modes and force production mode
 
 // Navigation features - set to false to hide navigation UI elements while in development
 const bool kEnableNavigationFeatures = true; // Hide navigation until fully implemented
@@ -144,6 +144,7 @@ const int kDefaultMaxNodes = 500; // Default maximum number of nodes to render o
 
 // NSI (Name Suggestion Index) configuration
 const int kNSIMinimumHitCount = 500; // Minimum hit count for NSI suggestions to be considered useful
+const int kNSIMaxSuggestions = 10; // Maximum number of tag value suggestions to fetch and display
 
 // Map interaction configuration
 const double kNodeDoubleTapZoomDelta = 1.0; // How much to zoom in when double-tapping nodes (was 1.0)
