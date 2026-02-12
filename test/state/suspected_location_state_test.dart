@@ -42,21 +42,32 @@ void main() {
   });
 
   group('refreshIfNeeded', () {
-    test('sets loading state during refresh', () async {
+    test('notifies listeners after successful refresh', () async {
       when(() => mockService.refreshIfNeeded(offlineMode: false))
           .thenAnswer((_) async => true);
+
+      var notified = false;
+      state.addListener(() => notified = true);
+
+      await state.refreshIfNeeded();
+
+      expect(notified, isTrue);
+    });
+
+    test('does not set loading state (avoids fake loading flash)', () async {
+      when(() => mockService.refreshIfNeeded(offlineMode: false))
+          .thenAnswer((_) async => false);
 
       final loadingStates = <bool>[];
       state.addListener(() => loadingStates.add(state.isLoading));
 
       await state.refreshIfNeeded();
 
-      // Should have been true then false
-      expect(loadingStates, contains(true));
-      expect(loadingStates.last, isFalse);
+      // Should never have been true — no-op refresh shouldn't flash loading
+      expect(loadingStates.where((s) => s), isEmpty);
     });
 
-    test('catches service errors and resets loading', () async {
+    test('catches service errors without crashing', () async {
       when(() => mockService.refreshIfNeeded(offlineMode: false))
           .thenThrow(Exception('network error'));
 

@@ -204,9 +204,11 @@ class AppState extends ChangeNotifier {
         // clearEverything() wipes SharedPreferences, so re-acquire the instance
       }
 
-      // Increment failure count before running init (cleared on success)
+      // Increment failure count before running init (cleared on success).
+      // Re-read from prefs in case nuclear reset just wiped the old value.
       final prefsForCount = await SharedPreferences.getInstance();
-      await prefsForCount.setInt(_initFailureCountKey, failureCount + 1);
+      final currentCount = prefsForCount.getInt(_initFailureCountKey) ?? 0;
+      await prefsForCount.setInt(_initFailureCountKey, currentCount + 1);
 
       // Settings must init first — other modules read its values
       await _settingsState.init();

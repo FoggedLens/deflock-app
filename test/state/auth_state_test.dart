@@ -80,13 +80,35 @@ void main() {
       expect(notified, isTrue);
     });
 
-    test('does nothing when not logged in', () async {
+    test('does nothing when not logged in and username already null', () async {
       when(() => mockAuth.isLoggedIn()).thenAnswer((_) async => false);
+
+      var notified = false;
+      state.addListener(() => notified = true);
 
       await state.refreshIfNeeded();
 
       verifyNever(() => mockAuth.restoreLogin());
       expect(state.isLoggedIn, isFalse);
+      expect(notified, isFalse); // No notification needed when nothing changed
+    });
+
+    test('clears username when token expired between init and refresh', () async {
+      // Set up logged-in state via init
+      when(() => mockAuth.setUploadMode(any())).thenReturn(null);
+      when(() => mockAuth.isLoggedIn()).thenAnswer((_) async => true);
+      when(() => mockAuth.restoreLoginLocal())
+          .thenAnswer((_) async => 'User');
+      await state.init(UploadMode.production);
+      expect(state.isLoggedIn, isTrue);
+
+      // Token expired — isLoggedIn now returns false
+      when(() => mockAuth.isLoggedIn()).thenAnswer((_) async => false);
+
+      await state.refreshIfNeeded();
+
+      expect(state.isLoggedIn, isFalse);
+      expect(state.username, equals(''));
     });
 
     test('catches errors gracefully', () async {

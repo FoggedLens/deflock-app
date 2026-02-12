@@ -33,6 +33,9 @@ class AuthState extends ChangeNotifier {
       if (await _auth.isLoggedIn()) {
         _username = await _auth.restoreLogin();
         notifyListeners();
+      } else if (_username != null) {
+        _username = null;
+        notifyListeners();
       }
     } catch (e) {
       debugPrint("AuthState: Error during background refresh: $e");
