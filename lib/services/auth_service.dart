@@ -14,12 +14,17 @@ import '../app_state.dart' show UploadMode;
 class AuthService {
   // Both client IDs from keys.dart
   static const _redirect = 'deflockapp://auth';
+  static const Duration _timeout = Duration(seconds: 10);
+  /// Per-mode cached display name key, parallels [_tokenKey].
+  String get _cachedDisplayNameKey => 'cached_display_name_${_mode.name}';
 
   late OAuth2Helper _helper;
+  final http.Client _client;
   String? _displayName;
   UploadMode _mode = UploadMode.production;
 
-  AuthService({UploadMode mode = UploadMode.production}) {
+  AuthService({UploadMode mode = UploadMode.production, http.Client? client})
+      : _client = client ?? http.Client() {
     setUploadMode(mode);
   }
 
@@ -86,7 +91,7 @@ class AuthService {
     try {
       final token = await _helper.getToken();
       if (token?.accessToken == null) {
-        log('OAuth error: token null or missing accessToken');
+        log('[AuthService] OAuth error: token null or missing accessToken');
         return null;
       }
       final tokenMap = {
@@ -99,13 +104,13 @@ class AuthService {
       _displayName = await _fetchUsername(token.accessToken!);
       return _displayName;
     } catch (e) {
-      debugPrint('AuthService: OAuth login failed: $e');
-      log('OAuth login failed: $e');
+      debugPrint('[AuthService] OAuth login failed: $e');
+      log('[AuthService] OAuth login failed: $e');
       rethrow;
     }
   }
 
-  // Restore login state from stored token (for app startup)
+  // Restore login state from stored token (for app startup — hits network)
   Future<String?> restoreLogin() async {
     if (_mode == UploadMode.simulate) {
       final prefs = await SharedPreferences.getInstance();
@@ -116,23 +121,52 @@ class AuthService {
       }
       return null;
     }
-    
+
     // Get stored token directly from SharedPreferences
     final accessToken = await getAccessToken();
     if (accessToken == null) {
       return null;
     }
-    
+
+    // Try to fetch username from API; fall back to cached name on network
+    // errors but log out on auth errors (401/403 = token is invalid).
     try {
       _displayName = await _fetchUsername(accessToken);
-      return _displayName;
-    } catch (e) {
-      debugPrint('AuthService: Error restoring login with stored token: $e');
-      log('Error restoring login with stored token: $e');
-      // Token might be expired or invalid, clear it
+    } on _TokenRejectedException {
+      debugPrint('[AuthService] Token rejected, logging out');
       await logout();
       return null;
     }
+    if (_displayName == null) {
+      final prefs = await SharedPreferences.getInstance();
+      _displayName = prefs.getString(_cachedDisplayNameKey) ?? '';
+      debugPrint('[AuthService] Using cached display name: $_displayName');
+    }
+    return _displayName;
+  }
+
+  /// Restore login from local cache only (no network). For use during init.
+  Future<String?> restoreLoginLocal() async {
+    if (_mode == UploadMode.simulate) {
+      final prefs = await SharedPreferences.getInstance();
+      final isLoggedIn = prefs.getBool('sim_user_logged_in') ?? false;
+      if (isLoggedIn) {
+        _displayName = 'Demo User';
+        return _displayName;
+      }
+      return null;
+    }
+
+    final accessToken = await getAccessToken();
+    if (accessToken == null) {
+      return null;
+    }
+
+    // We have a token, so restore from cached display name (no network)
+    final prefs = await SharedPreferences.getInstance();
+    _displayName = prefs.getString(_cachedDisplayNameKey) ?? '';
+    debugPrint('[AuthService] Restored login locally: $_displayName');
+    return _displayName;
   }
 
   Future<void> logout() async {
@@ -144,6 +178,7 @@ class AuthService {
     }
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_tokenKey);
+    await prefs.remove(_cachedDisplayNameKey);
     await _helper.removeAllTokens();
     _displayName = null;
   }
@@ -178,25 +213,43 @@ class AuthService {
       : 'https://api.openstreetmap.org';
   }
 
+  /// Fetch username from OSM API.
+  ///
+  /// Returns the display name on success, `null` on network/server errors.
+  /// Throws [_TokenRejectedException] on 401/403 so callers can log out.
   Future<String?> _fetchUsername(String accessToken) async {
     try {
-      final resp = await http.get(
+      final resp = await _client.get(
         Uri.parse('$_apiHost/api/0.6/user/details.json'),
         headers: {'Authorization': 'Bearer $accessToken'},
-      );
-      
+      ).timeout(_timeout);
+
+      if (resp.statusCode == 401 || resp.statusCode == 403) {
+        log('[AuthService] Token rejected (${resp.statusCode})');
+        throw _TokenRejectedException(resp.statusCode);
+      }
       if (resp.statusCode != 200) {
-        log('fetchUsername response ${resp.statusCode}: ${resp.body}');
+        log('[AuthService] fetchUsername response ${resp.statusCode}: ${resp.body}');
         return null;
       }
       final userData = jsonDecode(resp.body);
       final displayName = userData['user']?['display_name'];
+      if (displayName != null) {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString(_cachedDisplayNameKey, displayName);
+      }
       return displayName;
+    } on _TokenRejectedException {
+      rethrow;
     } catch (e) {
-      debugPrint('AuthService: Error fetching username: $e');
-      log('Error fetching username: $e');
+      debugPrint('[AuthService] Error fetching username: $e');
+      log('[AuthService] Error fetching username: $e');
       return null;
     }
   }
 }
 
+class _TokenRejectedException implements Exception {
+  final int statusCode;
+  _TokenRejectedException(this.statusCode);
+}
