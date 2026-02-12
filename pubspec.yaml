@@ -42,6 +42,7 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  fake_async: ^1.3.3
   mocktail: ^1.0.4
   fake_async: ^1.3.0
   flutter_launcher_icons: ^0.14.4

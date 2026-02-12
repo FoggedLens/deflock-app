@@ -13,10 +13,12 @@ import 'http_client.dart';
 /// Single responsibility: Make requests, handle network errors, return data.
 class OverpassService {
   static const String _endpoint = 'https://overpass-api.de/api/interpreter';
+  static const String _statusEndpoint = 'https://overpass-api.de/api/status';
+  static const int defaultSlotCount = 4;
+
   final http.Client _client;
 
   OverpassService({http.Client? client}) : _client = client ?? UserAgentClient();
-
 
   /// Fetch surveillance nodes from Overpass API with proper retry logic.
   /// Throws NetworkError for retryable failures, NodeLimitError for area splitting.
@@ -99,6 +101,67 @@ class OverpassService {
     throw NetworkError('Max retries exceeded');
   }
   
+  /// Query Overpass /api/status to get the rate limit (slot count per IP).
+  Future<int> getSlotCount() async {
+    try {
+      final response = await _client.get(Uri.parse(_statusEndpoint))
+          .timeout(const Duration(seconds: 5));
+      if (response.statusCode == 200) {
+        final match = RegExp(r'Rate limit:\s*(\d+)').firstMatch(response.body);
+        if (match != null) return int.parse(match.group(1)!);
+      }
+    } catch (e) {
+      debugPrint('[OverpassService] Failed to get slot count: $e');
+    }
+    return defaultSlotCount;
+  }
+
+  /// Poll /api/status until a slot is available. Returns observed slot count.
+  ///
+  /// Uses [elapsedFn] to track elapsed time. Defaults to a [Stopwatch]-based
+  /// implementation; tests can inject a fake to control time progression.
+  Future<int> waitForSlot({
+    Duration maxWait = const Duration(minutes: 2),
+    Duration Function()? elapsedFn,
+  }) async {
+    final stopwatch = Stopwatch()..start();
+    final elapsed = elapsedFn ?? () => stopwatch.elapsed;
+    int observedSlots = defaultSlotCount;
+
+    while (elapsed() < maxWait) {
+      try {
+        final response = await _client.get(Uri.parse(_statusEndpoint))
+            .timeout(const Duration(seconds: 5));
+
+        if (response.statusCode == 200) {
+          // Always parse slot count while we have the response
+          final slotMatch = RegExp(r'Rate limit:\s*(\d+)').firstMatch(response.body);
+          if (slotMatch != null) observedSlots = int.parse(slotMatch.group(1)!);
+
+          // Slots available → ready
+          if (response.body.contains('slots available now')) return observedSlots;
+
+          // Parse "in N seconds" from "Slot available after: ..., in N seconds."
+          final match = RegExp(r'in (\d+) seconds').firstMatch(response.body);
+          if (match != null) {
+            final wait = int.parse(match.group(1)!).clamp(1, 30);
+            debugPrint('[OverpassService] Waiting $wait seconds for slot');
+            await Future.delayed(Duration(seconds: wait));
+            continue;
+          }
+        }
+      } catch (e) {
+        debugPrint('[OverpassService] Status check failed: $e');
+      }
+
+      // Fallback: wait 5 seconds and re-poll
+      await Future.delayed(const Duration(seconds: 5));
+    }
+
+    debugPrint('[OverpassService] Max wait time exceeded, proceeding anyway');
+    return observedSlots;
+  }
+
   /// Build Overpass QL query for given bounds and profiles
   String _buildQuery(LatLngBounds bounds, List<NodeProfile> profiles) {
     final nodeClauses = profiles.map((profile) {
