@@ -213,51 +213,26 @@ class AppState extends ChangeNotifier {
       // Settings must init first — other modules read its values
       await _settingsState.init();
 
-      // Initialize changelog service
-      await ChangelogService().init();
-
       // Fire-and-forget tile preview fetch (existing pattern)
       _fetchMissingTilePreviews();
 
-      // Check if we should add default profiles (first launch OR no profiles of each type exist)
-      const firstLaunchKey = 'profiles_defaults_initialized';
-      final prefsForProfiles = await SharedPreferences.getInstance();
-      final isFirstLaunch = !(prefsForProfiles.getBool(firstLaunchKey) ?? false);
+      // Run independent init steps in parallel.
+      // Each step is wrapped in try-catch so a failure in one doesn't
+      // prevent the others from completing via Future.wait.
+      await Future.wait([
+        _guardInit('changelog', () => ChangelogService().init()),
+        _initProfiles(),
+        _guardInit('suspected locations', () => _suspectedLocationState.initLocal()),
+        _guardInit('upload queue', () => _uploadQueueState.init()),
+        _guardInit('auth', () => _authState.init(_settingsState.uploadMode)),
+        _initOfflineData(),
+      ]);
 
-      final existingOperatorProfiles = await OperatorProfileService().load();
-      final existingNodeProfiles = await ProfileService().load();
-
-      final shouldAddOperatorDefaults = isFirstLaunch || existingOperatorProfiles.isEmpty;
-      final shouldAddNodeDefaults = isFirstLaunch || existingNodeProfiles.isEmpty;
-
-      await _operatorProfileState.init(addDefaults: shouldAddOperatorDefaults);
-      await _profileState.init(addDefaults: shouldAddNodeDefaults);
-
-      // Set up callback to clear stale sessions when profiles are deleted
+      // Post-parallel setup (depends on results above)
       _profileState.setProfileDeletedCallback(_onProfileDeleted);
-
-      if (isFirstLaunch) {
-        await prefsForProfiles.setBool(firstLaunchKey, true);
-      }
-
-      // Local-only init for suspected locations (no network)
-      await _suspectedLocationState.initLocal();
-      await _uploadQueueState.init();
-      // Local-only auth init (no network)
-      await _authState.init(_settingsState.uploadMode);
-
-      // Set up callback to repopulate pending nodes after cache clears
       NodeProviderWithCache.instance.setOnCacheClearedCallback(() {
         _uploadQueueState.repopulateCacheFromQueue();
       });
-
-      // Initialize OfflineAreaService to ensure offline areas are loaded
-      await OfflineAreaService().ensureInitialized();
-
-      // Preload offline nodes into cache for immediate display
-      await NodeDataManager().preloadOfflineNodes();
-
-      // Start uploader if conditions are met
       _startUploader();
 
       _isInitialized = true;
@@ -288,9 +263,55 @@ class AppState extends ChangeNotifier {
     }
   }
   
+  /// Load profiles and handle first-launch defaults.
+  Future<void> _initProfiles() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      const firstLaunchKey = 'profiles_defaults_initialized';
+      final isFirstLaunch = !(prefs.getBool(firstLaunchKey) ?? false);
+
+      final existingOperatorProfiles = await OperatorProfileService().load();
+      final existingNodeProfiles = await ProfileService().load();
+
+      final shouldAddOperatorDefaults = isFirstLaunch || existingOperatorProfiles.isEmpty;
+      final shouldAddNodeDefaults = isFirstLaunch || existingNodeProfiles.isEmpty;
+
+      await _operatorProfileState.init(addDefaults: shouldAddOperatorDefaults);
+      await _profileState.init(addDefaults: shouldAddNodeDefaults);
+
+      if (isFirstLaunch) {
+        await prefs.setBool(firstLaunchKey, true);
+      }
+    } catch (e, stackTrace) {
+      debugPrint('[AppState] Error initializing profiles: $e');
+      debugPrint('[AppState] Stack trace: $stackTrace');
+    }
+  }
+
+  /// Initialize offline area service and preload offline nodes.
+  Future<void> _initOfflineData() async {
+    try {
+      await OfflineAreaService().ensureInitialized();
+      await NodeDataManager().preloadOfflineNodes();
+    } catch (e, stackTrace) {
+      debugPrint('[AppState] Error initializing offline data: $e');
+      debugPrint('[AppState] Stack trace: $stackTrace');
+    }
+  }
+
+  /// Run an init step inside try-catch so it can't break Future.wait.
+  Future<void> _guardInit(String label, Future<void> Function() fn) async {
+    try {
+      await fn();
+    } catch (e, stackTrace) {
+      debugPrint('[AppState] Error initializing $label: $e');
+      debugPrint('[AppState] Stack trace: $stackTrace');
+    }
+  }
+
   void _startMessageCheckTimer() {
     _messageCheckTimer?.cancel();
-    
+
     // Check messages every 10 minutes when logged in
     _messageCheckTimer = Timer.periodic(
       const Duration(minutes: 10),
