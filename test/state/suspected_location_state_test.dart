@@ -1,0 +1,107 @@
+import 'package:flutter_test/flutter_test.dart';
+import 'package:latlong2/latlong.dart';
+import 'package:mocktail/mocktail.dart';
+
+import 'package:deflockapp/models/suspected_location.dart';
+import 'package:deflockapp/services/suspected_location_service.dart';
+import 'package:deflockapp/state/suspected_location_state.dart';
+
+class MockSuspectedLocationService extends Mock
+    implements SuspectedLocationService {}
+
+void main() {
+  late MockSuspectedLocationService mockService;
+  late SuspectedLocationState state;
+
+  setUp(() {
+    mockService = MockSuspectedLocationService();
+    state = SuspectedLocationState(service: mockService);
+  });
+
+  group('initLocal', () {
+    test('calls service initLocal and notifies listeners', () async {
+      when(() => mockService.initLocal()).thenAnswer((_) async {});
+      when(() => mockService.isEnabled).thenReturn(true);
+
+      var notified = false;
+      state.addListener(() => notified = true);
+
+      await state.initLocal();
+
+      verify(() => mockService.initLocal()).called(1);
+      expect(notified, isTrue);
+      expect(state.isEnabled, isTrue);
+    });
+
+    test('propagates service errors', () async {
+      when(() => mockService.initLocal())
+          .thenThrow(Exception('storage error'));
+
+      expect(() => state.initLocal(), throwsException);
+    });
+  });
+
+  group('refreshIfNeeded', () {
+    test('sets loading state during refresh', () async {
+      when(() => mockService.refreshIfNeeded(offlineMode: false))
+          .thenAnswer((_) async => true);
+
+      final loadingStates = <bool>[];
+      state.addListener(() => loadingStates.add(state.isLoading));
+
+      await state.refreshIfNeeded();
+
+      // Should have been true then false
+      expect(loadingStates, contains(true));
+      expect(loadingStates.last, isFalse);
+    });
+
+    test('catches service errors and resets loading', () async {
+      when(() => mockService.refreshIfNeeded(offlineMode: false))
+          .thenThrow(Exception('network error'));
+
+      await state.refreshIfNeeded();
+
+      expect(state.isLoading, isFalse);
+    });
+  });
+
+  group('selection', () {
+    test('select sets selected location and notifies', () {
+      final location = SuspectedLocation(
+        ticketNo: 'T-001',
+        centroid: const LatLng(38.9, -77.0),
+        bounds: const [],
+        allFields: const {},
+      );
+
+      var notified = false;
+      state.addListener(() => notified = true);
+
+      state.selectLocation(location);
+
+      expect(state.selectedLocation, equals(location));
+      expect(notified, isTrue);
+    });
+
+    test('clearSelection clears and notifies', () {
+      final location = SuspectedLocation(
+        ticketNo: 'T-002',
+        centroid: const LatLng(38.9, -77.0),
+        bounds: const [],
+        allFields: const {},
+      );
+
+      state.selectLocation(location);
+      expect(state.selectedLocation, isNotNull);
+
+      var notified = false;
+      state.addListener(() => notified = true);
+
+      state.clearSelection();
+
+      expect(state.selectedLocation, isNull);
+      expect(notified, isTrue);
+    });
+  });
+}
