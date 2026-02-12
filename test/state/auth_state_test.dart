@@ -118,6 +118,42 @@ void main() {
 
       expect(state.isLoggedIn, isFalse);
     });
+
+    test('clears username when restoreLogin returns null (token rejected)', () async {
+      // First set up a logged-in state via init
+      when(() => mockAuth.setUploadMode(any())).thenReturn(null);
+      when(() => mockAuth.isLoggedIn()).thenAnswer((_) async => true);
+      when(() => mockAuth.restoreLoginLocal())
+          .thenAnswer((_) async => 'InitialUser');
+      await state.init(UploadMode.production);
+      expect(state.isLoggedIn, isTrue);
+
+      // Now refreshIfNeeded returns null (token was rejected, user logged out)
+      when(() => mockAuth.restoreLogin()).thenAnswer((_) async => null);
+
+      await state.refreshIfNeeded();
+
+      expect(state.isLoggedIn, isFalse);
+      expect(state.username, equals(''));
+    });
+
+    test('updates username when restoreLogin returns new name', () async {
+      // Set up initial state
+      when(() => mockAuth.setUploadMode(any())).thenReturn(null);
+      when(() => mockAuth.isLoggedIn()).thenAnswer((_) async => true);
+      when(() => mockAuth.restoreLoginLocal())
+          .thenAnswer((_) async => 'OldUser');
+      await state.init(UploadMode.production);
+      expect(state.username, equals('OldUser'));
+
+      // refreshIfNeeded fetches updated name
+      when(() => mockAuth.restoreLogin())
+          .thenAnswer((_) async => 'UpdatedUser');
+
+      await state.refreshIfNeeded();
+
+      expect(state.username, equals('UpdatedUser'));
+    });
   });
 
   group('login', () {
@@ -187,18 +223,47 @@ void main() {
     });
 
     test('clears username when not logged in for new mode', () async {
-      // First set up a logged-in state
+      // Start logged in
       when(() => mockAuth.login()).thenAnswer((_) async => 'User');
       await state.login();
       expect(state.isLoggedIn, isTrue);
 
-      // Switch mode where user is not logged in
+      // Switch to sandbox where user is not logged in
       when(() => mockAuth.setUploadMode(any())).thenReturn(null);
       when(() => mockAuth.isLoggedIn()).thenAnswer((_) async => false);
 
       await state.onUploadModeChanged(UploadMode.sandbox);
 
       expect(state.isLoggedIn, isFalse);
+    });
+
+    test('handles error during mode change gracefully', () async {
+      when(() => mockAuth.setUploadMode(any())).thenReturn(null);
+      when(() => mockAuth.isLoggedIn()).thenThrow(Exception('storage error'));
+
+      await state.onUploadModeChanged(UploadMode.sandbox);
+
+      expect(state.isLoggedIn, isFalse);
+    });
+  });
+
+  group('getAccessToken', () {
+    test('delegates to auth service', () async {
+      when(() => mockAuth.getAccessToken())
+          .thenAnswer((_) async => 'my-token');
+
+      final token = await state.getAccessToken();
+
+      expect(token, equals('my-token'));
+    });
+
+    test('returns null when no token', () async {
+      when(() => mockAuth.getAccessToken())
+          .thenAnswer((_) async => null);
+
+      final token = await state.getAccessToken();
+
+      expect(token, isNull);
     });
   });
 }

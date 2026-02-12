@@ -78,6 +78,37 @@ void main() {
 
       expect(state.isLoading, isFalse);
     });
+
+    test('passes offlineMode through to service', () async {
+      when(() => mockService.refreshIfNeeded(offlineMode: true))
+          .thenAnswer((_) async => false);
+
+      await state.refreshIfNeeded(offlineMode: true);
+
+      verify(() => mockService.refreshIfNeeded(offlineMode: true)).called(1);
+      expect(state.isLoading, isFalse);
+    });
+
+    test('clears download progress after refresh', () async {
+      when(() => mockService.refreshIfNeeded(offlineMode: false))
+          .thenAnswer((_) async => true);
+
+      await state.refreshIfNeeded();
+
+      expect(state.downloadProgress, isNull);
+    });
+  });
+
+  group('init (full — with network)', () {
+    test('calls service.init with offlineMode', () async {
+      when(() => mockService.init(offlineMode: true))
+          .thenAnswer((_) async {});
+      when(() => mockService.isEnabled).thenReturn(false);
+
+      await state.init(offlineMode: true);
+
+      verify(() => mockService.init(offlineMode: true)).called(1);
+    });
   });
 
   group('selection', () {

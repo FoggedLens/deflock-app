@@ -268,6 +268,15 @@ void main() {
       verifyNever(() => mockClient.get(any(), headers: any(named: 'headers')));
     });
 
+    test('returns null in simulate mode when not logged in', () async {
+      SharedPreferences.setMockInitialValues({});
+      service = createService(mode: UploadMode.simulate);
+
+      final result = await service.restoreLoginLocal();
+
+      expect(result, isNull);
+    });
+
     test('uses correct key per mode (sandbox)', () async {
       SharedPreferences.setMockInitialValues({
         'osm_token_sandbox': jsonEncode({'accessToken': 'sandbox-token'}),
@@ -278,6 +287,89 @@ void main() {
       final result = await service.restoreLoginLocal();
 
       expect(result, equals('SandboxLocal'));
+    });
+
+    test('does not cross-read production cache when in sandbox mode', () async {
+      SharedPreferences.setMockInitialValues({
+        'osm_token_sandbox': jsonEncode({'accessToken': 'sandbox-token'}),
+        'cached_display_name_production': 'ProdUser',
+        // No sandbox cache key
+      });
+      service = createService(mode: UploadMode.sandbox);
+
+      final result = await service.restoreLoginLocal();
+
+      // Should return empty string (no sandbox cache), not ProdUser
+      expect(result, equals(''));
+    });
+  });
+
+  group('restoreLogin then restoreLoginLocal round-trip', () {
+    test('restoreLogin caches name, then restoreLoginLocal reads it', () async {
+      SharedPreferences.setMockInitialValues({
+        'osm_token_prod': jsonEncode({'accessToken': 'valid-token'}),
+      });
+      service = createService();
+
+      // First call: network fetch caches the name
+      when(() => mockClient.get(any(), headers: any(named: 'headers')))
+          .thenAnswer((_) async => http.Response(
+                jsonEncode({
+                  'user': {'display_name': 'NetworkUser'}
+                }),
+                200,
+              ));
+      await service.restoreLogin();
+
+      // Create a new service instance to simulate app restart
+      service = createService();
+      final result = await service.restoreLoginLocal();
+
+      expect(result, equals('NetworkUser'));
+      // Only one HTTP call (from the first restoreLogin)
+      verify(() => mockClient.get(any(), headers: any(named: 'headers'))).called(1);
+    });
+  });
+
+  group('restoreLogin updates stale cache', () {
+    test('overwrites old cached name with fresh fetch', () async {
+      SharedPreferences.setMockInitialValues({
+        'osm_token_prod': jsonEncode({'accessToken': 'valid-token'}),
+        'cached_display_name_production': 'OldName',
+      });
+      service = createService();
+
+      when(() => mockClient.get(any(), headers: any(named: 'headers')))
+          .thenAnswer((_) async => http.Response(
+                jsonEncode({
+                  'user': {'display_name': 'NewName'}
+                }),
+                200,
+              ));
+
+      await service.restoreLogin();
+
+      final prefs = await SharedPreferences.getInstance();
+      expect(prefs.getString('cached_display_name_production'), equals('NewName'));
+    });
+  });
+
+  group('401/403 clears cached display name', () {
+    test('logout on 401 also clears cached display name', () async {
+      SharedPreferences.setMockInitialValues({
+        'osm_token_prod': jsonEncode({'accessToken': 'expired-token'}),
+        'cached_display_name_production': 'CachedUser',
+      });
+      service = createService();
+
+      when(() => mockClient.get(any(), headers: any(named: 'headers')))
+          .thenAnswer((_) async => http.Response('Unauthorized', 401));
+
+      await service.restoreLogin();
+
+      final prefs = await SharedPreferences.getInstance();
+      expect(prefs.getString('osm_token_prod'), isNull);
+      expect(prefs.getString('cached_display_name_production'), isNull);
     });
   });
 
