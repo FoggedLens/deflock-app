@@ -26,8 +26,8 @@ dependencies:
 
   # Auth, storage, prefs
   oauth2_client: ^4.2.0
-  flutter_web_auth_2: 5.0.0-alpha.3
-  flutter_secure_storage: 10.0.0-beta.4
+  flutter_web_auth_2: ^5.0.1
+  flutter_secure_storage: ^10.0.0
 
   # Persistence
   shared_preferences: ^2.2.2
