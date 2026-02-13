@@ -89,12 +89,9 @@ void main() {
 
       final quadrants = NodeDataManager.splitBounds(bounds);
 
-      // Total area should equal original
+      // Summing all quadrant spans gives 2x original (2 rows + 2 columns of half-spans)
       final totalLatSpan = quadrants.map((q) => q.north - q.south).reduce((a, b) => a + b);
       final totalLngSpan = quadrants.map((q) => q.east - q.west).reduce((a, b) => a + b);
-
-      // Each quadrant is half the span, and we have 4 quadrants (2x2)
-      // Total lat span = 2 * half = full span
       expect(totalLatSpan, closeTo((bounds.north - bounds.south) * 2, 1e-10));
       expect(totalLngSpan, closeTo((bounds.east - bounds.west) * 2, 1e-10));
 
@@ -491,6 +488,117 @@ void main() {
 
       // 4 quadrants at depth 1 each split into 4 = 16 depth-2 fetches
       expect(result, hasLength(16));
+    });
+  });
+
+  group('stale fetch cancellation', () {
+    late MockOverpassService mockOverpass;
+    late MockNodeSpatialCache mockCache;
+    late NodeDataManager manager;
+
+    setUp(() {
+      mockOverpass = MockOverpassService();
+      mockCache = MockNodeSpatialCache();
+      manager = NodeDataManager.forTesting(
+        overpassService: mockOverpass,
+        cache: mockCache,
+      );
+
+      when(() => mockOverpass.getSlotCount()).thenAnswer((_) async => 4);
+      when(() => mockCache.markAreaAsFetched(any(), any())).thenReturn(null);
+    });
+
+    test('stale generation skips fetch entirely', () async {
+      manager.advanceFetchGeneration();
+
+      final result = await manager.fetchWithSplitting(
+        testBounds, testProfiles,
+        generation: 0,
+      );
+
+      expect(result, isEmpty);
+      verifyNever(() => mockOverpass.fetchNodes(
+        bounds: any(named: 'bounds'),
+        profiles: any(named: 'profiles'),
+      ));
+    });
+
+    test('stale generation inside semaphore lambda prevents HTTP call', () async {
+      when(() => mockOverpass.getSlotCount()).thenAnswer((_) async {
+        manager.advanceFetchGeneration();
+        return 4;
+      });
+
+      final result = await manager.fetchWithSplitting(
+        testBounds, testProfiles,
+        generation: 0,
+      );
+
+      expect(result, isEmpty);
+      verifyNever(() => mockOverpass.fetchNodes(
+        bounds: any(named: 'bounds'),
+        profiles: any(named: 'profiles'),
+      ));
+    });
+
+    test('stale generation prevents recursive splitting', () async {
+      when(() => mockOverpass.fetchNodes(
+        bounds: any(named: 'bounds'),
+        profiles: any(named: 'profiles'),
+      )).thenAnswer((_) async {
+        manager.advanceFetchGeneration();
+        throw NodeLimitError('too many nodes');
+      });
+
+      final result = await manager.fetchWithSplitting(
+        testBounds, testProfiles,
+        generation: 0,
+      );
+
+      expect(result, isEmpty);
+      // Only the initial call, no quadrant fetches
+      verify(() => mockOverpass.fetchNodes(
+        bounds: any(named: 'bounds'),
+        profiles: any(named: 'profiles'),
+      )).called(1);
+    });
+
+    test('stale generation skips waitForSlot', () async {
+      when(() => mockOverpass.fetchNodes(
+        bounds: any(named: 'bounds'),
+        profiles: any(named: 'profiles'),
+      )).thenAnswer((_) async {
+        manager.advanceFetchGeneration();
+        throw RateLimitError('rate limited');
+      });
+
+      final result = await manager.fetchWithSplitting(
+        testBounds, testProfiles,
+        generation: 0,
+      );
+
+      expect(result, isEmpty);
+      verifyNever(() => mockOverpass.waitForSlot(maxWait: any(named: 'maxWait')));
+    });
+
+    test('null generation is never stale (backward compat)', () async {
+      final nodes = [makeNode(1), makeNode(2)];
+
+      when(() => mockOverpass.fetchNodes(
+        bounds: any(named: 'bounds'),
+        profiles: any(named: 'profiles'),
+      )).thenAnswer((_) async => nodes);
+
+      // Advance generation many times
+      for (var i = 0; i < 10; i++) {
+        manager.advanceFetchGeneration();
+      }
+
+      // Call without generation parameter — null generation is never stale
+      final result = await manager.fetchWithSplitting(testBounds, testProfiles);
+
+      expect(result, hasLength(2));
+      verify(() => mockCache.markAreaAsFetched(any(), any())).called(1);
     });
   });
 
