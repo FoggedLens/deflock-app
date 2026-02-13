@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:collection';
 import 'package:flutter/widgets.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:flutter_map/flutter_map.dart';
@@ -18,7 +19,7 @@ import 'offline_areas/offline_area_models.dart';
 class _AsyncSemaphore {
   int _maxConcurrent;
   int _current = 0;
-  final _waiters = <Completer<void>>[];
+  final _waiters = Queue<Completer<void>>();
 
   _AsyncSemaphore(int maxConcurrent) : _maxConcurrent = maxConcurrent < 1 ? 1 : maxConcurrent;
 
@@ -32,7 +33,7 @@ class _AsyncSemaphore {
     // haven't incremented it yet (their continuations are microtasks).
     var available = _maxConcurrent - _current;
     while (available > 0 && _waiters.isNotEmpty) {
-      _waiters.removeAt(0).complete();
+      _waiters.removeFirst().complete();
       available--;
     }
   }
@@ -49,7 +50,7 @@ class _AsyncSemaphore {
     } finally {
       _current--;
       if (_waiters.isNotEmpty && _current < _maxConcurrent) {
-        _waiters.removeAt(0).complete();
+        _waiters.removeFirst().complete();
       }
     }
   }
@@ -79,6 +80,24 @@ class NodeDataManager extends ChangeNotifier {
   // Concurrency limiter for Overpass requests
   _AsyncSemaphore? _overpassSemaphore;
   Future<_AsyncSemaphore>? _semaphoreInitFuture;
+
+  // Generation counter for cancelling stale fetch requests.
+  // Each new getNodesFor() call increments this; queued work checks before proceeding.
+  int _fetchGeneration = 0;
+  int? _lastLoggedStaleGeneration;
+
+  bool _isStale(int? generation) {
+    if (generation == null || generation == _fetchGeneration) return false;
+    if (_lastLoggedStaleGeneration != generation) {
+      _lastLoggedStaleGeneration = generation;
+      debugPrint('[NodeDataManager] Fetch generation $generation is stale '
+          '(current: $_fetchGeneration), cancelling remaining work');
+    }
+    return true;
+  }
+
+  @visibleForTesting
+  void advanceFetchGeneration() => _fetchGeneration++;
 
   Future<_AsyncSemaphore> _getOrCreateSemaphore() {
     return _semaphoreInitFuture ??= _createSemaphore().catchError((e, st) {
@@ -245,8 +264,15 @@ class NodeDataManager extends ChangeNotifier {
       debugPrint('[NodeDataManager] Starting background request (no status reporting)');
     }
 
+    final generation = ++_fetchGeneration;
     try {
-      final nodes = await fetchWithSplitting(bounds, profiles, isUserInitiated: isUserInitiated);
+      final nodes = await fetchWithSplitting(bounds, profiles,
+          isUserInitiated: isUserInitiated, generation: generation);
+
+      // If this fetch became stale (user panned away), skip UI updates
+      if (_isStale(generation)) {
+        return _cache.getNodesFor(bounds);
+      }
 
       // Update cache and notify listeners
       notifyListeners();
@@ -264,8 +290,8 @@ class NodeDataManager extends ChangeNotifier {
     } catch (e) {
       debugPrint('[NodeDataManager] Fetch failed: $e');
 
-      // Only report errors for user-initiated requests
-      if (isUserInitiated) {
+      // Skip error reporting for stale requests
+      if (isUserInitiated && !_isStale(generation)) {
         if (e is RateLimitError) {
           NetworkStatus.instance.setRateLimited();
         } else if (e.toString().contains('timeout')) {
@@ -285,30 +311,43 @@ class NodeDataManager extends ChangeNotifier {
     }
   }
 
-  /// Fetch nodes with automatic area splitting if needed
+  /// Fetch nodes with automatic area splitting if needed.
+  /// When [generation] is non-null, the request is cancelled if a newer
+  /// generation has started (user panned/zoomed away).
   Future<List<OsmNode>> fetchWithSplitting(
     LatLngBounds bounds,
     List<NodeProfile> profiles, {
     int splitDepth = 0,
     int rateLimitRetries = 0,
     bool isUserInitiated = false,
+    int? generation,
   }) async {
     const maxSplitDepth = 3; // 4^3 = 64 max sub-areas
+
+    // Checkpoint 1: bail before entering semaphore
+    if (_isStale(generation)) return [];
 
     try {
       // Expand bounds slightly to reduce edge effects
       final expandedBounds = _expandBounds(bounds, 1.2);
 
       final semaphore = await _getOrCreateSemaphore();
-      final nodes = await semaphore.run(
-        () => _overpassService.fetchNodes(
-          bounds: expandedBounds,
-          profiles: profiles,
-        ),
+      // Checkpoint 2: stale request woke from queue — don't make HTTP call
+      final nodes = await semaphore.run<List<OsmNode>>(
+        () {
+          if (_isStale(generation)) return Future.value(<OsmNode>[]);
+          return _overpassService.fetchNodes(
+            bounds: expandedBounds,
+            profiles: profiles,
+          );
+        },
       );
 
-      // Success - cache the data for the expanded area
-      _cache.markAreaAsFetched(expandedBounds, nodes);
+      // Cache real data even if stale (valid for if user pans back).
+      // Skip marking area if stale and got empty result (short-circuited).
+      if (nodes.isNotEmpty || !_isStale(generation)) {
+        _cache.markAreaAsFetched(expandedBounds, nodes);
+      }
       return nodes;
 
     } on NodeLimitError {
@@ -318,6 +357,9 @@ class NodeDataManager extends ChangeNotifier {
         return [];
       }
 
+      // Checkpoint 3: don't spawn 4 new sub-requests for stale fetch
+      if (_isStale(generation)) return [];
+
       debugPrint('[NodeDataManager] Splitting area (depth: $splitDepth)');
 
       // Only report splitting status for user-initiated requests
@@ -325,7 +367,8 @@ class NodeDataManager extends ChangeNotifier {
         NetworkStatus.instance.setSplitting();
       }
 
-      return _fetchSplitAreas(bounds, profiles, splitDepth + 1, isUserInitiated: isUserInitiated);
+      return _fetchSplitAreas(bounds, profiles, splitDepth + 1,
+          isUserInitiated: isUserInitiated, generation: generation);
 
     } on RateLimitError {
       if (rateLimitRetries >= 2) {
@@ -333,11 +376,18 @@ class NodeDataManager extends ChangeNotifier {
         return [];
       }
 
+      // Checkpoint 4: don't wait up to 2 minutes for a stale request
+      if (_isStale(generation)) return [];
+
       debugPrint('[NodeDataManager] Rate limited, polling for slot (retry ${rateLimitRetries + 1}/2)');
       if (isUserInitiated) NetworkStatus.instance.setRateLimited();
 
       // Poll until slot available; resize semaphore with fresh slot count
       final slots = await _overpassService.waitForSlot();
+
+      // Checkpoint 5: became stale during the wait
+      if (_isStale(generation)) return [];
+
       _overpassSemaphore?.resize(slots);
       debugPrint('[NodeDataManager] Semaphore resized to $slots slots');
 
@@ -346,6 +396,7 @@ class NodeDataManager extends ChangeNotifier {
         splitDepth: splitDepth,
         rateLimitRetries: rateLimitRetries + 1,
         isUserInitiated: isUserInitiated,
+        generation: generation,
       );
     }
   }
@@ -356,7 +407,11 @@ class NodeDataManager extends ChangeNotifier {
     List<NodeProfile> profiles,
     int splitDepth, {
     bool isUserInitiated = false,
+    int? generation,
   }) async {
+    // Checkpoint 6: don't spawn quadrants for stale tree
+    if (_isStale(generation)) return [];
+
     final quadrants = splitBounds(bounds);
 
     final results = await Future.wait(
@@ -366,6 +421,7 @@ class NodeDataManager extends ChangeNotifier {
             quadrant, profiles,
             splitDepth: splitDepth,
             isUserInitiated: isUserInitiated,
+            generation: generation,
           );
         } catch (e) {
           debugPrint('[NodeDataManager] Quadrant fetch failed: $e');
