@@ -12,7 +12,10 @@ import '../dev_config.dart';
 /// Single responsibility: Make requests, handle network errors, return data.
 class OverpassService {
   static const String _endpoint = 'https://overpass-api.de/api/interpreter';
-  
+  final http.Client _client;
+
+  OverpassService({http.Client? client}) : _client = client ?? http.Client();
+
   /// Fetch surveillance nodes from Overpass API with proper retry logic.
   /// Throws NetworkError for retryable failures, NodeLimitError for area splitting.
   Future<List<OsmNode>> fetchNodes({
@@ -28,7 +31,7 @@ class OverpassService {
       try {
         debugPrint('[OverpassService] Attempt ${attempt + 1}/${maxRetries + 1} for ${profiles.length} profiles');
         
-        final response = await http.post(
+        final response = await _client.post(
           Uri.parse(_endpoint),
           body: {'data': query},
         ).timeout(kOverpassQueryTimeout);
@@ -116,7 +119,7 @@ out body;
   way(bn);
   rel(bn);  
 );
-out meta;
+out skel;
 ''';
   }
   
