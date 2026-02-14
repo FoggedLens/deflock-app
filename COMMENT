@@ -1,0 +1,11 @@
+---
+An alternative approach to addressing this issue could be adjusting the `optionsBuilder` logic to avoid returning any suggestions when the input text field is empty, rather than guarding `onFieldSubmitted`. For instance:
+
+```dart
+optionsBuilder: (TextEditingValue textEditingValue) {
+  if (textEditingValue.text.isEmpty) return <String>[];
+  return suggestions.where((s) => s.contains(textEditingValue.text));
+}
+```
+
+This ensures that the `RawAutocomplete` widget doesn't offer any options to auto-select on submission when the field is cleared, potentially simplifying the implementation and avoiding the need for additional boolean flags (`guardOnSubmitted`). This pattern can be seen in some implementations "in the wild."
