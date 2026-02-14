@@ -142,7 +142,7 @@ jobs:
   build-ios:
     name: Build iOS
     needs: get-version
-    runs-on: macos-latest
+    runs-on: macos-26
     steps:
       - name: Checkout repository
         uses: actions/checkout@v5
@@ -290,7 +290,7 @@ jobs:
   upload-to-stores:
     name: Upload to App Stores
     needs: [get-version, build-android-aab, build-ios]
-    runs-on: macos-latest  # Need macOS for iOS uploads
+    runs-on: macos-26  # Need macOS for iOS uploads
     if: needs.get-version.outputs.should_upload_to_stores == 'true'
     steps:
       - name: Download AAB artifact for Google Play
