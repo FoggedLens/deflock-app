@@ -80,6 +80,9 @@ class MapViewState extends State<MapView> {
   
   // State for proximity alert banner
   bool _showProximityBanner = false;
+
+  // Track active pointers to suppress follow-me animations during touch
+  int _activePointers = 0;
   
 
 
@@ -189,6 +192,7 @@ class MapViewState extends State<MapView> {
         // Refresh nodes when GPS controller moves the map
         _refreshNodesFromProvider();
       },
+      isUserInteracting: () => _activePointers > 0,
     );
 
     // Fetch initial cameras
@@ -380,10 +384,21 @@ class MapViewState extends State<MapView> {
       children: [
         SheetAwareMap(
           sheetHeight: widget.sheetHeight,
-          child: FlutterMap(
-            key: ValueKey('map_${appState.offlineMode}_${appState.selectedTileType?.id ?? 'none'}_${_tileManager.mapRebuildKey}'),
-            mapController: _controller.mapController,
-            options: MapOptions(
+          child: Listener(
+            onPointerDown: (_) {
+              _activePointers++;
+              _controller.stopAnimations();
+            },
+            onPointerUp: (_) {
+              if (_activePointers > 0) _activePointers--;
+            },
+            onPointerCancel: (_) {
+              if (_activePointers > 0) _activePointers--;
+            },
+            child: FlutterMap(
+              key: ValueKey('map_${appState.offlineMode}_${appState.selectedTileType?.id ?? 'none'}_${_tileManager.mapRebuildKey}'),
+              mapController: _controller.mapController,
+              options: MapOptions(
               initialCenter: _gpsController.currentLocation ?? _positionManager.initialLocation ?? LatLng(37.7749, -122.4194),
             initialZoom: _positionManager.initialZoom ?? 15,
             minZoom: 1.0,
@@ -486,30 +501,31 @@ class MapViewState extends State<MapView> {
                 _dataManager.showZoomWarningIfNeeded(context, pos.zoom, appState.uploadMode);
               }
             },
+            ),
+              children: [
+                _tileManager.buildTileLayer(
+                  selectedProvider: appState.selectedTileProvider,
+                  selectedTileType: appState.selectedTileType,
+                ),
+                cameraLayers,
+                // Custom scale bar that respects user's distance unit preference
+                Builder(
+                  builder: (context) {
+                    final safeArea = MediaQuery.of(context).padding;
+                    return CustomScaleBar(
+                      alignment: Alignment.bottomLeft,
+                      padding: EdgeInsets.only(
+                        left: leftPositionWithSafeArea(8, safeArea),
+                        bottom: bottomPositionFromButtonBar(kScaleBarSpacingAboveButtonBar, safeArea.bottom),
+                      ),
+                      maxWidthPx: 120,
+                      barHeight: 8,
+                    );
+                  },
+                ),
+              ],
+            ),
           ),
-          children: [
-            _tileManager.buildTileLayer(
-              selectedProvider: appState.selectedTileProvider,
-              selectedTileType: appState.selectedTileType,
-            ),
-            cameraLayers,
-            // Custom scale bar that respects user's distance unit preference
-            Builder(
-              builder: (context) {
-                final safeArea = MediaQuery.of(context).padding;
-                return CustomScaleBar(
-                  alignment: Alignment.bottomLeft,
-                  padding: EdgeInsets.only(
-                    left: leftPositionWithSafeArea(8, safeArea), 
-                    bottom: bottomPositionFromButtonBar(kScaleBarSpacingAboveButtonBar, safeArea.bottom)
-                  ),
-                  maxWidthPx: 120,
-                  barHeight: 8,
-                );
-              },
-            ),
-          ],
-        ),
         ),
 
         // All map overlays (mode indicator, zoom, attribution, add pin)
