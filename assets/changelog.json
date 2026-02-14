@@ -1,14 +1,14 @@
 {
   "2.7.1": {
     "content": [
-      "• Fixed operator profile selection being lost when moving node position, adjusting direction, or changing profiles"
+      "• Fixed operator profile selection being lost when moving node position, adjusting direction, or changing profiles",
+      "• Further improved node loading by only fetching what is needed to determine whether a node is attached to a way/relation"
     ]
   },
   "2.6.4": {
     "content": [
       "• Added imperial units support (miles, feet) in addition to metric units (km, meters)",
-      "• Moved units setting from Navigation to Language & Region settings page",
-      "• Search text now automatically clears when route planning starts"
+      "• Moved units setting from Navigation to Language & Region settings page"
     ]
   },
   "2.6.3": {
