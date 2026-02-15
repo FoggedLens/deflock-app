@@ -27,7 +27,7 @@ jobs:
         id: set-info
         run: |
           echo "is_prerelease=${{ github.event.release.prerelease }}" >> $GITHUB_OUTPUT
-          
+
           if [ "${{ github.event.release.prerelease }}" = "true" ]; then
             echo "should_upload_to_stores=false" >> $GITHUB_OUTPUT
             echo "✅ Pre-release - will build and attach assets, no store uploads"
@@ -55,16 +55,8 @@ jobs:
         with:
           channel: 'stable'
 
-      - name: Install dependencies
-        run: flutter pub get
-
       - name: Run tests
-        run: flutter test
-
-      - name: Generate icons and splash screens
-        run: |
-          dart run flutter_launcher_icons
-          dart run flutter_native_splash:create
+        run: make test
 
       - name: Decode Keystore
         run: |
@@ -78,7 +70,7 @@ jobs:
           echo "storeFile=keystore.jks" >> android/key.properties
 
       - name: Build Android .apk
-        run: flutter build apk --release --dart-define=OSM_PROD_CLIENTID='${{ secrets.OSM_PROD_CLIENTID }}' --dart-define=OSM_SANDBOX_CLIENTID='${{ secrets.OSM_SANDBOX_CLIENTID }}'
+        run: make release-apk FLUTTER_BUILD_ARGS="--dart-define=OSM_PROD_CLIENTID='${{ secrets.OSM_PROD_CLIENTID }}' --dart-define=OSM_SANDBOX_CLIENTID='${{ secrets.OSM_SANDBOX_CLIENTID }}'"
 
       - name: Upload .apk artifact
         uses: actions/upload-artifact@v4
@@ -107,16 +99,8 @@ jobs:
         with:
           channel: 'stable'
 
-      - name: Install dependencies
-        run: flutter pub get
-
       - name: Run tests
-        run: flutter test
-
-      - name: Generate icons and splash screens
-        run: |
-          dart run flutter_launcher_icons
-          dart run flutter_native_splash:create
+        run: make test
 
       - name: Decode Keystore
         run: |
@@ -130,7 +114,7 @@ jobs:
           echo "storeFile=keystore.jks" >> android/key.properties
 
       - name: Build Android appBundle
-        run: flutter build appbundle --dart-define=OSM_PROD_CLIENTID='${{ secrets.OSM_PROD_CLIENTID }}' --dart-define=OSM_SANDBOX_CLIENTID='${{ secrets.OSM_SANDBOX_CLIENTID }}'
+        run: make release-aab FLUTTER_BUILD_ARGS="--dart-define=OSM_PROD_CLIENTID='${{ secrets.OSM_PROD_CLIENTID }}' --dart-define=OSM_SANDBOX_CLIENTID='${{ secrets.OSM_SANDBOX_CLIENTID }}'"
 
       - name: Upload .aab artifact
         uses: actions/upload-artifact@v4
@@ -152,16 +136,8 @@ jobs:
         with:
           channel: 'stable'
 
-      - name: Install dependencies
-        run: flutter pub get
-
       - name: Run tests
-        run: flutter test
-
-      - name: Generate icons and splash screens
-        run: |
-          dart run flutter_launcher_icons
-          dart run flutter_native_splash:create
+        run: make test
 
       - name: Install Apple certificate and provisioning profile
         env:
@@ -187,7 +163,7 @@ jobs:
           # import certificate to keychain
           security import $CERTIFICATE_PATH -P "$P12_PASSWORD" -A -t cert -f pkcs12 -k $KEYCHAIN_PATH
           security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
-          
+
           # Set this keychain as the default
           security list-keychain -d user -s $KEYCHAIN_PATH
           security default-keychain -s $KEYCHAIN_PATH
@@ -195,7 +171,7 @@ jobs:
           # install provisioning profile
           mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
           cp $PP_PATH ~/Library/MobileDevice/Provisioning\ Profiles/61f9fdb9-bf2d-4d94-b249-63155ee71e74.mobileprovision
-          
+
           # Also install using the profile's internal UUID for better compatibility
           UUID=$(security cms -D -i $PP_PATH | plutil -extract UUID xml1 -o - - | xmllint --xpath "//string/text()" -)
           cp $PP_PATH ~/Library/MobileDevice/Provisioning\ Profiles/$UUID.mobileprovision
@@ -234,12 +210,10 @@ jobs:
           EOF
 
       - name: Build iOS .ipa
-        run: |
-          flutter build ipa --release \
-            --export-options-plist=ios/exportOptions.plist \
-            --dart-define=OSM_PROD_CLIENTID='${{ secrets.OSM_PROD_CLIENTID }}' \
-            --dart-define=OSM_SANDBOX_CLIENTID='${{ secrets.OSM_SANDBOX_CLIENTID }}'
-          cp build/ios/ipa/*.ipa Runner.ipa
+        run: make release-ios FLUTTER_BUILD_ARGS="--dart-define=OSM_PROD_CLIENTID='${{ secrets.OSM_PROD_CLIENTID }}' --dart-define=OSM_SANDBOX_CLIENTID='${{ secrets.OSM_SANDBOX_CLIENTID }}'"
+
+      - name: Copy IPA
+        run: cp build/ios/ipa/*.ipa Runner.ipa
 
       - name: Clean up keychain and provisioning profile
         run: |
@@ -323,14 +297,14 @@ jobs:
           # Create the private keys directory and decode API key
           mkdir -p ~/private_keys
           echo -n "$APP_STORE_CONNECT_API_KEY_BASE64" | base64 --decode > ~/private_keys/AuthKey_${APP_STORE_CONNECT_API_KEY_ID}.p8
-          
+
           # Upload to App Store Connect / TestFlight
           xcrun altool --upload-app \
             --type ios \
             --file Runner.ipa \
             --apiKey $APP_STORE_CONNECT_API_KEY_ID \
             --apiIssuer $APP_STORE_CONNECT_ISSUER_ID
-          
+
           # Clean up sensitive files
           rm -rf ~/private_keys
 

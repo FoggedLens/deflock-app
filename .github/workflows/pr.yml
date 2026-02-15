@@ -17,10 +17,50 @@ jobs:
         with:
           channel: 'stable'
 
-      - run: flutter pub get
+      - run: make ci
 
-      - name: Analyze
-        run: flutter analyze
+  build-debug-apk:
+    name: Build Debug APK
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
 
-      - name: Test
-        run: flutter test
+      - uses: actions/setup-java@v5
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+
+      - run: make build-apk-debug
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: debug-apk
+          path: build/app/outputs/flutter-apk/app-debug.apk
+          if-no-files-found: 'error'
+
+  build-ios-simulator:
+    name: Build iOS Simulator
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+
+      - run: make build-ios-simulator
+
+      - name: Zip Runner.app
+        run: |
+          cd build/ios/iphonesimulator
+          zip -r Runner.app.zip Runner.app
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ios-simulator-app
+          path: build/ios/iphonesimulator/Runner.app.zip
+          if-no-files-found: 'error'
