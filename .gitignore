@@ -96,6 +96,9 @@ Thumbs.db
 # Local OSM client ID configuration (contains secrets)
 build_keys.conf
 
+# Make stamp files (track build step completion)
+.stamps/
+
 # ───────────────────────────────
 # For now - not targeting these
 # ───────────────────────────────

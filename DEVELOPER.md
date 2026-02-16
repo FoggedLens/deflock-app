@@ -868,25 +868,28 @@ flutter run --dart-define=OSM_PROD_CLIENTID=your_id --dart-define=OSM_SANDBOX_CL
 
 ### First Build
 
+The project uses a [Makefile](Makefile) to orchestrate builds. Make automatically
+installs dependencies and generates icons/splash screens before building — you
+don't need to run those steps manually.
+
 ```bash
-# 1. Install dependencies
-flutter pub get
+# Validate code (analyze + test) — this is the default target
+make
 
-# 2. Generate icons and splash screens (gitignored, must be regenerated)
-./gen_icons_splashes.sh
+# Build debug APK (generates assets automatically if needed)
+make build-apk-debug
 
-# 3. Build Android
-flutter build apk --debug \
-  --dart-define=OSM_PROD_CLIENTID=your_id \
-  --dart-define=OSM_SANDBOX_CLIENTID=your_id
+# Build iOS simulator app (macOS only)
+make build-ios-simulator
 
-# 4. Build iOS (macOS only, no signing needed for testing)
-flutter build ios --no-codesign \
-  --dart-define=OSM_PROD_CLIENTID=your_id \
-  --dart-define=OSM_SANDBOX_CLIENTID=your_id
+# See all available targets
+make help
 ```
 
-> **Important:** You must run `./gen_icons_splashes.sh` before the first build. The generated icons and splash screen assets are gitignored, so the build will fail without this step.
+> **How Make works here:** `make` compares file timestamps to skip work that's
+> already done. The `.stamps/` directory tracks multi-file outputs like icon
+> generation. If you need a completely fresh build, run `make clean` first.
+> Tabs in the Makefile are significant (not spaces).
 
 ### Running
 
@@ -903,7 +906,7 @@ flutter run --dart-define=OSM_PROD_CLIENTID=your_id --dart-define=OSM_SANDBOX_CL
 ### Testing
 ```bash
 # Run all tests
-flutter test
+make test
 
 # Run with coverage
 flutter test --coverage
