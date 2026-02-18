@@ -161,6 +161,13 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.7.11"
+  deflock_router_client:
+    dependency: "direct main"
+    description:
+      path: "../FlockHopper/packages/deflock_router_client"
+      relative: true
+    source: path
+    version: "1.0.0"
   desktop_webview_window:
     dependency: transitive
     description:

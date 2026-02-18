@@ -38,6 +38,8 @@ dependencies:
   package_info_plus: ^8.0.0
   csv: ^6.0.0
   collection: ^1.18.0
+  deflock_router_client:
+    path: ../FlockHopper/packages/deflock_router_client
 
 dev_dependencies:
   flutter_test:
