@@ -7,6 +7,7 @@ import 'package:csv/csv.dart';
 
 import '../dev_config.dart';
 import '../models/suspected_location.dart';
+import 'http_client.dart';
 import 'suspected_location_cache.dart';
 
 class SuspectedLocationService {
@@ -112,9 +113,8 @@ class SuspectedLocationService {
         
         // Use streaming download for progress tracking
         final request = http.Request('GET', Uri.parse(kSuspectedLocationsCsvUrl));
-        request.headers['User-Agent'] = 'DeFlock/1.0 (OSM surveillance mapping app)';
-        
-        final client = http.Client();
+
+        final client = UserAgentClient();
         final streamedResponse = await client.send(request).timeout(_timeout);
         
         if (streamedResponse.statusCode != 200) {

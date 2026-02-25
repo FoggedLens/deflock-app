@@ -52,6 +52,8 @@ double topPositionWithSafeArea(double baseTop, EdgeInsets safeArea) {
 // Client name for OSM uploads ("created_by" tag)
 const String kClientName = 'DeFlock';
 // Note: Version is now dynamically retrieved from VersionService
+const String kContactEmail = 'admin@stopflock.com';
+const String kHomepageUrl = 'https://deflock.org';
 
 // Upload and changeset configuration
 const Duration kUploadHttpTimeout = Duration(seconds: 30); // HTTP request timeout for uploads

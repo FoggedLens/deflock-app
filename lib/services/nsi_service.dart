@@ -1,9 +1,9 @@
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
-import 'package:http/http.dart' as http;
 
 import '../app_state.dart';
 import '../dev_config.dart';
+import 'http_client.dart';
 
 /// Service for fetching tag value suggestions from OpenStreetMap Name Suggestion Index
 class NSIService {
@@ -11,7 +11,7 @@ class NSIService {
   factory NSIService() => _instance;
   NSIService._();
 
-  static const String _userAgent = 'DeFlock/2.1.0 (OSM surveillance mapping app)';
+  final _client = UserAgentClient();
   static const Duration _timeout = Duration(seconds: 10);
   
   // Cache to avoid repeated API calls
@@ -55,10 +55,7 @@ class NSIService {
       'rp': '15', // Get top 15 most commonly used values
     });
 
-    final response = await http.get(
-      uri,
-      headers: {'User-Agent': _userAgent},
-    ).timeout(_timeout);
+    final response = await _client.get(uri).timeout(_timeout);
 
     if (response.statusCode != 200) {
       throw Exception('TagInfo API returned status ${response.statusCode}');

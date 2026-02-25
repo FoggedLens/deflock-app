@@ -1,4 +1,3 @@
-import 'package:http/http.dart' as http;
 import 'package:flutter/foundation.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:flutter_map/flutter_map.dart';
@@ -7,6 +6,7 @@ import 'package:xml/xml.dart';
 import '../../models/node_profile.dart';
 import '../../models/osm_node.dart';
 import '../../app_state.dart';
+import '../http_client.dart';
 
 /// Fetches surveillance nodes from the direct OSM API using bbox query.
 /// This is a fallback for when Overpass is not available (e.g., sandbox mode).
@@ -33,6 +33,8 @@ Future<List<OsmNode>> fetchOsmApiNodes({
   }
 }
 
+final _client = UserAgentClient();
+
 /// Internal method that performs the actual OSM API fetch.
 Future<List<OsmNode>> _fetchFromOsmApi({
   required LatLngBounds bounds,
@@ -57,7 +59,7 @@ Future<List<OsmNode>> _fetchFromOsmApi({
     debugPrint('[fetchOsmApiNodes] Querying OSM API for nodes in bbox...');
     debugPrint('[fetchOsmApiNodes] URL: $url');
     
-    final response = await http.get(Uri.parse(url));
+    final response = await _client.get(Uri.parse(url));
     
     if (response.statusCode != 200) {
       debugPrint('[fetchOsmApiNodes] OSM API error: ${response.statusCode} - ${response.body}');

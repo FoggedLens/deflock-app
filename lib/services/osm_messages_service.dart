@@ -1,10 +1,11 @@
 import 'dart:convert';
-import 'package:http/http.dart' as http;
 import '../state/settings_state.dart';
+import 'http_client.dart';
 
 /// Service for checking OSM user messages
 class OSMMessagesService {
   static const _messageCheckCacheDuration = Duration(minutes: 5);
+  final _client = UserAgentClient();
   
   DateTime? _lastCheck;
   int? _lastUnreadCount;
@@ -38,7 +39,7 @@ class OSMMessagesService {
     
     try {
       final apiHost = _getApiHost(uploadMode);
-      final response = await http.get(
+      final response = await _client.get(
         Uri.parse('$apiHost/api/0.6/user/details.json'),
         headers: {'Authorization': 'Bearer $accessToken'},
       );

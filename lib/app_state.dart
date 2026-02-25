@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart' show LatLngBounds;
-import 'package:http/http.dart' as http;
+import 'services/http_client.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -335,29 +335,32 @@ class AppState extends ChangeNotifier {
     final accessToken = await _authState.getAccessToken();
     if (accessToken == null) return false;
     
+    final client = UserAgentClient();
     try {
       // Try to fetch user details - this should include message data if scope is correct
-      final response = await http.get(
+      final response = await client.get(
         Uri.parse('${_getApiHost()}/api/0.6/user/details.json'),
         headers: {'Authorization': 'Bearer $accessToken'},
       );
-      
+
       if (response.statusCode == 403) {
         // Forbidden - likely missing scope
         return true;
       }
-      
+
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         final messages = data['user']?['messages'];
         // If messages field is missing, we might not have the right scope
         return messages == null;
       }
-      
+
       return false;
     } catch (e) {
       // On error, assume no re-auth needed to avoid annoying users
       return false;
+    } finally {
+      client.close();
     }
   }
   

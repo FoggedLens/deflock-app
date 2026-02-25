@@ -1,10 +1,10 @@
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:http/http.dart' as http;
 
 import '../app_state.dart';
 import '../models/tile_provider.dart';
+import '../services/http_client.dart';
 import '../services/localization_service.dart';
 import '../dev_config.dart';
 
@@ -407,6 +407,7 @@ class _TileTypeDialogState extends State<_TileTypeDialog> {
       _isLoadingPreview = true;
     });
 
+    final client = UserAgentClient();
     try {
       // Create a temporary TileType to use the getTileUrl method
       final tempTileType = TileType(
@@ -415,21 +416,21 @@ class _TileTypeDialogState extends State<_TileTypeDialog> {
         urlTemplate: _urlController.text.trim(),
         attribution: 'Preview',
       );
-      
+
       final url = tempTileType.getTileUrl(
         kPreviewTileZoom,
         kPreviewTileX,
         kPreviewTileY,
         apiKey: null, // Don't use API key for preview
       );
-      
-      final response = await http.get(Uri.parse(url));
-      
+
+      final response = await client.get(Uri.parse(url));
+
       if (response.statusCode == 200) {
         setState(() {
           _previewTile = response.bodyBytes;
         });
-        
+
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text(locService.t('tileTypeEditor.previewTileLoaded'))),
@@ -445,6 +446,7 @@ class _TileTypeDialogState extends State<_TileTypeDialog> {
         );
       }
     } finally {
+      client.close();
       setState(() {
         _isLoadingPreview = false;
       });
