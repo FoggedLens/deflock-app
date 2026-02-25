@@ -66,6 +66,12 @@
 		<array>
 			<string>https</string>
 		</array>
+		<key>NSBluetoothAlwaysUsageDescription</key>
+		<string>DeFlock uses Bluetooth to receive detection data from FlockSquawk.</string>
+		<key>UIBackgroundModes</key>
+		<array>
+			<string>bluetooth-central</string>
+		</array>
 		<key>UIStatusBarHidden</key>
 		<false/>
 	</dict>

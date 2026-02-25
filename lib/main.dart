@@ -13,6 +13,7 @@ import 'screens/about_screen.dart';
 import 'screens/release_notes_screen.dart';
 import 'screens/osm_account_screen.dart';
 import 'screens/upload_queue_screen.dart';
+import 'screens/scanner_screen.dart';
 import 'services/localization_service.dart';
 import 'services/version_service.dart';
 import 'services/deep_link_service.dart';
@@ -86,6 +87,7 @@ class DeFlockApp extends StatelessWidget {
         '/settings/language': (context) => const LanguageSettingsScreen(),
         '/settings/about': (context) => const AboutScreen(),
         '/settings/release-notes': (context) => const ReleaseNotesScreen(),
+        '/scanner': (context) => const ScannerScreen(),
       },
       initialRoute: '/',
 

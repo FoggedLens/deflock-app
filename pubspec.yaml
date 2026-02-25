@@ -29,6 +29,12 @@ dependencies:
   flutter_web_auth_2: 5.0.0-alpha.3
   flutter_secure_storage: 10.0.0-beta.4
 
+  # USB serial (FlockSquawk scanner — Android only)
+  usb_serial: ^0.5.2
+
+  # BLE transport (FlockSquawk scanner — iOS + Android)
+  flutter_blue_plus: ^1.35.0
+
   # Persistence
   shared_preferences: ^2.2.2
   sqflite: ^2.4.1
@@ -46,6 +52,7 @@ dev_dependencies:
   flutter_launcher_icons: ^0.14.4
   flutter_lints: ^6.0.0
   flutter_native_splash: ^2.4.6
+  sqflite_common_ffi: ^2.3.4
 
 flutter:
   uses-material-design: true
