@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 import '../models/pending_upload.dart';
 import '../dev_config.dart';
 import '../state/settings_state.dart';
+import 'http_client.dart';
 import 'version_service.dart';
 
 class UploadResult {
@@ -348,6 +349,7 @@ class Uploader {
   Map<String, String> get _headers => {
         'Authorization': 'Bearer $accessToken',
         'Content-Type': 'text/xml',
+        'User-Agent': UserAgentClient.userAgent,
       };
 
   /// Sanitize text for safe inclusion in XML attributes and content

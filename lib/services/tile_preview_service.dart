@@ -1,13 +1,14 @@
 import 'package:flutter/foundation.dart';
-import 'package:http/http.dart' as http;
 
 import '../models/tile_provider.dart';
 import '../state/settings_state.dart';
 import '../dev_config.dart';
+import 'http_client.dart';
 
 /// Service for fetching missing tile preview images
 class TilePreviewService {
   static const Duration _timeout = Duration(seconds: 10);
+  static final _client = UserAgentClient();
 
   /// Attempt to fetch missing preview tiles for tile types that don't already have preview data
   /// Fails silently - no error handling or user notification on failure
@@ -62,7 +63,7 @@ class TilePreviewService {
     try {
       final url = tileType.getTileUrl(kPreviewTileZoom, kPreviewTileX, kPreviewTileY, apiKey: apiKey);
       
-      final response = await http.get(Uri.parse(url)).timeout(_timeout);
+      final response = await _client.get(Uri.parse(url)).timeout(_timeout);
       
       if (response.statusCode == 200 && response.bodyBytes.isNotEmpty) {
         debugPrint('TilePreviewService: Fetched preview for ${tileType.name}');

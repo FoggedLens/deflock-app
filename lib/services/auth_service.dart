@@ -4,12 +4,12 @@ import 'dart:developer';
 import 'package:flutter/foundation.dart';
 import 'package:oauth2_client/oauth2_client.dart';
 import 'package:oauth2_client/oauth2_helper.dart';
-import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 /// Handles PKCE OAuth login with OpenStreetMap.
 import '../keys.dart';
 import '../app_state.dart' show UploadMode;
+import 'http_client.dart';
 
 class AuthService {
   // Both client IDs from keys.dart
@@ -178,9 +178,11 @@ class AuthService {
       : 'https://api.openstreetmap.org';
   }
 
+  final _client = UserAgentClient();
+
   Future<String?> _fetchUsername(String accessToken) async {
     try {
-      final resp = await http.get(
+      final resp = await _client.get(
         Uri.parse('$_apiHost/api/0.6/user/details.json'),
         headers: {'Authorization': 'Bearer $accessToken'},
       );

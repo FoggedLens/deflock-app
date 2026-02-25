@@ -1,11 +1,11 @@
 import 'dart:math';
 import 'dart:io';
 import 'dart:async';
-import 'package:http/http.dart' as http;
 import 'package:flutter/foundation.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:deflockapp/dev_config.dart';
+import 'package:deflockapp/services/http_client.dart';
 
 /// Global semaphore to limit simultaneous tile fetches
 final _tileFetchSemaphore = _SimpleSemaphore(kTileFetchConcurrentThreads);
@@ -92,6 +92,8 @@ bool _isTileVisible(int z, int x, int y, LatLngBounds viewBounds) {
 
 
 
+final _tileClient = UserAgentClient();
+
 /// Fetches a tile from any remote provider with unlimited retries.
 /// Returns tile image bytes. Retries forever until success.
 /// Brutalist approach: Keep trying until it works - no arbitrary retry limits.
@@ -113,7 +115,7 @@ Future<List<int>> fetchRemoteTile({
         debugPrint('[fetchRemoteTile] Fetching $z/$x/$y from $hostInfo');
       }
       attempt++;
-      final resp = await http.get(Uri.parse(url));
+      final resp = await _tileClient.get(Uri.parse(url));
       
       if (resp.statusCode == 200 && resp.bodyBytes.isNotEmpty) {
         // Success!

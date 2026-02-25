@@ -1,16 +1,16 @@
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_map/flutter_map.dart' show LatLngBounds;
-import 'package:http/http.dart' as http;
 import 'package:latlong2/latlong.dart';
 
 import '../models/search_result.dart';
+import 'http_client.dart';
 
 class SearchService {
   static const String _baseUrl = 'https://nominatim.openstreetmap.org';
-  static const String _userAgent = 'DeFlock/1.0 (OSM surveillance mapping app)';
   static const int _maxResults = 5;
   static const Duration _timeout = Duration(seconds: 10);
+  final _client = UserAgentClient();
   
   /// Search for places using Nominatim geocoding service
   Future<List<SearchResult>> search(String query, {LatLngBounds? viewbox}) async {
@@ -88,12 +88,7 @@ class SearchService {
     debugPrint('[SearchService] Searching Nominatim: $uri');
     
     try {
-      final response = await http.get(
-        uri,
-        headers: {
-          'User-Agent': _userAgent,
-        },
-      ).timeout(_timeout);
+      final response = await _client.get(uri).timeout(_timeout);
       
       if (response.statusCode != 200) {
         throw Exception('HTTP ${response.statusCode}: ${response.reasonPhrase}');

@@ -1,12 +1,13 @@
 import 'dart:convert';
-import 'package:http/http.dart' as http;
 import 'package:flutter/foundation.dart';
+import 'package:http/http.dart' as http;
 import 'package:latlong2/latlong.dart';
 import 'package:flutter_map/flutter_map.dart';
 
 import '../models/node_profile.dart';
 import '../models/osm_node.dart';
 import '../dev_config.dart';
+import 'http_client.dart';
 
 /// Simple Overpass API client with proper HTTP retry logic.
 /// Single responsibility: Make requests, handle network errors, return data.
@@ -14,7 +15,8 @@ class OverpassService {
   static const String _endpoint = 'https://overpass-api.de/api/interpreter';
   final http.Client _client;
 
-  OverpassService({http.Client? client}) : _client = client ?? http.Client();
+  OverpassService({http.Client? client}) : _client = client ?? UserAgentClient();
+
 
   /// Fetch surveillance nodes from Overpass API with proper retry logic.
   /// Throws NetworkError for retryable failures, NodeLimitError for area splitting.

@@ -1,4 +1,9 @@
 {
+  "2.7.2": {
+    "content": [
+      "• Now following OSM UserAgent guidelines."
+    ]
+  },
   "2.7.1": {
     "content": [
       "• Fixed operator profile selection being lost when moving node position, adjusting direction, or changing profiles",

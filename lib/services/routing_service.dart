@@ -6,6 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../app_state.dart';
 import '../dev_config.dart';
+import 'http_client.dart';
 
 class RouteResult {
   final List<LatLng> waypoints;
@@ -26,10 +27,9 @@ class RouteResult {
 
 class RoutingService {
   static const String _baseUrl = 'https://alprwatch.org/api/v1/deflock/directions';
-  static const String _userAgent = 'DeFlock/1.0 (OSM surveillance mapping app)';
   final http.Client _client;
 
-  RoutingService({http.Client? client}) : _client = client ?? http.Client();
+  RoutingService({http.Client? client}) : _client = client ?? UserAgentClient();
 
   void close() => _client.close();
 
@@ -75,7 +75,6 @@ class RoutingService {
       final response = await _client.post(
         uri,
         headers: {
-          'User-Agent': _userAgent,
           'Content-Type': 'application/json'
         },
         body: json.encode(params)

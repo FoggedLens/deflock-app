@@ -1,7 +1,7 @@
 name: deflockapp
 description: Map public surveillance infrastructure with OpenStreetMap
 publish_to: "none"
-version: 2.7.1+47   # The thing after the + is the version code, incremented with each release
+version: 2.7.2+48   # The thing after the + is the version code, incremented with each release
 
 environment:
   sdk: ">=3.8.0 <4.0.0"   # RadioGroup widget requires Dart 3.8+ (Flutter 3.35+)
