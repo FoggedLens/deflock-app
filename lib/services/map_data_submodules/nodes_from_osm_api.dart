@@ -71,7 +71,6 @@ Future<List<OsmNode>> _fetchFromOsmApi({
       ServiceRateLimiter.release(ServiceType.osmEditingApi);
     }
 
-
     if (response.statusCode != 200) {
       debugPrint('[fetchOsmApiNodes] OSM API error: ${response.statusCode} - ${response.body}');
       throw Exception('OSM API error: ${response.statusCode} - ${response.body}');

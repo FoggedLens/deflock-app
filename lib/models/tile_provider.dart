@@ -12,7 +12,7 @@ class TileType {
   final Uint8List? previewTile; // Single tile image data for preview
   final int maxZoom; // Maximum zoom level for this tile type
 
-  const TileType({
+  TileType({
     required this.id,
     required this.name,
     required this.urlTemplate,
@@ -78,13 +78,14 @@ class TileType {
   /// Check if this tile type needs an API key
   bool get requiresApiKey => urlTemplate.contains('{api_key}');
 
+  /// The service policy that applies to this tile type's server.
+  /// Cached because [urlTemplate] is immutable.
+  late final ServicePolicy servicePolicy =
+      ServicePolicyResolver.resolve(urlTemplate);
+
   /// Whether this tile server's usage policy permits offline/bulk downloading.
   /// Resolved via [ServicePolicyResolver] from the URL template.
-  bool get allowsOfflineDownload =>
-      ServicePolicyResolver.resolve(urlTemplate).allowsOfflineDownload;
-
-  /// The service policy that applies to this tile type's server.
-  ServicePolicy get servicePolicy => ServicePolicyResolver.resolve(urlTemplate);
+  bool get allowsOfflineDownload => servicePolicy.allowsOfflineDownload;
 
   Map<String, dynamic> toJson() => {
     'id': id,

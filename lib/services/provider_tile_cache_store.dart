@@ -122,7 +122,11 @@ class ProviderTileCacheStore implements MapCachingProvider {
   }
 
   /// Ensure the cache directory exists (lazy creation on first write).
+  ///
   /// Uses a Completer latch so concurrent callers share a single create().
+  /// Safe under Dart's single-threaded event loop: the null check and
+  /// assignment happen in the same synchronous block with no `await`
+  /// between them, so no other microtask can interleave.
   Future<void> _ensureDirectory() {
     if (_directoryReady == null) {
       final completer = Completer<void>();
@@ -167,7 +171,12 @@ class ProviderTileCacheStore implements MapCachingProvider {
     }
     _lastPruneCheck = now;
 
-    // Run in background to avoid blocking putTile
+    // Fire-and-forget: eviction is best-effort background work.
+    // _estimatedSize may be momentarily stale between eviction start and
+    // completion, but this is acceptable — the guard only needs to be
+    // approximately correct to prevent unbounded growth, and the throttle
+    // ensures we re-check within a minute.
+    // ignore: discarded_futures
     _evictIfNeeded();
   }
 

@@ -29,8 +29,14 @@ class TileLayerManager {
   }
 
   /// Dispose of all provider resources.
-  Future<void> dispose() async {
-    await Future.wait(_providers.values.map((p) => p.dispose()));
+  ///
+  /// Synchronous to match Flutter's [State.dispose] contract. Each provider's
+  /// async cleanup (closing HTTP clients) runs in the background; resources
+  /// will be reclaimed when the futures complete.
+  void dispose() {
+    for (final provider in _providers.values) {
+      provider.dispose();
+    }
     _providers.clear();
   }
 
@@ -118,7 +124,7 @@ class TileLayerManager {
         '_fallback',
         () => DeflockTileProvider(
           providerId: 'unknown',
-          tileType: const models.TileType(
+          tileType: models.TileType(
             id: 'unknown',
             name: 'Unknown',
             urlTemplate: '',

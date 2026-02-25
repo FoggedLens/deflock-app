@@ -285,9 +285,12 @@ class _DownloadAreaDialogState extends State<DownloadAreaDialog> {
                           ],
                         ),
                         content: Text(
-                          'The ${selectedProvider?.name ?? 'current tile'} server does not permit offline downloads. '
-                          'Switch to a tile provider that allows offline use '
-                          '(e.g., Bing Maps, Mapbox, or a self-hosted tile server).',
+                          locService.t(
+                            'download.offlineNotPermitted',
+                            params: [
+                              selectedProvider?.name ?? locService.t('download.currentTileProvider'),
+                            ],
+                          ),
                         ),
                         actions: [
                           TextButton(

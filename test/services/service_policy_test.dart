@@ -273,6 +273,31 @@ void main() {
       ServiceRateLimiter.release(ServiceType.osmEditingApi);
     });
 
+    test('third acquire blocks until a slot is released', () async {
+      // Fill both slots (osmEditingApi maxConcurrentRequests = 2)
+      await ServiceRateLimiter.acquire(ServiceType.osmEditingApi);
+      await ServiceRateLimiter.acquire(ServiceType.osmEditingApi);
+
+      // Third acquire should block
+      var thirdCompleted = false;
+      final thirdFuture = ServiceRateLimiter.acquire(ServiceType.osmEditingApi).then((_) {
+        thirdCompleted = true;
+      });
+
+      // Give microtasks a chance to run — third should still be blocked
+      await Future<void>.delayed(Duration.zero);
+      expect(thirdCompleted, false);
+
+      // Release one slot — third should now complete
+      ServiceRateLimiter.release(ServiceType.osmEditingApi);
+      await thirdFuture;
+      expect(thirdCompleted, true);
+
+      // Clean up
+      ServiceRateLimiter.release(ServiceType.osmEditingApi);
+      ServiceRateLimiter.release(ServiceType.osmEditingApi);
+    });
+
     test('Nominatim rate limiting delays rapid requests', () async {
       final start = DateTime.now();
 

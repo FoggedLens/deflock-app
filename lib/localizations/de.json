@@ -144,7 +144,9 @@
     "offlineModeWarning": "Downloads im Offline-Modus deaktiviert. Deaktivieren Sie den Offline-Modus, um neue Bereiche herunterzuladen.",
     "areaTooBigMessage": "Zoomen Sie auf mindestens Stufe {} heran, um Offline-Bereiche herunterzuladen. Downloads großer Gebiete können die App zum Absturz bringen.",
     "downloadStarted": "Download gestartet! Lade Kacheln und Knoten...",
-    "downloadFailed": "Download konnte nicht gestartet werden: {}"
+    "downloadFailed": "Download konnte nicht gestartet werden: {}",
+    "offlineNotPermitted": "Der {}-Server erlaubt keine Offline-Downloads. Wechseln Sie zu einem Kachelanbieter, der Offline-Nutzung unterstützt (z. B. Bing Maps, Mapbox oder ein selbst gehosteter Kachelserver).",
+    "currentTileProvider": "aktuelle Kachel"
   },
   "downloadStarted": {
     "title": "Download gestartet",

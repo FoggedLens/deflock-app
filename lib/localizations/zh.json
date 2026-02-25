@@ -181,7 +181,9 @@
     "offlineModeWarning": "离线模式下禁用下载。禁用离线模式以下载新区域。",
     "areaTooBigMessage": "请放大至至少第{}级来下载离线区域。下载大区域可能导致应用程序无响应。",
     "downloadStarted": "下载已开始！正在获取瓦片和节点...",
-    "downloadFailed": "启动下载失败：{}"
+    "downloadFailed": "启动下载失败：{}",
+    "offlineNotPermitted": "{}服务器不允许离线下载。请切换到允许离线使用的瓦片提供商（例如 Bing Maps、Mapbox 或自托管的瓦片服务器）。",
+    "currentTileProvider": "当前瓦片"
   },
   "downloadStarted": {
     "title": "下载已开始",

@@ -181,7 +181,9 @@
     "offlineModeWarning": "Descargas deshabilitadas en modo sin conexión. Deshabilite el modo sin conexión para descargar nuevas áreas.",
     "areaTooBigMessage": "Amplíe al menos al nivel {} para descargar áreas sin conexión. Las descargas de áreas grandes pueden hacer que la aplicación deje de responder.",
     "downloadStarted": "¡Descarga iniciada! Obteniendo mosaicos y nodos...",
-    "downloadFailed": "Error al iniciar la descarga: {}"
+    "downloadFailed": "Error al iniciar la descarga: {}",
+    "offlineNotPermitted": "El servidor {} no permite descargas sin conexión. Cambie a un proveedor de mosaicos que permita el uso sin conexión (p. ej., Bing Maps, Mapbox o un servidor de mosaicos propio).",
+    "currentTileProvider": "mosaico actual"
   },
   "downloadStarted": {
     "title": "Descarga Iniciada",

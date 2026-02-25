@@ -13,7 +13,7 @@ void main() {
   late DeflockTileProvider provider;
   late MockAppState mockAppState;
 
-  const osmTileType = models.TileType(
+  final osmTileType = models.TileType(
     id: 'osm_street',
     name: 'Street Map',
     urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
@@ -21,7 +21,7 @@ void main() {
     maxZoom: 19,
   );
 
-  const mapboxTileType = models.TileType(
+  final mapboxTileType = models.TileType(
     id: 'mapbox_satellite',
     name: 'Satellite',
     urlTemplate:
