@@ -52,9 +52,21 @@ class MapOverlays extends StatelessWidget {
               const SizedBox(height: 12),
               GestureDetector(
                 onTap: () async {
-                  final uri = Uri.parse(attributionUrl);
-                  if (await canLaunchUrl(uri)) {
-                    await launchUrl(uri, mode: LaunchMode.externalApplication);
+                  try {
+                    final uri = Uri.parse(attributionUrl);
+                    if (await canLaunchUrl(uri)) {
+                      await launchUrl(uri, mode: LaunchMode.externalApplication);
+                    } else if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Could not open link')),
+                      );
+                    }
+                  } catch (_) {
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Could not open link')),
+                      );
+                    }
                   }
                 },
                 child: Text(

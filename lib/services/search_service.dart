@@ -25,8 +25,9 @@ class SearchService {
   final _client = UserAgentClient();
 
   /// Client-side result cache, keyed by normalized query + viewbox.
-  /// Required by Nominatim usage policy.
-  final Map<String, _CachedResult> _resultCache = {};
+  /// Required by Nominatim usage policy. Static so all SearchService
+  /// instances share the cache and don't generate redundant requests.
+  static final Map<String, _CachedResult> _resultCache = {};
 
 
   /// Search for places using Nominatim geocoding service

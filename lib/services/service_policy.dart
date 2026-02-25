@@ -194,9 +194,9 @@ class ServicePolicyResolver {
     final host = _extractHost(url);
     if (host == null) return const ServicePolicy();
 
-    // Check custom overrides first
+    // Check custom overrides first (exact or subdomain matching)
     for (final entry in _customOverrides.entries) {
-      if (host.contains(entry.key)) {
+      if (host == entry.key || host.endsWith('.${entry.key}')) {
         return entry.value;
       }
     }
@@ -299,6 +299,18 @@ class ServiceRateLimiter {
   static Future<void> acquire(ServiceType service) async {
     final policy = ServicePolicyResolver.resolveByType(service);
 
+    // Concurrency: acquire semaphore slot first, so only one caller at a
+    // time proceeds to the rate-limit check. This prevents concurrent
+    // callers from bypassing the min interval when _lastRequestTime is
+    // still null or stale.
+    if (policy.maxConcurrentRequests > 0) {
+      final semaphore = _semaphores.putIfAbsent(
+        service,
+        () => _Semaphore(policy.maxConcurrentRequests),
+      );
+      await semaphore.acquire();
+    }
+
     // Rate limit: wait if we sent a request too recently
     if (policy.minRequestInterval != null) {
       final lastTime = _lastRequestTime[service];
@@ -310,15 +322,6 @@ class ServiceRateLimiter {
           await Future.delayed(remaining);
         }
       }
-    }
-
-    // Concurrency: acquire semaphore slot
-    if (policy.maxConcurrentRequests > 0) {
-      final semaphore = _semaphores.putIfAbsent(
-        service,
-        () => _Semaphore(policy.maxConcurrentRequests),
-      );
-      await semaphore.acquire();
     }
 
     // Record request time
@@ -360,8 +363,13 @@ class _Semaphore {
     if (_waiters.isNotEmpty) {
       final next = _waiters.removeAt(0);
       next.complete();
-    } else {
+    } else if (_currentCount > 0) {
       _currentCount--;
+    } else {
+      throw StateError(
+        'Semaphore.release() called more times than acquire(); '
+        'currentCount is already zero.',
+      );
     }
   }
 }

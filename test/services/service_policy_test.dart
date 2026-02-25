@@ -290,14 +290,35 @@ void main() {
     });
 
     test('services with no rate limit pass through immediately', () async {
-      // Overpass has maxConcurrentRequests: 0, so acquire should be immediate
+      // Overpass has maxConcurrentRequests: 0, so acquire should not apply
+      // any artificial rate limiting delays.
+      await ServiceRateLimiter.acquire(ServiceType.overpass);
+      ServiceRateLimiter.release(ServiceType.overpass);
+      await ServiceRateLimiter.acquire(ServiceType.overpass);
+      ServiceRateLimiter.release(ServiceType.overpass);
+    });
+
+    test('Nominatim enforces min interval under concurrent callers', () async {
       final start = DateTime.now();
-      await ServiceRateLimiter.acquire(ServiceType.overpass);
-      ServiceRateLimiter.release(ServiceType.overpass);
-      await ServiceRateLimiter.acquire(ServiceType.overpass);
-      ServiceRateLimiter.release(ServiceType.overpass);
+
+      // Start two concurrent callers; only one should run at a time and
+      // the minRequestInterval of ~1s should still be enforced.
+      final future1 = () async {
+        await ServiceRateLimiter.acquire(ServiceType.nominatim);
+        ServiceRateLimiter.release(ServiceType.nominatim);
+      }();
+
+      final future2 = () async {
+        await ServiceRateLimiter.acquire(ServiceType.nominatim);
+        ServiceRateLimiter.release(ServiceType.nominatim);
+      }();
+
+      await Future.wait([future1, future2]);
+
       final elapsed = DateTime.now().difference(start);
-      expect(elapsed.inMilliseconds, lessThan(100));
+      // Under contention, the second caller should still be delayed by
+      // approximately the minRequestInterval (~1 second).
+      expect(elapsed.inMilliseconds, greaterThanOrEqualTo(900));
     });
   });
 

@@ -270,9 +270,12 @@ class _DownloadAreaDialogState extends State<DownloadAreaDialog> {
                   // Check if the tile provider allows offline downloads
                   if (selectedTileType != null && !selectedTileType.allowsOfflineDownload) {
                     if (!context.mounted) return;
-                    Navigator.pop(context);
+                    // Capture navigator before popping, since context is
+                    // deactivated after Navigator.pop.
+                    final navigator = Navigator.of(context);
+                    navigator.pop();
                     showDialog(
-                      context: context,
+                      context: navigator.context,
                       builder: (context) => AlertDialog(
                         title: Row(
                           children: [
