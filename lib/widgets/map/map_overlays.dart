@@ -6,7 +6,6 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../app_state.dart';
 import '../../dev_config.dart';
 import '../../services/localization_service.dart';
-import '../../services/service_policy.dart';
 import '../compass_indicator.dart';
 import 'layer_selector_button.dart';
 

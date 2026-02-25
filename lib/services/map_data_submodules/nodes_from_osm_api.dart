@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:http/http.dart' as http;
 import 'package:latlong2/latlong.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:xml/xml.dart';
@@ -63,7 +64,7 @@ Future<List<OsmNode>> _fetchFromOsmApi({
     // Enforce max 2 concurrent download threads per OSM API usage policy
     await ServiceRateLimiter.acquire(ServiceType.osmEditingApi);
 
-    final response;
+    final http.Response response;
     try {
       response = await _client.get(Uri.parse(url));
     } finally {

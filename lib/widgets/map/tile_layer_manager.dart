@@ -3,26 +3,35 @@ import 'package:flutter_map/flutter_map.dart';
 
 import '../../models/tile_provider.dart' as models;
 import '../../services/deflock_tile_provider.dart';
+import '../../services/provider_tile_cache_manager.dart';
 
-/// Manages tile layer creation, caching, and provider switching.
-/// Uses DeFlock's custom tile provider for clean integration.
+/// Manages tile layer creation with per-provider caching and provider switching.
+///
+/// Each tile provider/type combination gets its own [DeflockTileProvider]
+/// instance with isolated caching (separate cache directory, configurable size
+/// limit, and policy-driven TTL enforcement). Providers are created lazily on
+/// first use and cached for instant switching.
 class TileLayerManager {
-  DeflockTileProvider? _tileProvider;
+  final Map<String, DeflockTileProvider> _providers = {};
   int _mapRebuildKey = 0;
   String? _lastTileTypeId;
   bool? _lastOfflineMode;
 
-  /// Get the current map rebuild key for cache busting
+  /// Get the current map rebuild key for cache busting.
   int get mapRebuildKey => _mapRebuildKey;
 
-  /// Initialize the tile layer manager
+  /// Initialize the tile layer manager.
+  ///
+  /// [ProviderTileCacheManager.init] is called in main() before any widgets
+  /// build, so this is a no-op retained for API compatibility.
   void initialize() {
-    // Don't create tile provider here - create it fresh for each build
+    // Cache directory is already resolved in main().
   }
 
-  /// Dispose of resources
-  void dispose() {
-    _tileProvider?.dispose();
+  /// Dispose of all provider resources.
+  Future<void> dispose() async {
+    await Future.wait(_providers.values.map((p) => p.dispose()));
+    _providers.clear();
   }
 
   /// Check if cache should be cleared and increment rebuild key if needed.
@@ -43,11 +52,9 @@ class TileLayerManager {
     }
 
     if (shouldClear) {
-      // Force map rebuild with new key to bust flutter_map cache
+      // Force map rebuild with new key to bust flutter_map cache.
+      // We don't dispose providers here — they're reusable across switches.
       _mapRebuildKey++;
-      // Dispose old provider before creating a fresh one (closes HTTP client)
-      _tileProvider?.dispose();
-      _tileProvider = null;
       debugPrint('[TileLayerManager] *** CACHE CLEAR *** $reason changed - rebuilding map $_mapRebuildKey');
     }
 
@@ -57,10 +64,8 @@ class TileLayerManager {
     return shouldClear;
   }
 
-  /// Clear the tile request queue (call after cache clear)
+  /// Clear the tile request queue (call after cache clear).
   void clearTileQueue() {
-    // With NetworkTileProvider, clearing is handled by FlutterMap's internal cache
-    // We just need to increment the rebuild key to bust the cache
     _mapRebuildKey++;
     debugPrint('[TileLayerManager] Cache cleared - rebuilding map $_mapRebuildKey');
   }
@@ -70,19 +75,23 @@ class TileLayerManager {
     // No immediate clearing needed — NetworkTileProvider aborts obsolete requests
   }
 
-  /// Clear only tiles that are no longer visible in the current bounds
+  /// Clear only tiles that are no longer visible in the current bounds.
   void clearStaleRequests({required LatLngBounds currentBounds}) {
     // No selective clearing needed — NetworkTileProvider aborts obsolete requests
   }
 
   /// Build tile layer widget with current provider and type.
-  /// Uses DeFlock's custom tile provider for clean integration with our offline/online system.
+  ///
+  /// Gets or creates a [DeflockTileProvider] for the given provider/type
+  /// combination, each with its own isolated cache.
   Widget buildTileLayer({
     required models.TileProvider? selectedProvider,
     required models.TileType? selectedTileType,
   }) {
-    // Create a fresh tile provider instance if we don't have one or cache was cleared
-    _tileProvider ??= DeflockTileProvider();
+    final tileProvider = _getOrCreateProvider(
+      selectedProvider: selectedProvider,
+      selectedTileType: selectedTileType,
+    );
 
     // Use the actual urlTemplate from the selected tile type. Our getTileUrl()
     // override handles the real URL generation; flutter_map uses urlTemplate
@@ -94,7 +103,52 @@ class TileLayerManager {
       urlTemplate: urlTemplate,
       userAgentPackageName: 'me.deflock.deflockapp',
       maxZoom: selectedTileType?.maxZoom.toDouble() ?? 18.0,
-      tileProvider: _tileProvider!,
+      tileProvider: tileProvider,
     );
+  }
+
+  /// Get or create a [DeflockTileProvider] for the given provider/type.
+  DeflockTileProvider _getOrCreateProvider({
+    required models.TileProvider? selectedProvider,
+    required models.TileType? selectedTileType,
+  }) {
+    if (selectedProvider == null || selectedTileType == null) {
+      // No provider configured — return a fallback with default config.
+      return _providers.putIfAbsent(
+        '_fallback',
+        () => DeflockTileProvider(
+          providerId: 'unknown',
+          tileType: const models.TileType(
+            id: 'unknown',
+            name: 'Unknown',
+            urlTemplate: '',
+            attribution: '',
+          ),
+        ),
+      );
+    }
+
+    final key = '${selectedProvider.id}/${selectedTileType.id}';
+    return _providers.putIfAbsent(key, () {
+      final cachingProvider = ProviderTileCacheManager.isInitialized
+          ? ProviderTileCacheManager.getOrCreate(
+              providerId: selectedProvider.id,
+              tileTypeId: selectedTileType.id,
+              policy: selectedTileType.servicePolicy,
+            )
+          : null;
+
+      debugPrint(
+        '[TileLayerManager] Creating provider for $key '
+        '(cache: ${cachingProvider != null ? "enabled" : "disabled"})',
+      );
+
+      return DeflockTileProvider(
+        providerId: selectedProvider.id,
+        tileType: selectedTileType,
+        apiKey: selectedProvider.apiKey,
+        cachingProvider: cachingProvider,
+      );
+    });
   }
 }
