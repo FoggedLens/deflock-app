@@ -5,14 +5,12 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:path/path.dart' as p;
-import 'package:uuid/data.dart';
-import 'package:uuid/rng.dart';
 import 'package:uuid/uuid.dart';
 
 /// Per-provider tile cache implementing flutter_map's [MapCachingProvider].
 ///
 /// Each instance manages an isolated cache directory with:
-/// - UUID v5 key generation (matching flutter_map's built-in approach)
+/// - Deterministic UUID v5 key generation from tile URLs
 /// - Optional TTL override from [ServicePolicy.minCacheTtl]
 /// - Configurable max cache size with LRU eviction
 ///
@@ -23,7 +21,7 @@ class ProviderTileCacheStore implements MapCachingProvider {
   final int maxCacheBytes;
   final Duration? overrideFreshAge;
 
-  static final _uuid = Uuid(goptions: GlobalOptions(MathRNG()));
+  static const _uuid = Uuid();
 
   /// Running estimate of cache size in bytes. Initialized lazily on first
   /// [putTile] call to avoid blocking construction.
@@ -125,6 +123,11 @@ class ProviderTileCacheStore implements MapCachingProvider {
       await tileFile.writeAsBytes(bytes);
     }
 
+    // Keep running size estimate up to date so eviction triggers promptly.
+    if (_estimatedSize != null) {
+      _estimatedSize = _estimatedSize! + metaJson.length + (bytes?.length ?? 0);
+    }
+
     // Schedule lazy size check
     _scheduleEvictionCheck();
   }
@@ -201,11 +204,16 @@ class ProviderTileCacheStore implements MapCachingProvider {
       final dir = Directory(cacheDirectory);
       if (!await dir.exists()) return;
 
-      // Collect all .tile files sorted by modification time (oldest first)
+      // Collect all files, separating .tile and .meta for eviction + orphan cleanup.
       final tileFiles = <File>[];
+      final metaFiles = <String>{};
       await for (final entity in dir.list()) {
-        if (entity is File && entity.path.endsWith('.tile')) {
-          tileFiles.add(entity);
+        if (entity is File) {
+          if (entity.path.endsWith('.tile')) {
+            tileFiles.add(entity);
+          } else if (entity.path.endsWith('.meta')) {
+            metaFiles.add(p.basenameWithoutExtension(entity.path));
+          }
         }
       }
 
@@ -236,6 +244,23 @@ class ProviderTileCacheStore implements MapCachingProvider {
           }
         } catch (e) {
           debugPrint('[ProviderTileCacheStore] Failed to evict $key: $e');
+        }
+      }
+
+      // Clean up orphan .meta files (no matching .tile file).
+      final tileKeys = tileFiles
+          .map((f) => p.basenameWithoutExtension(f.path))
+          .toSet();
+      for (final metaKey in metaFiles) {
+        if (!tileKeys.contains(metaKey)) {
+          try {
+            final orphan = File(p.join(cacheDirectory, '$metaKey.meta'));
+            final orphanStat = await orphan.stat();
+            await orphan.delete();
+            freedBytes += orphanStat.size;
+          } catch (_) {
+            // Best-effort cleanup
+          }
         }
       }
 

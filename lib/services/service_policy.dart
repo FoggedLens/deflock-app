@@ -218,6 +218,14 @@ class ServicePolicyResolver {
     final host = _extractHost(url);
     if (host == null) return ServiceType.custom;
 
+    // Check custom overrides first — a registered custom policy means
+    // the host is treated as ServiceType.custom with custom rules.
+    for (final entry in _customOverrides.entries) {
+      if (host == entry.key || host.endsWith('.${entry.key}')) {
+        return ServiceType.custom;
+      }
+    }
+
     for (final entry in _hostPatterns.entries) {
       if (host == entry.key || host.endsWith('.${entry.key}')) {
         return entry.value;
@@ -304,29 +312,37 @@ class ServiceRateLimiter {
     // time proceeds to the rate-limit check. This prevents concurrent
     // callers from bypassing the min interval when _lastRequestTime is
     // still null or stale.
+    _Semaphore? semaphore;
     if (policy.maxConcurrentRequests > 0) {
-      final semaphore = _semaphores.putIfAbsent(
+      semaphore = _semaphores.putIfAbsent(
         service,
         () => _Semaphore(policy.maxConcurrentRequests),
       );
       await semaphore.acquire();
     }
 
-    // Rate limit: wait if we sent a request too recently
-    if (policy.minRequestInterval != null) {
-      final lastTime = _lastRequestTime[service];
-      if (lastTime != null) {
-        final elapsed = DateTime.now().difference(lastTime);
-        final remaining = policy.minRequestInterval! - elapsed;
-        if (remaining > Duration.zero) {
-          debugPrint('[ServiceRateLimiter] Throttling $service for ${remaining.inMilliseconds}ms');
-          await Future.delayed(remaining);
+    try {
+      // Rate limit: wait if we sent a request too recently
+      if (policy.minRequestInterval != null) {
+        final lastTime = _lastRequestTime[service];
+        if (lastTime != null) {
+          final elapsed = DateTime.now().difference(lastTime);
+          final remaining = policy.minRequestInterval! - elapsed;
+          if (remaining > Duration.zero) {
+            debugPrint('[ServiceRateLimiter] Throttling $service for ${remaining.inMilliseconds}ms');
+            await Future.delayed(remaining);
+          }
         }
       }
-    }
 
-    // Record request time
-    _lastRequestTime[service] = DateTime.now();
+      // Record request time
+      _lastRequestTime[service] = DateTime.now();
+    } catch (_) {
+      // Release the semaphore slot if the rate-limit delay fails,
+      // to avoid permanently leaking a slot.
+      semaphore?.release();
+      rethrow;
+    }
   }
 
   /// Release a connection slot after request completes.
