@@ -330,7 +330,13 @@ class AppState extends ChangeNotifier {
   }
 
   Future<bool> validateToken() async {
-    return await _authState.validateToken();
+    try {
+      await _authState.refreshAuthState();
+      return _authState.isLoggedIn;
+    } catch (e) {
+      debugPrint('AppState: Token validation error: $e');
+      return false;
+    }
   }
   
   // ---------- Messages Methods ----------
