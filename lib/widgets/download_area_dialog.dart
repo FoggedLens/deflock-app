@@ -262,16 +262,46 @@ class _DownloadAreaDialogState extends State<DownloadAreaDialog> {
             ElevatedButton(
               onPressed: isOfflineMode ? null : () async {
                 try {
+                  // Get current tile provider info
+                  final appState = context.read<AppState>();
+                  final selectedProvider = appState.selectedTileProvider;
+                  final selectedTileType = appState.selectedTileType;
+
+                  // Check if the tile provider allows offline downloads
+                  if (selectedTileType != null && !selectedTileType.allowsOfflineDownload) {
+                    if (!context.mounted) return;
+                    Navigator.pop(context);
+                    showDialog(
+                      context: context,
+                      builder: (context) => AlertDialog(
+                        title: Row(
+                          children: [
+                            const Icon(Icons.block, color: Colors.orange),
+                            const SizedBox(width: 10),
+                            Text(locService.t('download.title')),
+                          ],
+                        ),
+                        content: Text(
+                          'The ${selectedProvider?.name ?? 'current tile'} server does not permit offline downloads. '
+                          'Switch to a tile provider that allows offline use '
+                          '(e.g., Bing Maps, Mapbox, or a self-hosted tile server).',
+                        ),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(context),
+                            child: Text(locService.t('actions.ok')),
+                          ),
+                        ],
+                      ),
+                    );
+                    return;
+                  }
+
                   final id = DateTime.now().toIso8601String().replaceAll(':', '-');
                   final appDocDir = await OfflineAreaService().getOfflineAreaDir();
                   if (!context.mounted) return;
                   final dir = "${appDocDir.path}/$id";
 
-                  // Get current tile provider info
-                  final appState = context.read<AppState>();
-                  final selectedProvider = appState.selectedTileProvider;
-                  final selectedTileType = appState.selectedTileType;
-                  
                   // Fire and forget: don't await download, so dialog closes immediately
                   // ignore: unawaited_futures
                   OfflineAreaService().downloadArea(

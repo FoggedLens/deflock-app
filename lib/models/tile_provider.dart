@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import '../services/service_policy.dart';
+
 /// A specific tile type within a provider
 class TileType {
   final String id;
@@ -75,6 +77,14 @@ class TileType {
 
   /// Check if this tile type needs an API key
   bool get requiresApiKey => urlTemplate.contains('{api_key}');
+
+  /// Whether this tile server's usage policy permits offline/bulk downloading.
+  /// Resolved via [ServicePolicyResolver] from the URL template.
+  bool get allowsOfflineDownload =>
+      ServicePolicyResolver.resolve(urlTemplate).allowsOfflineDownload;
+
+  /// The service policy that applies to this tile type's server.
+  ServicePolicy get servicePolicy => ServicePolicyResolver.resolve(urlTemplate);
 
   Map<String, dynamic> toJson() => {
     'id': id,

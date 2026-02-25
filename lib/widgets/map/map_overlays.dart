@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map_animations/flutter_map_animations.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../app_state.dart';
 import '../../dev_config.dart';
 import '../../services/localization_service.dart';
+import '../../services/service_policy.dart';
 import '../compass_indicator.dart';
 import 'layer_selector_button.dart';
 
@@ -26,16 +28,47 @@ class MapOverlays extends StatelessWidget {
     this.onSearchPressed,
   });
 
-  /// Show full attribution text in a dialog
+  /// Show full attribution text in a dialog with license link.
   void _showAttributionDialog(BuildContext context, String attribution) {
     final locService = LocalizationService.instance;
+
+    // Get the license URL from the current tile provider's service policy
+    final appState = AppState.instance;
+    final tileType = appState.selectedTileType;
+    final attributionUrl = tileType?.servicePolicy.attributionUrl;
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         title: Text(locService.t('mapTiles.attribution')),
-        content: SelectableText(
-          attribution,
-          style: const TextStyle(fontSize: 14),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SelectableText(
+              attribution,
+              style: const TextStyle(fontSize: 14),
+            ),
+            if (attributionUrl != null) ...[
+              const SizedBox(height: 12),
+              GestureDetector(
+                onTap: () async {
+                  final uri = Uri.parse(attributionUrl);
+                  if (await canLaunchUrl(uri)) {
+                    await launchUrl(uri, mode: LaunchMode.externalApplication);
+                  }
+                },
+                child: Text(
+                  attributionUrl,
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: Theme.of(context).colorScheme.primary,
+                    decoration: TextDecoration.underline,
+                  ),
+                ),
+              ),
+            ],
+          ],
         ),
         actions: [
           TextButton(
