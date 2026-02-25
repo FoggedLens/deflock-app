@@ -227,6 +227,10 @@ class ServicePolicyResolver {
     return ServiceType.custom;
   }
 
+  /// Look up the [ServicePolicy] for a known [ServiceType].
+  static ServicePolicy resolveByType(ServiceType type) =>
+      _policies[type] ?? const ServicePolicy();
+
   /// Register a custom policy override for a host pattern.
   ///
   /// Use this to configure self-hosted services:
@@ -293,7 +297,7 @@ class ServiceRateLimiter {
   /// 1. The minimum interval between requests hasn't elapsed yet, or
   /// 2. All concurrent connection slots are in use.
   static Future<void> acquire(ServiceType service) async {
-    final policy = ServicePolicyResolver._policies[service] ?? const ServicePolicy();
+    final policy = ServicePolicyResolver.resolveByType(service);
 
     // Rate limit: wait if we sent a request too recently
     if (policy.minRequestInterval != null) {
@@ -356,7 +360,7 @@ class _Semaphore {
     if (_waiters.isNotEmpty) {
       final next = _waiters.removeAt(0);
       next.complete();
-    } else if (_currentCount > 0) {
+    } else {
       _currentCount--;
     }
   }

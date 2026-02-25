@@ -118,14 +118,10 @@ class SearchService {
 
     debugPrint('[SearchService] Searching Nominatim: $uri');
 
+    // Rate limit: max 1 request/sec per Nominatim policy
+    await ServiceRateLimiter.acquire(ServiceType.nominatim);
     try {
-      // Rate limit: max 1 request/sec per Nominatim policy
-      await ServiceRateLimiter.acquire(ServiceType.nominatim);
-
       final response = await _client.get(uri).timeout(_timeout);
-
-      ServiceRateLimiter.release(ServiceType.nominatim);
-
 
       if (response.statusCode != 200) {
         throw Exception('HTTP ${response.statusCode}: ${response.reasonPhrase}');
@@ -142,12 +138,11 @@ class SearchService {
 
       debugPrint('[SearchService] Found ${results.length} results');
       return results;
-
     } catch (e) {
-      // Release the semaphore on error too
-      ServiceRateLimiter.release(ServiceType.nominatim);
       debugPrint('[SearchService] Search failed: $e');
       throw Exception('Search failed: $e');
+    } finally {
+      ServiceRateLimiter.release(ServiceType.nominatim);
     }
   }
 

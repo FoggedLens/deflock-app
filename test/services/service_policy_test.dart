@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:deflock/services/service_policy.dart';
+import 'package:deflockapp/services/service_policy.dart';
 
 void main() {
   group('ServicePolicyResolver', () {
