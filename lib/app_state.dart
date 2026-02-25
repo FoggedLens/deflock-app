@@ -13,6 +13,7 @@ import 'models/pending_upload.dart';
 import 'models/suspected_location.dart';
 import 'models/tile_provider.dart';
 import 'models/search_result.dart';
+import 'services/nuclear_reset_service.dart';
 import 'services/offline_area_service.dart';
 import 'services/map_data_provider.dart';
 import 'services/node_data_manager.dart';
@@ -58,6 +59,7 @@ class AppState extends ChangeNotifier {
   late final UploadQueueState _uploadQueueState;
 
   bool _isInitialized = false;
+  bool _didNuclearReset = false;
   
   // Positioning tutorial state
   LatLng? _tutorialStartPosition; // Track where the tutorial started
@@ -94,6 +96,12 @@ class AppState extends ChangeNotifier {
 
   // Getters that delegate to individual state modules
   bool get isInitialized => _isInitialized;
+  /// True if a nuclear reset occurred during this launch. Check once then clear.
+  bool consumeDidNuclearReset() {
+    final val = _didNuclearReset;
+    _didNuclearReset = false;
+    return val;
+  }
   
   // Auth state
   bool get isLoggedIn => _authState.isLoggedIn;
@@ -190,75 +198,103 @@ class AppState extends ChangeNotifier {
   }
 
   // ---------- Init ----------
+  static const String _initFailureCountKey = 'init_failure_count';
+
   Future<void> _init() async {
-    // Initialize all state modules
-    await _settingsState.init();
-    
-    // Initialize changelog service
-    await ChangelogService().init();
-    
-    // Attempt to fetch missing tile type preview tiles (fails silently)
-    _fetchMissingTilePreviews();
-    
-    // Check if we should add default profiles (first launch OR no profiles of each type exist)
-    final prefs = await SharedPreferences.getInstance();
-    const firstLaunchKey = 'profiles_defaults_initialized';
-    final isFirstLaunch = !(prefs.getBool(firstLaunchKey) ?? false);
-    
-    // Load existing profiles to check each type independently
-    final existingOperatorProfiles = await OperatorProfileService().load();
-    final existingNodeProfiles = await ProfileService().load();
-    
-    final shouldAddOperatorDefaults = isFirstLaunch || existingOperatorProfiles.isEmpty;
-    final shouldAddNodeDefaults = isFirstLaunch || existingNodeProfiles.isEmpty;
-    
-    await _operatorProfileState.init(addDefaults: shouldAddOperatorDefaults);
-    await _profileState.init(addDefaults: shouldAddNodeDefaults);
-    
-    // Set up callback to clear stale sessions when profiles are deleted
-    _profileState.setProfileDeletedCallback(_onProfileDeleted);
-    
-    // Mark defaults as initialized if this was first launch
-    if (isFirstLaunch) {
-      await prefs.setBool(firstLaunchKey, true);
+    try {
+      // Nuclear reset check: if init has failed >= 2 times, wipe everything.
+      // SharedPreferences.getInstance() returns a singleton — the same in-memory
+      // object is returned every time, so after clearEverything() wipes it we can
+      // re-read the (now-zeroed) failure count from the same reference.
+      var prefs = await SharedPreferences.getInstance();
+      final failureCount = prefs.getInt(_initFailureCountKey) ?? 0;
+      if (failureCount >= 2) {
+        debugPrint('[AppState] Init failed $failureCount times — triggering nuclear reset');
+        await NuclearResetService.clearEverything();
+        _didNuclearReset = true;
+        // Re-acquire: clearEverything() calls prefs.clear(), so the cached
+        // singleton is already wiped. Re-read to confirm the zeroed state.
+        prefs = await SharedPreferences.getInstance();
+      }
+
+      // Increment failure count before running init (cleared on success).
+      final currentCount = prefs.getInt(_initFailureCountKey) ?? 0;
+      await prefs.setInt(_initFailureCountKey, currentCount + 1);
+
+      // Settings must init first — other modules read its values
+      await _settingsState.init();
+
+      // Initialize changelog service
+      await ChangelogService().init();
+
+      // Fire-and-forget tile preview fetch (existing pattern)
+      _fetchMissingTilePreviews();
+
+      // Check if we should add default profiles (first launch OR no profiles of each type exist)
+      const firstLaunchKey = 'profiles_defaults_initialized';
+      final isFirstLaunch = !(prefs.getBool(firstLaunchKey) ?? false);
+
+      final existingOperatorProfiles = await OperatorProfileService().load();
+      final existingNodeProfiles = await ProfileService().load();
+
+      final shouldAddOperatorDefaults = isFirstLaunch || existingOperatorProfiles.isEmpty;
+      final shouldAddNodeDefaults = isFirstLaunch || existingNodeProfiles.isEmpty;
+
+      await _operatorProfileState.init(addDefaults: shouldAddOperatorDefaults);
+      await _profileState.init(addDefaults: shouldAddNodeDefaults);
+
+      // Set up callback to clear stale sessions when profiles are deleted
+      _profileState.setProfileDeletedCallback(_onProfileDeleted);
+
+      if (isFirstLaunch) {
+        await prefs.setBool(firstLaunchKey, true);
+      }
+
+      // Local-only init for suspected locations (no network)
+      await _suspectedLocationState.initLocal();
+      await _uploadQueueState.init();
+      // Local-only auth init (no network)
+      await _authState.init(_settingsState.uploadMode);
+
+      // Set up callback to repopulate pending nodes after cache clears
+      NodeProviderWithCache.instance.setOnCacheClearedCallback(() {
+        _uploadQueueState.repopulateCacheFromQueue();
+      });
+
+      // Initialize OfflineAreaService to ensure offline areas are loaded
+      await OfflineAreaService().ensureInitialized();
+
+      // Preload offline nodes into cache for immediate display
+      await NodeDataManager().preloadOfflineNodes();
+
+      // Start uploader if conditions are met
+      _startUploader();
+
+      _isInitialized = true;
+
+      // Clear failure count on success
+      await prefs.setInt(_initFailureCountKey, 0);
+
+      // Post-init background tasks (non-blocking, fire-and-forget)
+      _suspectedLocationState.refreshIfNeeded(
+        offlineMode: _settingsState.offlineMode,
+      );
+      _authState.refreshIfNeeded();
+      if (isLoggedIn) checkMessages();
+      _startMessageCheckTimer();
+      Future.delayed(const Duration(milliseconds: 500), () {
+        DeepLinkService().checkInitialLink();
+      });
+
+      notifyListeners();
+    } catch (e, stackTrace) {
+      debugPrint('[AppState] Critical error during initialization: $e');
+      debugPrint('[AppState] Stack trace: $stackTrace');
+      // Set initialized to true to prevent stuck loading screen.
+      // Next launch may trigger nuclear reset if failure count >= 2.
+      _isInitialized = true;
+      notifyListeners();
     }
-    
-    await _suspectedLocationState.init(offlineMode: _settingsState.offlineMode);
-    await _uploadQueueState.init();
-    await _authState.init(_settingsState.uploadMode);
-    
-    // Set up callback to repopulate pending nodes after cache clears
-    NodeProviderWithCache.instance.setOnCacheClearedCallback(() {
-      _uploadQueueState.repopulateCacheFromQueue();
-    });
-    
-    // Check for messages on app launch if user is already logged in
-    if (isLoggedIn) {
-      checkMessages();
-    }
-    
-    // Note: Re-auth check will be triggered from home screen after init
-    
-    // Initialize OfflineAreaService to ensure offline areas are loaded
-    await OfflineAreaService().ensureInitialized();
-    
-    // Preload offline nodes into cache for immediate display
-    await NodeDataManager().preloadOfflineNodes();
-    
-    // Start uploader if conditions are met
-    _startUploader();
-    
-    _isInitialized = true;
-    
-    // Check for initial deep link after a small delay to let navigation settle
-    Future.delayed(const Duration(milliseconds: 500), () {
-      DeepLinkService().checkInitialLink();
-    });
-    
-    // Start periodic message checking
-    _startMessageCheckTimer();
-    
-    notifyListeners();
   }
   
   void _startMessageCheckTimer() {
@@ -303,7 +339,13 @@ class AppState extends ChangeNotifier {
   }
 
   Future<bool> validateToken() async {
-    return await _authState.validateToken();
+    try {
+      await _authState.refreshAuthState();
+      return _authState.isLoggedIn;
+    } catch (e) {
+      debugPrint('AppState: Token validation error: $e');
+      return false;
+    }
   }
   
   // ---------- Messages Methods ----------

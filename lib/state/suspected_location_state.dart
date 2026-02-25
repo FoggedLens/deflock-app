@@ -77,8 +77,8 @@ class SuspectedLocationState extends ChangeNotifier {
   /// Background refresh if data is stale. Fire-and-forget safe.
   Future<void> refreshIfNeeded({bool offlineMode = false}) async {
     try {
-      await _service.refreshIfNeeded(offlineMode: offlineMode);
-      notifyListeners();
+      final didRefresh = await _service.refreshIfNeeded(offlineMode: offlineMode);
+      if (didRefresh) notifyListeners();
     } catch (e) {
       debugPrint('[SuspectedLocationState] Background refresh failed: $e');
     }
