@@ -4,11 +4,21 @@ import '../offline_areas/offline_area_models.dart';
 import '../offline_areas/offline_tile_utils.dart';
 import '../../app_state.dart';
 
-/// Fetch a tile from the newest offline area that matches the current provider, or throw if not found.
-Future<List<int>> fetchLocalTile({required int z, required int x, required int y}) async {
+/// Fetch a tile from the newest offline area that matches the given provider, or throw if not found.
+///
+/// When [providerId] and [tileTypeId] are supplied the lookup is pinned to
+/// those values (avoids a race when the user switches provider mid-flight).
+/// Otherwise falls back to the current AppState selection.
+Future<List<int>> fetchLocalTile({
+  required int z,
+  required int x,
+  required int y,
+  String? providerId,
+  String? tileTypeId,
+}) async {
   final appState = AppState.instance;
-  final currentProvider = appState.selectedTileProvider;
-  final currentTileType = appState.selectedTileType;
+  final currentProviderId = providerId ?? appState.selectedTileProvider?.id;
+  final currentTileTypeId = tileTypeId ?? appState.selectedTileType?.id;
   
   final offlineService = OfflineAreaService();
   await offlineService.ensureInitialized();
@@ -20,7 +30,7 @@ Future<List<int>> fetchLocalTile({required int z, required int x, required int y
     if (z < area.minZoom || z > area.maxZoom) continue;
     
     // Only consider areas that match the current provider/type
-    if (area.tileProviderId != currentProvider?.id || area.tileTypeId != currentTileType?.id) continue;
+    if (area.tileProviderId != currentProviderId || area.tileTypeId != currentTileTypeId) continue;
 
     // Get tile coverage for area at this zoom only
     final coveredTiles = computeTileList(area.bounds, z, z);
@@ -35,7 +45,7 @@ Future<List<int>> fetchLocalTile({required int z, required int x, required int y
     }
   }
   if (candidates.isEmpty) {
-    throw Exception('Tile $z/$x/$y from current provider ${currentProvider?.id}/${currentTileType?.id} not found in any offline area');
+    throw Exception('Tile $z/$x/$y from provider $currentProviderId/$currentTileTypeId not found in any offline area');
   }
   candidates.sort((a, b) => b.modified.compareTo(a.modified)); // newest first
   return await candidates.first.file.readAsBytes();

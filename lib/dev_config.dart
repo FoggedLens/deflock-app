@@ -155,15 +155,6 @@ const double kPinchZoomThreshold = 0.2; // How much pinch required to start zoom
 const double kPinchMoveThreshold = 30.0; // How much drag required for two-finger pan (default 40.0)
 const double kRotationThreshold = 6.0; // Degrees of rotation required before map actually rotates (Google Maps style)
 
-// Tile fetch configuration (brutalist approach: simple, configurable, unlimited retries)
-const int kTileFetchConcurrentThreads = 8;          // Reduced from 10 to 8 for better cross-platform performance
-const int kTileFetchInitialDelayMs = 150;           // Reduced from 200ms for faster retries 
-const double kTileFetchBackoffMultiplier = 1.4;     // Slightly reduced for faster recovery
-const int kTileFetchMaxDelayMs = 4000;             // Reduced from 5000ms for faster max retry
-const int kTileFetchRandomJitterMs = 50;            // Reduced jitter for more predictable timing
-const int kTileFetchMaxQueueSize = 100;             // Reasonable queue size to prevent memory bloat
-// Note: Removed max attempts - tiles retry indefinitely until they succeed or are canceled
-
 // User download max zoom span (user can download up to kMaxUserDownloadZoomSpan zooms above min)
 const int kMaxUserDownloadZoomSpan = 7;
 
