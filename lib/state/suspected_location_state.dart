@@ -4,8 +4,11 @@ import '../models/suspected_location.dart';
 import '../services/suspected_location_service.dart';
 
 class SuspectedLocationState extends ChangeNotifier {
-  final SuspectedLocationService _service = SuspectedLocationService();
-  
+  final SuspectedLocationService _service;
+
+  SuspectedLocationState({SuspectedLocationService? service})
+      : _service = service ?? SuspectedLocationService();
+
   SuspectedLocation? _selectedLocation;
   bool _isLoading = false;
   double? _downloadProgress; // 0.0 to 1.0, null when not downloading
@@ -59,6 +62,26 @@ class SuspectedLocationState extends ChangeNotifier {
   Future<void> init({bool offlineMode = false}) async {
     await _service.init(offlineMode: offlineMode);
     notifyListeners();
+  }
+
+  /// Fast, local-only init (SharedPrefs + SQLite). No network.
+  Future<void> initLocal() async {
+    try {
+      await _service.initLocal();
+    } catch (e) {
+      debugPrint('[SuspectedLocationState] initLocal failed: $e');
+    }
+    notifyListeners();
+  }
+
+  /// Background refresh if data is stale. Fire-and-forget safe.
+  Future<void> refreshIfNeeded({bool offlineMode = false}) async {
+    try {
+      await _service.refreshIfNeeded(offlineMode: offlineMode);
+      notifyListeners();
+    } catch (e) {
+      debugPrint('[SuspectedLocationState] Background refresh failed: $e');
+    }
   }
 
   /// Enable or disable suspected locations
