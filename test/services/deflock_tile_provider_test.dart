@@ -1,119 +1,251 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:http/http.dart' as http;
 import 'package:mocktail/mocktail.dart';
 
 import 'package:deflockapp/app_state.dart';
+import 'package:deflockapp/models/tile_provider.dart' as models;
 import 'package:deflockapp/services/deflock_tile_provider.dart';
-import 'package:deflockapp/services/map_data_provider.dart';
 
 class MockAppState extends Mock implements AppState {}
 
 void main() {
+  late DeflockTileProvider provider;
+  late MockAppState mockAppState;
+
+  setUp(() {
+    mockAppState = MockAppState();
+    AppState.instance = mockAppState;
+
+    // Default stubs: online, OSM provider selected, no offline areas
+    when(() => mockAppState.offlineMode).thenReturn(false);
+    when(() => mockAppState.selectedTileProvider).thenReturn(
+      const models.TileProvider(
+        id: 'openstreetmap',
+        name: 'OpenStreetMap',
+        tileTypes: [],
+      ),
+    );
+    when(() => mockAppState.selectedTileType).thenReturn(
+      const models.TileType(
+        id: 'osm_street',
+        name: 'Street Map',
+        urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+        attribution: '© OpenStreetMap',
+        maxZoom: 19,
+      ),
+    );
+
+    provider = DeflockTileProvider();
+  });
+
+  tearDown(() async {
+    await provider.dispose();
+    AppState.instance = MockAppState();
+  });
+
   group('DeflockTileProvider', () {
-    late DeflockTileProvider provider;
-    late MockAppState mockAppState;
-
-    setUp(() {
-      provider = DeflockTileProvider();
-      mockAppState = MockAppState();
-      when(() => mockAppState.selectedTileProvider).thenReturn(null);
-      when(() => mockAppState.selectedTileType).thenReturn(null);
-      AppState.instance = mockAppState;
+    test('supportsCancelLoading is true', () {
+      expect(provider.supportsCancelLoading, isTrue);
     });
 
-    tearDown(() {
-      // Reset to a clean mock so stubbed state doesn't leak to other tests
-      AppState.instance = MockAppState();
+    test('getTileUrl() delegates to TileType.getTileUrl()', () {
+      const coords = TileCoordinates(1, 2, 3);
+      final options = TileLayer(urlTemplate: 'ignored/{z}/{x}/{y}');
+
+      final url = provider.getTileUrl(coords, options);
+
+      expect(url, equals('https://tile.openstreetmap.org/3/1/2.png'));
     });
 
-    test('creates image provider for tile coordinates', () {
-      const coordinates = TileCoordinates(0, 0, 0);
-      final options = TileLayer(
-        urlTemplate: 'test/{z}/{x}/{y}',
+    test('getTileUrl() includes API key when present', () {
+      when(() => mockAppState.selectedTileProvider).thenReturn(
+        const models.TileProvider(
+          id: 'mapbox',
+          name: 'Mapbox',
+          apiKey: 'test_key_123',
+          tileTypes: [],
+        ),
+      );
+      when(() => mockAppState.selectedTileType).thenReturn(
+        const models.TileType(
+          id: 'mapbox_satellite',
+          name: 'Satellite',
+          urlTemplate:
+              'https://api.mapbox.com/v4/mapbox.satellite/{z}/{x}/{y}@2x.jpg90?access_token={api_key}',
+          attribution: '© Mapbox',
+        ),
       );
 
-      final imageProvider = provider.getImage(coordinates, options);
+      const coords = TileCoordinates(1, 2, 10);
+      final options = TileLayer(urlTemplate: 'ignored');
 
-      expect(imageProvider, isA<DeflockTileImageProvider>());
-      expect((imageProvider as DeflockTileImageProvider).coordinates,
-          equals(coordinates));
+      final url = provider.getTileUrl(coords, options);
+
+      expect(url, contains('access_token=test_key_123'));
+      expect(url, contains('/10/1/2@2x'));
+    });
+
+    test('getTileUrl() falls back to super when no provider selected', () {
+      when(() => mockAppState.selectedTileProvider).thenReturn(null);
+      when(() => mockAppState.selectedTileType).thenReturn(null);
+
+      const coords = TileCoordinates(1, 2, 3);
+      final options = TileLayer(urlTemplate: 'https://example.com/{z}/{x}/{y}');
+
+      final url = provider.getTileUrl(coords, options);
+
+      // Super implementation uses the urlTemplate from TileLayer options
+      expect(url, equals('https://example.com/3/1/2'));
+    });
+
+    test('routes to network path when no offline areas exist', () {
+      // offlineMode = false, OfflineAreaService not initialized → no offline areas
+      const coords = TileCoordinates(5, 10, 12);
+      final options = TileLayer(urlTemplate: 'test/{z}/{x}/{y}');
+      final cancelLoading = Future<void>.value();
+
+      final imageProvider = provider.getImageWithCancelLoadingSupport(
+        coords,
+        options,
+        cancelLoading,
+      );
+
+      // Should NOT be a DeflockOfflineTileImageProvider — it should be the
+      // NetworkTileImageProvider returned by super
+      expect(imageProvider, isNot(isA<DeflockOfflineTileImageProvider>()));
+    });
+
+    test('routes to offline path when offline mode is enabled', () {
+      when(() => mockAppState.offlineMode).thenReturn(true);
+
+      const coords = TileCoordinates(5, 10, 12);
+      final options = TileLayer(urlTemplate: 'test/{z}/{x}/{y}');
+      final cancelLoading = Future<void>.value();
+
+      final imageProvider = provider.getImageWithCancelLoadingSupport(
+        coords,
+        options,
+        cancelLoading,
+      );
+
+      expect(imageProvider, isA<DeflockOfflineTileImageProvider>());
+      final offlineProvider = imageProvider as DeflockOfflineTileImageProvider;
+      expect(offlineProvider.isOfflineOnly, isTrue);
+      expect(offlineProvider.coordinates, equals(coords));
+      expect(offlineProvider.providerId, equals('openstreetmap'));
+      expect(offlineProvider.tileTypeId, equals('osm_street'));
     });
   });
 
-  group('DeflockTileImageProvider', () {
-    test('generates consistent keys for same coordinates', () {
-      const coordinates1 = TileCoordinates(1, 2, 3);
-      const coordinates2 = TileCoordinates(1, 2, 3);
-      const coordinates3 = TileCoordinates(1, 2, 4);
-
+  group('DeflockOfflineTileImageProvider', () {
+    test('equal for same coordinates and provider/type', () {
+      const coords = TileCoordinates(1, 2, 3);
       final options = TileLayer(urlTemplate: 'test/{z}/{x}/{y}');
+      final cancel = Future<void>.value();
 
-      final mapDataProvider = MapDataProvider();
-
-      final provider1 = DeflockTileImageProvider(
-        coordinates: coordinates1,
+      final a = DeflockOfflineTileImageProvider(
+        coordinates: coords,
         options: options,
-        mapDataProvider: mapDataProvider,
-        providerId: 'test_provider',
-        tileTypeId: 'test_type',
+        httpClient: http.Client(),
+        headers: const {},
+        cancelLoading: cancel,
+        isOfflineOnly: false,
+        providerId: 'prov_a',
+        tileTypeId: 'type_1',
+        tileUrl: 'https://example.com/3/1/2',
       );
-      final provider2 = DeflockTileImageProvider(
-        coordinates: coordinates2,
+      final b = DeflockOfflineTileImageProvider(
+        coordinates: coords,
         options: options,
-        mapDataProvider: mapDataProvider,
-        providerId: 'test_provider',
-        tileTypeId: 'test_type',
-      );
-      final provider3 = DeflockTileImageProvider(
-        coordinates: coordinates3,
-        options: options,
-        mapDataProvider: mapDataProvider,
-        providerId: 'test_provider',
-        tileTypeId: 'test_type',
+        httpClient: http.Client(),
+        headers: const {},
+        cancelLoading: cancel,
+        isOfflineOnly: true, // different — but not in ==
+        providerId: 'prov_a',
+        tileTypeId: 'type_1',
+        tileUrl: 'https://other.com/3/1/2', // different — but not in ==
       );
 
-      // Same coordinates should be equal
-      expect(provider1, equals(provider2));
-      expect(provider1.hashCode, equals(provider2.hashCode));
-
-      // Different coordinates should not be equal
-      expect(provider1, isNot(equals(provider3)));
+      expect(a, equals(b));
+      expect(a.hashCode, equals(b.hashCode));
     });
 
-    test('generates different keys for different providers/types', () {
-      const coordinates = TileCoordinates(1, 2, 3);
+    test('not equal for different coordinates', () {
+      const coords1 = TileCoordinates(1, 2, 3);
+      const coords2 = TileCoordinates(1, 2, 4);
       final options = TileLayer(urlTemplate: 'test/{z}/{x}/{y}');
-      final mapDataProvider = MapDataProvider();
+      final cancel = Future<void>.value();
 
-      final provider1 = DeflockTileImageProvider(
-        coordinates: coordinates,
+      final a = DeflockOfflineTileImageProvider(
+        coordinates: coords1,
         options: options,
-        mapDataProvider: mapDataProvider,
-        providerId: 'provider_a',
+        httpClient: http.Client(),
+        headers: const {},
+        cancelLoading: cancel,
+        isOfflineOnly: false,
+        providerId: 'prov_a',
         tileTypeId: 'type_1',
+        tileUrl: 'url1',
       );
-      final provider2 = DeflockTileImageProvider(
-        coordinates: coordinates,
+      final b = DeflockOfflineTileImageProvider(
+        coordinates: coords2,
         options: options,
-        mapDataProvider: mapDataProvider,
-        providerId: 'provider_b',
+        httpClient: http.Client(),
+        headers: const {},
+        cancelLoading: cancel,
+        isOfflineOnly: false,
+        providerId: 'prov_a',
         tileTypeId: 'type_1',
+        tileUrl: 'url2',
       );
-      final provider3 = DeflockTileImageProvider(
-        coordinates: coordinates,
+
+      expect(a, isNot(equals(b)));
+    });
+
+    test('not equal for different provider or type', () {
+      const coords = TileCoordinates(1, 2, 3);
+      final options = TileLayer(urlTemplate: 'test/{z}/{x}/{y}');
+      final cancel = Future<void>.value();
+
+      final base = DeflockOfflineTileImageProvider(
+        coordinates: coords,
         options: options,
-        mapDataProvider: mapDataProvider,
-        providerId: 'provider_a',
+        httpClient: http.Client(),
+        headers: const {},
+        cancelLoading: cancel,
+        isOfflineOnly: false,
+        providerId: 'prov_a',
+        tileTypeId: 'type_1',
+        tileUrl: 'url',
+      );
+      final diffProvider = DeflockOfflineTileImageProvider(
+        coordinates: coords,
+        options: options,
+        httpClient: http.Client(),
+        headers: const {},
+        cancelLoading: cancel,
+        isOfflineOnly: false,
+        providerId: 'prov_b',
+        tileTypeId: 'type_1',
+        tileUrl: 'url',
+      );
+      final diffType = DeflockOfflineTileImageProvider(
+        coordinates: coords,
+        options: options,
+        httpClient: http.Client(),
+        headers: const {},
+        cancelLoading: cancel,
+        isOfflineOnly: false,
+        providerId: 'prov_a',
         tileTypeId: 'type_2',
+        tileUrl: 'url',
       );
 
-      // Different providers should not be equal (even with same coordinates)
-      expect(provider1, isNot(equals(provider2)));
-      expect(provider1.hashCode, isNot(equals(provider2.hashCode)));
-
-      // Different tile types should not be equal (even with same coordinates and provider)
-      expect(provider1, isNot(equals(provider3)));
-      expect(provider1.hashCode, isNot(equals(provider3.hashCode)));
+      expect(base, isNot(equals(diffProvider)));
+      expect(base.hashCode, isNot(equals(diffProvider.hashCode)));
+      expect(base, isNot(equals(diffType)));
+      expect(base.hashCode, isNot(equals(diffType.hashCode)));
     });
   });
 }

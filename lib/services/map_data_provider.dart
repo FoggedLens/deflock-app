@@ -4,7 +4,7 @@ import 'package:flutter_map/flutter_map.dart';
 import '../models/node_profile.dart';
 import '../models/osm_node.dart';
 import '../app_state.dart';
-import 'map_data_submodules/tiles_from_remote.dart';
+import 'http_client.dart';
 import 'map_data_submodules/tiles_from_local.dart';
 import 'node_data_manager.dart';
 import 'node_spatial_cache.dart';
@@ -24,6 +24,7 @@ class MapDataProvider {
   MapDataProvider._();
 
   final NodeDataManager _nodeDataManager = NodeDataManager();
+  final UserAgentClient _httpClient = UserAgentClient();
 
   bool get isOfflineMode => AppState.instance.offlineMode;
   void setOfflineMode(bool enabled) {
@@ -97,29 +98,24 @@ class MapDataProvider {
     }
   }
 
-  /// Fetch remote tile using current provider from AppState
+  /// Fetch remote tile using current provider from AppState.
+  /// Only used by offline area downloader — the main tile pipeline now goes
+  /// through NetworkTileProvider (see DeflockTileProvider).
   Future<List<int>> _fetchRemoteTileFromCurrentProvider(int z, int x, int y) async {
     final appState = AppState.instance;
     final selectedTileType = appState.selectedTileType;
     final selectedProvider = appState.selectedTileProvider;
-    
-    // We guarantee that a provider and tile type are always selected
+
     if (selectedTileType == null || selectedProvider == null) {
       throw Exception('No tile provider selected - this should never happen');
     }
-    
-    final tileUrl = selectedTileType.getTileUrl(z, x, y, apiKey: selectedProvider.apiKey);
-    return fetchRemoteTile(z: z, x: x, y: y, url: tileUrl);
-  }
 
-  /// Clear any queued tile requests (call when map view changes significantly)
-  void clearTileQueue() {
-    clearRemoteTileQueue();
-  }
-  
-  /// Clear only tile requests that are no longer visible in the current bounds
-  void clearTileQueueSelective(LatLngBounds currentBounds) {
-    clearRemoteTileQueueSelective(currentBounds);
+    final tileUrl = selectedTileType.getTileUrl(z, x, y, apiKey: selectedProvider.apiKey);
+    final resp = await _httpClient.get(Uri.parse(tileUrl));
+    if (resp.statusCode == 200 && resp.bodyBytes.isNotEmpty) {
+      return resp.bodyBytes;
+    }
+    throw Exception('Failed to fetch tile $z/$x/$y: status ${resp.statusCode}');
   }
 
   /// Add or update nodes in cache (for upload queue integration)

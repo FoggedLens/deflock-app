@@ -22,7 +22,7 @@ class TileLayerManager {
 
   /// Dispose of resources
   void dispose() {
-    // No resources to dispose with the new tile provider
+    _tileProvider?.dispose();
   }
 
   /// Check if cache should be cleared and increment rebuild key if needed.
@@ -45,7 +45,8 @@ class TileLayerManager {
     if (shouldClear) {
       // Force map rebuild with new key to bust flutter_map cache
       _mapRebuildKey++;
-      // Also force new tile provider instance to ensure fresh cache
+      // Dispose old provider before creating a fresh one (closes HTTP client)
+      _tileProvider?.dispose();
       _tileProvider = null;
       debugPrint('[TileLayerManager] *** CACHE CLEAR *** $reason changed - rebuilding map $_mapRebuildKey');
     }
@@ -58,7 +59,7 @@ class TileLayerManager {
 
   /// Clear the tile request queue (call after cache clear)
   void clearTileQueue() {
-    // With the new tile provider, clearing is handled by FlutterMap's internal cache
+    // With NetworkTileProvider, clearing is handled by FlutterMap's internal cache
     // We just need to increment the rebuild key to bust the cache
     _mapRebuildKey++;
     debugPrint('[TileLayerManager] Cache cleared - rebuilding map $_mapRebuildKey');
@@ -66,14 +67,12 @@ class TileLayerManager {
 
   /// Clear tile queue immediately (for zoom changes, etc.)
   void clearTileQueueImmediate() {
-    // No immediate clearing needed with the new architecture
-    // FlutterMap handles this naturally
+    // No immediate clearing needed — NetworkTileProvider aborts obsolete requests
   }
-  
+
   /// Clear only tiles that are no longer visible in the current bounds
   void clearStaleRequests({required LatLngBounds currentBounds}) {
-    // No selective clearing needed with the new architecture  
-    // FlutterMap's internal caching is efficient enough
+    // No selective clearing needed — NetworkTileProvider aborts obsolete requests
   }
 
   /// Build tile layer widget with current provider and type.
@@ -84,13 +83,15 @@ class TileLayerManager {
   }) {
     // Create a fresh tile provider instance if we don't have one or cache was cleared
     _tileProvider ??= DeflockTileProvider();
-    
-    // Use provider/type info in URL template for FlutterMap's cache key generation
-    // This ensures different providers/types get different cache keys
-    final urlTemplate = '${selectedProvider?.id ?? 'unknown'}/${selectedTileType?.id ?? 'unknown'}/{z}/{x}/{y}';
-    
+
+    // Use the actual urlTemplate from the selected tile type. Our getTileUrl()
+    // override handles the real URL generation; flutter_map uses urlTemplate
+    // internally for cache key generation.
+    final urlTemplate = selectedTileType?.urlTemplate
+        ?? '${selectedProvider?.id ?? 'unknown'}/${selectedTileType?.id ?? 'unknown'}/{z}/{x}/{y}';
+
     return TileLayer(
-      urlTemplate: urlTemplate, // Critical for cache key generation
+      urlTemplate: urlTemplate,
       userAgentPackageName: 'me.deflock.deflockapp',
       maxZoom: selectedTileType?.maxZoom.toDouble() ?? 18.0,
       tileProvider: _tileProvider!,
