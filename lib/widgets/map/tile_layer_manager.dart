@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 
@@ -31,11 +33,13 @@ class TileLayerManager {
   /// Dispose of all provider resources.
   ///
   /// Synchronous to match Flutter's [State.dispose] contract. Each provider's
-  /// async cleanup (closing HTTP clients) runs in the background; resources
-  /// will be reclaimed when the futures complete.
+  /// async cleanup (closing HTTP clients) runs in the background; errors are
+  /// caught to avoid unhandled exceptions from dropped futures.
   void dispose() {
     for (final provider in _providers.values) {
-      provider.dispose();
+      unawaited(provider.dispose().catchError(
+        (Object e) => debugPrint('[TileLayerManager] Provider dispose error: $e'),
+      ));
     }
     _providers.clear();
   }
@@ -127,7 +131,7 @@ class TileLayerManager {
           tileType: models.TileType(
             id: 'unknown',
             name: 'Unknown',
-            urlTemplate: '',
+            urlTemplate: 'unknown/unknown/{z}/{x}/{y}',
             attribution: '',
           ),
         ),

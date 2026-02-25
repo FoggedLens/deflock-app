@@ -96,13 +96,21 @@ class ProviderTileCacheStore implements MapCachingProvider {
     final tileFile = File(p.join(cacheDirectory, '$key.tile'));
     final metaFile = File(p.join(cacheDirectory, '$key.meta'));
 
-    // Apply TTL override if configured (e.g., OSM 7-day minimum)
+    // Apply minimum TTL override if configured (e.g., OSM 7-day minimum).
+    // Use the later of server-provided staleAt and our minimum to avoid
+    // accidentally shortening a longer server-provided freshness lifetime.
     final effectiveMetadata = overrideFreshAge != null
-        ? CachedMapTileMetadata(
-            staleAt: DateTime.timestamp().add(overrideFreshAge!),
-            lastModified: metadata.lastModified,
-            etag: metadata.etag,
-          )
+        ? (() {
+            final overrideStaleAt = DateTime.timestamp().add(overrideFreshAge!);
+            final staleAt = metadata.staleAt.isAfter(overrideStaleAt)
+                ? metadata.staleAt
+                : overrideStaleAt;
+            return CachedMapTileMetadata(
+              staleAt: staleAt,
+              lastModified: metadata.lastModified,
+              etag: metadata.etag,
+            );
+          })()
         : metadata;
 
     final metaJson = json.encode({
@@ -218,13 +226,13 @@ class ProviderTileCacheStore implements MapCachingProvider {
         final key = p.basenameWithoutExtension(entry.file.path);
         final metaFile = File(p.join(cacheDirectory, '$key.meta'));
 
-        freedBytes += entry.stat.size;
         try {
           await entry.file.delete();
+          freedBytes += entry.stat.size;
           if (await metaFile.exists()) {
             final metaStat = await metaFile.stat();
-            freedBytes += metaStat.size;
             await metaFile.delete();
+            freedBytes += metaStat.size;
           }
         } catch (e) {
           debugPrint('[ProviderTileCacheStore] Failed to evict $key: $e');

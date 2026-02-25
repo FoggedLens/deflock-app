@@ -285,7 +285,8 @@ class ServicePolicyResolver {
 /// and/or [ServicePolicy.minRequestInterval] set. Services managed elsewhere
 /// (flutter_map, PR #114) are passed through without blocking.
 class ServiceRateLimiter {
-  /// Per-service timestamps of last completed request (for rate limiting).
+  /// Per-service timestamps of the last acquired request slot / request start
+  /// (used for rate limiting in [acquire], not updated on completion).
   static final Map<ServiceType, DateTime> _lastRequestTime = {};
 
   /// Per-service concurrency semaphores.
