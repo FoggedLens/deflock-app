@@ -24,6 +24,8 @@ class NodeProviderWithCache extends ChangeNotifier {
   /// Singleton — dispose is only safe at app shutdown; included for completeness.
   @override
   void dispose() {
+    _debounceTimer?.cancel();
+    _debounceTimer = null;
     _nodeDataManager.removeListener(_onNodeDataManagerUpdate);
     super.dispose();
   }
