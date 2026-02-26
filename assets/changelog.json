@@ -1,7 +1,12 @@
 {
+  "2.8.0": {
+    "content": [
+      "• Update dependencies and build chain tools; no code changes"
+    ]
+  },
   "2.7.2": {
     "content": [
-      "• Now following OSM UserAgent guidelines."
+      "• Now following OSM UserAgent guidelines"
     ]
   },
   "2.7.1": {
