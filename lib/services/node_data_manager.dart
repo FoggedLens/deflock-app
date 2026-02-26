@@ -347,6 +347,9 @@ class NodeDataManager extends ChangeNotifier {
       // Skip marking area if stale and got empty result (short-circuited).
       if (nodes.isNotEmpty || !_isStale(generation)) {
         _cache.markAreaAsFetched(expandedBounds, nodes);
+        if (nodes.isNotEmpty) {
+          notifyListeners(); // Progressive rendering: each quadrant renders immediately
+        }
       }
       return nodes;
 
