@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 import 'dart:ui';
 
 import 'package:flutter_map/flutter_map.dart';
@@ -33,7 +34,11 @@ class DeflockTileProvider extends NetworkTileProvider {
       : _sharedHttpClient = httpClient,
         super(
           httpClient: httpClient,
-          silenceExceptions: true,
+          // Let errors propagate so flutter_map marks tiles as failed
+          // (loadError = true) rather than caching transparent images as
+          // "successfully loaded". The TileLayerManager wires a reset stream
+          // that retries failed tiles after a debounced delay.
+          silenceExceptions: false,
         );
 
   factory DeflockTileProvider() {
@@ -137,8 +142,9 @@ class DeflockTileProvider extends NetworkTileProvider {
 /// Image provider for the offline-first path.
 ///
 /// Tries fetchLocalTile() first. On miss (and if online), falls back to an
-/// HTTP GET via the shared RetryClient. Handles cancelLoading abort and
-/// returns transparent tiles on errors (consistent with silenceExceptions).
+/// HTTP GET via the shared RetryClient. Returns transparent tiles only for
+/// intentional cancellations and offline-only mode; throws on real network
+/// errors so flutter_map marks the tile as failed and retries via reset.
 class DeflockOfflineTileImageProvider
     extends ImageProvider<DeflockOfflineTileImageProvider> {
   final TileCoordinates coordinates;
@@ -197,11 +203,14 @@ class DeflockOfflineTileImageProvider
     Future<Codec> transparent() =>
         decodeBytes(TileProvider.transparentImage);
 
-    try {
-      // Track cancellation
-      bool cancelled = false;
-      cancelLoading.then((_) => cancelled = true);
+    // Track cancellation synchronously via Completer so the catch block
+    // can reliably check it without microtask ordering races.
+    final cancelled = Completer<void>();
+    cancelLoading.then((_) {
+      if (!cancelled.isCompleted) cancelled.complete();
+    }).ignore();
 
+    try {
       // Try local tile first — pass captured IDs to avoid a race if the
       // user switches provider while this async load is in flight.
       try {
@@ -217,7 +226,7 @@ class DeflockOfflineTileImageProvider
         // Local miss — fall through to network if online
       }
 
-      if (cancelled) return await transparent();
+      if (cancelled.isCompleted) return await transparent();
       if (isOfflineOnly) return await transparent();
 
       // Fall back to network via shared RetryClient.
@@ -237,23 +246,30 @@ class DeflockOfflineTileImageProvider
         cancelLoading.then((_) => (statusCode: 0, bytes: Uint8List(0))),
       ]);
 
-      if (cancelled || result.statusCode == 0) return await transparent();
+      // Cancelled / pruned — suppress any later error from the still-running
+      // network future and return transparent (tile is being disposed anyway).
+      if (cancelled.isCompleted || result.statusCode == 0) {
+        networkFuture.ignore();
+        return await transparent();
+      }
 
       if (result.statusCode == 200 && result.bytes.isNotEmpty) {
         return await decodeBytes(result.bytes);
       }
 
-      return await transparent();
+      // Network error (non-200 or empty body) — throw so flutter_map marks
+      // the tile as failed and the reset stream can trigger a retry.
+      // Don't include tileUrl in the exception — it may contain API keys.
+      throw HttpException(
+        'Tile ${coordinates.z}/${coordinates.x}/${coordinates.y} '
+        'returned status ${result.statusCode}',
+      );
     } catch (e) {
-      // Don't log routine offline misses
-      if (!e.toString().contains('offline')) {
-        debugPrint(
-            '[DeflockTileProvider] Offline-first tile failed '
-            '${coordinates.z}/${coordinates.x}/${coordinates.y} '
-            '(${e.runtimeType})');
-      }
-      return await ImmutableBuffer.fromUint8List(TileProvider.transparentImage)
-          .then(decode);
+      // Cancelled tiles always get transparent (they're being disposed)
+      if (cancelled.isCompleted) return await transparent();
+
+      // Let real errors propagate so flutter_map marks loadError = true
+      rethrow;
     }
   }
 

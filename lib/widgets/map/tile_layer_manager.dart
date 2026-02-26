@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 
@@ -12,6 +14,18 @@ class TileLayerManager {
   String? _lastTileTypeId;
   bool? _lastOfflineMode;
 
+  /// Stream that triggers flutter_map to drop all tiles and reload.
+  /// Fired after a debounced delay when tile errors are detected.
+  final StreamController<void> _resetController =
+      StreamController<void>.broadcast();
+
+  /// Debounce timer for scheduling a tile reset after errors.
+  Timer? _retryTimer;
+
+  /// Minimum interval between resets to avoid hammering during sustained
+  /// outages (e.g. airplane mode).
+  static const _retryDelay = Duration(seconds: 10);
+
   /// Get the current map rebuild key for cache busting
   int get mapRebuildKey => _mapRebuildKey;
 
@@ -22,6 +36,8 @@ class TileLayerManager {
 
   /// Dispose of resources
   void dispose() {
+    _retryTimer?.cancel();
+    _resetController.close();
     _tileProvider?.dispose();
   }
 
@@ -75,6 +91,32 @@ class TileLayerManager {
     // No selective clearing needed — NetworkTileProvider aborts obsolete requests
   }
 
+  /// Called by flutter_map when a tile fails to load.  Schedules a debounced
+  /// reset so that all failed tiles get retried after the burst of errors
+  /// settles down.
+  void _onTileLoadError(
+    TileImage tile,
+    Object error,
+    StackTrace? stackTrace,
+  ) {
+    // Debounce resets — restart the timer on each error so we fire only
+    // after the burst of errors has settled down.
+    _retryTimer?.cancel();
+
+    debugPrint(
+      '[TileLayerManager] Tile error at '
+      '${tile.coordinates.z}/${tile.coordinates.x}/${tile.coordinates.y}, '
+      'scheduling retry in ${_retryDelay.inSeconds}s',
+    );
+
+    _retryTimer = Timer(_retryDelay, () {
+      if (!_resetController.isClosed) {
+        debugPrint('[TileLayerManager] Firing tile reset to retry failed tiles');
+        _resetController.add(null);
+      }
+    });
+  }
+
   /// Build tile layer widget with current provider and type.
   /// Uses DeFlock's custom tile provider for clean integration with our offline/online system.
   Widget buildTileLayer({
@@ -95,6 +137,11 @@ class TileLayerManager {
       userAgentPackageName: 'me.deflock.deflockapp',
       maxZoom: selectedTileType?.maxZoom.toDouble() ?? 18.0,
       tileProvider: _tileProvider!,
+      // Wire the reset stream so failed tiles get retried after a delay.
+      reset: _resetController.stream,
+      errorTileCallback: _onTileLoadError,
+      // Clean up error tiles when they scroll off screen.
+      evictErrorTileStrategy: EvictErrorTileStrategy.notVisible,
     );
   }
 }
