@@ -259,10 +259,10 @@ class DeflockOfflineTileImageProvider
 
       // Network error (non-200 or empty body) — throw so flutter_map marks
       // the tile as failed and the reset stream can trigger a retry.
+      // Don't include tileUrl in the exception — it may contain API keys.
       throw HttpException(
         'Tile ${coordinates.z}/${coordinates.x}/${coordinates.y} '
         'returned status ${result.statusCode}',
-        uri: Uri.parse(tileUrl),
       );
     } catch (e) {
       // Cancelled tiles always get transparent (they're being disposed)

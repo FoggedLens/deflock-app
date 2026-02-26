@@ -99,8 +99,9 @@ class TileLayerManager {
     Object error,
     StackTrace? stackTrace,
   ) {
-    // Don't spam resets — if a timer is already pending, let it fire.
-    if (_retryTimer?.isActive ?? false) return;
+    // Debounce resets — restart the timer on each error so we fire only
+    // after the burst of errors has settled down.
+    _retryTimer?.cancel();
 
     debugPrint(
       '[TileLayerManager] Tile error at '
