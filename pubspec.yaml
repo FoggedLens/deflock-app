@@ -1,7 +1,7 @@
 name: deflockapp
 description: Map public surveillance infrastructure with OpenStreetMap
 publish_to: "none"
-version: 2.7.2+48   # The thing after the + is the version code, incremented with each release
+version: 2.8.0+49   # The thing after the + is the version code, incremented with each release
 
 environment:
   sdk: ">=3.10.3 <4.0.0"   # Resolved dependency floor (Dart 3.10.3 = Flutter 3.38+)
