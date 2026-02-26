@@ -13,6 +13,9 @@ class NodeSpatialCache {
   factory NodeSpatialCache() => _instance;
   NodeSpatialCache._();
 
+  @visibleForTesting
+  NodeSpatialCache.forTesting();
+
   final List<CachedArea> _fetchedAreas = [];
   final Map<int, OsmNode> _nodes = {}; // nodeId -> node
 
