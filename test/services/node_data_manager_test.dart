@@ -602,6 +602,70 @@ void main() {
     });
   });
 
+  group('progressive rendering', () {
+    late MockOverpassService mockOverpass;
+    late MockNodeSpatialCache mockCache;
+    late NodeDataManager manager;
+
+    setUp(() {
+      mockOverpass = MockOverpassService();
+      mockCache = MockNodeSpatialCache();
+      manager = NodeDataManager.forTesting(
+        overpassService: mockOverpass,
+        cache: mockCache,
+      );
+
+      when(() => mockOverpass.getSlotCount()).thenAnswer((_) async => 4);
+      when(() => mockCache.markAreaAsFetched(any(), any())).thenReturn(null);
+    });
+
+    test('notifyListeners called per completed quadrant during split', () async {
+      var notifyCount = 0;
+      manager.addListener(() => notifyCount++);
+
+      var callCount = 0;
+      when(() => mockOverpass.fetchNodes(
+        bounds: any(named: 'bounds'),
+        profiles: any(named: 'profiles'),
+      )).thenAnswer((_) async {
+        callCount++;
+        if (callCount == 1) {
+          throw NodeLimitError('too many nodes');
+        }
+        return [makeNode(callCount)];
+      });
+
+      await manager.fetchWithSplitting(testBounds, testProfiles);
+
+      // Each of the 4 quadrants returned nodes → 4 notifications
+      expect(notifyCount, 4);
+    });
+
+    test('empty quadrant results do not trigger notification', () async {
+      var notifyCount = 0;
+      manager.addListener(() => notifyCount++);
+
+      var callCount = 0;
+      when(() => mockOverpass.fetchNodes(
+        bounds: any(named: 'bounds'),
+        profiles: any(named: 'profiles'),
+      )).thenAnswer((_) async {
+        callCount++;
+        if (callCount == 1) {
+          throw NodeLimitError('too many nodes');
+        }
+        // Only 2 of 4 quadrants return nodes
+        if (callCount <= 3) return [makeNode(callCount)];
+        return <OsmNode>[];
+      });
+
+      await manager.fetchWithSplitting(testBounds, testProfiles);
+
+      // Only 2 quadrants had nodes → 2 notifications
+      expect(notifyCount, 2);
+    });
+  });
+
   group('semaphore initialization', () {
     late MockOverpassService mockOverpass;
     late MockNodeSpatialCache mockCache;

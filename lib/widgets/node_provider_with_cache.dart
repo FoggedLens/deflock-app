@@ -13,7 +13,20 @@ import '../app_state.dart';
 class NodeProviderWithCache extends ChangeNotifier {
   static final NodeProviderWithCache instance = NodeProviderWithCache._internal();
   factory NodeProviderWithCache() => instance;
-  NodeProviderWithCache._internal();
+  NodeProviderWithCache._internal() {
+    _nodeDataManager.addListener(_onNodeDataManagerUpdate);
+  }
+
+  void _onNodeDataManagerUpdate() {
+    notifyListeners();
+  }
+
+  /// Singleton — dispose is only safe at app shutdown; included for completeness.
+  @override
+  void dispose() {
+    _nodeDataManager.removeListener(_onNodeDataManagerUpdate);
+    super.dispose();
+  }
 
   final NodeDataManager _nodeDataManager = NodeDataManager();
   Timer? _debounceTimer;
@@ -52,10 +65,7 @@ class NodeProviderWithCache extends ChangeNotifier {
           uploadMode: uploadMode,
           isUserInitiated: true,
         );
-        
-        // Notify UI of new data
-        notifyListeners();
-        
+        // NodeDataManager.notifyListeners() propagates via _onNodeDataManagerUpdate
       } catch (e) {
         debugPrint('[NodeProviderWithCache] Node fetch failed: $e');
         // Cache already holds whatever is available for the view
