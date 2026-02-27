@@ -181,7 +181,9 @@
     "offlineModeWarning": "Download disabilitati in modalità offline. Disabilita la modalità offline per scaricare nuove aree.",
     "areaTooBigMessage": "Ingrandisci almeno al livello {} per scaricare aree offline. I download di aree grandi possono rendere l'app non reattiva.",
     "downloadStarted": "Download avviato! Recupero tile e nodi...",
-    "downloadFailed": "Impossibile avviare il download: {}"
+    "downloadFailed": "Impossibile avviare il download: {}",
+    "offlineNotPermitted": "Il server {} non consente i download offline. Passa a un fornitore di tile che consenta l'uso offline (ad es., Bing Maps, Mapbox o un server di tile auto-ospitato).",
+    "currentTileProvider": "tile attuale"
   },
   "downloadStarted": {
     "title": "Download Avviato",

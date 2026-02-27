@@ -181,7 +181,9 @@
     "offlineModeWarning": "Downloads uitgeschakeld in offline modus. Schakel offline modus uit om nieuwe gebieden te downloaden.",
     "areaTooBigMessage": "Zoom in tot ten minste niveau {} om offline gebieden te downloaden. Grote gebied downloads kunnen ervoor zorgen dat de app niet meer reageert.",
     "downloadStarted": "Download gestart! Tiles en nodes ophalen...",
-    "downloadFailed": "Download starten mislukt: {}"
+    "downloadFailed": "Download starten mislukt: {}",
+    "offlineNotPermitted": "De {}-server staat geen offline downloads toe. Schakel over naar een tegelserver die offline gebruik toestaat (bijv. Bing Maps, Mapbox of een zelf gehoste tegelserver).",
+    "currentTileProvider": "huidige tegel"
   },
   "downloadStarted": {
     "title": "Download Gestart",

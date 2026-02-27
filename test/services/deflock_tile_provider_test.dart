@@ -13,30 +13,33 @@ void main() {
   late DeflockTileProvider provider;
   late MockAppState mockAppState;
 
+  final osmTileType = models.TileType(
+    id: 'osm_street',
+    name: 'Street Map',
+    urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+    attribution: '© OpenStreetMap',
+    maxZoom: 19,
+  );
+
+  final mapboxTileType = models.TileType(
+    id: 'mapbox_satellite',
+    name: 'Satellite',
+    urlTemplate:
+        'https://api.mapbox.com/v4/mapbox.satellite/{z}/{x}/{y}@2x.jpg90?access_token={api_key}',
+    attribution: '© Mapbox',
+  );
+
   setUp(() {
     mockAppState = MockAppState();
     AppState.instance = mockAppState;
 
-    // Default stubs: online, OSM provider selected, no offline areas
+    // Default stubs: online, no offline areas
     when(() => mockAppState.offlineMode).thenReturn(false);
-    when(() => mockAppState.selectedTileProvider).thenReturn(
-      const models.TileProvider(
-        id: 'openstreetmap',
-        name: 'OpenStreetMap',
-        tileTypes: [],
-      ),
-    );
-    when(() => mockAppState.selectedTileType).thenReturn(
-      const models.TileType(
-        id: 'osm_street',
-        name: 'Street Map',
-        urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-        attribution: '© OpenStreetMap',
-        maxZoom: 19,
-      ),
-    );
 
-    provider = DeflockTileProvider();
+    provider = DeflockTileProvider(
+      providerId: 'openstreetmap',
+      tileType: osmTileType,
+    );
   });
 
   tearDown(() async {
@@ -49,7 +52,7 @@ void main() {
       expect(provider.supportsCancelLoading, isTrue);
     });
 
-    test('getTileUrl() delegates to TileType.getTileUrl()', () {
+    test('getTileUrl() uses frozen tileType config', () {
       const coords = TileCoordinates(1, 2, 3);
       final options = TileLayer(urlTemplate: 'ignored/{z}/{x}/{y}');
 
@@ -58,23 +61,12 @@ void main() {
       expect(url, equals('https://tile.openstreetmap.org/3/1/2.png'));
     });
 
-    test('getTileUrl() includes API key when present', () {
-      when(() => mockAppState.selectedTileProvider).thenReturn(
-        const models.TileProvider(
-          id: 'mapbox',
-          name: 'Mapbox',
-          apiKey: 'test_key_123',
-          tileTypes: [],
-        ),
-      );
-      when(() => mockAppState.selectedTileType).thenReturn(
-        const models.TileType(
-          id: 'mapbox_satellite',
-          name: 'Satellite',
-          urlTemplate:
-              'https://api.mapbox.com/v4/mapbox.satellite/{z}/{x}/{y}@2x.jpg90?access_token={api_key}',
-          attribution: '© Mapbox',
-        ),
+    test('getTileUrl() includes API key when present', () async {
+      await provider.dispose();
+      provider = DeflockTileProvider(
+        providerId: 'mapbox',
+        tileType: mapboxTileType,
+        apiKey: 'test_key_123',
       );
 
       const coords = TileCoordinates(1, 2, 10);
@@ -84,19 +76,6 @@ void main() {
 
       expect(url, contains('access_token=test_key_123'));
       expect(url, contains('/10/1/2@2x'));
-    });
-
-    test('getTileUrl() falls back to super when no provider selected', () {
-      when(() => mockAppState.selectedTileProvider).thenReturn(null);
-      when(() => mockAppState.selectedTileType).thenReturn(null);
-
-      const coords = TileCoordinates(1, 2, 3);
-      final options = TileLayer(urlTemplate: 'https://example.com/{z}/{x}/{y}');
-
-      final url = provider.getTileUrl(coords, options);
-
-      // Super implementation uses the urlTemplate from TileLayer options
-      expect(url, equals('https://example.com/3/1/2'));
     });
 
     test('routes to network path when no offline areas exist', () {
@@ -136,10 +115,19 @@ void main() {
       expect(offlineProvider.providerId, equals('openstreetmap'));
       expect(offlineProvider.tileTypeId, equals('osm_street'));
     });
+
+    test('frozen config is independent of AppState', () {
+      // Provider was created with OSM config — changing AppState should not affect it
+      const coords = TileCoordinates(1, 2, 3);
+      final options = TileLayer(urlTemplate: 'ignored/{z}/{x}/{y}');
+
+      final url = provider.getTileUrl(coords, options);
+      expect(url, equals('https://tile.openstreetmap.org/3/1/2.png'));
+    });
   });
 
   group('DeflockOfflineTileImageProvider', () {
-    test('equal for same coordinates and provider/type', () {
+    test('equal for same coordinates, provider/type, and offlineOnly', () {
       const coords = TileCoordinates(1, 2, 3);
       final options = TileLayer(urlTemplate: 'test/{z}/{x}/{y}');
       final cancel = Future<void>.value();
@@ -161,7 +149,7 @@ void main() {
         httpClient: http.Client(),
         headers: const {},
         cancelLoading: cancel,
-        isOfflineOnly: true, // different — but not in ==
+        isOfflineOnly: false,
         providerId: 'prov_a',
         tileTypeId: 'type_1',
         tileUrl: 'https://other.com/3/1/2', // different — but not in ==
@@ -169,6 +157,37 @@ void main() {
 
       expect(a, equals(b));
       expect(a.hashCode, equals(b.hashCode));
+    });
+
+    test('not equal for different isOfflineOnly', () {
+      const coords = TileCoordinates(1, 2, 3);
+      final options = TileLayer(urlTemplate: 'test/{z}/{x}/{y}');
+      final cancel = Future<void>.value();
+
+      final online = DeflockOfflineTileImageProvider(
+        coordinates: coords,
+        options: options,
+        httpClient: http.Client(),
+        headers: const {},
+        cancelLoading: cancel,
+        isOfflineOnly: false,
+        providerId: 'prov_a',
+        tileTypeId: 'type_1',
+        tileUrl: 'url',
+      );
+      final offline = DeflockOfflineTileImageProvider(
+        coordinates: coords,
+        options: options,
+        httpClient: http.Client(),
+        headers: const {},
+        cancelLoading: cancel,
+        isOfflineOnly: true,
+        providerId: 'prov_a',
+        tileTypeId: 'type_1',
+        tileUrl: 'url',
+      );
+
+      expect(online, isNot(equals(offline)));
     });
 
     test('not equal for different coordinates', () {

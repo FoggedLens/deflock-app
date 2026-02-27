@@ -181,7 +181,9 @@
     "offlineModeWarning": "Downloads disabled while in offline mode. Disable offline mode to download new areas.",
     "areaTooBigMessage": "Zoom in to at least level {} to download offline areas. Large area downloads can cause the app to become unresponsive.",
     "downloadStarted": "Download started! Fetching tiles and nodes...",
-    "downloadFailed": "Failed to start download: {}"
+    "downloadFailed": "Failed to start download: {}",
+    "offlineNotPermitted": "The {} server does not permit offline downloads. Switch to a tile provider that allows offline use (e.g., Bing Maps, Mapbox, or a self-hosted tile server).",
+    "currentTileProvider": "current tile"
   },
   "downloadStarted": {
     "title": "Download Started",

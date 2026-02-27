@@ -181,7 +181,9 @@
     "offlineModeWarning": "Çevrimdışı moddayken indirmeler devre dışı. Yeni alanları indirmek için çevrimdışı modu devre dışı bırakın.",
     "areaTooBigMessage": "Çevrimdışı alanları indirmek için en az {} seviyesine yakınlaştırın. Büyük alan indirmeleri uygulamanın yanıt vermemesine neden olabilir.",
     "downloadStarted": "İndirme başladı! Döşemeler ve düğümler getiriliyor...",
-    "downloadFailed": "İndirme başlatılamadı: {}"
+    "downloadFailed": "İndirme başlatılamadı: {}",
+    "offlineNotPermitted": "{} sunucusu çevrimdışı indirmelere izin vermiyor. Çevrimdışı kullanıma izin veren bir döşeme sağlayıcısına geçin (ör. Bing Maps, Mapbox veya kendi barındırdığınız bir döşeme sunucusu).",
+    "currentTileProvider": "mevcut döşeme"
   },
   "downloadStarted": {
     "title": "İndirme Başladı",

@@ -181,7 +181,9 @@
     "offlineModeWarning": "Pobieranie wyłączone w trybie offline. Wyłącz tryb offline, aby pobierać nowe obszary.",
     "areaTooBigMessage": "Przybliż do co najmniej poziomu {}, aby pobierać obszary offline. Duże pobieranie obszarów może sprawić, że aplikacja przestanie odpowiadać.",
     "downloadStarted": "Pobieranie rozpoczęte! Pobieranie kafelków i węzłów...",
-    "downloadFailed": "Nie udało się rozpocząć pobierania: {}"
+    "downloadFailed": "Nie udało się rozpocząć pobierania: {}",
+    "offlineNotPermitted": "Serwer {} nie zezwala na pobieranie offline. Przełącz się na dostawcę kafelków, który obsługuje tryb offline (np. Bing Maps, Mapbox lub samodzielnie hostowany serwer kafelków).",
+    "currentTileProvider": "bieżący kafelek"
   },
   "downloadStarted": {
     "title": "Pobieranie Rozpoczęte",

@@ -8,6 +8,7 @@ import 'package:http/http.dart';
 import 'package:http/retry.dart';
 
 import '../app_state.dart';
+import '../models/tile_provider.dart' as models;
 import 'http_client.dart';
 import 'map_data_submodules/tiles_from_local.dart';
 import 'offline_area_service.dart';
@@ -15,6 +16,10 @@ import 'offline_area_service.dart';
 /// Custom tile provider that extends NetworkTileProvider to leverage its
 /// built-in disk cache, RetryClient, ETag revalidation, and abort support,
 /// while routing URLs through our TileType logic and supporting offline tiles.
+///
+/// Each instance is configured for a specific tile provider/type combination
+/// with frozen config — no AppState lookups at request time (except for the
+/// global offlineMode toggle).
 ///
 /// Two runtime paths:
 /// 1. **Common path** (no offline areas for current provider): delegates to
@@ -29,34 +34,46 @@ class DeflockTileProvider extends NetworkTileProvider {
   /// will be false (we passed it in), so super.dispose() won't close it.
   final Client _sharedHttpClient;
 
-  DeflockTileProvider._({required Client httpClient})
-      : _sharedHttpClient = httpClient,
+  /// Frozen config for this provider instance.
+  final String providerId;
+  final models.TileType tileType;
+  final String? apiKey;
+
+  DeflockTileProvider._({
+    required Client httpClient,
+    required this.providerId,
+    required this.tileType,
+    this.apiKey,
+    super.cachingProvider,
+  })  : _sharedHttpClient = httpClient,
         super(
           httpClient: httpClient,
           silenceExceptions: true,
         );
 
-  factory DeflockTileProvider() {
+  factory DeflockTileProvider({
+    required String providerId,
+    required models.TileType tileType,
+    String? apiKey,
+    MapCachingProvider? cachingProvider,
+  }) {
     final client = UserAgentClient(RetryClient(Client()));
-    return DeflockTileProvider._(httpClient: client);
+    return DeflockTileProvider._(
+      httpClient: client,
+      providerId: providerId,
+      tileType: tileType,
+      apiKey: apiKey,
+      cachingProvider: cachingProvider,
+    );
   }
 
   @override
   String getTileUrl(TileCoordinates coordinates, TileLayer options) {
-    final appState = AppState.instance;
-    final selectedTileType = appState.selectedTileType;
-    final selectedProvider = appState.selectedTileProvider;
-
-    if (selectedTileType == null || selectedProvider == null) {
-      // Fallback to base implementation if no provider configured
-      return super.getTileUrl(coordinates, options);
-    }
-
-    return selectedTileType.getTileUrl(
+    return tileType.getTileUrl(
       coordinates.z,
       coordinates.x,
       coordinates.y,
-      apiKey: selectedProvider.apiKey,
+      apiKey: apiKey,
     );
   }
 
@@ -77,19 +94,15 @@ class DeflockTileProvider extends NetworkTileProvider {
     }
 
     // Offline-first path: check local tiles first, fall back to network.
-    final appState = AppState.instance;
-    final providerId = appState.selectedTileProvider?.id ?? 'unknown';
-    final tileTypeId = appState.selectedTileType?.id ?? 'unknown';
-
     return DeflockOfflineTileImageProvider(
       coordinates: coordinates,
       options: options,
       httpClient: _sharedHttpClient,
       headers: headers,
       cancelLoading: cancelLoading,
-      isOfflineOnly: appState.offlineMode,
+      isOfflineOnly: AppState.instance.offlineMode,
       providerId: providerId,
-      tileTypeId: tileTypeId,
+      tileTypeId: tileType.id,
       tileUrl: getTileUrl(coordinates, options),
     );
   }
@@ -102,25 +115,16 @@ class DeflockTileProvider extends NetworkTileProvider {
   /// This avoids the offline-first path (and its filesystem searches) when
   /// browsing online with providers that have no offline areas.
   bool _shouldCheckOfflineCache() {
-    final appState = AppState.instance;
-
     // Always use offline path in offline mode
-    if (appState.offlineMode) {
+    if (AppState.instance.offlineMode) {
       return true;
     }
 
     // For online mode, only use offline path if we have relevant offline data
-    final currentProvider = appState.selectedTileProvider;
-    final currentTileType = appState.selectedTileType;
-
-    if (currentProvider == null || currentTileType == null) {
-      return false;
-    }
-
     final offlineService = OfflineAreaService();
     return offlineService.hasOfflineAreasForProvider(
-      currentProvider.id,
-      currentTileType.id,
+      providerId,
+      tileType.id,
     );
   }
 
@@ -263,9 +267,11 @@ class DeflockOfflineTileImageProvider
     return other is DeflockOfflineTileImageProvider &&
         other.coordinates == coordinates &&
         other.providerId == providerId &&
-        other.tileTypeId == tileTypeId;
+        other.tileTypeId == tileTypeId &&
+        other.isOfflineOnly == isOfflineOnly;
   }
 
   @override
-  int get hashCode => Object.hash(coordinates, providerId, tileTypeId);
+  int get hashCode =>
+      Object.hash(coordinates, providerId, tileTypeId, isOfflineOnly);
 }

@@ -181,7 +181,9 @@
     "offlineModeWarning": "Téléchargements désactivés en mode hors ligne. Désactivez le mode hors ligne pour télécharger de nouvelles zones.",
     "areaTooBigMessage": "Zoomez au moins au niveau {} pour télécharger des zones hors ligne. Les téléchargements de grandes zones peuvent rendre l'application non réactive.",
     "downloadStarted": "Téléchargement démarré ! Récupération des tuiles et nœuds...",
-    "downloadFailed": "Échec du démarrage du téléchargement: {}"
+    "downloadFailed": "Échec du démarrage du téléchargement: {}",
+    "offlineNotPermitted": "Le serveur {} ne permet pas les téléchargements hors ligne. Passez à un fournisseur de tuiles qui autorise l'utilisation hors ligne (par ex., Bing Maps, Mapbox ou un serveur de tuiles auto-hébergé).",
+    "currentTileProvider": "tuile actuelle"
   },
   "downloadStarted": {
     "title": "Téléchargement Démarré",
