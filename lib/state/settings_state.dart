@@ -37,6 +37,7 @@ class SettingsState extends ChangeNotifier {
   static const String _pauseQueueProcessingPrefsKey = 'pause_queue_processing';
   static const String _navigationAvoidanceDistancePrefsKey = 'navigation_avoidance_distance';
   static const String _distanceUnitPrefsKey = 'distance_unit';
+  static const String _forceLocationManagerPrefsKey = 'force_location_manager';
 
   bool _offlineMode = false;
   bool _pauseQueueProcessing = false;
@@ -51,6 +52,7 @@ class SettingsState extends ChangeNotifier {
   String _selectedTileTypeId = '';
   int _navigationAvoidanceDistance = 250; // meters
   DistanceUnit _distanceUnit = DistanceUnit.metric;
+  bool _forceLocationManager = false;
 
   // Getters
   bool get offlineMode => _offlineMode;
@@ -66,7 +68,8 @@ class SettingsState extends ChangeNotifier {
   String get selectedTileTypeId => _selectedTileTypeId;
   int get navigationAvoidanceDistance => _navigationAvoidanceDistance;
   DistanceUnit get distanceUnit => _distanceUnit;
-  
+  bool get forceLocationManager => _forceLocationManager;
+
   /// Get the currently selected tile type
   TileType? get selectedTileType {
     for (final provider in _tileProviders) {
@@ -135,6 +138,9 @@ class SettingsState extends ChangeNotifier {
     
     // Load suspected location minimum distance
     _suspectedLocationMinDistance = prefs.getInt(_suspectedLocationMinDistancePrefsKey) ?? 100;
+
+    // Load force location manager setting (default false = use Google Fused Location)
+    _forceLocationManager = prefs.getBool(_forceLocationManagerPrefsKey) ?? false;
     
     // Load upload mode (including migration from old test_mode bool)
     if (prefs.containsKey(_uploadModePrefsKey)) {
@@ -392,6 +398,16 @@ class SettingsState extends ChangeNotifier {
       _distanceUnit = unit;
       final prefs = await SharedPreferences.getInstance();
       await prefs.setInt(_distanceUnitPrefsKey, unit.index);
+      notifyListeners();
+    }
+  }
+
+  /// Set whether to force Android LocationManager instead of Google Fused Location Provider
+  Future<void> setForceLocationManager(bool enabled) async {
+    if (_forceLocationManager != enabled) {
+      _forceLocationManager = enabled;
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool(_forceLocationManagerPrefsKey, enabled);
       notifyListeners();
     }
   }
