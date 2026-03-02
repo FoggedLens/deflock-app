@@ -407,6 +407,10 @@ class AppState extends ChangeNotifier {
     _profileState.addOrUpdateProfile(p);
   }
 
+  void reorderProfiles(int oldIndex, int newIndex) {
+    _profileState.reorderProfiles(oldIndex, newIndex);
+  }
+
   void deleteProfile(NodeProfile p) {
     _profileState.deleteProfile(p);
   }

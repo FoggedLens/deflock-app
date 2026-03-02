@@ -34,76 +34,101 @@ class NodeProfilesSection extends StatelessWidget {
                 ),
               ],
             ),
-            ...appState.profiles.map(
-              (p) => ListTile(
-                leading: Checkbox(
-                  value: appState.isEnabled(p),
-                  onChanged: (v) => appState.toggleProfile(p, v ?? false),
-                ),
-                title: Text(p.name),
-                subtitle: Text(p.builtin ? locService.t('profiles.builtIn') : locService.t('profiles.custom')),
-                trailing: !p.editable 
-                  ? PopupMenuButton(
-                      itemBuilder: (context) => [
-                        PopupMenuItem(
-                          value: 'view',
-                          child: Row(
-                            children: [
-                              const Icon(Icons.visibility),
-                              const SizedBox(width: 8),
-                              Text(locService.t('profiles.view')),
-                            ],
-                          ),
+            ReorderableListView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: appState.profiles.length,
+              onReorder: (oldIndex, newIndex) {
+                appState.reorderProfiles(oldIndex, newIndex);
+              },
+              itemBuilder: (context, index) {
+                final p = appState.profiles[index];
+                return ListTile(
+                  key: ValueKey(p.id),
+                  leading: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // Drag handle
+                      ReorderableDragStartListener(
+                        index: index,
+                        child: const Icon(
+                          Icons.drag_handle,
+                          color: Colors.grey,
                         ),
-                      ],
-                      onSelected: (value) {
-                        if (value == 'view') {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => ProfileEditor(profile: p),
+                      ),
+                      const SizedBox(width: 8),
+                      // Checkbox
+                      Checkbox(
+                        value: appState.isEnabled(p),
+                        onChanged: (v) => appState.toggleProfile(p, v ?? false),
+                      ),
+                    ],
+                  ),
+                  title: Text(p.name),
+                  subtitle: Text(p.builtin ? locService.t('profiles.builtIn') : locService.t('profiles.custom')),
+                  trailing: !p.editable 
+                    ? PopupMenuButton(
+                        itemBuilder: (context) => [
+                          PopupMenuItem(
+                            value: 'view',
+                            child: Row(
+                              children: [
+                                const Icon(Icons.visibility),
+                                const SizedBox(width: 8),
+                                Text(locService.t('profiles.view')),
+                              ],
                             ),
-                          );
-                        }
-                      },
-                    )
-                  : PopupMenuButton(
-                      itemBuilder: (context) => [
-                        PopupMenuItem(
-                          value: 'edit',
-                          child: Row(
-                            children: [
-                              const Icon(Icons.edit),
-                              const SizedBox(width: 8),
-                            Text(locService.t('actions.edit')),
-                            ],
                           ),
-                        ),
-                        PopupMenuItem(
-                          value: 'delete',
-                          child: Row(
-                            children: [
-                              const Icon(Icons.delete, color: Colors.red),
-                              const SizedBox(width: 8),
-                              Text(locService.t('profiles.deleteProfile'), style: const TextStyle(color: Colors.red)),
-                            ],
-                          ),
-                        ),
-                      ],
-                      onSelected: (value) {
-                        if (value == 'edit') {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => ProfileEditor(profile: p),
+                        ],
+                        onSelected: (value) {
+                          if (value == 'view') {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => ProfileEditor(profile: p),
+                              ),
+                            );
+                          }
+                        },
+                      )
+                    : PopupMenuButton(
+                        itemBuilder: (context) => [
+                          PopupMenuItem(
+                            value: 'edit',
+                            child: Row(
+                              children: [
+                                const Icon(Icons.edit),
+                                const SizedBox(width: 8),
+                              Text(locService.t('actions.edit')),
+                              ],
                             ),
-                          );
-                        } else if (value == 'delete') {
-                          _showDeleteProfileDialog(context, p);
-                        }
-                      },
-                    ),
-              ),
+                          ),
+                          PopupMenuItem(
+                            value: 'delete',
+                            child: Row(
+                              children: [
+                                const Icon(Icons.delete, color: Colors.red),
+                                const SizedBox(width: 8),
+                                Text(locService.t('profiles.deleteProfile'), style: const TextStyle(color: Colors.red)),
+                              ],
+                            ),
+                          ),
+                        ],
+                        onSelected: (value) {
+                          if (value == 'edit') {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => ProfileEditor(profile: p),
+                              ),
+                            );
+                          } else if (value == 'delete') {
+                            _showDeleteProfileDialog(context, p);
+                          }
+                        },
+                      ),
+                );
+              },
             ),
           ],
         );

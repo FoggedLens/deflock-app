@@ -6,9 +6,11 @@ import '../services/profile_service.dart';
 
 class ProfileState extends ChangeNotifier {
   static const String _enabledPrefsKey = 'enabled_profiles';
+  static const String _profileOrderPrefsKey = 'profile_order';
 
   final List<NodeProfile> _profiles = [];
   final Set<NodeProfile> _enabled = {};
+  List<String> _customOrder = []; // List of profile IDs in user's preferred order
   
   // Callback for when a profile is deleted (used to clear stale sessions)
   void Function(NodeProfile)? _onProfileDeleted;
@@ -18,10 +20,10 @@ class ProfileState extends ChangeNotifier {
   }
 
   // Getters
-  List<NodeProfile> get profiles => List.unmodifiable(_profiles);
+  List<NodeProfile> get profiles => List.unmodifiable(_getOrderedProfiles());
   bool isEnabled(NodeProfile p) => _enabled.contains(p);
   List<NodeProfile> get enabledProfiles =>
-      _profiles.where(isEnabled).toList(growable: false);
+      _getOrderedProfiles().where(isEnabled).toList(growable: false);
 
   // Initialize profiles from built-in and custom sources
   Future<void> init({bool addDefaults = false}) async {
@@ -34,7 +36,7 @@ class ProfileState extends ChangeNotifier {
       await ProfileService().save(_profiles);
     }
 
-    // Load enabled profile IDs from prefs
+    // Load enabled profile IDs and custom order from prefs
     final prefs = await SharedPreferences.getInstance();
     final enabledIds = prefs.getStringList(_enabledPrefsKey);
     if (enabledIds != null && enabledIds.isNotEmpty) {
@@ -44,6 +46,9 @@ class ProfileState extends ChangeNotifier {
       // By default, all are enabled
       _enabled.addAll(_profiles);
     }
+    
+    // Load custom order
+    _customOrder = prefs.getStringList(_profileOrderPrefsKey) ?? [];
   }
 
   void toggleProfile(NodeProfile p, bool e) {
@@ -92,6 +97,45 @@ class ProfileState extends ChangeNotifier {
     notifyListeners();
   }
 
+  // Reorder profiles (for drag-and-drop in settings)
+  void reorderProfiles(int oldIndex, int newIndex) {
+    final orderedProfiles = _getOrderedProfiles();
+    if (oldIndex < newIndex) {
+      newIndex -= 1;
+    }
+    final item = orderedProfiles.removeAt(oldIndex);
+    orderedProfiles.insert(newIndex, item);
+    
+    // Update custom order with new sequence
+    _customOrder = orderedProfiles.map((p) => p.id).toList();
+    _saveCustomOrder();
+    notifyListeners();
+  }
+  
+  // Get profiles in custom order, with unordered profiles at the end
+  List<NodeProfile> _getOrderedProfiles() {
+    if (_customOrder.isEmpty) {
+      return List.from(_profiles);
+    }
+    
+    final ordered = <NodeProfile>[];
+    final profilesById = {for (final p in _profiles) p.id: p};
+    
+    // Add profiles in custom order
+    for (final id in _customOrder) {
+      final profile = profilesById[id];
+      if (profile != null) {
+        ordered.add(profile);
+        profilesById.remove(id);
+      }
+    }
+    
+    // Add any remaining profiles that weren't in the custom order
+    ordered.addAll(profilesById.values);
+    
+    return ordered;
+  }
+
   // Save enabled profile IDs to disk
   Future<void> _saveEnabledProfiles() async {
     final prefs = await SharedPreferences.getInstance();
@@ -99,5 +143,11 @@ class ProfileState extends ChangeNotifier {
       _enabledPrefsKey,
       _enabled.map((p) => p.id).toList(),
     );
+  }
+  
+  // Save custom order to disk
+  Future<void> _saveCustomOrder() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList(_profileOrderPrefsKey, _customOrder);
   }
 }

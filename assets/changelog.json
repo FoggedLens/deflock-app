@@ -1,4 +1,10 @@
 {
+  "2.8.1": {
+    "content": [
+      "• Fixed bug where the \"existing tags\" profile would incorrectly add default FOV ranges during submission",
+      "• Added drag handles so profiles can be reordered to customize dropdown order when submitting"
+    ]
+  },
   "2.8.0": {
     "content": [
       "• Update dependencies and build chain tools; no code changes"

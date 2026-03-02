@@ -1,5 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:latlong2/latlong.dart';
 import 'package:deflockapp/models/node_profile.dart';
+import 'package:deflockapp/models/osm_node.dart';
+import 'package:deflockapp/state/profile_state.dart';
 
 void main() {
   group('NodeProfile', () {
@@ -71,6 +74,181 @@ void main() {
       expect(a, equals(b));
       expect(a.hashCode, equals(b.hashCode));
       expect(a, isNot(equals(c)));
+    });
+
+    group('createExistingTagsProfile', () {
+      test('should NOT assign FOV for nodes with single direction', () {
+        // This is the core bug fix: nodes with just "direction=90" should not get a default FOV
+        final node = OsmNode(
+          id: 123,
+          coord: const LatLng(37.7749, -122.4194),
+          tags: {
+            'direction': '90',
+            'man_made': 'surveillance',
+            'surveillance:type': 'ALPR',
+          },
+        );
+
+        final profile = NodeProfile.createExistingTagsProfile(node);
+
+        expect(profile.fov, isNull, reason: 'Single direction nodes should not get default FOV');
+        expect(profile.name, equals('<Existing tags>'));
+        expect(profile.tags, isEmpty, reason: 'Existing tags profile should have empty tags');
+      });
+
+      test('should assign FOV for nodes with range notation', () {
+        final node = OsmNode(
+          id: 123,
+          coord: const LatLng(37.7749, -122.4194),
+          tags: {
+            'direction': '55-125', // Range notation = explicit FOV
+            'man_made': 'surveillance',
+            'surveillance:type': 'ALPR',
+          },
+        );
+
+        final profile = NodeProfile.createExistingTagsProfile(node);
+
+        expect(profile.fov, isNotNull, reason: 'Range notation should preserve FOV');
+        expect(profile.fov, equals(70.0), reason: 'Range 55-125 should calculate to 70 degree FOV');
+      });
+
+      test('should assign FOV for nodes with multiple consistent ranges', () {
+        final node = OsmNode(
+          id: 123,
+          coord: const LatLng(37.7749, -122.4194),
+          tags: {
+            'direction': '55-125;235-305', // Two ranges with same FOV
+            'man_made': 'surveillance',
+            'surveillance:type': 'ALPR',
+          },
+        );
+
+        final profile = NodeProfile.createExistingTagsProfile(node);
+
+        expect(profile.fov, equals(70.0), reason: 'Multiple consistent ranges should preserve FOV');
+      });
+
+      test('should NOT assign FOV for mixed single directions and ranges', () {
+        final node = OsmNode(
+          id: 123,
+          coord: const LatLng(37.7749, -122.4194),
+          tags: {
+            'direction': '90;180-360', // Mix of single direction and range
+            'man_made': 'surveillance',
+            'surveillance:type': 'ALPR',
+          },
+        );
+
+        final profile = NodeProfile.createExistingTagsProfile(node);
+
+        expect(profile.fov, isNull, reason: 'Mixed notation should not assign FOV');
+      });
+
+      test('should NOT assign FOV for multiple single directions', () {
+        final node = OsmNode(
+          id: 123,
+          coord: const LatLng(37.7749, -122.4194),
+          tags: {
+            'direction': '90;180;270', // Multiple single directions
+            'man_made': 'surveillance',
+            'surveillance:type': 'ALPR',
+          },
+        );
+
+        final profile = NodeProfile.createExistingTagsProfile(node);
+
+        expect(profile.fov, isNull, reason: 'Multiple single directions should not get default FOV');
+      });
+
+      test('should handle camera:direction tag', () {
+        final node = OsmNode(
+          id: 123,
+          coord: const LatLng(37.7749, -122.4194),
+          tags: {
+            'camera:direction': '180', // Using camera:direction instead of direction
+            'man_made': 'surveillance',
+            'surveillance:type': 'camera',
+          },
+        );
+
+        final profile = NodeProfile.createExistingTagsProfile(node);
+
+        expect(profile.fov, isNull, reason: 'Single camera:direction should not get default FOV');
+      });
+
+      test('should fix the specific bug: direction=90 should not become direction=55-125', () {
+        // This tests the exact bug scenario mentioned in the issue
+        final node = OsmNode(
+          id: 123,
+          coord: const LatLng(37.7749, -122.4194),
+          tags: {
+            'direction': '90', // Single direction, should stay as single direction
+            'man_made': 'surveillance',
+            'surveillance:type': 'ALPR',
+          },
+        );
+
+        final profile = NodeProfile.createExistingTagsProfile(node);
+
+        // Key fix: profile should NOT have an FOV, so upload won't convert to range notation
+        expect(profile.fov, isNull, reason: 'direction=90 should not get converted to direction=55-125');
+        
+        // Verify the node does have directionFovPairs (for rendering), but profile ignores them
+        expect(node.directionFovPairs, hasLength(1));
+        expect(node.directionFovPairs.first.centerDegrees, equals(90.0));
+        expect(node.directionFovPairs.first.fovDegrees, equals(70.0)); // Default FOV for rendering
+      });
+    });
+
+    group('ProfileState reordering', () {
+      test('should reorder profiles correctly', () {
+        final profileState = ProfileState();
+        
+        // Add some test profiles
+        final profileA = NodeProfile(id: 'a', name: 'Profile A', tags: const {});
+        final profileB = NodeProfile(id: 'b', name: 'Profile B', tags: const {});
+        final profileC = NodeProfile(id: 'c', name: 'Profile C', tags: const {});
+        
+        profileState.addOrUpdateProfile(profileA);
+        profileState.addOrUpdateProfile(profileB);
+        profileState.addOrUpdateProfile(profileC);
+        
+        // Initial order should be A, B, C
+        expect(profileState.profiles.map((p) => p.id), equals(['a', 'b', 'c']));
+        
+        // Move profile at index 0 (A) to index 2 (should become B, C, A)
+        profileState.reorderProfiles(0, 2);
+        expect(profileState.profiles.map((p) => p.id), equals(['b', 'c', 'a']));
+        
+        // Move profile at index 2 (A) to index 1 (should become B, A, C)
+        profileState.reorderProfiles(2, 1);
+        expect(profileState.profiles.map((p) => p.id), equals(['b', 'a', 'c']));
+      });
+
+      test('should maintain enabled status after reordering', () {
+        final profileState = ProfileState();
+        
+        final profileA = NodeProfile(id: 'a', name: 'Profile A', tags: const {});
+        final profileB = NodeProfile(id: 'b', name: 'Profile B', tags: const {});
+        final profileC = NodeProfile(id: 'c', name: 'Profile C', tags: const {});
+        
+        profileState.addOrUpdateProfile(profileA);
+        profileState.addOrUpdateProfile(profileB);
+        profileState.addOrUpdateProfile(profileC);
+        
+        // Disable profile B
+        profileState.toggleProfile(profileB, false);
+        expect(profileState.isEnabled(profileB), isFalse);
+        
+        // Reorder profiles
+        profileState.reorderProfiles(0, 2);
+        
+        // Profile B should still be disabled after reordering
+        expect(profileState.isEnabled(profileB), isFalse);
+        expect(profileState.isEnabled(profileA), isTrue);
+        expect(profileState.isEnabled(profileC), isTrue);
+      });
     });
   });
 }
