@@ -5,6 +5,10 @@ import 'package:deflockapp/models/osm_node.dart';
 import 'package:deflockapp/state/profile_state.dart';
 
 void main() {
+  setUpAll(() {
+    TestWidgetsFlutterBinding.ensureInitialized();
+  });
+
   group('NodeProfile', () {
     test('toJson/fromJson round-trip preserves all fields', () {
       final profile = NodeProfile(
@@ -202,28 +206,28 @@ void main() {
     });
 
     group('ProfileState reordering', () {
-      test('should reorder profiles correctly', () {
+      test('should reorder profiles correctly', () async {
         final profileState = ProfileState();
         
-        // Add some test profiles
+        // Add some test profiles directly to avoid storage operations
         final profileA = NodeProfile(id: 'a', name: 'Profile A', tags: const {});
         final profileB = NodeProfile(id: 'b', name: 'Profile B', tags: const {});
         final profileC = NodeProfile(id: 'c', name: 'Profile C', tags: const {});
         
-        profileState.addOrUpdateProfile(profileA);
-        profileState.addOrUpdateProfile(profileB);
-        profileState.addOrUpdateProfile(profileC);
+        // Add profiles directly to the internal list to avoid storage
+        profileState.internalProfiles.addAll([profileA, profileB, profileC]);
+        profileState.internalEnabled.addAll([profileA, profileB, profileC]);
         
         // Initial order should be A, B, C
         expect(profileState.profiles.map((p) => p.id), equals(['a', 'b', 'c']));
         
-        // Move profile at index 0 (A) to index 2 (should become B, C, A)
+        // Move profile at index 0 (A) to index 2 (should become B, A, C due to Flutter's reorder logic)
         profileState.reorderProfiles(0, 2);
-        expect(profileState.profiles.map((p) => p.id), equals(['b', 'c', 'a']));
-        
-        // Move profile at index 2 (A) to index 1 (should become B, A, C)
-        profileState.reorderProfiles(2, 1);
         expect(profileState.profiles.map((p) => p.id), equals(['b', 'a', 'c']));
+        
+        // Move profile at index 1 (A) to index 0 (should become A, B, C)
+        profileState.reorderProfiles(1, 0);
+        expect(profileState.profiles.map((p) => p.id), equals(['a', 'b', 'c']));
       });
 
       test('should maintain enabled status after reordering', () {
@@ -233,12 +237,12 @@ void main() {
         final profileB = NodeProfile(id: 'b', name: 'Profile B', tags: const {});
         final profileC = NodeProfile(id: 'c', name: 'Profile C', tags: const {});
         
-        profileState.addOrUpdateProfile(profileA);
-        profileState.addOrUpdateProfile(profileB);
-        profileState.addOrUpdateProfile(profileC);
+        // Add profiles directly to avoid storage operations
+        profileState.internalProfiles.addAll([profileA, profileB, profileC]);
+        profileState.internalEnabled.addAll([profileA, profileB, profileC]);
         
         // Disable profile B
-        profileState.toggleProfile(profileB, false);
+        profileState.internalEnabled.remove(profileB);
         expect(profileState.isEnabled(profileB), isFalse);
         
         // Reorder profiles

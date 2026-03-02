@@ -225,6 +225,10 @@ class ChangelogService {
       versionsNeedingMigration.add('1.6.3');
     }
     
+    if (needsMigration(lastSeenVersion, currentVersion, '2.7.3')) {
+      versionsNeedingMigration.add('2.7.3');
+    }
+    
     // Future versions can be added here
     // if (needsMigration(lastSeenVersion, currentVersion, '2.0.0')) {
     //   versionsNeedingMigration.add('2.0.0');

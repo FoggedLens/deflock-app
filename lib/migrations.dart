@@ -114,6 +114,34 @@ class OneTimeMigrations {
     }
   }
 
+  /// Initialize profile ordering for existing users (v2.7.3)
+  static Future<void> migrate_2_7_3(AppState appState) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      const orderKey = 'profile_order';
+      
+      // Check if user already has custom profile ordering
+      if (prefs.containsKey(orderKey)) {
+        debugPrint('[Migration] 2.7.3: Profile order already exists, skipping');
+        return;
+      }
+      
+      // Initialize with current profile order (preserves existing UI order)
+      final currentProfiles = appState.profiles;
+      final initialOrder = currentProfiles.map((p) => p.id).toList();
+      
+      if (initialOrder.isNotEmpty) {
+        await prefs.setStringList(orderKey, initialOrder);
+        debugPrint('[Migration] 2.7.3: Initialized profile order with ${initialOrder.length} profiles');
+      }
+      
+      debugPrint('[Migration] 2.7.3 completed: initialized profile ordering');
+    } catch (e) {
+      debugPrint('[Migration] 2.7.3 ERROR: Failed to initialize profile ordering: $e');
+      // Don't rethrow - this is non-critical, profiles will just use default order
+    }
+  }
+
   /// Get the migration function for a specific version
   static Future<void> Function(AppState)? getMigrationForVersion(String version) {
     switch (version) {
@@ -127,6 +155,8 @@ class OneTimeMigrations {
         return migrate_1_8_0;
       case '2.1.0':
         return migrate_2_1_0;
+      case '2.7.3':
+        return migrate_2_7_3;
       default:
         return null;
     }
