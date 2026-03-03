@@ -142,7 +142,7 @@ const double kNavigationMinRouteDistance = 100.0; // meters - minimum distance b
 const double kNavigationDistanceWarningThreshold = 20000.0; // meters - distance threshold for timeout warning (30km)
 
 // Node display configuration
-const int kDefaultMaxNodes = 500; // Default maximum number of nodes to render on the map at once
+const int kDefaultMaxNodes = 2000; // Default maximum number of nodes to render on the map at once (clustering handles visual density)
 
 // NSI (Name Suggestion Index) configuration
 const int kNSIMinimumHitCount = 500; // Minimum hit count for NSI suggestions to be considered useful
