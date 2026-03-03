@@ -4,24 +4,45 @@ import '../services/auth_service.dart';
 import 'settings_state.dart';
 
 class AuthState extends ChangeNotifier {
-  final AuthService _auth = AuthService();
+  final AuthService _auth;
   String? _username;
+
+  AuthState({AuthService? authService}) : _auth = authService ?? AuthService();
 
   // Getters
   bool get isLoggedIn => _username != null;
   String get username => _username ?? '';
   AuthService get authService => _auth;
 
-  // Initialize auth state and check existing login
+  // Initialize auth state — local-only, no network (for fast init)
   Future<void> init(UploadMode uploadMode) async {
     _auth.setUploadMode(uploadMode);
-    
+
     try {
       if (await _auth.isLoggedIn()) {
-        _username = await _auth.restoreLogin();
+        _username = await _auth.restoreLoginLocal();
       }
     } catch (e) {
       debugPrint("AuthState: Error during auth initialization: $e");
+    }
+    notifyListeners();
+  }
+
+  /// Background token validation + display name refresh. Fire-and-forget safe.
+  Future<void> refreshIfNeeded() async {
+    try {
+      if (await _auth.isLoggedIn()) {
+        final refreshed = await _auth.restoreLogin();
+        if (refreshed != _username) {
+          _username = refreshed;
+          notifyListeners();
+        }
+      } else if (_username != null) {
+        _username = null;
+        notifyListeners();
+      }
+    } catch (e) {
+      debugPrint("AuthState: Error during background refresh: $e");
     }
   }
 
@@ -65,28 +86,13 @@ class AuthState extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<bool> validateToken() async {
-    try {
-      return await _auth.isLoggedIn();
-    } catch (e) {
-      debugPrint("AuthState: Token validation error: $e");
-      return false;
-    }
-  }
-
   // Handle upload mode changes
   Future<void> onUploadModeChanged(UploadMode mode) async {
     _auth.setUploadMode(mode);
-    
-    // Refresh user display for active mode, validating token
+
     try {
       if (await _auth.isLoggedIn()) {
-        final isValid = await validateToken();
-        if (isValid) {
-          _username = await _auth.restoreLogin();
-        } else {
-          await logout(); // This clears _username also.
-        }
+        _username = await _auth.restoreLogin();
       } else {
         _username = null;
       }

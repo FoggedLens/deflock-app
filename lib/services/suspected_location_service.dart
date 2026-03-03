@@ -31,10 +31,10 @@ class SuspectedLocationService {
   /// Initialize the service - load from storage and check if refresh needed
   Future<void> init({bool offlineMode = false}) async {
     await _loadFromStorage();
-    
+
     // Load cache data
     await _cache.loadFromStorage();
-    
+
     // Only auto-fetch if enabled, data is stale or missing, and we are not offline
     if (_isEnabled && (await _shouldRefresh()) && !offlineMode) {
       debugPrint('[SuspectedLocationService] Auto-refreshing CSV data on startup (older than $_maxAge or missing)');
@@ -43,6 +43,24 @@ class SuspectedLocationService {
       final lastFetch = await _cache.lastFetchTime;
       debugPrint('[SuspectedLocationService] Skipping auto-refresh due to offline mode - data is ${lastFetch != null ? 'outdated' : 'missing'}');
     }
+  }
+
+  /// Fast, local-only init (SharedPrefs + SQLite). No network.
+  Future<void> initLocal() async {
+    await _loadFromStorage();
+    await _cache.loadFromStorage();
+  }
+
+  /// Background refresh if data is stale. Fire-and-forget safe.
+  Future<bool> refreshIfNeeded({bool offlineMode = false}) async {
+    if (!_isEnabled || !(await _shouldRefresh())) return false;
+    if (offlineMode) {
+      final lastFetch = await _cache.lastFetchTime;
+      debugPrint('[SuspectedLocationService] Skipping background refresh due to offline mode - data is ${lastFetch != null ? 'outdated' : 'missing'}');
+      return false;
+    }
+    debugPrint('[SuspectedLocationService] Background-refreshing CSV data (older than $_maxAge or missing)');
+    return await _fetchData();
   }
 
   /// Enable or disable suspected locations

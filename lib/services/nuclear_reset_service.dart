@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'version_service.dart';
@@ -8,8 +9,6 @@ import 'version_service.dart';
 /// Nuclear reset service - clears ALL app data when migrations fail.
 /// This is the "big hammer" approach for when something goes seriously wrong.
 class NuclearResetService {
-  static final NuclearResetService _instance = NuclearResetService._();
-  factory NuclearResetService() => _instance;
   NuclearResetService._();
 
   /// Completely clear all app data - SharedPreferences, files, caches, everything.
@@ -20,6 +19,9 @@ class NuclearResetService {
 
       // Clear ALL SharedPreferences
       await _clearSharedPreferences();
+
+      // Clear flutter_secure_storage (OAuth tokens from oauth2_client)
+      await _clearSecureStorage();
 
       // Clear ALL files in app directories
       await _clearFileSystem();
@@ -39,6 +41,17 @@ class NuclearResetService {
       debugPrint('[NuclearReset] Cleared SharedPreferences');
     } catch (e) {
       debugPrint('[NuclearReset] Failed to clear SharedPreferences: $e');
+    }
+  }
+
+  /// Clear flutter_secure_storage (OAuth tokens stored by oauth2_client)
+  static Future<void> _clearSecureStorage() async {
+    try {
+      const storage = FlutterSecureStorage();
+      await storage.deleteAll();
+      debugPrint('[NuclearReset] Cleared flutter_secure_storage');
+    } catch (e) {
+      debugPrint('[NuclearReset] Failed to clear flutter_secure_storage: $e');
     }
   }
 
