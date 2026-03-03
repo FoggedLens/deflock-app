@@ -33,14 +33,37 @@ class OfflineAreaService {
     if (!_initialized) {
       return false; // No offline areas loaded yet
     }
-    
-    return _areas.any((area) => 
+
+    return _areas.any((area) =>
       area.status == OfflineAreaStatus.complete &&
       area.tileProviderId == providerId &&
       area.tileTypeId == tileTypeId
     );
   }
+
+  /// Like [hasOfflineAreasForProvider] but also checks that at least one area
+  /// covers the given [zoom] level.  Used by [DeflockTileProvider] to skip the
+  /// offline-first path for tiles that will never be found locally.
+  bool hasOfflineAreasForProviderAtZoom(String providerId, String tileTypeId, int zoom) {
+    if (!_initialized) return false;
+    return _areas.any((area) =>
+      area.status == OfflineAreaStatus.complete &&
+      area.tileProviderId == providerId &&
+      area.tileTypeId == tileTypeId &&
+      zoom >= area.minZoom &&
+      zoom <= area.maxZoom
+    );
+  }
   
+  /// Reset service state and inject areas for unit tests.
+  @visibleForTesting
+  void setAreasForTesting(List<OfflineArea> areas) {
+    _areas
+      ..clear()
+      ..addAll(areas);
+    _initialized = true;
+  }
+
   /// Cancel all active downloads (used when enabling offline mode)
   Future<void> cancelActiveDownloads() async {
     final activeAreas = _areas.where((area) => area.status == OfflineAreaStatus.downloading).toList();
@@ -213,7 +236,7 @@ class OfflineAreaService {
     area = OfflineArea(
       id: id,
       name: name ?? area?.name ?? '',
-      bounds: bounds,
+      bounds: normalizeBounds(bounds),
       minZoom: minZoom,
       maxZoom: maxZoom,
       directory: directory,

@@ -262,16 +262,80 @@ class _DownloadAreaDialogState extends State<DownloadAreaDialog> {
             ElevatedButton(
               onPressed: isOfflineMode ? null : () async {
                 try {
+                  // Get current tile provider info
+                  final appState = context.read<AppState>();
+                  final selectedProvider = appState.selectedTileProvider;
+                  final selectedTileType = appState.selectedTileType;
+
+                  // Check if the tile provider allows offline downloads
+                  if (selectedTileType != null && !selectedTileType.allowsOfflineDownload) {
+                    if (!context.mounted) return;
+                    // Capture navigator before popping, since context is
+                    // deactivated after Navigator.pop.
+                    final navigator = Navigator.of(context);
+                    navigator.pop();
+                    showDialog(
+                      context: navigator.context,
+                      builder: (context) => AlertDialog(
+                        title: Row(
+                          children: [
+                            const Icon(Icons.block, color: Colors.orange),
+                            const SizedBox(width: 10),
+                            Text(locService.t('download.title')),
+                          ],
+                        ),
+                        content: Text(
+                          locService.t(
+                            'download.offlineNotPermitted',
+                            params: [
+                              selectedProvider?.name ?? locService.t('download.currentTileProvider'),
+                            ],
+                          ),
+                        ),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(context),
+                            child: Text(locService.t('actions.ok')),
+                          ),
+                        ],
+                      ),
+                    );
+                    return;
+                  }
+
+                  // Guard: provider and tile type must be non-null for a
+                  // useful offline area (fetchLocalTile requires exact match).
+                  if (selectedProvider == null || selectedTileType == null) {
+                    if (!context.mounted) return;
+                    final navigator = Navigator.of(context);
+                    navigator.pop();
+                    showDialog(
+                      context: navigator.context,
+                      builder: (context) => AlertDialog(
+                        title: Row(
+                          children: [
+                            const Icon(Icons.error, color: Colors.red),
+                            const SizedBox(width: 10),
+                            Text(locService.t('download.title')),
+                          ],
+                        ),
+                        content: Text(locService.t('download.noTileProviderSelected')),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(context),
+                            child: Text(locService.t('actions.ok')),
+                          ),
+                        ],
+                      ),
+                    );
+                    return;
+                  }
+
                   final id = DateTime.now().toIso8601String().replaceAll(':', '-');
                   final appDocDir = await OfflineAreaService().getOfflineAreaDir();
                   if (!context.mounted) return;
                   final dir = "${appDocDir.path}/$id";
 
-                  // Get current tile provider info
-                  final appState = context.read<AppState>();
-                  final selectedProvider = appState.selectedTileProvider;
-                  final selectedTileType = appState.selectedTileType;
-                  
                   // Fire and forget: don't await download, so dialog closes immediately
                   // ignore: unawaited_futures
                   OfflineAreaService().downloadArea(
@@ -282,10 +346,10 @@ class _DownloadAreaDialogState extends State<DownloadAreaDialog> {
                     directory: dir,
                     onProgress: (progress) {},
                     onComplete: (status) {},
-                    tileProviderId: selectedProvider?.id,
-                    tileProviderName: selectedProvider?.name,
-                    tileTypeId: selectedTileType?.id,
-                    tileTypeName: selectedTileType?.name,
+                    tileProviderId: selectedProvider.id,
+                    tileProviderName: selectedProvider.name,
+                    tileTypeId: selectedTileType.id,
+                    tileTypeName: selectedTileType.name,
                   );
                   Navigator.pop(context);
                   showDialog(

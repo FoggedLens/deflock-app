@@ -181,7 +181,10 @@
     "offlineModeWarning": "Download disabilitati in modalità offline. Disabilita la modalità offline per scaricare nuove aree.",
     "areaTooBigMessage": "Ingrandisci almeno al livello {} per scaricare aree offline. I download di aree grandi possono rendere l'app non reattiva.",
     "downloadStarted": "Download avviato! Recupero tile e nodi...",
-    "downloadFailed": "Impossibile avviare il download: {}"
+    "downloadFailed": "Impossibile avviare il download: {}",
+    "offlineNotPermitted": "Il server {} non consente i download offline. Passa a un fornitore di tile che consenta l'uso offline (ad es., Bing Maps, Mapbox o un server di tile auto-ospitato).",
+    "currentTileProvider": "tile attuale",
+    "noTileProviderSelected": "Nessun provider di tile selezionato. Seleziona uno stile di mappa prima di scaricare un'area offline."
   },
   "downloadStarted": {
     "title": "Download Avviato",
@@ -329,13 +332,16 @@
     "addProfileChoiceMessage": "Come desideri aggiungere un profilo?",
     "createCustomProfile": "Crea Profilo Personalizzato",
     "createCustomProfileDescription": "Crea un profilo da zero con i tuoi tag",
-    "importFromWebsite": "Importa da Sito Web", 
+    "importFromWebsite": "Importa da Sito Web",
     "importFromWebsiteDescription": "Sfoglia e importa profili da deflock.me/identify"
   },
   "mapTiles": {
     "title": "Tile Mappa",
     "manageProviders": "Gestisci Fornitori",
-    "attribution": "Attribuzione Mappa"
+    "attribution": "Attribuzione Mappa",
+    "mapAttribution": "Attribuzione mappa: {}",
+    "couldNotOpenLink": "Impossibile aprire il link",
+    "openLicense": "Apri licenza: {}"
   },
   "profileEditor": {
     "viewProfile": "Visualizza Profilo",
@@ -362,7 +368,7 @@
   },
   "operatorProfileEditor": {
     "newOperatorProfile": "Nuovo Profilo Operatore",
-    "editOperatorProfile": "Modifica Profilo Operatore", 
+    "editOperatorProfile": "Modifica Profilo Operatore",
     "operatorName": "Nome operatore",
     "operatorNameHint": "es., Dipartimento di Polizia di Austin",
     "operatorNameRequired": "Il nome dell'operatore è obbligatorio",
@@ -520,7 +526,7 @@
     "updateFailed": "Aggiornamento posizioni sospette fallito",
     "neverFetched": "Mai recuperato",
     "daysAgo": "{} giorni fa",
-    "hoursAgo": "{} ore fa", 
+    "hoursAgo": "{} ore fa",
     "minutesAgo": "{} minuti fa",
     "justNow": "Proprio ora"
   },
@@ -528,7 +534,7 @@
     "title": "Posizione Sospetta #{}",
     "ticketNo": "N. Ticket",
     "address": "Indirizzo",
-    "street": "Via", 
+    "street": "Via",
     "city": "Città",
     "state": "Stato",
     "intersectingStreet": "Via che Interseca",

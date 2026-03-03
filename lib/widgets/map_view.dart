@@ -284,17 +284,12 @@ class MapViewState extends State<MapView> {
       onProfilesChanged: _refreshNodesFromProvider,
     );
 
-    // Check if tile type OR offline mode changed and clear cache if needed
-    final cacheCleared = _tileManager.checkAndClearCacheIfNeeded(
+    // Check if provider, tile type, or offline mode changed and clear cache if needed
+    _tileManager.checkAndClearCacheIfNeeded(
+      currentProviderId: appState.selectedTileProvider?.id,
       currentTileTypeId: appState.selectedTileType?.id,
       currentOfflineMode: appState.offlineMode,
     );
-    
-    if (cacheCleared) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        _tileManager.clearTileQueue();
-      });
-    }
 
     // Seed add‑mode target once, after first controller center is available.
     if (session != null && session.target == null) {
@@ -396,7 +391,7 @@ class MapViewState extends State<MapView> {
               if (_activePointers > 0) _activePointers--;
             },
             child: FlutterMap(
-              key: ValueKey('map_${appState.offlineMode}_${appState.selectedTileType?.id ?? 'none'}_${_tileManager.mapRebuildKey}'),
+              key: ValueKey('map_${appState.selectedTileProvider?.id ?? 'none'}_${appState.selectedTileType?.id ?? 'none'}_${appState.offlineMode}_${_tileManager.mapRebuildKey}'),
               mapController: _controller.mapController,
               options: MapOptions(
               initialCenter: _gpsController.currentLocation ?? _positionManager.initialLocation ?? LatLng(37.7749, -122.4194),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map_animations/flutter_map_animations.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../app_state.dart';
 import '../../dev_config.dart';
@@ -26,16 +27,63 @@ class MapOverlays extends StatelessWidget {
     this.onSearchPressed,
   });
 
-  /// Show full attribution text in a dialog
+  /// Show full attribution text in a dialog with license link.
   void _showAttributionDialog(BuildContext context, String attribution) {
     final locService = LocalizationService.instance;
+
+    // Get the license URL from the current tile provider's service policy
+    final appState = AppState.instance;
+    final tileType = appState.selectedTileType;
+    final attributionUrl = tileType?.servicePolicy.attributionUrl;
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         title: Text(locService.t('mapTiles.attribution')),
-        content: SelectableText(
-          attribution,
-          style: const TextStyle(fontSize: 14),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SelectableText(
+              attribution,
+              style: const TextStyle(fontSize: 14),
+            ),
+            if (attributionUrl != null) ...[
+              const SizedBox(height: 12),
+              Semantics(
+                link: true,
+                label: locService.t('mapTiles.openLicense', params: [attributionUrl]),
+                child: InkWell(
+                  onTap: () async {
+                    try {
+                      final uri = Uri.parse(attributionUrl);
+                      if (await canLaunchUrl(uri)) {
+                        await launchUrl(uri, mode: LaunchMode.externalApplication);
+                      } else if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text(locService.t('mapTiles.couldNotOpenLink'))),
+                        );
+                      }
+                    } catch (_) {
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text(locService.t('mapTiles.couldNotOpenLink'))),
+                        );
+                      }
+                    }
+                  },
+                  child: Text(
+                    attributionUrl,
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: Theme.of(context).colorScheme.primary,
+                      decoration: TextDecoration.underline,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ],
         ),
         actions: [
           TextButton(
@@ -125,23 +173,30 @@ class MapOverlays extends StatelessWidget {
           Positioned(
             bottom: bottomPositionFromButtonBar(kAttributionSpacingAboveButtonBar, safeArea.bottom),
             left: leftPositionWithSafeArea(10, safeArea),
-            child: GestureDetector(
-              onTap: () => _showAttributionDialog(context, attribution!),
-              child: Container(
-                decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.9),
+            child: Semantics(
+              button: true,
+              label: LocalizationService.instance.t('mapTiles.mapAttribution', params: [attribution!]),
+              child: Material(
+                color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.9),
+                borderRadius: BorderRadius.circular(4),
+                child: InkWell(
                   borderRadius: BorderRadius.circular(4),
-                ),
-                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
-                constraints: const BoxConstraints(maxWidth: 250),
-                child: Text(
-                  attribution!,
-                  style: TextStyle(
-                    fontSize: 11,
-                    color: Theme.of(context).colorScheme.onSurface,
+                  onTap: () => _showAttributionDialog(context, attribution!),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 250),
+                      child: Text(
+                        attribution!,
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: Theme.of(context).colorScheme.onSurface,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 1,
+                      ),
+                    ),
                   ),
-                  overflow: TextOverflow.ellipsis,
-                  maxLines: 1,
                 ),
               ),
             ),

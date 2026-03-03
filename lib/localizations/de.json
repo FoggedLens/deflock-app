@@ -144,7 +144,10 @@
     "offlineModeWarning": "Downloads im Offline-Modus deaktiviert. Deaktivieren Sie den Offline-Modus, um neue Bereiche herunterzuladen.",
     "areaTooBigMessage": "Zoomen Sie auf mindestens Stufe {} heran, um Offline-Bereiche herunterzuladen. Downloads großer Gebiete können die App zum Absturz bringen.",
     "downloadStarted": "Download gestartet! Lade Kacheln und Knoten...",
-    "downloadFailed": "Download konnte nicht gestartet werden: {}"
+    "downloadFailed": "Download konnte nicht gestartet werden: {}",
+    "offlineNotPermitted": "Der {}-Server erlaubt keine Offline-Downloads. Wechseln Sie zu einem Kachelanbieter, der Offline-Nutzung unterstützt (z. B. Bing Maps, Mapbox oder ein selbst gehosteter Kachelserver).",
+    "currentTileProvider": "aktuelle Kachel",
+    "noTileProviderSelected": "Kein Kachelanbieter ausgewählt. Bitte wählen Sie einen Kartenstil, bevor Sie einen Offlinebereich herunterladen."
   },
   "downloadStarted": {
     "title": "Download gestartet",
@@ -292,13 +295,16 @@
     "addProfileChoiceMessage": "Wie möchten Sie ein Profil hinzufügen?",
     "createCustomProfile": "Benutzerdefiniertes Profil Erstellen",
     "createCustomProfileDescription": "Erstellen Sie ein Profil von Grund auf mit Ihren eigenen Tags",
-    "importFromWebsite": "Von Webseite Importieren", 
+    "importFromWebsite": "Von Webseite Importieren",
     "importFromWebsiteDescription": "Profile von deflock.me/identify durchsuchen und importieren"
   },
   "mapTiles": {
     "title": "Karten-Kacheln",
     "manageProviders": "Anbieter Verwalten",
-    "attribution": "Karten-Zuschreibung"
+    "attribution": "Karten-Zuschreibung",
+    "mapAttribution": "Kartenquelle: {}",
+    "couldNotOpenLink": "Link konnte nicht geöffnet werden",
+    "openLicense": "Lizenz öffnen: {}"
   },
   "profileEditor": {
     "viewProfile": "Profil Anzeigen",
@@ -325,7 +331,7 @@
   },
   "operatorProfileEditor": {
     "newOperatorProfile": "Neues Betreiber-Profil",
-    "editOperatorProfile": "Betreiber-Profil Bearbeiten", 
+    "editOperatorProfile": "Betreiber-Profil Bearbeiten",
     "operatorName": "Betreiber-Name",
     "operatorNameHint": "z.B. Polizei Austin",
     "operatorNameRequired": "Betreiber-Name ist erforderlich",
@@ -520,7 +526,7 @@
     "updateFailed": "Aktualisierung der verdächtigen Standorte fehlgeschlagen",
     "neverFetched": "Nie abgerufen",
     "daysAgo": "vor {} Tagen",
-    "hoursAgo": "vor {} Stunden", 
+    "hoursAgo": "vor {} Stunden",
     "minutesAgo": "vor {} Minuten",
     "justNow": "Gerade eben"
   },
@@ -528,7 +534,7 @@
     "title": "Verdächtiger Standort #{}",
     "ticketNo": "Ticket-Nr.",
     "address": "Adresse",
-    "street": "Straße", 
+    "street": "Straße",
     "city": "Stadt",
     "state": "Bundesland",
     "intersectingStreet": "Kreuzende Straße",

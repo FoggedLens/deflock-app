@@ -181,7 +181,10 @@
     "offlineModeWarning": "Pobieranie wyłączone w trybie offline. Wyłącz tryb offline, aby pobierać nowe obszary.",
     "areaTooBigMessage": "Przybliż do co najmniej poziomu {}, aby pobierać obszary offline. Duże pobieranie obszarów może sprawić, że aplikacja przestanie odpowiadać.",
     "downloadStarted": "Pobieranie rozpoczęte! Pobieranie kafelków i węzłów...",
-    "downloadFailed": "Nie udało się rozpocząć pobierania: {}"
+    "downloadFailed": "Nie udało się rozpocząć pobierania: {}",
+    "offlineNotPermitted": "Serwer {} nie zezwala na pobieranie offline. Przełącz się na dostawcę kafelków, który obsługuje tryb offline (np. Bing Maps, Mapbox lub samodzielnie hostowany serwer kafelków).",
+    "currentTileProvider": "bieżący kafelek",
+    "noTileProviderSelected": "Nie wybrano dostawcy kafelków. Wybierz styl mapy przed pobraniem obszaru offline."
   },
   "downloadStarted": {
     "title": "Pobieranie Rozpoczęte",
@@ -335,7 +338,10 @@
   "mapTiles": {
     "title": "Kafelki Mapy",
     "manageProviders": "Zarządzaj Dostawcami",
-    "attribution": "Atrybucja Mapy"
+    "attribution": "Atrybucja Mapy",
+    "mapAttribution": "Źródło mapy: {}",
+    "couldNotOpenLink": "Nie udało się otworzyć linku",
+    "openLicense": "Otwórz licencję: {}"
   },
   "profileEditor": {
     "viewProfile": "Zobacz Profil",

@@ -181,7 +181,10 @@
     "offlineModeWarning": "Descargas deshabilitadas en modo sin conexión. Deshabilite el modo sin conexión para descargar nuevas áreas.",
     "areaTooBigMessage": "Amplíe al menos al nivel {} para descargar áreas sin conexión. Las descargas de áreas grandes pueden hacer que la aplicación deje de responder.",
     "downloadStarted": "¡Descarga iniciada! Obteniendo mosaicos y nodos...",
-    "downloadFailed": "Error al iniciar la descarga: {}"
+    "downloadFailed": "Error al iniciar la descarga: {}",
+    "offlineNotPermitted": "El servidor {} no permite descargas sin conexión. Cambie a un proveedor de mosaicos que permita el uso sin conexión (p. ej., Bing Maps, Mapbox o un servidor de mosaicos propio).",
+    "currentTileProvider": "mosaico actual",
+    "noTileProviderSelected": "No hay proveedor de mosaicos seleccionado. Seleccione un estilo de mapa antes de descargar un área sin conexión."
   },
   "downloadStarted": {
     "title": "Descarga Iniciada",
@@ -329,13 +332,16 @@
     "addProfileChoiceMessage": "¿Cómo desea añadir un perfil?",
     "createCustomProfile": "Crear Perfil Personalizado",
     "createCustomProfileDescription": "Crear un perfil desde cero con sus propias etiquetas",
-    "importFromWebsite": "Importar desde Sitio Web", 
+    "importFromWebsite": "Importar desde Sitio Web",
     "importFromWebsiteDescription": "Explorar e importar perfiles desde deflock.me/identify"
   },
   "mapTiles": {
     "title": "Tiles de Mapa",
     "manageProviders": "Gestionar Proveedores",
-    "attribution": "Atribución del Mapa"
+    "attribution": "Atribución del Mapa",
+    "mapAttribution": "Atribución del mapa: {}",
+    "couldNotOpenLink": "No se pudo abrir el enlace",
+    "openLicense": "Abrir licencia: {}"
   },
   "profileEditor": {
     "viewProfile": "Ver Perfil",
@@ -362,7 +368,7 @@
   },
   "operatorProfileEditor": {
     "newOperatorProfile": "Nuevo Perfil de Operador",
-    "editOperatorProfile": "Editar Perfil de Operador", 
+    "editOperatorProfile": "Editar Perfil de Operador",
     "operatorName": "Nombre del operador",
     "operatorNameHint": "ej., Departamento de Policía de Austin",
     "operatorNameRequired": "El nombre del operador es requerido",
@@ -520,7 +526,7 @@
     "updateFailed": "Error al actualizar ubicaciones sospechosas",
     "neverFetched": "Nunca obtenido",
     "daysAgo": "hace {} días",
-    "hoursAgo": "hace {} horas", 
+    "hoursAgo": "hace {} horas",
     "minutesAgo": "hace {} minutos",
     "justNow": "Ahora mismo"
   },
@@ -528,7 +534,7 @@
     "title": "Ubicación Sospechosa #{}",
     "ticketNo": "No. de Ticket",
     "address": "Dirección",
-    "street": "Calle", 
+    "street": "Calle",
     "city": "Ciudad",
     "state": "Estado",
     "intersectingStreet": "Calle que Intersecta",

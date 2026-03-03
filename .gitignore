@@ -73,12 +73,13 @@ fuchsia/build/
 web/build/
 
 # ───────────────────────────────
-# IDE / Editor Settings
+# IDE / Editor / AI Tool Settings
 # ───────────────────────────────
 .idea/
 .idea/**/workspace.xml
 .idea/**/tasks.xml
 .vscode/
+.claude/settings.local.json
 # Swap files
 *.swp
 *.swo
