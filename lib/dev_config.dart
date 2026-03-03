@@ -163,8 +163,31 @@ const int kMaxReasonableTileCount = 20000;
 const int kAbsoluteMaxTileCount = 50000;
 const int kAbsoluteMaxZoom = 23;
 
+// Direction cone zoom gating
+const int kDirectionConeMinZoomLevel = 14;
+
+// Direction cone arc smoothness
+const int kDirectionConeArcPoints = 36;     // points per 90 degrees
+const int kDirectionConeMinArcPoints = 12;  // minimum for narrow FOVs
+
 // Node icon configuration
 const double kNodeIconDiameter = 18.0;
+
+// Node marker zoom scaling
+const double kNodeIconReferenceZoom = 15.0;
+const double kNodeIconScalePerZoom = 2.0;   // px per zoom level
+const double kNodeIconMinDiameter = 8.0;
+const double kNodeIconMaxDiameter = 28.0;
+
+/// Returns marker diameter scaled by current zoom level
+double getScaledNodeDiameter(double zoom) {
+  final scaled = kNodeIconDiameter + (zoom - kNodeIconReferenceZoom) * kNodeIconScalePerZoom;
+  return scaled.clamp(kNodeIconMinDiameter, kNodeIconMaxDiameter);
+}
+
+// Clustering
+const int kNodeClusterMaxZoomLevel = 13;    // clustering active at zoom <= 13; disabled at zoom >= 14
+const double kClusterIconDiameter = 32.0;
 const double _kNodeRingThicknessBase = 2.5;
 const double kNodeDotOpacity = 0.3; // Opacity for the grey dot interior
 const Color kNodeRingColorReal = Color(0xFF3036F0); // Real nodes from OSM - blue
