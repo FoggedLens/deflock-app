@@ -315,10 +315,12 @@ class ServiceRateLimiter {
   static Future<void> acquire(ServiceType service) async {
     final policy = ServicePolicyResolver.resolveByType(service);
 
-    // Concurrency: acquire semaphore slot first, so only one caller at a
-    // time proceeds to the rate-limit check. This prevents concurrent
-    // callers from bypassing the min interval when _lastRequestTime is
-    // still null or stale.
+    // Concurrency: acquire a semaphore slot first so that at most
+    // [policy.maxConcurrentRequests] callers proceed concurrently.
+    // The min-interval check below is only race-free when
+    // maxConcurrentRequests == 1 (currently only Nominatim).  For services
+    // with higher concurrency the interval is approximate, which is
+    // acceptable — their policies don't specify a min interval.
     _Semaphore? semaphore;
     if (policy.maxConcurrentRequests > 0) {
       semaphore = _semaphores.putIfAbsent(

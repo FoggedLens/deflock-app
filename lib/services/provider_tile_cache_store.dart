@@ -47,7 +47,7 @@ class ProviderTileCacheStore implements MapCachingProvider {
 
   @override
   Future<CachedMapTile?> getTile(String url) async {
-    final key = _keyFor(url);
+    final key = keyFor(url);
     final tileFile = File(p.join(cacheDirectory, '$key.tile'));
     final metaFile = File(p.join(cacheDirectory, '$key.meta'));
 
@@ -90,7 +90,7 @@ class ProviderTileCacheStore implements MapCachingProvider {
   }) async {
     await _ensureDirectory();
 
-    final key = _keyFor(url);
+    final key = keyFor(url);
     final tileFile = File(p.join(cacheDirectory, '$key.tile'));
     final metaFile = File(p.join(cacheDirectory, '$key.meta'));
 
@@ -158,7 +158,8 @@ class ProviderTileCacheStore implements MapCachingProvider {
   }
 
   /// Generate a cache key from URL using UUID v5 (same as flutter_map built-in).
-  static String _keyFor(String url) => _uuid.v5(Namespace.url.value, url);
+  @visibleForTesting
+  static String keyFor(String url) => _uuid.v5(Namespace.url.value, url);
 
   /// Estimate total cache size (lazy, first call scans directory).
   Future<int> _getEstimatedSize() async {
@@ -301,6 +302,7 @@ class ProviderTileCacheStore implements MapCachingProvider {
     }
     _estimatedSize = null;
     _directoryReady = null; // Allow lazy re-creation
+    _lastPruneCheck = null; // Reset throttle so next write can trigger eviction
   }
 
   /// Get the current estimated cache size in bytes.

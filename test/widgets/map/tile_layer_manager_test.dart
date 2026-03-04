@@ -6,6 +6,7 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
+import 'package:deflockapp/models/tile_provider.dart' as models;
 import 'package:deflockapp/services/deflock_tile_provider.dart';
 import 'package:deflockapp/widgets/map/tile_layer_manager.dart';
 
@@ -416,6 +417,136 @@ void main() {
         expect(resets.length, equals(resetsBefore),
             reason: 'Old retry timer should be cancelled on provider switch');
       });
+    });
+  });
+
+  group('TileLayerManager config drift detection', () {
+    late TileLayerManager manager;
+
+    setUp(() {
+      manager = TileLayerManager();
+    });
+
+    tearDown(() {
+      manager.dispose();
+    });
+
+    models.TileProvider makeProvider({String? apiKey}) => models.TileProvider(
+          id: 'test_provider',
+          name: 'Test',
+          apiKey: apiKey,
+          tileTypes: [],
+        );
+
+    models.TileType makeTileType({
+      String urlTemplate = 'https://example.com/{z}/{x}/{y}.png',
+      int maxZoom = 18,
+    }) =>
+        models.TileType(
+          id: 'test_tile',
+          name: 'Test',
+          urlTemplate: urlTemplate,
+          attribution: 'Test',
+          maxZoom: maxZoom,
+        );
+
+    test('returns same provider for identical config', () {
+      final provider = makeProvider();
+      final tileType = makeTileType();
+
+      final layer1 = manager.buildTileLayer(
+        selectedProvider: provider,
+        selectedTileType: tileType,
+      ) as TileLayer;
+
+      final layer2 = manager.buildTileLayer(
+        selectedProvider: provider,
+        selectedTileType: tileType,
+      ) as TileLayer;
+
+      expect(
+        identical(layer1.tileProvider, layer2.tileProvider),
+        isTrue,
+        reason: 'Same config should return the cached provider instance',
+      );
+    });
+
+    test('replaces provider when urlTemplate changes', () {
+      final provider = makeProvider();
+      final tileTypeV1 = makeTileType(
+        urlTemplate: 'https://old.example.com/{z}/{x}/{y}.png',
+      );
+      final tileTypeV2 = makeTileType(
+        urlTemplate: 'https://new.example.com/{z}/{x}/{y}.png',
+      );
+
+      final layer1 = manager.buildTileLayer(
+        selectedProvider: provider,
+        selectedTileType: tileTypeV1,
+      ) as TileLayer;
+
+      final layer2 = manager.buildTileLayer(
+        selectedProvider: provider,
+        selectedTileType: tileTypeV2,
+      ) as TileLayer;
+
+      expect(
+        identical(layer1.tileProvider, layer2.tileProvider),
+        isFalse,
+        reason: 'Changed urlTemplate should create a new provider',
+      );
+      expect(
+        (layer2.tileProvider as DeflockTileProvider).tileType.urlTemplate,
+        'https://new.example.com/{z}/{x}/{y}.png',
+      );
+    });
+
+    test('replaces provider when apiKey changes', () {
+      final providerV1 = makeProvider(apiKey: 'old_key');
+      final providerV2 = makeProvider(apiKey: 'new_key');
+      final tileType = makeTileType();
+
+      final layer1 = manager.buildTileLayer(
+        selectedProvider: providerV1,
+        selectedTileType: tileType,
+      ) as TileLayer;
+
+      final layer2 = manager.buildTileLayer(
+        selectedProvider: providerV2,
+        selectedTileType: tileType,
+      ) as TileLayer;
+
+      expect(
+        identical(layer1.tileProvider, layer2.tileProvider),
+        isFalse,
+        reason: 'Changed apiKey should create a new provider',
+      );
+      expect(
+        (layer2.tileProvider as DeflockTileProvider).apiKey,
+        'new_key',
+      );
+    });
+
+    test('replaces provider when maxZoom changes', () {
+      final provider = makeProvider();
+      final tileTypeV1 = makeTileType(maxZoom: 18);
+      final tileTypeV2 = makeTileType(maxZoom: 20);
+
+      final layer1 = manager.buildTileLayer(
+        selectedProvider: provider,
+        selectedTileType: tileTypeV1,
+      ) as TileLayer;
+
+      final layer2 = manager.buildTileLayer(
+        selectedProvider: provider,
+        selectedTileType: tileTypeV2,
+      ) as TileLayer;
+
+      expect(
+        identical(layer1.tileProvider, layer2.tileProvider),
+        isFalse,
+        reason: 'Changed maxZoom should create a new provider',
+      );
     });
   });
 

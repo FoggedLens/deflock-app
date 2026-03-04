@@ -359,8 +359,8 @@ void main() {
 
   group('ProviderTileCacheStore eviction', () {
     /// Helper: populate cache with [count] tiles, each [bytesPerTile] bytes.
-    /// Uses small delays between writes so modification times are
-    /// distinguishable for oldest-modified ordering.
+    /// Sets deterministic modification times (1 second apart) so eviction
+    /// ordering is stable across platforms without relying on wall-clock delays.
     Future<void> fillCache(
       ProviderTileCacheStore store, {
       required int count,
@@ -373,14 +373,22 @@ void main() {
         lastModified: null,
         etag: null,
       );
+      final baseTime = DateTime.utc(2026, 1, 1);
       for (var i = 0; i < count; i++) {
         await store.putTile(
           url: 'https://tile.example.com/$prefix$i.png',
           metadata: metadata,
           bytes: bytes,
         );
-        // Small delay so modification times are distinguishable for eviction order
-        await Future<void>.delayed(const Duration(milliseconds: 10));
+        // Set deterministic mtime so eviction order is stable across platforms.
+        final key = ProviderTileCacheStore.keyFor(
+          'https://tile.example.com/$prefix$i.png',
+        );
+        final tileFile = File(p.join(store.cacheDirectory, '$key.tile'));
+        final metaFile = File(p.join(store.cacheDirectory, '$key.meta'));
+        final mtime = baseTime.add(Duration(seconds: i));
+        await tileFile.setLastModified(mtime);
+        await metaFile.setLastModified(mtime);
       }
     }
 

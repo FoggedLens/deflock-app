@@ -37,8 +37,11 @@ class ProviderTileCacheManager {
     required ServicePolicy policy,
     int? maxCacheBytes,
   }) {
-    assert(_baseCacheDir != null,
-        'ProviderTileCacheManager.init() must be called before getOrCreate()');
+    if (_baseCacheDir == null) {
+      throw StateError(
+        'ProviderTileCacheManager.init() must be called before getOrCreate()',
+      );
+    }
 
     final key = '$providerId/$tileTypeId';
     if (_stores.containsKey(key)) return _stores[key]!;

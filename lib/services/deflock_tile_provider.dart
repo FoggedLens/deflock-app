@@ -52,6 +52,10 @@ class DeflockTileProvider extends NetworkTileProvider {
   final models.TileType tileType;
   final String? apiKey;
 
+  /// Opaque fingerprint of the config this provider was created with.
+  /// Used by [TileLayerManager] to detect config drift after edits.
+  final String configFingerprint;
+
   /// Caching provider for the offline-first path. The same instance is passed
   /// to super for the common path — we keep a reference here so we can also
   /// use it in [DeflockOfflineTileImageProvider].
@@ -69,6 +73,7 @@ class DeflockTileProvider extends NetworkTileProvider {
     this.apiKey,
     MapCachingProvider? cachingProvider,
     this.onNetworkSuccess,
+    this.configFingerprint = '',
   })  : _sharedHttpClient = httpClient,
         _cachingProvider = cachingProvider,
         super(
@@ -87,6 +92,7 @@ class DeflockTileProvider extends NetworkTileProvider {
     String? apiKey,
     MapCachingProvider? cachingProvider,
     VoidCallback? onNetworkSuccess,
+    String configFingerprint = '',
   }) {
     final client = UserAgentClient(RetryClient(Client()));
     return DeflockTileProvider._(
@@ -96,6 +102,7 @@ class DeflockTileProvider extends NetworkTileProvider {
       apiKey: apiKey,
       cachingProvider: cachingProvider,
       onNetworkSuccess: onNetworkSuccess,
+      configFingerprint: configFingerprint,
     );
   }
 

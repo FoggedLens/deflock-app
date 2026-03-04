@@ -225,7 +225,24 @@ class TileLayerManager {
     );
   }
 
+  /// Build a config fingerprint for drift detection.
+  ///
+  /// If any of these fields change (e.g. user edits the URL template or
+  /// rotates an API key) the cached [DeflockTileProvider] must be replaced.
+  static String _configFingerprint(
+    models.TileProvider provider,
+    models.TileType tileType,
+  ) =>
+      '${provider.id}/${tileType.id}'
+      '|${tileType.urlTemplate}'
+      '|${tileType.maxZoom}'
+      '|${provider.apiKey ?? ''}';
+
   /// Get or create a [DeflockTileProvider] for the given provider/type.
+  ///
+  /// Providers are cached by `providerId/tileTypeId`.  If the effective config
+  /// (URL template, max zoom, API key) has changed since the provider was
+  /// created, the stale instance is shut down and replaced.
   DeflockTileProvider _getOrCreateProvider({
     required models.TileProvider? selectedProvider,
     required models.TileType? selectedTileType,
@@ -247,6 +264,19 @@ class TileLayerManager {
     }
 
     final key = '${selectedProvider.id}/${selectedTileType.id}';
+    final fingerprint = _configFingerprint(selectedProvider, selectedTileType);
+
+    // Check for config drift: if the provider exists but its config has
+    // changed, shut down the stale instance so a fresh one is created below.
+    final existing = _providers[key];
+    if (existing != null && existing.configFingerprint != fingerprint) {
+      debugPrint(
+        '[TileLayerManager] Config changed for $key — replacing provider',
+      );
+      existing.shutdown();
+      _providers.remove(key);
+    }
+
     return _providers.putIfAbsent(key, () {
       final cachingProvider = ProviderTileCacheManager.isInitialized
           ? ProviderTileCacheManager.getOrCreate(
@@ -267,6 +297,7 @@ class TileLayerManager {
         apiKey: selectedProvider.apiKey,
         cachingProvider: cachingProvider,
         onNetworkSuccess: onTileLoadSuccess,
+        configFingerprint: fingerprint,
       );
     });
   }
