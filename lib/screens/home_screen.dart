@@ -578,37 +578,41 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                               flex: 3, // 30% for secondary action
                               child: AnimatedBuilder(
                                 animation: LocalizationService.instance,
-                                builder: (context, child) => FittedBox(
-                                  fit: BoxFit.scaleDown,
-                                  child: ElevatedButton.icon(
-                                    icon: Icon(Icons.download_for_offline),
-                                    label: Text(LocalizationService.instance.download),
-                                    onPressed: () {
-                                      // Check minimum zoom level before opening download dialog
-                                      final currentZoom = _mapController.mapController.camera.zoom;
-                                      if (currentZoom < kMinZoomForOfflineDownload) {
-                                        ScaffoldMessenger.of(context).showSnackBar(
-                                          SnackBar(
-                                            content: Text(
-                                              LocalizationService.instance.t('download.areaTooBigMessage', 
-                                                params: [kMinZoomForOfflineDownload.toString()])
+                                builder: (context, child) {
+                                  final appState = context.watch<AppState>();
+                                  final canDownload = appState.selectedTileType?.allowsOfflineDownload ?? false;
+                                  return FittedBox(
+                                    fit: BoxFit.scaleDown,
+                                    child: ElevatedButton.icon(
+                                      icon: Icon(Icons.download_for_offline),
+                                      label: Text(LocalizationService.instance.download),
+                                      onPressed: canDownload ? () {
+                                        // Check minimum zoom level before opening download dialog
+                                        final currentZoom = _mapController.mapController.camera.zoom;
+                                        if (currentZoom < kMinZoomForOfflineDownload) {
+                                          ScaffoldMessenger.of(context).showSnackBar(
+                                            SnackBar(
+                                              content: Text(
+                                                LocalizationService.instance.t('download.areaTooBigMessage',
+                                                  params: [kMinZoomForOfflineDownload.toString()])
+                                              ),
                                             ),
-                                          ),
+                                          );
+                                          return;
+                                        }
+
+                                        showDialog(
+                                          context: context,
+                                          builder: (ctx) => DownloadAreaDialog(controller: _mapController.mapController),
                                         );
-                                        return;
-                                      }
-                                      
-                                      showDialog(
-                                        context: context,
-                                        builder: (ctx) => DownloadAreaDialog(controller: _mapController.mapController),
-                                      );
-                                    },
-                                    style: ElevatedButton.styleFrom(
-                                      minimumSize: Size(0, 48),
-                                      textStyle: TextStyle(fontSize: 16),
+                                      } : null,
+                                      style: ElevatedButton.styleFrom(
+                                        minimumSize: Size(0, 48),
+                                        textStyle: TextStyle(fontSize: 16),
+                                      ),
                                     ),
-                                  ),
-                                ),
+                                  );
+                                },
                               ),
                             ),
                           ],

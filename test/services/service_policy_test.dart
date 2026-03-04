@@ -96,11 +96,11 @@ void main() {
     });
 
     group('resolve', () {
-      test('OSM tile server policy disallows offline download', () {
+      test('OSM tile server policy allows offline download', () {
         final policy = ServicePolicyResolver.resolve(
           'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
         );
-        expect(policy.allowsOfflineDownload, false);
+        expect(policy.allowsOfflineDownload, true);
       });
 
       test('OSM tile server policy requires 7-day min cache TTL', () {
@@ -175,7 +175,7 @@ void main() {
         final policy = ServicePolicyResolver.resolve(
           'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
         );
-        expect(policy.allowsOfflineDownload, false);
+        expect(policy.allowsOfflineDownload, true);
       });
 
       test('handles {quadkey} template variable', () {
@@ -381,7 +381,7 @@ void main() {
   group('ServicePolicy', () {
     test('osmTileServer policy has correct values', () {
       const policy = ServicePolicy.osmTileServer();
-      expect(policy.allowsOfflineDownload, false);
+      expect(policy.allowsOfflineDownload, true);
       expect(policy.minCacheTtl, const Duration(days: 7));
       expect(policy.requiresClientCaching, true);
       expect(policy.attributionUrl, 'https://www.openstreetmap.org/copyright');

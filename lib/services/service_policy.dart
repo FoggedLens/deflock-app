@@ -70,13 +70,13 @@ class ServicePolicy {
         attributionUrl = null;
 
   /// OSM tile server (tile.openstreetmap.org)
-  /// Policy: no offline/bulk downloading, min 7-day cache, must honor cache headers.
+  /// Policy: min 7-day cache, must honor cache headers.
   /// Concurrency managed by flutter_map's NetworkTileProvider.
   /// https://operations.osmfoundation.org/policies/tiles/
   const ServicePolicy.osmTileServer()
       : maxConcurrentRequests = 0, // managed by flutter_map
         minRequestInterval = null,
-        allowsOfflineDownload = false,
+        allowsOfflineDownload = true,
         requiresClientCaching = true,
         minCacheTtl = const Duration(days: 7),
         attributionUrl = 'https://www.openstreetmap.org/copyright';

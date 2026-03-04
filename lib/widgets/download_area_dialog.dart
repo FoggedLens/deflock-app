@@ -267,42 +267,6 @@ class _DownloadAreaDialogState extends State<DownloadAreaDialog> {
                   final selectedProvider = appState.selectedTileProvider;
                   final selectedTileType = appState.selectedTileType;
 
-                  // Check if the tile provider allows offline downloads
-                  if (selectedTileType != null && !selectedTileType.allowsOfflineDownload) {
-                    if (!context.mounted) return;
-                    // Capture navigator before popping, since context is
-                    // deactivated after Navigator.pop.
-                    final navigator = Navigator.of(context);
-                    navigator.pop();
-                    showDialog(
-                      context: navigator.context,
-                      builder: (context) => AlertDialog(
-                        title: Row(
-                          children: [
-                            const Icon(Icons.block, color: Colors.orange),
-                            const SizedBox(width: 10),
-                            Text(locService.t('download.title')),
-                          ],
-                        ),
-                        content: Text(
-                          locService.t(
-                            'download.offlineNotPermitted',
-                            params: [
-                              selectedProvider?.name ?? locService.t('download.currentTileProvider'),
-                            ],
-                          ),
-                        ),
-                        actions: [
-                          TextButton(
-                            onPressed: () => Navigator.pop(context),
-                            child: Text(locService.t('actions.ok')),
-                          ),
-                        ],
-                      ),
-                    );
-                    return;
-                  }
-
                   // Guard: provider and tile type must be non-null for a
                   // useful offline area (fetchLocalTile requires exact match).
                   if (selectedProvider == null || selectedTileType == null) {
