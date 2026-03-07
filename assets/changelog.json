@@ -1,4 +1,9 @@
 {
+  "2.9.0": {
+    "content": [
+      "• Caching, tile retries, offline areas, now working properly. Map imagery should load correctly."
+    ]
+  },
   "2.8.1": {
     "content": [
       "• Fixed bug where the \"existing tags\" profile would incorrectly add default FOV ranges during submission",
