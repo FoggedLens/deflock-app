@@ -1,6 +1,7 @@
 import 'package:latlong2/latlong.dart';
 import 'package:flutter_map/flutter_map.dart' show LatLngBounds;
 import '../../models/osm_node.dart';
+import 'offline_tile_utils.dart' show normalizeBounds;
 
 /// Status of an offline area
 enum OfflineAreaStatus { downloading, complete, error, cancelled }
@@ -71,10 +72,10 @@ class OfflineArea {
   };
 
   static OfflineArea fromJson(Map<String, dynamic> json) {
-    final bounds = LatLngBounds(
+    final bounds = normalizeBounds(LatLngBounds(
       LatLng(json['bounds']['sw']['lat'], json['bounds']['sw']['lng']),
       LatLng(json['bounds']['ne']['lat'], json['bounds']['ne']['lng']),
-    );
+    ));
     return OfflineArea(
       id: json['id'],
       name: json['name'] ?? '',

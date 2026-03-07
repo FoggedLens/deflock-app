@@ -181,7 +181,10 @@
     "offlineModeWarning": "Téléchargements désactivés en mode hors ligne. Désactivez le mode hors ligne pour télécharger de nouvelles zones.",
     "areaTooBigMessage": "Zoomez au moins au niveau {} pour télécharger des zones hors ligne. Les téléchargements de grandes zones peuvent rendre l'application non réactive.",
     "downloadStarted": "Téléchargement démarré ! Récupération des tuiles et nœuds...",
-    "downloadFailed": "Échec du démarrage du téléchargement: {}"
+    "downloadFailed": "Échec du démarrage du téléchargement: {}",
+    "offlineNotPermitted": "Le serveur {} ne permet pas les téléchargements hors ligne. Passez à un fournisseur de tuiles qui autorise l'utilisation hors ligne (par ex., Bing Maps, Mapbox ou un serveur de tuiles auto-hébergé).",
+    "currentTileProvider": "tuile actuelle",
+    "noTileProviderSelected": "Aucun fournisseur de tuiles sélectionné. Veuillez choisir un style de carte avant de télécharger une zone hors ligne."
   },
   "downloadStarted": {
     "title": "Téléchargement Démarré",
@@ -329,13 +332,16 @@
     "addProfileChoiceMessage": "Comment souhaitez-vous ajouter un profil?",
     "createCustomProfile": "Créer Profil Personnalisé",
     "createCustomProfileDescription": "Créer un profil à partir de zéro avec vos propres balises",
-    "importFromWebsite": "Importer depuis Site Web", 
+    "importFromWebsite": "Importer depuis Site Web",
     "importFromWebsiteDescription": "Parcourir et importer des profils depuis deflock.me/identify"
   },
   "mapTiles": {
     "title": "Tuiles de Carte",
     "manageProviders": "Gérer Fournisseurs",
-    "attribution": "Attribution de Carte"
+    "attribution": "Attribution de Carte",
+    "mapAttribution": "Attribution de la carte : {}",
+    "couldNotOpenLink": "Impossible d'ouvrir le lien",
+    "openLicense": "Ouvrir la licence : {}"
   },
   "profileEditor": {
     "viewProfile": "Voir Profil",
@@ -362,7 +368,7 @@
   },
   "operatorProfileEditor": {
     "newOperatorProfile": "Nouveau Profil d'Opérateur",
-    "editOperatorProfile": "Modifier Profil d'Opérateur", 
+    "editOperatorProfile": "Modifier Profil d'Opérateur",
     "operatorName": "Nom de l'opérateur",
     "operatorNameHint": "ex., Département de Police d'Austin",
     "operatorNameRequired": "Le nom de l'opérateur est requis",
@@ -520,7 +526,7 @@
     "updateFailed": "Échec de la mise à jour des emplacements suspects",
     "neverFetched": "Jamais récupéré",
     "daysAgo": "il y a {} jours",
-    "hoursAgo": "il y a {} heures", 
+    "hoursAgo": "il y a {} heures",
     "minutesAgo": "il y a {} minutes",
     "justNow": "À l'instant"
   },
@@ -528,7 +534,7 @@
     "title": "Emplacement Suspect #{}",
     "ticketNo": "N° de Ticket",
     "address": "Adresse",
-    "street": "Rue", 
+    "street": "Rue",
     "city": "Ville",
     "state": "État",
     "intersectingStreet": "Rue Transversale",

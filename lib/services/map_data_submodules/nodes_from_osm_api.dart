@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:http/http.dart' as http;
 import 'package:latlong2/latlong.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:xml/xml.dart';
@@ -7,6 +8,7 @@ import '../../models/node_profile.dart';
 import '../../models/osm_node.dart';
 import '../../app_state.dart';
 import '../http_client.dart';
+import '../service_policy.dart';
 
 /// Fetches surveillance nodes from the direct OSM API using bbox query.
 /// This is a fallback for when Overpass is not available (e.g., sandbox mode).
@@ -58,28 +60,36 @@ Future<List<OsmNode>> _fetchFromOsmApi({
   try {
     debugPrint('[fetchOsmApiNodes] Querying OSM API for nodes in bbox...');
     debugPrint('[fetchOsmApiNodes] URL: $url');
-    
-    final response = await _client.get(Uri.parse(url));
-    
+
+    // Enforce max 2 concurrent download threads per OSM API usage policy
+    await ServiceRateLimiter.acquire(ServiceType.osmEditingApi);
+
+    final http.Response response;
+    try {
+      response = await _client.get(Uri.parse(url));
+    } finally {
+      ServiceRateLimiter.release(ServiceType.osmEditingApi);
+    }
+
     if (response.statusCode != 200) {
       debugPrint('[fetchOsmApiNodes] OSM API error: ${response.statusCode} - ${response.body}');
       throw Exception('OSM API error: ${response.statusCode} - ${response.body}');
     }
-    
+
     // Parse XML response
     final document = XmlDocument.parse(response.body);
     final nodes = _parseOsmApiResponseWithConstraints(document, profiles, maxResults);
-    
+
     if (nodes.isNotEmpty) {
       debugPrint('[fetchOsmApiNodes] Retrieved ${nodes.length} matching surveillance nodes');
     }
-    
+
     // Don't report success here - let the top level handle it
     return nodes;
-    
+
   } catch (e) {
     debugPrint('[fetchOsmApiNodes] Exception: $e');
-    
+
     // Don't report status here - let the top level handle it
     rethrow; // Re-throw to let caller handle
   }

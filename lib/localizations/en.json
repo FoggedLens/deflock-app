@@ -70,7 +70,7 @@
     "submitAnyway": "Submit Anyway",
     "nodeType": {
       "alpr": "ALPR/ANPR Camera",
-      "publicCamera": "Public Surveillance Camera", 
+      "publicCamera": "Public Surveillance Camera",
       "camera": "Surveillance Camera",
       "amenity": "{}",
       "device": "{} Device",
@@ -181,7 +181,10 @@
     "offlineModeWarning": "Downloads disabled while in offline mode. Disable offline mode to download new areas.",
     "areaTooBigMessage": "Zoom in to at least level {} to download offline areas. Large area downloads can cause the app to become unresponsive.",
     "downloadStarted": "Download started! Fetching tiles and nodes...",
-    "downloadFailed": "Failed to start download: {}"
+    "downloadFailed": "Failed to start download: {}",
+    "offlineNotPermitted": "The {} server does not permit offline downloads. Switch to a tile provider that allows offline use (e.g., Bing Maps, Mapbox, or a self-hosted tile server).",
+    "currentTileProvider": "current tile",
+    "noTileProviderSelected": "No tile provider is selected. Please select a map style before downloading an offline area."
   },
   "downloadStarted": {
     "title": "Download Started",
@@ -329,13 +332,16 @@
     "addProfileChoiceMessage": "How would you like to add a profile?",
     "createCustomProfile": "Create Custom Profile",
     "createCustomProfileDescription": "Build a profile from scratch with your own tags",
-    "importFromWebsite": "Import from Website", 
+    "importFromWebsite": "Import from Website",
     "importFromWebsiteDescription": "Browse and import profiles from deflock.me/identify"
   },
   "mapTiles": {
     "title": "Map Tiles",
     "manageProviders": "Manage Providers",
-    "attribution": "Map Attribution"
+    "attribution": "Map Attribution",
+    "mapAttribution": "Map attribution: {}",
+    "couldNotOpenLink": "Could not open link",
+    "openLicense": "Open license: {}"
   },
   "profileEditor": {
     "viewProfile": "View Profile",
@@ -362,7 +368,7 @@
   },
   "operatorProfileEditor": {
     "newOperatorProfile": "New Operator Profile",
-    "editOperatorProfile": "Edit Operator Profile", 
+    "editOperatorProfile": "Edit Operator Profile",
     "operatorName": "Operator name",
     "operatorNameHint": "e.g., Austin Police Department",
     "operatorNameRequired": "Operator name is required",
@@ -443,7 +449,7 @@
     "mobileEditors": "Mobile Editors",
     "iDEditor": "iD Editor",
     "iDEditorSubtitle": "Full-featured web editor - always works",
-    "rapidEditor": "RapiD Editor", 
+    "rapidEditor": "RapiD Editor",
     "rapidEditorSubtitle": "AI-assisted editing with Facebook data",
     "vespucci": "Vespucci",
     "vespucciSubtitle": "Advanced Android OSM editor",
@@ -520,7 +526,7 @@
     "updateFailed": "Failed to update suspected locations",
     "neverFetched": "Never fetched",
     "daysAgo": "{} days ago",
-    "hoursAgo": "{} hours ago", 
+    "hoursAgo": "{} hours ago",
     "minutesAgo": "{} minutes ago",
     "justNow": "Just now"
   },
@@ -528,7 +534,7 @@
     "title": "Suspected Location #{}",
     "ticketNo": "Ticket No",
     "address": "Address",
-    "street": "Street", 
+    "street": "Street",
     "city": "City",
     "state": "State",
     "intersectingStreet": "Intersecting Street",

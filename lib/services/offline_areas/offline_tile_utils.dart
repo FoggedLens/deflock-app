@@ -4,14 +4,15 @@ import 'package:flutter_map/flutter_map.dart' show LatLngBounds;
 
 /// Utility for tile calculations and lat/lon conversions for OSM offline logic
 
-Set<List<int>> computeTileList(LatLngBounds bounds, int zMin, int zMax) {
-  Set<List<int>> tiles = {};
+/// Normalize bounds so south ≤ north, west ≤ east, and degenerate (near-zero)
+/// spans are expanded by epsilon.  Call this before storing bounds so that
+/// `tileInBounds` and [computeTileList] see consistent corner ordering.
+LatLngBounds normalizeBounds(LatLngBounds bounds) {
   const double epsilon = 1e-7;
-  double latMin = min(bounds.southWest.latitude, bounds.northEast.latitude);
-  double latMax = max(bounds.southWest.latitude, bounds.northEast.latitude);
-  double lonMin = min(bounds.southWest.longitude, bounds.northEast.longitude);
-  double lonMax = max(bounds.southWest.longitude, bounds.northEast.longitude);
-  // Expand degenerate/flat areas a hair
+  var latMin = min(bounds.southWest.latitude, bounds.northEast.latitude);
+  var latMax = max(bounds.southWest.latitude, bounds.northEast.latitude);
+  var lonMin = min(bounds.southWest.longitude, bounds.northEast.longitude);
+  var lonMax = max(bounds.southWest.longitude, bounds.northEast.longitude);
   if ((latMax - latMin).abs() < epsilon) {
     latMin -= epsilon;
     latMax += epsilon;
@@ -20,6 +21,16 @@ Set<List<int>> computeTileList(LatLngBounds bounds, int zMin, int zMax) {
     lonMin -= epsilon;
     lonMax += epsilon;
   }
+  return LatLngBounds(LatLng(latMin, lonMin), LatLng(latMax, lonMax));
+}
+
+Set<List<int>> computeTileList(LatLngBounds bounds, int zMin, int zMax) {
+  Set<List<int>> tiles = {};
+  final normalized = normalizeBounds(bounds);
+  final double latMin = normalized.south;
+  final double latMax = normalized.north;
+  final double lonMin = normalized.west;
+  final double lonMax = normalized.east;
   for (int z = zMin; z <= zMax; z++) {
     final n = pow(2, z).toInt();
     final minTileRaw = latLonToTileRaw(latMin, lonMin, z);

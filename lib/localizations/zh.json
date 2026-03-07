@@ -181,7 +181,10 @@
     "offlineModeWarning": "离线模式下禁用下载。禁用离线模式以下载新区域。",
     "areaTooBigMessage": "请放大至至少第{}级来下载离线区域。下载大区域可能导致应用程序无响应。",
     "downloadStarted": "下载已开始！正在获取瓦片和节点...",
-    "downloadFailed": "启动下载失败：{}"
+    "downloadFailed": "启动下载失败：{}",
+    "offlineNotPermitted": "{}服务器不允许离线下载。请切换到允许离线使用的瓦片提供商（例如 Bing Maps、Mapbox 或自托管的瓦片服务器）。",
+    "currentTileProvider": "当前瓦片",
+    "noTileProviderSelected": "未选择瓦片提供商。请在下载离线区域之前选择地图样式。"
   },
   "downloadStarted": {
     "title": "下载已开始",
@@ -329,13 +332,16 @@
     "addProfileChoiceMessage": "您希望如何添加配置文件？",
     "createCustomProfile": "创建自定义配置文件",
     "createCustomProfileDescription": "从头开始构建带有您自己标签的配置文件",
-    "importFromWebsite": "从网站导入", 
+    "importFromWebsite": "从网站导入",
     "importFromWebsiteDescription": "浏览并从 deflock.me/identify 导入配置文件"
   },
   "mapTiles": {
     "title": "地图瓦片",
     "manageProviders": "管理提供商",
-    "attribution": "地图归属"
+    "attribution": "地图归属",
+    "mapAttribution": "地图来源：{}",
+    "couldNotOpenLink": "无法打开链接",
+    "openLicense": "打开许可证：{}"
   },
   "profileEditor": {
     "viewProfile": "查看配置文件",
@@ -362,7 +368,7 @@
   },
   "operatorProfileEditor": {
     "newOperatorProfile": "新建运营商配置文件",
-    "editOperatorProfile": "编辑运营商配置文件", 
+    "editOperatorProfile": "编辑运营商配置文件",
     "operatorName": "运营商名称",
     "operatorNameHint": "例如，奥斯汀警察局",
     "operatorNameRequired": "运营商名称为必填项",
@@ -520,7 +526,7 @@
     "updateFailed": "疑似位置更新失败",
     "neverFetched": "从未获取",
     "daysAgo": "{}天前",
-    "hoursAgo": "{}小时前", 
+    "hoursAgo": "{}小时前",
     "minutesAgo": "{}分钟前",
     "justNow": "刚刚"
   },
@@ -528,7 +534,7 @@
     "title": "疑似位置 #{}",
     "ticketNo": "工单号",
     "address": "地址",
-    "street": "街道", 
+    "street": "街道",
     "city": "城市",
     "state": "州/省",
     "intersectingStreet": "交叉街道",
