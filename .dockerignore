@@ -1,0 +1,12 @@
+build/
+.fvm/
+.stamps/
+.git/
+ios/
+.dart_tool/
+.idea/
+.vscode/
+.DS_Store
+*.keystore
+.env
+build_keys.conf
