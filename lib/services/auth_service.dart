@@ -36,6 +36,7 @@ class AuthService {
 
   void setUploadMode(UploadMode mode) {
     _mode = mode;
+    if (mode == UploadMode.simulate || !kHasOsmSecrets) return;
     final isSandbox = (mode == UploadMode.sandbox);
     final authBase = isSandbox
       ? 'https://master.apis.dev.openstreetmap.org'
@@ -150,7 +151,9 @@ class AuthService {
 
   // Force a fresh login by clearing stored tokens
   Future<String?> forceLogin() async {
-    await _helper.removeAllTokens();
+    if (_mode != UploadMode.simulate) {
+      await _helper.removeAllTokens();
+    }
     _displayName = null;
     return await login();
   }
