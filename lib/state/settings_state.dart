@@ -5,6 +5,7 @@ import 'package:collection/collection.dart';
 
 import '../models/tile_provider.dart';
 import '../dev_config.dart';
+import '../keys.dart';
 
 // Enum for upload mode (Production, OSM Sandbox, Simulate)
 enum UploadMode { production, sandbox, simulate }
@@ -41,7 +42,8 @@ class SettingsState extends ChangeNotifier {
   bool _offlineMode = false;
   bool _pauseQueueProcessing = false;
   int _maxNodes = kDefaultMaxNodes;
-  UploadMode _uploadMode = kEnableDevelopmentModes ? UploadMode.simulate : UploadMode.production;
+  // Default must account for missing secrets (preview builds) even before init() runs
+  UploadMode _uploadMode = (kEnableDevelopmentModes || !kHasOsmSecrets) ? UploadMode.simulate : UploadMode.production;
   FollowMeMode _followMeMode = FollowMeMode.follow;
   bool _proximityAlertsEnabled = false;
   int _proximityAlertDistance = kProximityAlertDefaultDistance;
@@ -150,8 +152,16 @@ class SettingsState extends ChangeNotifier {
       await prefs.setInt(_uploadModePrefsKey, _uploadMode.index);
     }
     
-    // In production builds, force production mode if development modes are disabled
-    if (!kEnableDevelopmentModes && _uploadMode != UploadMode.production) {
+    // Override persisted upload mode when the current build configuration
+    // doesn't support it. This handles two cases:
+    // 1. Preview/PR builds without OAuth secrets — force simulate to avoid crashes
+    // 2. Production builds — force production (prefs may have sandbox/simulate
+    //    from a previous dev build on the same device)
+    if (!kHasOsmSecrets && _uploadMode != UploadMode.simulate) {
+      debugPrint('SettingsState: No OSM secrets available, forcing simulate mode');
+      _uploadMode = UploadMode.simulate;
+      await prefs.setInt(_uploadModePrefsKey, _uploadMode.index);
+    } else if (kHasOsmSecrets && !kEnableDevelopmentModes && _uploadMode != UploadMode.production) {
       debugPrint('SettingsState: Development modes disabled, forcing production mode');
       _uploadMode = UploadMode.production;
       await prefs.setInt(_uploadModePrefsKey, _uploadMode.index);
@@ -258,11 +268,10 @@ class SettingsState extends ChangeNotifier {
   }
 
   Future<void> setUploadMode(UploadMode mode) async {
-    // In production builds, only allow production mode
-    if (!kEnableDevelopmentModes && mode != UploadMode.production) {
-      debugPrint('SettingsState: Development modes disabled, forcing production mode');
-      mode = UploadMode.production;
-    }
+    // The upload mode dropdown is only visible when kEnableDevelopmentModes is
+    // true (gated in osm_account_screen.dart), so no secrets/dev-mode guards
+    // are needed here. The init() method handles forcing the correct mode on
+    // startup for production builds and builds without OAuth secrets.
     
     _uploadMode = mode;
     final prefs = await SharedPreferences.getInstance();
