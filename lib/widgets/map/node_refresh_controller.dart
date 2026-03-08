@@ -35,20 +35,30 @@ class NodeRefreshController {
     required List<NodeProfile> currentEnabledProfiles,
     required VoidCallback onProfilesChanged,
   }) {
-    if (_lastEnabledProfiles == null || 
+    if (_lastEnabledProfiles == null ||
         !_profileListsEqual(_lastEnabledProfiles!, currentEnabledProfiles)) {
+      final isInitialSet = _lastEnabledProfiles == null;
       _lastEnabledProfiles = List.from(currentEnabledProfiles);
-      
-      // Handle profile change with cache clearing and refresh
+
+      // Handle profile change with cache clearing and refresh.
+      // Skip cache clear on initial set — we may have just hydrated from SQLite.
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        // Clear node cache to ensure fresh data for new profile combination
-        _nodeProvider.clearCache();
-        // Force display refresh first (for immediate UI update)
-        _nodeProvider.refreshDisplay();
-        // Notify that profiles changed (triggers node refresh)
-        onProfilesChanged();
+        if (!isInitialSet) {
+          // Clear node cache to ensure fresh data for new profile combination
+          _nodeProvider.clearCache();
+          // Force display refresh first (for immediate UI update)
+          _nodeProvider.refreshDisplay();
+          // Notify that profiles changed (triggers node refresh)
+          onProfilesChanged();
+        } else {
+          // Initial set: just refresh display with whatever is in cache
+          // (may include SQLite-hydrated data). Don't trigger a fetch —
+          // the camera move handler will do that when GPS or saved position
+          // moves the map.
+          _nodeProvider.refreshDisplay();
+        }
       });
-      
+
       return true;
     }
     return false;

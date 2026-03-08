@@ -13,10 +13,13 @@ import 'http_client.dart';
 /// Single responsibility: Make requests, handle network errors, return data.
 class OverpassService {
   static const String _endpoint = 'https://overpass-api.de/api/interpreter';
+  static const String _statusEndpoint = 'https://overpass-api.de/api/status';
+  static const int defaultSlotCount = 2; // Overpass public instance consistently has 2 slots per IP
+  static final _waitSecondsRegex = RegExp(r'in (\d+) seconds');
+
   final http.Client _client;
 
   OverpassService({http.Client? client}) : _client = client ?? UserAgentClient();
-
 
   /// Fetch surveillance nodes from Overpass API with proper retry logic.
   /// Throws NetworkError for retryable failures, NodeLimitError for area splitting.
@@ -26,20 +29,33 @@ class OverpassService {
     int maxRetries = 3,
   }) async {
     if (profiles.isEmpty) return [];
-    
+
+    // Pre-flight: check /api/status before sending the expensive POST.
+    // Avoids burning 2-5s on a request that Overpass queues then rejects.
+    final waitSeconds = await secondsUntilSlotAvailable();
+    if (waitSeconds > 0) {
+      debugPrint('[OverpassService] No slot available (pre-flight), next in ${waitSeconds}s');
+      throw RateLimitError('No slot available (pre-flight check)', waitSeconds: waitSeconds);
+    }
+    // waitSeconds == -1 means status check failed — proceed optimistically
+
     final query = _buildQuery(bounds, profiles);
-    
+
     for (int attempt = 0; attempt <= maxRetries; attempt++) {
       try {
         debugPrint('[OverpassService] Attempt ${attempt + 1}/${maxRetries + 1} for ${profiles.length} profiles');
-        
+
+        final sw = Stopwatch()..start();
         final response = await _client.post(
           Uri.parse(_endpoint),
           body: {'data': query},
         ).timeout(kOverpassQueryTimeout);
-        
+        final httpMs = sw.elapsedMilliseconds;
+
         if (response.statusCode == 200) {
-          return _parseResponse(response.body);
+          final nodes = _parseResponse(response.body);
+          debugPrint('[OverpassService] ${nodes.length} nodes (http: ${httpMs}ms, total: ${sw.elapsedMilliseconds}ms)');
+          return nodes;
         }
         
         // Check for specific error types
@@ -60,12 +76,18 @@ class OverpassService {
           throw NodeLimitError('Query timed out - area too complex');
         }
         
-        // Rate limit - throw immediately, don't retry
+        // Rate limit - throw immediately, don't retry.
+        // Check /api/status for the actual wait time so reconciliation
+        // can schedule at the right moment.
         if (response.statusCode == 429 ||
             errorBody.contains('rate limited') ||
             errorBody.contains('too many requests')) {
-          debugPrint('[OverpassService] Rate limited by Overpass');
-          throw RateLimitError('Rate limited by Overpass API');
+          final rawWait = await secondsUntilSlotAvailable();
+          // If wait is unknown/non-positive (e.g. -1 on error), fall back to
+          // a safer default instead of retrying after just 1s.
+          final wait = (rawWait <= 0 ? 10 : rawWait).clamp(1, 30);
+          debugPrint('[OverpassService] Rate limited by Overpass (wait: ${wait}s, raw: ${rawWait}s)');
+          throw RateLimitError('Rate limited by Overpass API', waitSeconds: wait);
         }
         
         // Other HTTP errors - retry with backoff
@@ -99,6 +121,33 @@ class OverpassService {
     throw NetworkError('Max retries exceeded');
   }
   
+  /// Check Overpass slot availability. Returns seconds until a slot is free,
+  /// or 0 if a slot is available now. Returns -1 on error (proceed optimistically).
+  Future<int> secondsUntilSlotAvailable() async {
+    try {
+      final response = await _client.get(Uri.parse(_statusEndpoint))
+          .timeout(const Duration(seconds: 3));
+      if (response.statusCode == 200) {
+        if (response.body.contains('slots available now')) return 0;
+        return _parseWaitSeconds(response.body);
+      }
+      return -1;
+    } catch (_) {
+      return -1; // On error, proceed optimistically
+    }
+  }
+
+  /// Parse "in N seconds" from Overpass status response body.
+  /// Adds 2s buffer — Overpass timing is approximate and arriving right
+  /// at the boundary often results in another rate limit.
+  static int _parseWaitSeconds(String body) {
+    final match = _waitSecondsRegex.firstMatch(body);
+    if (match != null) {
+      return (int.parse(match.group(1)!) + 2).clamp(3, 32);
+    }
+    return 5; // Can't parse, assume 5s
+  }
+
   /// Build Overpass QL query for given bounds and profiles
   String _buildQuery(LatLngBounds bounds, List<NodeProfile> profiles) {
     final nodeClauses = profiles.map((profile) {
@@ -175,12 +224,15 @@ class NodeLimitError extends Error {
   String toString() => 'NodeLimitError: $message';
 }
 
-/// Error thrown when rate limited - should not retry immediately
+/// Error thrown when rate limited - should not retry immediately.
+/// [waitSeconds] carries the delay from /api/status so callers can schedule
+/// a retry at the right time instead of using a fixed delay.
 class RateLimitError extends Error {
   final String message;
-  RateLimitError(this.message);
+  final int waitSeconds;
+  RateLimitError(this.message, {this.waitSeconds = 5});
   @override
-  String toString() => 'RateLimitError: $message';
+  String toString() => 'RateLimitError: $message (wait: ${waitSeconds}s)';
 }
 
 /// Error thrown for network/HTTP issues - retryable

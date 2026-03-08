@@ -60,8 +60,16 @@ class MapDataProvider {
       throw OfflineModeException("Cannot fetch remote nodes for offline area download in offline mode.");
     }
     
-    // For downloads, always fetch fresh data (don't use cache)
-    return _nodeDataManager.fetchWithSplitting(bounds, profiles);
+    // For downloads, always fetch fresh data (don't use cache).
+    // Note: passes null generation, so downloads are never cancelled by stale-fetch
+    // detection and will hold semaphore slots until complete. This is intentional —
+    // offline downloads should run to completion — but means concurrent downloads
+    // can block foreground map fetches via the shared semaphore.
+    return _nodeDataManager.fetchWithSplitting(
+      bounds,
+      profiles,
+      isUserInitiated: true,
+    );
   }
 
   /// Fetch tile image bytes. Default is to try local first, then remote if not offline. Honors explicit source.

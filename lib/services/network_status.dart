@@ -20,7 +20,12 @@ class NetworkStatus extends ChangeNotifier {
 
   NetworkRequestStatus _status = NetworkRequestStatus.idle;
   Timer? _autoResetTimer;
-  
+
+  /// Rate limit countdown: seconds until slot should be free (from Overpass /api/status)
+  int _rateLimitWaitSeconds = 0;
+
+  int get rateLimitWaitSeconds => _rateLimitWaitSeconds;
+
   /// Current network status
   NetworkRequestStatus get status => _status;
   
@@ -50,7 +55,8 @@ class NetworkStatus extends ChangeNotifier {
         });
         break;
       case NetworkRequestStatus.rateLimited:
-        _autoResetTimer = Timer(const Duration(minutes: 2), () {
+        // Use actual wait time + 1s buffer so countdown finishes before reset
+        _autoResetTimer = Timer(Duration(seconds: _rateLimitWaitSeconds + 1), () {
           _setStatus(NetworkRequestStatus.idle);
         });
         break;
@@ -86,9 +92,16 @@ class NetworkStatus extends ChangeNotifier {
     _setStatus(NetworkRequestStatus.timeout);
   }
   
-  /// Rate limited by API
-  void setRateLimited() {
-    debugPrint('[NetworkStatus] Rate limited by API');
+  /// Rate limited by API, with countdown duration from Overpass /api/status
+  void setRateLimited({int waitSeconds = 5}) {
+    debugPrint('[NetworkStatus] Rate limited by API (${waitSeconds}s)');
+    final waitChanged = _rateLimitWaitSeconds != waitSeconds;
+    _rateLimitWaitSeconds = waitSeconds;
+    // If already rate-limited but wait time changed, force a status transition
+    // so the auto-reset timer and countdown UI are updated.
+    if (_status == NetworkRequestStatus.rateLimited && waitChanged) {
+      _status = NetworkRequestStatus.idle; // allow _setStatus to re-enter
+    }
     _setStatus(NetworkRequestStatus.rateLimited);
   }
   
