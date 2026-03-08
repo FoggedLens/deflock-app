@@ -336,10 +336,11 @@ Future<T> executeWithFallback<T>({
     return await _executeWithRetries(primaryUrl, execute, classifyError, policy);
   } catch (e) {
     final disposition = classifyError(e);
-    if (fallbackUrl == null || disposition == ErrorDisposition.abort) rethrow;
+    if (disposition == ErrorDisposition.abort) rethrow;
+    if (fallbackUrl == null) rethrow;
     debugPrint('[Resilience] Primary failed ($e), trying fallback');
+    return _executeWithRetries(fallbackUrl, execute, classifyError, policy);
   }
-  return _executeWithRetries(fallbackUrl!, execute, classifyError, policy);
 }
 
 Future<T> _executeWithRetries<T>(
