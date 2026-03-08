@@ -472,7 +472,9 @@
     "success": "Surveillance data geladen",
     "nodeDataSlow": "Surveillance data traag",
     "rateLimited": "Snelheid beperkt door server",
-    "networkError": "Netwerk fout"
+    "networkError": "Netwerk fout",
+    "showCoverageOverlay": "Datadekking overlay",
+    "showCoverageOverlaySubtitle": "Toon welke kaartgebieden geladen data hebben"
   },
   "nodeLimitIndicator": {
     "message": "{rendered} van {total} apparaten getoond",

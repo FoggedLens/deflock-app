@@ -435,7 +435,9 @@
     "success": "Überwachungsdaten geladen",
     "nodeDataSlow": "Überwachungsdaten langsam",
     "rateLimited": "Server-Limitierung",
-    "networkError": "Netzwerkfehler"
+    "networkError": "Netzwerkfehler",
+    "showCoverageOverlay": "Datenabdeckung anzeigen",
+    "showCoverageOverlaySubtitle": "Zeigt an, welche Kartenbereiche Daten geladen haben"
   },
   "nodeLimitIndicator": {
     "message": "Zeige {rendered} von {total} Geräten",

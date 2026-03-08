@@ -472,7 +472,9 @@
     "success": "Dati di sorveglianza caricati",
     "nodeDataSlow": "Dati di sorveglianza lenti",
     "rateLimited": "Limitato dal server",
-    "networkError": "Errore di rete"
+    "networkError": "Errore di rete",
+    "showCoverageOverlay": "Sovrapposizione copertura dati",
+    "showCoverageOverlaySubtitle": "Mostra quali aree della mappa hanno dati caricati"
   },
   "nodeLimitIndicator": {
     "message": "Mostra {rendered} di {total} dispositivi",

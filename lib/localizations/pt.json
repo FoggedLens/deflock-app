@@ -472,7 +472,9 @@
     "success": "Dados de vigilância carregados",
     "nodeDataSlow": "Dados de vigilância lentos",
     "rateLimited": "Limitado pelo servidor",
-    "networkError": "Erro de rede"
+    "networkError": "Erro de rede",
+    "showCoverageOverlay": "Sobreposição de cobertura de dados",
+    "showCoverageOverlaySubtitle": "Mostrar quais áreas do mapa têm dados carregados"
   },
   "nodeLimitIndicator": {
     "message": "Mostrando {rendered} de {total} dispositivos",

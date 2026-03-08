@@ -472,7 +472,9 @@
     "success": "Gözetleme verisi yüklendi",
     "nodeDataSlow": "Gözetleme verisi yavaş",
     "rateLimited": "Sunucu tarafından hız sınırlandı",
-    "networkError": "Ağ hatası"
+    "networkError": "Ağ hatası",
+    "showCoverageOverlay": "Veri kapsama katmanı",
+    "showCoverageOverlaySubtitle": "Hangi harita alanlarının yüklenmiş veriye sahip olduğunu göster"
   },
   "nodeLimitIndicator": {
     "message": "{total} cihazdan {rendered} tanesi gösteriliyor",

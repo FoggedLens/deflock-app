@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
-import 'package:latlong2/latlong.dart';
 
 import '../../models/osm_node.dart';
 import '../../app_state.dart';
 import '../node_provider_with_cache.dart';
 import '../../dev_config.dart';
+import '../../services/offline_areas/offline_tile_utils.dart' show expandBounds;
 
 /// Manages data fetching, filtering, and node limit logic for the map.
 /// Handles profile changes, zoom level restrictions, and node rendering limits.
@@ -23,20 +23,6 @@ class MapDataManager {
     }
   }
 
-  /// Expand bounds by the given multiplier, maintaining center point.
-  /// Used to expand rendering bounds to prevent nodes blinking at screen edges.
-  LatLngBounds _expandBounds(LatLngBounds bounds, double multiplier) {
-    final centerLat = (bounds.north + bounds.south) / 2;
-    final centerLng = (bounds.east + bounds.west) / 2;
-
-    final latSpan = (bounds.north - bounds.south) * multiplier / 2;
-    final lngSpan = (bounds.east - bounds.west) * multiplier / 2;
-
-    return LatLngBounds(
-      LatLng(centerLat - latSpan, centerLng - lngSpan),
-      LatLng(centerLat + latSpan, centerLng + lngSpan),
-    );
-  }
 
   /// Get nodes to render based on current map state
   /// Returns a MapDataResult containing all relevant node data and limit state
@@ -55,7 +41,7 @@ class MapDataManager {
     if (currentZoom >= minZoom) {
       // Above minimum zoom - get cached nodes with expanded bounds to prevent edge blinking
       if (mapBounds != null) {
-        final expandedBounds = _expandBounds(mapBounds, kNodeRenderingBoundsExpansion);
+        final expandedBounds = expandBounds(mapBounds, kNodeRenderingBoundsExpansion);
         allNodes = NodeProviderWithCache.instance.getCachedNodesForBounds(expandedBounds);
       } else {
         allNodes = <OsmNode>[];
@@ -68,11 +54,21 @@ class MapDataManager {
                node.coord.longitude.abs() <= 180;
       }).toList();
       
-      // Apply rendering limit to prevent UI lag
+      // Apply rendering limit to prevent UI lag.
+      // Sort by distance from viewport center so the most visible nodes
+      // always make the cut, preventing gaps that shift as you pan.
       if (validNodes.length > maxNodes) {
+        final centerLat = (mapBounds!.north + mapBounds.south) / 2;
+        final centerLng = (mapBounds.east + mapBounds.west) / 2;
+        validNodes.sort((a, b) {
+          final distA = (a.coord.latitude - centerLat) * (a.coord.latitude - centerLat) +
+                        (a.coord.longitude - centerLng) * (a.coord.longitude - centerLng);
+          final distB = (b.coord.latitude - centerLat) * (b.coord.latitude - centerLat) +
+                        (b.coord.longitude - centerLng) * (b.coord.longitude - centerLng);
+          return distA.compareTo(distB);
+        });
         nodesToRender = validNodes.take(maxNodes).toList();
         isLimitActive = true;
-        debugPrint('[MapDataManager] Node limit active: rendering ${nodesToRender.length} of ${validNodes.length} devices');
       } else {
         nodesToRender = validNodes;
         isLimitActive = false;
@@ -87,6 +83,9 @@ class MapDataManager {
     // Notify parent if limit state changed (for button disabling)
     if (isLimitActive != _lastNodeLimitState) {
       _lastNodeLimitState = isLimitActive;
+      if (isLimitActive) {
+        debugPrint('[MapDataManager] Node limit active: rendering ${nodesToRender.length} of ${allNodes.length} devices');
+      }
       // Schedule callback after build completes to avoid setState during build
       WidgetsBinding.instance.addPostFrameCallback((_) {
         onNodeLimitChanged?.call(isLimitActive);

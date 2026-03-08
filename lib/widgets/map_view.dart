@@ -27,6 +27,8 @@ import '../dev_config.dart';
 import '../services/proximity_alert_service.dart';
 import 'sheet_aware_map.dart';
 import 'custom_scale_bar.dart';
+import 'map/coverage_overlay.dart';
+import '../services/node_data_manager.dart';
 
 class MapView extends StatefulWidget {
   final AnimatedMapController controller;
@@ -195,10 +197,9 @@ class MapViewState extends State<MapView> {
       isUserInteracting: () => _activePointers > 0,
     );
 
-    // Fetch initial cameras
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _refreshNodesFromProvider();
-    });
+    // Don't eagerly fetch on startup — wait for GPS fix or user interaction.
+    // The map's onCameraMove handler will trigger a fetch when the camera moves
+    // (either from GPS, saved position restore, or user panning).
   }
 
 
@@ -210,6 +211,7 @@ class MapViewState extends State<MapView> {
     _cameraDebounce.dispose();
     _tileDebounce.dispose();
     _mapPositionDebounce.dispose();
+    _constrainedNodeSnapBack.dispose();
     _nodeController.dispose();
     _tileManager.dispose();
     _gpsController.dispose();
@@ -386,9 +388,17 @@ class MapViewState extends State<MapView> {
             },
             onPointerUp: (_) {
               if (_activePointers > 0) _activePointers--;
+              // When all fingers lift, schedule a fetch in case the debounce
+              // callback was suppressed while fingers were down.
+              if (_activePointers == 0) {
+                _cameraDebounce(_refreshNodesFromProvider);
+              }
             },
             onPointerCancel: (_) {
               if (_activePointers > 0) _activePointers--;
+              if (_activePointers == 0) {
+                _cameraDebounce(_refreshNodesFromProvider);
+              }
             },
             child: FlutterMap(
               key: ValueKey('map_${appState.selectedTileProvider?.id ?? 'none'}_${appState.selectedTileType?.id ?? 'none'}_${appState.offlineMode}_${_tileManager.mapRebuildKey}'),
@@ -486,10 +496,18 @@ class MapViewState extends State<MapView> {
                 _positionManager.saveMapPosition(pos.center, pos.zoom);
               });
               
-              // Request more nodes on any map movement/zoom at valid zoom level (slower debounce)
+              // Request more nodes on any map movement/zoom at valid zoom level.
+              // Wait for the map to settle (no fingers down, fling animation done)
+              // before fetching, to avoid burning Overpass slots on requests that
+              // go stale immediately when the user keeps panning.
               final minZoom = _dataManager.getMinZoomForNodes(appState.uploadMode);
               if (pos.zoom >= minZoom) {
-                _cameraDebounce(_refreshNodesFromProvider);
+                _cameraDebounce(() {
+                  // If fingers are still on screen, defer — the next pointer-up
+                  // will trigger another camera move which re-enters this debounce.
+                  if (_activePointers > 0) return;
+                  _refreshNodesFromProvider();
+                });
               } else {
                 // Skip nodes at low zoom - no loading state needed
                 // Show zoom warning if needed
@@ -501,6 +519,10 @@ class MapViewState extends State<MapView> {
                 _tileManager.buildTileLayer(
                   selectedProvider: appState.selectedTileProvider,
                   selectedTileType: appState.selectedTileType,
+                ),
+                ?CoverageOverlay.build(
+                  fetchedAreas: NodeDataManager().fetchedAreas,
+                  show: appState.showCoverageOverlay,
                 ),
                 cameraLayers,
                 // Custom scale bar that respects user's distance unit preference

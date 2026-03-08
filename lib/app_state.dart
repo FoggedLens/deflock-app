@@ -241,13 +241,13 @@ class AppState extends ChangeNotifier {
     
     // Note: Re-auth check will be triggered from home screen after init
     
-    // Initialize OfflineAreaService to ensure offline areas are loaded
-    await OfflineAreaService().ensureInitialized();
+    // Initialize offline areas and node cache in parallel (independent)
+    await Future.wait([
+      OfflineAreaService().ensureInitialized(),
+      NodeSpatialCache().initPersistence(),
+    ]);
 
-    // Hydrate node cache from SQLite (expired areas pruned automatically)
-    await NodeSpatialCache().initPersistence();
-
-    // Overlay offline area nodes (always fresher for offline areas)
+    // Overlay offline area nodes (depends on both above)
     await NodeDataManager().preloadOfflineNodes();
     
     // Start uploader if conditions are met

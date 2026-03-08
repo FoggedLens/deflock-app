@@ -14,6 +14,7 @@ import 'map_data_submodules/nodes_from_osm_api.dart';
 import 'map_data_submodules/nodes_from_local.dart';
 import 'offline_area_service.dart';
 import 'offline_areas/offline_area_models.dart';
+import 'offline_areas/offline_tile_utils.dart' show expandBounds;
 
 /// Resizable async semaphore with priority support.
 ///
@@ -405,7 +406,7 @@ class NodeDataManager extends ChangeNotifier {
     // at zoom 14 (latSpan ~0.06°), 1.2x is sufficient.
     final latSpan = bounds.north - bounds.south;
     final inFlightExpansion = latSpan > 0.5 ? 1.5 : 1.2;
-    _inFlightBounds = _expandBounds(bounds, inFlightExpansion);
+    _inFlightBounds = expandBounds(bounds, inFlightExpansion);
     try {
       final nodes = await fetchWithSplitting(bounds, profiles,
           isUserInitiated: isUserInitiated, generation: generation);
@@ -508,12 +509,13 @@ class NodeDataManager extends ChangeNotifier {
 
     try {
       // Expand bounds slightly to reduce edge effects
-      final expandedBounds = _expandBounds(bounds, 1.2);
+      final expandedBounds = expandBounds(bounds, 1.2);
 
       // User-initiated requests jump to the front of the semaphore queue
       // so they're never blocked behind prefetch/background work.
       // Checkpoint 2: request woke from semaphore queue — check before HTTP call
       final semaphoreWait = Stopwatch()..start();
+      var didFetch = false;
       final nodes = await _semaphore.run<List<OsmNode>>(
         () async {
           final waitMs = semaphoreWait.elapsedMilliseconds;
@@ -521,6 +523,7 @@ class NodeDataManager extends ChangeNotifier {
             debugPrint('[NodeDataManager] Semaphore wait: ${waitMs}ms');
           }
           if (_isStale(generation)) return <OsmNode>[];
+          didFetch = true;
           return _overpassService.fetchNodes(
             bounds: expandedBounds,
             profiles: profiles,
@@ -529,13 +532,12 @@ class NodeDataManager extends ChangeNotifier {
         priority: isUserInitiated,
       );
 
-      // Successful fetch — restore full semaphore capacity if it was
-      // reduced during rate-limit cooldown.
-      _semaphore.restoreCapacity(OverpassService.defaultSlotCount);
-
-      // Always cache real data, even if stale — valid if user pans back.
-      // Only skip caching when stale AND empty (the checkpoint-2 short-circuit).
-      if (nodes.isNotEmpty || !_isStale(generation)) {
+      // Only restore capacity and cache results when we actually made an
+      // HTTP call. The stale short-circuit (checkpoint 2) returns empty
+      // without fetching — restoring capacity there would defeat the
+      // single-slot recovery after rate-limit cooldown.
+      if (didFetch) {
+        _semaphore.restoreCapacity(OverpassService.defaultSlotCount);
         _cache.markAreaAsFetched(expandedBounds, nodes);
         if (nodes.isNotEmpty) {
           _notifyProgressive(); // Throttled: batches rapid quadrant completions
@@ -630,20 +632,6 @@ class NodeDataManager extends ChangeNotifier {
       // Northeast
       LatLngBounds(LatLng(centerLat, centerLng), LatLng(bounds.north, bounds.east)),
     ];
-  }
-
-  /// Expand bounds by given factor around center point
-  LatLngBounds _expandBounds(LatLngBounds bounds, double factor) {
-    final centerLat = (bounds.north + bounds.south) / 2;
-    final centerLng = (bounds.east + bounds.west) / 2;
-
-    final latSpan = (bounds.north - bounds.south) * factor / 2;
-    final lngSpan = (bounds.east - bounds.west) * factor / 2;
-
-    return LatLngBounds(
-      LatLng(centerLat - latSpan, centerLng - lngSpan),
-      LatLng(centerLat + latSpan, centerLng + lngSpan),
-    );
   }
 
   /// Add or update nodes in cache (for upload queue integration)
@@ -784,8 +772,7 @@ class NodeDataManager extends ChangeNotifier {
       if (effectiveProfiles.isEmpty) return;
 
       final cells = _generateRingCells(viewport, 3); // 3 rings max
-      final uncachedCount = cells.where((c) => !_cache.hasDataFor(c)).length;
-      debugPrint('[NodeDataManager] Prefetch: ${cells.length} cells, $uncachedCount uncached');
+      debugPrint('[NodeDataManager] Prefetch: ${cells.length} cells');
       for (final cell in cells) {
         // Stop queuing new cells if a newer prefetch started or user panned
         if (prefetchGen != _prefetchGeneration || _isStale(fetchGen)) return;
