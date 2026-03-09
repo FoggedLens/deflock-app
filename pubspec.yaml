@@ -4,7 +4,7 @@ publish_to: "none"
 version: 2.9.0+51   # The thing after the + is the version code, incremented with each release
 
 environment:
-  sdk: ">=3.10.3 <4.0.0"   # Resolved dependency floor (Dart 3.10.3 = Flutter 3.38+)
+  sdk: ">=3.10.0 <4.0.0"   # Resolved dependency floor (Dart 3.10 = Flutter 3.38+)
 
 dependencies:
   flutter:
@@ -42,8 +42,9 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  fake_async: ^1.3.3
   mocktail: ^1.0.4
-  fake_async: ^1.3.0
+  sqflite_common_ffi: ^2.3.4+4
   flutter_launcher_icons: ^0.14.4
   flutter_lints: ^6.0.0
   flutter_native_splash: ^2.4.6

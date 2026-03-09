@@ -472,7 +472,9 @@
     "success": "Дані спостереження завантажено",
     "nodeDataSlow": "Повільні дані спостереження",
     "rateLimited": "Обмежено швидкість сервером",
-    "networkError": "Помилка мережі"
+    "networkError": "Помилка мережі",
+    "showCoverageOverlay": "Накладення покриття даними",
+    "showCoverageOverlaySubtitle": "Показати, які області карти мають завантажені дані"
   },
   "nodeLimitIndicator": {
     "message": "Показано {rendered} з {total} пристроїв",

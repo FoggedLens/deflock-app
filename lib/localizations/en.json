@@ -472,7 +472,9 @@
     "success": "Surveillance data loaded",
     "nodeDataSlow": "Surveillance data slow",
     "rateLimited": "Rate limited by server",
-    "networkError": "Network error"
+    "networkError": "Network error",
+    "showCoverageOverlay": "Data coverage overlay",
+    "showCoverageOverlaySubtitle": "Show which map areas have loaded data"
   },
   "nodeLimitIndicator": {
     "message": "Showing {rendered} of {total} devices",

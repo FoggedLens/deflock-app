@@ -1,11 +1,11 @@
 import 'dart:io';
-import 'dart:math';
 
 import 'package:flutter_map/flutter_map.dart' show LatLngBounds;
 import 'package:flutter/foundation.dart' show visibleForTesting;
 
 import '../offline_area_service.dart';
 import '../offline_areas/offline_area_models.dart';
+import '../offline_areas/offline_tile_utils.dart' show latLonToTileRaw;
 import '../../app_state.dart';
 
 /// Fetch a tile from the newest offline area that matches the given provider, or throw if not found.
@@ -58,28 +58,21 @@ Future<List<int>> fetchLocalTile({
 
 /// O(1) check whether tile (z, x, y) falls within the given lat/lng bounds.
 ///
-/// Uses the same Mercator projection math as [latLonToTile] in
-/// offline_tile_utils.dart, but only computes the bounding tile range
-/// instead of enumerating every tile at that zoom level.
+/// Reuses [latLonToTileRaw] from offline_tile_utils.dart for the Mercator
+/// projection, computing only the bounding tile range instead of enumerating
+/// every tile at that zoom level.
 ///
 /// Note: Y axis is inverted in tile coordinates — north = lower Y.
 @visibleForTesting
 bool tileInBounds(LatLngBounds bounds, int z, int x, int y) {
-  final n = pow(2.0, z);
-  final west = bounds.west;
-  final east = bounds.east;
-  final north = bounds.north;
-  final south = bounds.south;
+  final swTile = latLonToTileRaw(bounds.south, bounds.west, z);
+  final neTile = latLonToTileRaw(bounds.north, bounds.east, z);
 
-  final minX = ((west + 180.0) / 360.0 * n).floor();
-  final maxX = ((east + 180.0) / 360.0 * n).floor();
+  final minX = swTile[0].floor();
+  final maxX = neTile[0].floor();
   // North → lower Y (Mercator projection inverts latitude)
-  final minY = ((1.0 - log(tan(north * pi / 180.0) +
-          1.0 / cos(north * pi / 180.0)) /
-      pi) / 2.0 * n).floor();
-  final maxY = ((1.0 - log(tan(south * pi / 180.0) +
-          1.0 / cos(south * pi / 180.0)) /
-      pi) / 2.0 * n).floor();
+  final minY = neTile[1].floor();
+  final maxY = swTile[1].floor();
 
   return x >= minX && x <= maxX && y >= minY && y <= maxY;
 }

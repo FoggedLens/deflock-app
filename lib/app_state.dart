@@ -16,6 +16,7 @@ import 'models/search_result.dart';
 import 'services/offline_area_service.dart';
 import 'services/map_data_provider.dart';
 import 'services/node_data_manager.dart';
+import 'services/node_spatial_cache.dart';
 import 'services/tile_preview_service.dart';
 import 'services/changelog_service.dart';
 import 'services/operator_profile_service.dart';
@@ -160,6 +161,7 @@ class AppState extends ChangeNotifier {
   bool get proximityAlertsEnabled => _settingsState.proximityAlertsEnabled;
   int get proximityAlertDistance => _settingsState.proximityAlertDistance;
   bool get networkStatusIndicatorEnabled => _settingsState.networkStatusIndicatorEnabled;
+  bool get showCoverageOverlay => _settingsState.showCoverageOverlay;
   int get suspectedLocationMinDistance => _settingsState.suspectedLocationMinDistance;
   
   // Messages state
@@ -239,10 +241,13 @@ class AppState extends ChangeNotifier {
     
     // Note: Re-auth check will be triggered from home screen after init
     
-    // Initialize OfflineAreaService to ensure offline areas are loaded
-    await OfflineAreaService().ensureInitialized();
-    
-    // Preload offline nodes into cache for immediate display
+    // Initialize offline areas and node cache in parallel (independent)
+    await Future.wait([
+      OfflineAreaService().ensureInitialized(),
+      NodeSpatialCache().initPersistence(),
+    ]);
+
+    // Overlay offline area nodes (depends on both above)
     await NodeDataManager().preloadOfflineNodes();
     
     // Start uploader if conditions are met
@@ -735,6 +740,11 @@ class AppState extends ChangeNotifier {
   /// Set network status indicator enabled/disabled
   Future<void> setNetworkStatusIndicatorEnabled(bool enabled) async {
     await _settingsState.setNetworkStatusIndicatorEnabled(enabled);
+  }
+
+  /// Set coverage overlay visibility
+  Future<void> setShowCoverageOverlay(bool enabled) async {
+    await _settingsState.setShowCoverageOverlay(enabled);
   }
 
 

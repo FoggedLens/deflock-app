@@ -38,6 +38,7 @@ class SettingsState extends ChangeNotifier {
   static const String _pauseQueueProcessingPrefsKey = 'pause_queue_processing';
   static const String _navigationAvoidanceDistancePrefsKey = 'navigation_avoidance_distance';
   static const String _distanceUnitPrefsKey = 'distance_unit';
+  static const String _showCoverageOverlayPrefsKey = 'show_coverage_overlay';
 
   bool _offlineMode = false;
   bool _pauseQueueProcessing = false;
@@ -53,6 +54,7 @@ class SettingsState extends ChangeNotifier {
   String _selectedTileTypeId = '';
   int _navigationAvoidanceDistance = 250; // meters
   DistanceUnit _distanceUnit = DistanceUnit.metric;
+  bool _showCoverageOverlay = kEnableDevelopmentModes;
 
   // Getters
   bool get offlineMode => _offlineMode;
@@ -68,6 +70,7 @@ class SettingsState extends ChangeNotifier {
   String get selectedTileTypeId => _selectedTileTypeId;
   int get navigationAvoidanceDistance => _navigationAvoidanceDistance;
   DistanceUnit get distanceUnit => _distanceUnit;
+  bool get showCoverageOverlay => _showCoverageOverlay;
   
   /// Get the currently selected tile type
   TileType? get selectedTileType {
@@ -137,6 +140,9 @@ class SettingsState extends ChangeNotifier {
     
     // Load suspected location minimum distance
     _suspectedLocationMinDistance = prefs.getInt(_suspectedLocationMinDistancePrefsKey) ?? 100;
+
+    // Load coverage overlay setting (defaults to on in debug, off in prod)
+    _showCoverageOverlay = prefs.getBool(_showCoverageOverlayPrefsKey) ?? kEnableDevelopmentModes;
     
     // Load upload mode (including migration from old test_mode bool)
     if (prefs.containsKey(_uploadModePrefsKey)) {
@@ -391,6 +397,16 @@ class SettingsState extends ChangeNotifier {
       _navigationAvoidanceDistance = distance;
       final prefs = await SharedPreferences.getInstance();
       await prefs.setInt(_navigationAvoidanceDistancePrefsKey, distance);
+      notifyListeners();
+    }
+  }
+
+  /// Set coverage overlay visibility
+  Future<void> setShowCoverageOverlay(bool enabled) async {
+    if (_showCoverageOverlay != enabled) {
+      _showCoverageOverlay = enabled;
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool(_showCoverageOverlayPrefsKey, enabled);
       notifyListeners();
     }
   }

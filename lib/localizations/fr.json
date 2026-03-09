@@ -472,7 +472,9 @@
     "success": "Données de surveillance chargées",
     "nodeDataSlow": "Données de surveillance lentes",
     "rateLimited": "Limité par le serveur",
-    "networkError": "Erreur réseau"
+    "networkError": "Erreur réseau",
+    "showCoverageOverlay": "Couverture des données",
+    "showCoverageOverlaySubtitle": "Afficher les zones de la carte dont les données sont chargées"
   },
   "nodeLimitIndicator": {
     "message": "Affichage de {rendered} sur {total} appareils",

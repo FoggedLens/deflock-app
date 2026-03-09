@@ -34,6 +34,17 @@ class NetworkStatusSection extends StatelessWidget {
               },
               contentPadding: EdgeInsets.zero,
             ),
+
+            // Coverage overlay toggle
+            SwitchListTile(
+              title: Text(locService.t('networkStatus.showCoverageOverlay')),
+              subtitle: Text(locService.t('networkStatus.showCoverageOverlaySubtitle')),
+              value: appState.showCoverageOverlay,
+              onChanged: (enabled) {
+                appState.setShowCoverageOverlay(enabled);
+              },
+              contentPadding: EdgeInsets.zero,
+            ),
           ],
         );
       },

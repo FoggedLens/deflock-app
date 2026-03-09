@@ -93,6 +93,19 @@ double sinh(double x) {
   return (exp(x) - exp(-x)) / 2;
 }
 
+/// Expand bounds by [factor] around its center point.
+/// A factor of 1.0 returns the original bounds; 2.0 doubles the span.
+LatLngBounds expandBounds(LatLngBounds bounds, double factor) {
+  final centerLat = (bounds.north + bounds.south) / 2;
+  final centerLng = (bounds.east + bounds.west) / 2;
+  final latSpan = (bounds.north - bounds.south) * factor / 2;
+  final lngSpan = (bounds.east - bounds.west) * factor / 2;
+  return LatLngBounds(
+    LatLng(centerLat - latSpan, centerLng - lngSpan),
+    LatLng(centerLat + latSpan, centerLng + lngSpan),
+  );
+}
+
 LatLngBounds globalWorldBounds() {
   // Use slightly shrunken bounds to avoid tile index overflow at extreme coordinates
   return LatLngBounds(LatLng(-85.0, -179.9), LatLng(85.0, 179.9));

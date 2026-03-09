@@ -472,7 +472,9 @@
     "success": "监控数据已加载",
     "nodeDataSlow": "监控数据缓慢",
     "rateLimited": "服务器限流",
-    "networkError": "网络错误"
+    "networkError": "网络错误",
+    "showCoverageOverlay": "数据覆盖范围",
+    "showCoverageOverlaySubtitle": "显示哪些地图区域已加载数据"
   },
   "nodeLimitIndicator": {
     "message": "显示 {rendered} / {total} 设备",

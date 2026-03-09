@@ -472,7 +472,9 @@
     "success": "Dane nadzoru załadowane",
     "nodeDataSlow": "Dane nadzoru powolne",
     "rateLimited": "Ograniczone przez serwer",
-    "networkError": "Błąd sieci"
+    "networkError": "Błąd sieci",
+    "showCoverageOverlay": "Nakładka pokrycia danymi",
+    "showCoverageOverlaySubtitle": "Pokaż które obszary mapy mają załadowane dane"
   },
   "nodeLimitIndicator": {
     "message": "Pokazuje {rendered} z {total} urządzeń",
