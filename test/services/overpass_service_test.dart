@@ -36,7 +36,8 @@ void main() {
 
   setUp(() {
     mockClient = MockHttpClient();
-    service = OverpassService(client: mockClient);
+    // Use explicit endpoint to avoid AppState dependency in tests
+    service = OverpassService(client: mockClient, endpoint: OverpassService.defaultEndpoint);
   });
 
   /// Helper: stub a successful Overpass response with the given elements.
@@ -246,7 +247,7 @@ void main() {
       stubErrorResponse(
           400, 'Error: too many nodes (limit is 50000) in query');
 
-      expect(
+      await expectLater(
         () => service.fetchNodes(
             bounds: bounds, profiles: profiles, maxRetries: 0),
         throwsA(isA<NodeLimitError>()),
@@ -256,7 +257,7 @@ void main() {
     test('response with "timeout" throws NodeLimitError', () async {
       stubErrorResponse(400, 'runtime error: timeout in query execution');
 
-      expect(
+      await expectLater(
         () => service.fetchNodes(
             bounds: bounds, profiles: profiles, maxRetries: 0),
         throwsA(isA<NodeLimitError>()),
@@ -267,7 +268,7 @@ void main() {
         () async {
       stubErrorResponse(400, 'runtime limit exceeded');
 
-      expect(
+      await expectLater(
         () => service.fetchNodes(
             bounds: bounds, profiles: profiles, maxRetries: 0),
         throwsA(isA<NodeLimitError>()),
@@ -277,7 +278,7 @@ void main() {
     test('HTTP 429 throws RateLimitError', () async {
       stubErrorResponse(429, 'Too Many Requests');
 
-      expect(
+      await expectLater(
         () => service.fetchNodes(
             bounds: bounds, profiles: profiles, maxRetries: 0),
         throwsA(isA<RateLimitError>()),
@@ -287,7 +288,7 @@ void main() {
     test('response with "rate limited" throws RateLimitError', () async {
       stubErrorResponse(503, 'You are rate limited');
 
-      expect(
+      await expectLater(
         () => service.fetchNodes(
             bounds: bounds, profiles: profiles, maxRetries: 0),
         throwsA(isA<RateLimitError>()),
@@ -298,7 +299,7 @@ void main() {
         () async {
       stubErrorResponse(500, 'Internal Server Error');
 
-      expect(
+      await expectLater(
         () => service.fetchNodes(
             bounds: bounds, profiles: profiles, maxRetries: 0),
         throwsA(isA<NetworkError>()),
@@ -311,6 +312,180 @@ void main() {
 
       expect(nodes, isEmpty);
       verifyNever(() => mockClient.post(any(), body: any(named: 'body')));
+    });
+  });
+
+  group('fallback behavior', () {
+    test('falls back to overpass-api.de on NetworkError after retries', () async {
+      int callCount = 0;
+      when(() => mockClient.post(any(), body: any(named: 'body')))
+          .thenAnswer((invocation) async {
+        callCount++;
+        final uri = invocation.positionalArguments[0] as Uri;
+
+        if (uri.host == 'overpass.deflock.org') {
+          return http.Response('Internal Server Error', 500);
+        }
+        // Fallback succeeds
+        return http.Response(
+          jsonEncode({
+            'elements': [
+              {
+                'type': 'node',
+                'id': 1,
+                'lat': 38.9,
+                'lon': -77.0,
+                'tags': {'man_made': 'surveillance'},
+              },
+            ]
+          }),
+          200,
+        );
+      });
+
+      final nodes = await service.fetchNodes(
+          bounds: bounds, profiles: profiles, maxRetries: 0);
+
+      expect(nodes, hasLength(1));
+      // primary (1 attempt, 0 retries) + fallback (1 attempt) = 2
+      expect(callCount, equals(2));
+    });
+
+    test('does NOT fallback on NodeLimitError', () async {
+      when(() => mockClient.post(any(), body: any(named: 'body')))
+          .thenAnswer((_) async => http.Response(
+                'Error: too many nodes (limit is 50000) in query',
+                400,
+              ));
+
+      await expectLater(
+        () => service.fetchNodes(
+            bounds: bounds, profiles: profiles, maxRetries: 0),
+        throwsA(isA<NodeLimitError>()),
+      );
+
+      // Only one call — no fallback (abort disposition)
+      verify(() => mockClient.post(any(), body: any(named: 'body')))
+          .called(1);
+    });
+
+    test('RateLimitError triggers fallback without retrying primary', () async {
+      int callCount = 0;
+      when(() => mockClient.post(any(), body: any(named: 'body')))
+          .thenAnswer((invocation) async {
+        callCount++;
+        final uri = invocation.positionalArguments[0] as Uri;
+
+        if (uri.host == 'overpass.deflock.org') {
+          return http.Response('Too Many Requests', 429);
+        }
+        // Fallback succeeds
+        return http.Response(
+          jsonEncode({
+            'elements': [
+              {
+                'type': 'node',
+                'id': 1,
+                'lat': 38.9,
+                'lon': -77.0,
+                'tags': {'man_made': 'surveillance'},
+              },
+            ]
+          }),
+          200,
+        );
+      });
+
+      final nodes = await service.fetchNodes(
+          bounds: bounds, profiles: profiles, maxRetries: 2);
+
+      expect(nodes, hasLength(1));
+      // 1 primary (no retry on fallback disposition) + 1 fallback = 2
+      expect(callCount, equals(2));
+    });
+
+    test('primary fails then fallback also fails -> error propagated', () async {
+      when(() => mockClient.post(any(), body: any(named: 'body')))
+          .thenAnswer((_) async =>
+              http.Response('Internal Server Error', 500));
+
+      await expectLater(
+        () => service.fetchNodes(
+            bounds: bounds, profiles: profiles, maxRetries: 0),
+        throwsA(isA<NetworkError>()),
+      );
+
+      // primary + fallback
+      verify(() => mockClient.post(any(), body: any(named: 'body')))
+          .called(2);
+    });
+
+    test('does NOT fallback when using custom endpoint', () async {
+      final customService = OverpassService(
+        client: mockClient,
+        endpoint: 'https://custom.example.com/api/interpreter',
+      );
+
+      when(() => mockClient.post(any(), body: any(named: 'body')))
+          .thenAnswer((_) async =>
+              http.Response('Internal Server Error', 500));
+
+      await expectLater(
+        () => customService.fetchNodes(
+            bounds: bounds, profiles: profiles, maxRetries: 0),
+        throwsA(isA<NetworkError>()),
+      );
+
+      // Only one call - no fallback with custom endpoint
+      verify(() => mockClient.post(any(), body: any(named: 'body')))
+          .called(1);
+    });
+
+    test('retries exhaust before fallback kicks in', () async {
+      int callCount = 0;
+      when(() => mockClient.post(any(), body: any(named: 'body')))
+          .thenAnswer((invocation) async {
+        callCount++;
+        final uri = invocation.positionalArguments[0] as Uri;
+
+        if (uri.host == 'overpass.deflock.org') {
+          return http.Response('Server Error', 500);
+        }
+        // Fallback succeeds
+        return http.Response(
+          jsonEncode({
+            'elements': [
+              {
+                'type': 'node',
+                'id': 1,
+                'lat': 38.9,
+                'lon': -77.0,
+                'tags': {'man_made': 'surveillance'},
+              },
+            ]
+          }),
+          200,
+        );
+      });
+
+      final nodes = await service.fetchNodes(
+          bounds: bounds, profiles: profiles, maxRetries: 2);
+
+      expect(nodes, hasLength(1));
+      // 3 primary attempts (1 + 2 retries) + 1 fallback = 4
+      expect(callCount, equals(4));
+    });
+  });
+
+  group('default endpoints', () {
+    test('default endpoint is overpass.deflock.org', () {
+      expect(OverpassService.defaultEndpoint,
+          equals('https://overpass.deflock.org/api/interpreter'));
+    });
+
+    test('fallback endpoint is overpass-api.de', () {
+      expect(OverpassService.fallbackEndpoint,
+          equals('https://overpass-api.de/api/interpreter'));
     });
   });
 }

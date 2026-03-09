@@ -65,7 +65,7 @@ const Duration kChangesetAutoCloseTimeout = Duration(minutes: 59); // Give up an
 const double kChangesetCloseBackoffMultiplier = 2.0;
 
 // Navigation routing configuration
-const Duration kNavigationRoutingTimeout = Duration(seconds: 90); // HTTP timeout for routing requests
+const Duration kNavigationRoutingTimeout = Duration(seconds: 30); // HTTP timeout for routing requests (legacy — prefer ResiliencePolicy.httpTimeout)
 
 // Overpass API configuration
 const Duration kOverpassQueryTimeout = Duration(seconds: 45); // Timeout for Overpass API queries (was 25s hardcoded)

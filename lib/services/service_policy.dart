@@ -166,6 +166,7 @@ class ServicePolicyResolver {
     'tile.openstreetmap.org': ServiceType.osmTileServer,
     'nominatim.openstreetmap.org': ServiceType.nominatim,
     'overpass-api.de': ServiceType.overpass,
+    'overpass.deflock.org': ServiceType.overpass,
     'taginfo.openstreetmap.org': ServiceType.tagInfo,
     'tiles.virtualearth.net': ServiceType.bingTiles,
     'api.mapbox.com': ServiceType.mapboxTiles,
@@ -281,6 +282,90 @@ class ServicePolicyResolver {
       return null;
     }
   }
+}
+
+/// How the retry/fallback engine should handle an error.
+enum ErrorDisposition {
+  /// Stop immediately. Don't retry, don't try fallback. (400, business logic)
+  abort,
+  /// Don't retry same server, but DO try fallback endpoint. (429 rate limit)
+  fallback,
+  /// Retry with backoff against same server, then fallback if exhausted. (5xx, network)
+  retry,
+}
+
+/// Retry and fallback configuration for resilient HTTP services.
+class ResiliencePolicy {
+  final int maxRetries;
+  final Duration httpTimeout;
+  final Duration _retryBackoffBase;
+  final int _retryBackoffMaxMs;
+
+  const ResiliencePolicy({
+    this.maxRetries = 1,
+    this.httpTimeout = const Duration(seconds: 30),
+    Duration retryBackoffBase = const Duration(milliseconds: 200),
+    int retryBackoffMaxMs = 5000,
+  })  : _retryBackoffBase = retryBackoffBase,
+        _retryBackoffMaxMs = retryBackoffMaxMs;
+
+  Duration retryDelay(int attempt) {
+    final ms = (_retryBackoffBase.inMilliseconds * (1 << attempt))
+        .clamp(0, _retryBackoffMaxMs);
+    return Duration(milliseconds: ms);
+  }
+}
+
+/// Execute a request with retry and fallback logic.
+///
+/// 1. Tries [execute] against [primaryUrl] up to `policy.maxRetries + 1` times.
+/// 2. On each failure, calls [classifyError] to determine disposition:
+///    - [ErrorDisposition.abort]: rethrows immediately
+///    - [ErrorDisposition.fallback]: skips retries, tries fallback (if available)
+///    - [ErrorDisposition.retry]: retries with backoff, then fallback if exhausted
+/// 3. If [fallbackUrl] is non-null and the error is fallback-worthy,
+///    repeats the retry loop against the fallback.
+Future<T> executeWithFallback<T>({
+  required String primaryUrl,
+  required String? fallbackUrl,
+  required Future<T> Function(String url) execute,
+  required ErrorDisposition Function(Object error) classifyError,
+  ResiliencePolicy policy = const ResiliencePolicy(),
+}) async {
+  try {
+    return await _executeWithRetries(primaryUrl, execute, classifyError, policy);
+  } catch (e) {
+    final disposition = classifyError(e);
+    if (fallbackUrl == null || disposition == ErrorDisposition.abort) rethrow;
+    debugPrint('[Resilience] Primary failed ($e), trying fallback');
+  }
+  return _executeWithRetries(fallbackUrl!, execute, classifyError, policy);
+}
+
+Future<T> _executeWithRetries<T>(
+  String url,
+  Future<T> Function(String url) execute,
+  ErrorDisposition Function(Object error) classifyError,
+  ResiliencePolicy policy,
+) async {
+  for (int attempt = 0; attempt <= policy.maxRetries; attempt++) {
+    try {
+      return await execute(url);
+    } catch (e) {
+      final disposition = classifyError(e);
+      if (disposition == ErrorDisposition.abort) rethrow;
+      if (disposition == ErrorDisposition.fallback) rethrow; // caller handles fallback
+      // disposition == retry
+      if (attempt < policy.maxRetries) {
+        final delay = policy.retryDelay(attempt);
+        debugPrint('[Resilience] Attempt ${attempt + 1} failed, retrying in ${delay.inMilliseconds}ms');
+        await Future.delayed(delay);
+        continue;
+      }
+      rethrow; // retries exhausted, let caller try fallback
+    }
+  }
+  throw StateError('Unreachable'); // loop always returns or throws
 }
 
 /// Reusable per-service rate limiter and concurrency controller.
