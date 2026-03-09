@@ -7,6 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:deflockapp/app_state.dart';
 import 'package:deflockapp/models/node_profile.dart';
+import 'package:deflockapp/models/service_endpoint.dart';
 import 'package:deflockapp/services/routing_service.dart';
 
 class MockHttpClient extends Mock implements http.Client {}
@@ -34,8 +35,11 @@ void main() {
     mockAppState = MockAppState();
     AppState.instance = mockAppState;
 
-    // Use a fixed baseUrl so tests don't try to resolve AppState settings
-    service = RoutingService(client: mockClient, baseUrl: RoutingService.defaultUrl);
+    // Use fixed endpoints so tests don't try to resolve AppState settings
+    service = RoutingService(
+      client: mockClient,
+      endpoints: DefaultServiceEndpoints.routing(),
+    );
   });
 
   tearDown(() {
@@ -456,10 +460,12 @@ void main() {
           )).called(4);
     });
 
-    test('does NOT fallback when using custom baseUrl', () async {
+    test('single custom endpoint does not fallback', () async {
       final customService = RoutingService(
         client: mockClient,
-        baseUrl: 'https://custom.example.com/route',
+        endpoints: const [
+          ServiceEndpoint(id: 'custom', name: 'Custom', url: 'https://custom.example.com/route'),
+        ],
       );
 
       when(() => mockAppState.enabledProfiles).thenReturn([]);
@@ -477,7 +483,7 @@ void main() {
         throwsA(isA<RoutingException>()),
       );
 
-      // 2 attempts (1 + 1 retry), no fallback with custom URL
+      // 2 attempts (1 + 1 retry), no fallback with single endpoint
       verify(() => mockClient.post(
             any(),
             headers: any(named: 'headers'),

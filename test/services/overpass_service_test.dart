@@ -6,6 +6,7 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:mocktail/mocktail.dart';
 
 import 'package:deflockapp/models/node_profile.dart';
+import 'package:deflockapp/models/service_endpoint.dart';
 import 'package:deflockapp/services/overpass_service.dart';
 
 class MockHttpClient extends Mock implements http.Client {}
@@ -36,8 +37,11 @@ void main() {
 
   setUp(() {
     mockClient = MockHttpClient();
-    // Use explicit endpoint to avoid AppState dependency in tests
-    service = OverpassService(client: mockClient, endpoint: OverpassService.defaultEndpoint);
+    // Use explicit endpoints to avoid AppState dependency in tests
+    service = OverpassService(
+      client: mockClient,
+      endpoints: DefaultServiceEndpoints.overpass(),
+    );
   });
 
   /// Helper: stub a successful Overpass response with the given elements.
@@ -420,10 +424,12 @@ void main() {
           .called(2);
     });
 
-    test('does NOT fallback when using custom endpoint', () async {
+    test('single custom endpoint does not fallback', () async {
       final customService = OverpassService(
         client: mockClient,
-        endpoint: 'https://custom.example.com/api/interpreter',
+        endpoints: const [
+          ServiceEndpoint(id: 'custom', name: 'Custom', url: 'https://custom.example.com/api/interpreter'),
+        ],
       );
 
       when(() => mockClient.post(any(), body: any(named: 'body')))

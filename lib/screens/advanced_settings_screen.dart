@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'settings/sections/api_endpoints_section.dart';
 import 'settings/sections/max_nodes_section.dart';
 import 'settings/sections/proximity_alerts_section.dart';
 import 'settings/sections/suspected_locations_section.dart';
@@ -35,6 +36,8 @@ class AdvancedSettingsScreen extends StatelessWidget {
             // NetworkStatusSection(), // Commented out - network status indicator now defaults to enabled
             // Divider(),
             TileProviderSection(),
+            Divider(),
+            ApiEndpointsSection(),
           ],
         ),
       ),

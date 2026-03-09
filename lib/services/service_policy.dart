@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
+import '../models/service_endpoint.dart';
 
 /// Identifies the type of external service being accessed.
 /// Used by [ServicePolicyResolver] to determine the correct compliance policy.
@@ -298,22 +299,69 @@ enum ErrorDisposition {
 class ResiliencePolicy {
   final int maxRetries;
   final Duration httpTimeout;
-  final Duration _retryBackoffBase;
-  final int _retryBackoffMaxMs;
+  final Duration retryBackoffBase;
+  final int retryBackoffMaxMs;
 
   const ResiliencePolicy({
     this.maxRetries = 1,
     this.httpTimeout = const Duration(seconds: 30),
-    Duration retryBackoffBase = const Duration(milliseconds: 200),
-    int retryBackoffMaxMs = 5000,
-  })  : _retryBackoffBase = retryBackoffBase,
-        _retryBackoffMaxMs = retryBackoffMaxMs;
+    this.retryBackoffBase = const Duration(milliseconds: 200),
+    this.retryBackoffMaxMs = 5000,
+  });
 
   Duration retryDelay(int attempt) {
-    final ms = (_retryBackoffBase.inMilliseconds * (1 << attempt))
-        .clamp(0, _retryBackoffMaxMs);
+    final ms = (retryBackoffBase.inMilliseconds * (1 << attempt))
+        .clamp(0, retryBackoffMaxMs);
     return Duration(milliseconds: ms);
   }
+}
+
+/// Execute a request against an ordered list of endpoints with retry and fallback.
+///
+/// Tries each enabled endpoint in list order. For each endpoint:
+/// 1. Applies per-endpoint policy overrides (maxRetries, timeout) over [defaultPolicy]
+/// 2. Retries on [ErrorDisposition.retry] errors up to the effective maxRetries
+/// 3. On [ErrorDisposition.fallback], skips remaining retries and moves to next endpoint
+/// 4. On [ErrorDisposition.abort], rethrows immediately (no further endpoints tried)
+///
+/// Throws [StateError] if no endpoints are enabled.
+/// Rethrows the last error if all endpoints are exhausted.
+Future<T> executeWithEndpointList<T>({
+  required List<ServiceEndpoint> endpoints,
+  required Future<T> Function(String url) execute,
+  required ErrorDisposition Function(Object error) classifyError,
+  ResiliencePolicy defaultPolicy = const ResiliencePolicy(),
+}) async {
+  final enabled = endpoints.where((e) => e.enabled).toList(growable: false);
+  if (enabled.isEmpty) {
+    throw StateError('No enabled endpoints configured');
+  }
+
+  Object? lastError;
+  for (final endpoint in enabled) {
+    final effectivePolicy = ResiliencePolicy(
+      maxRetries: endpoint.maxRetries ?? defaultPolicy.maxRetries,
+      httpTimeout: endpoint.timeoutSeconds != null
+          ? Duration(seconds: endpoint.timeoutSeconds!)
+          : defaultPolicy.httpTimeout,
+      retryBackoffBase: defaultPolicy.retryBackoffBase,
+      retryBackoffMaxMs: defaultPolicy.retryBackoffMaxMs,
+    );
+    try {
+      return await _executeWithRetries(
+        endpoint.url,
+        execute,
+        classifyError,
+        effectivePolicy,
+      );
+    } catch (e) {
+      final disposition = classifyError(e);
+      if (disposition == ErrorDisposition.abort) rethrow;
+      lastError = e;
+      debugPrint('[Resilience] Endpoint ${endpoint.name} failed ($e), trying next');
+    }
+  }
+  throw lastError!; // All endpoints exhausted
 }
 
 /// Execute a request with retry and fallback logic.
@@ -325,6 +373,7 @@ class ResiliencePolicy {
 ///    - [ErrorDisposition.retry]: retries with backoff, then fallback if exhausted
 /// 3. If [fallbackUrl] is non-null and the error is fallback-worthy,
 ///    repeats the retry loop against the fallback.
+@Deprecated('Use executeWithEndpointList instead')
 Future<T> executeWithFallback<T>({
   required String primaryUrl,
   required String? fallbackUrl,

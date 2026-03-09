@@ -6,6 +6,8 @@ import 'package:flutter_map/flutter_map.dart';
 
 import '../models/node_profile.dart';
 import '../models/osm_node.dart';
+import '../models/service_endpoint.dart';
+import '../app_state.dart';
 import '../dev_config.dart';
 import 'http_client.dart';
 import 'service_policy.dart';
@@ -21,15 +23,24 @@ class OverpassService {
   );
 
   final http.Client _client;
-  /// Optional override endpoint. When null, uses defaultEndpoint (or settings override).
-  final String? _endpointOverride;
+  /// Optional override endpoints for testing.
+  final List<ServiceEndpoint>? _endpointsOverride;
 
-  OverpassService({http.Client? client, String? endpoint})
+  OverpassService({http.Client? client, List<ServiceEndpoint>? endpoints})
       : _client = client ?? UserAgentClient(),
-        _endpointOverride = endpoint;
+        _endpointsOverride = endpoints;
 
-  /// Resolve the primary endpoint: constructor override or default.
-  String get _primaryEndpoint => _endpointOverride ?? defaultEndpoint;
+  /// Resolve the endpoint list: constructor override > AppState > defaults.
+  List<ServiceEndpoint> get _endpoints {
+    if (_endpointsOverride != null) return _endpointsOverride;
+    try {
+      final endpoints = AppState.instance.enabledOverpassEndpoints;
+      if (endpoints.isNotEmpty) return endpoints;
+    } catch (_) {
+      // AppState may not be initialized (e.g., in tests)
+    }
+    return DefaultServiceEndpoints.overpass();
+  }
 
   /// Fetch surveillance nodes from Overpass API with retry and fallback.
   /// Throws NetworkError for retryable failures, NodeLimitError for area splitting.
@@ -41,9 +52,6 @@ class OverpassService {
     if (profiles.isEmpty) return [];
 
     final query = _buildQuery(bounds, profiles);
-    // Snapshot the endpoint once so fallback decision is consistent
-    final endpoint = _primaryEndpoint;
-    final canFallback = endpoint == defaultEndpoint;
 
     final effectivePolicy = maxRetries != null
         ? ResiliencePolicy(
@@ -52,12 +60,11 @@ class OverpassService {
           )
         : _policy;
 
-    return executeWithFallback<List<OsmNode>>(
-      primaryUrl: endpoint,
-      fallbackUrl: canFallback ? fallbackEndpoint : null,
+    return executeWithEndpointList<List<OsmNode>>(
+      endpoints: _endpoints,
       execute: (url) => _attemptFetch(url, query),
       classifyError: _classifyError,
-      policy: effectivePolicy,
+      defaultPolicy: effectivePolicy,
     );
   }
 
