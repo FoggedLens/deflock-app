@@ -539,6 +539,27 @@ void main() {
       expect(callCount, 3);
     });
 
+    test('fallback disposition with no fallback URL rethrows immediately', () async {
+      int callCount = 0;
+
+      await expectLater(
+        () => executeWithFallback<String>(
+          primaryUrl: 'https://primary.example.com',
+          fallbackUrl: null,
+          execute: (url) {
+            callCount++;
+            throw Exception('rate limited');
+          },
+          classifyError: (_) => ErrorDisposition.fallback,
+          policy: policy,
+        ),
+        throwsA(isA<Exception>()),
+      );
+
+      // Only 1 attempt — fallback disposition skips retries, and no fallback URL
+      expect(callCount, 1);
+    });
+
     test('both fail propagates last error', () async {
       await expectLater(
         () => executeWithFallback<String>(
