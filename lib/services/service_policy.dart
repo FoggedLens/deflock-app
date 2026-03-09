@@ -152,7 +152,7 @@ class ServicePolicy {
       'attributionUrl: $attributionUrl)';
 }
 
-/// Resolves URLs and tile providers to their applicable [ServicePolicy].
+/// Resolves service URLs to their applicable [ServicePolicy].
 ///
 /// Built-in patterns cover all OSMF official services and common third-party
 /// tile providers. Custom overrides can be registered for self-hosted endpoints

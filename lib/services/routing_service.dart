@@ -170,8 +170,11 @@ class RoutingService {
   static ErrorDisposition _classifyError(Object error) {
     if (error is! RoutingException) return ErrorDisposition.retry;
     if (error.isApiError) return ErrorDisposition.abort;
-    if (error.statusCode == 400) return ErrorDisposition.abort;
-    if (error.statusCode == 429) return ErrorDisposition.fallback;
+    final status = error.statusCode;
+    if (status != null && status >= 400 && status < 500) {
+      if (status == 429) return ErrorDisposition.fallback;
+      return ErrorDisposition.abort;
+    }
     return ErrorDisposition.retry;
   }
 }

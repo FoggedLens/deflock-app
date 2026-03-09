@@ -378,6 +378,31 @@ void main() {
           )).called(1);
     });
 
+    test('does NOT fallback on 403 (all 4xx except 429 abort)', () async {
+      when(() => mockAppState.enabledProfiles).thenReturn([]);
+
+      when(() => mockClient.post(
+            any(),
+            headers: any(named: 'headers'),
+            body: any(named: 'body'),
+          )).thenAnswer((_) async => http.Response(
+            'Forbidden', 403,
+            reasonPhrase: 'Forbidden'));
+
+      await expectLater(
+        () => service.calculateRoute(start: start, end: end),
+        throwsA(isA<RoutingException>().having(
+          (e) => e.statusCode, 'statusCode', 403)),
+      );
+
+      // Only one call — no retry, no fallback (abort disposition)
+      verify(() => mockClient.post(
+            any(),
+            headers: any(named: 'headers'),
+            body: any(named: 'body'),
+          )).called(1);
+    });
+
     test('does NOT fallback on API-level business logic errors', () async {
       when(() => mockAppState.enabledProfiles).thenReturn([]);
 
