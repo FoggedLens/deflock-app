@@ -11,6 +11,7 @@ import 'models/operator_profile.dart';
 import 'models/osm_node.dart';
 import 'models/pending_upload.dart';
 import 'models/suspected_location.dart';
+import 'models/service_endpoint.dart';
 import 'models/tile_provider.dart';
 import 'models/search_result.dart';
 import 'services/offline_area_service.dart';
@@ -31,6 +32,7 @@ import 'state/operator_profile_state.dart';
 import 'state/profile_state.dart';
 import 'state/search_state.dart';
 import 'state/session_state.dart';
+import 'state/service_registry.dart';
 import 'state/settings_state.dart';
 import 'state/suspected_location_state.dart';
 import 'state/upload_queue_state.dart';
@@ -167,6 +169,14 @@ class AppState extends ChangeNotifier {
   bool get hasUnreadMessages => _messagesState.hasUnreadMessages;
   bool get isCheckingMessages => _messagesState.isChecking;
   
+  // API endpoint settings
+  List<ServiceEndpoint> get routingEndpoints => _settingsState.routingEndpoints;
+  List<ServiceEndpoint> get enabledRoutingEndpoints => _settingsState.enabledRoutingEndpoints;
+  List<ServiceEndpoint> get overpassEndpoints => _settingsState.overpassEndpoints;
+  List<ServiceEndpoint> get enabledOverpassEndpoints => _settingsState.enabledOverpassEndpoints;
+  ServiceRegistry<ServiceEndpoint> get routingRegistry => _settingsState.routingRegistry;
+  ServiceRegistry<ServiceEndpoint> get overpassRegistry => _settingsState.overpassRegistry;
+
   // Tile provider state
   List<TileProvider> get tileProviders => _settingsState.tileProviders;
   TileType? get selectedTileType => _settingsState.selectedTileType;
@@ -752,6 +762,8 @@ class AppState extends ChangeNotifier {
   Future<void> setDistanceUnit(DistanceUnit unit) async {
     await _settingsState.setDistanceUnit(unit);
   }
+
+  // Endpoint registry methods are accessed via routingRegistry/overpassRegistry directly
 
   // ---------- Queue Methods ----------
   void clearQueue() {
