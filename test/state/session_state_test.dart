@@ -421,15 +421,17 @@ void main() {
       final detectedOp = s.editSession!.operatorProfile;
       expect(detectedOp, isNotNull);
 
-      // When profile changes without explicit operatorProfile, the restoration
-      // inside the profile block is overridden by the unconditional operator
-      // comparison (null != current). This is the actual behavior:
+      // When profile changes without explicit updateOperatorProfile flag,
+      // the detected operator profile is restored automatically:
       s.updateEditSession(profile: _motorolaProfile());
+      expect(s.editSession!.operatorProfile, equals(detectedOp));
+
+      // When explicitly clearing the operator profile via the flag, it takes effect:
+      s.updateEditSession(updateOperatorProfile: true, operatorProfile: null);
       expect(s.editSession!.operatorProfile, isNull);
 
-      // But when operator profile is explicitly passed alongside profile change,
-      // it takes effect:
-      s.updateEditSession(profile: _flockProfile(), operatorProfile: detectedOp);
+      // And when explicitly setting it back, it also works:
+      s.updateEditSession(updateOperatorProfile: true, operatorProfile: detectedOp);
       expect(s.editSession!.operatorProfile, equals(detectedOp));
     });
   });
