@@ -88,7 +88,8 @@ class MapDataManager {
                         (a.coord.longitude - centerLng) * (a.coord.longitude - centerLng);
           final distB = (b.coord.latitude - centerLat) * (b.coord.latitude - centerLat) +
                         (b.coord.longitude - centerLng) * (b.coord.longitude - centerLng);
-          return distA.compareTo(distB);
+          final cmp = distA.compareTo(distB);
+          return cmp != 0 ? cmp : a.id.compareTo(b.id);
         });
         nodesToRender = validNodes.take(maxNodes).toList();
         isLimitActive = true;
@@ -107,7 +108,7 @@ class MapDataManager {
     if (isLimitActive != _lastNodeLimitState) {
       _lastNodeLimitState = isLimitActive;
       if (isLimitActive) {
-        debugPrint('[MapDataManager] Node limit active: rendering ${nodesToRender.length} of ${allNodes.length} devices');
+        debugPrint('[MapDataManager] Node limit active: rendering ${nodesToRender.length} of $validNodesCount valid devices');
       }
       // Schedule callback after build completes to avoid setState during build
       WidgetsBinding.instance.addPostFrameCallback((_) {
