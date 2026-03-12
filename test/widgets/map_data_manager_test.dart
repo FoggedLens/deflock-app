@@ -36,7 +36,7 @@ void main() {
       ];
 
       final result = dataManager.getNodesForRendering(
-        currentZoom: 14,
+        currentZoom: 14.0,
         mapBounds: bounds,
         uploadMode: UploadMode.production,
         maxNodes: 3,
@@ -58,7 +58,7 @@ void main() {
       ];
 
       final result = dataManager.getNodesForRendering(
-        currentZoom: 14,
+        currentZoom: 14.0,
         mapBounds: bounds,
         uploadMode: UploadMode.production,
         maxNodes: 10,
@@ -73,7 +73,7 @@ void main() {
       testNodes = [nodeAt(1, 38.5, -77.5)];
 
       final result = dataManager.getNodesForRendering(
-        currentZoom: 5,
+        currentZoom: 5.0,
         mapBounds: bounds,
         uploadMode: UploadMode.production,
         maxNodes: 10,
@@ -93,7 +93,7 @@ void main() {
       testNodes = List.from(nodes);
       final swBounds = LatLngBounds(LatLng(37.5, -78.5), LatLng(38.5, -77.5));
       final swResult = dataManager.getNodesForRendering(
-        currentZoom: 14,
+        currentZoom: 14.0,
         mapBounds: swBounds,
         uploadMode: UploadMode.production,
         maxNodes: 1,
@@ -105,7 +105,7 @@ void main() {
       testNodes = List.from(nodes);
       final neBounds = LatLngBounds(LatLng(38.5, -77.5), LatLng(39.5, -76.5));
       final neResult = dataManager.getNodesForRendering(
-        currentZoom: 14,
+        currentZoom: 14.0,
         mapBounds: neBounds,
         uploadMode: UploadMode.production,
         maxNodes: 1,
@@ -126,13 +126,13 @@ void main() {
 
       testNodes = makeNodes();
       final result1 = dataManager.getNodesForRendering(
-        currentZoom: 14, mapBounds: bounds,
+        currentZoom: 14.0, mapBounds: bounds,
         uploadMode: UploadMode.production, maxNodes: 3,
       );
 
       testNodes = makeNodes();
       final result2 = dataManager.getNodesForRendering(
-        currentZoom: 14, mapBounds: bounds,
+        currentZoom: 14.0, mapBounds: bounds,
         uploadMode: UploadMode.production, maxNodes: 3,
       );
 
@@ -151,7 +151,7 @@ void main() {
       ];
 
       final result = dataManager.getNodesForRendering(
-        currentZoom: 14,
+        currentZoom: 14.0,
         mapBounds: bounds,
         uploadMode: UploadMode.production,
         maxNodes: 10,
