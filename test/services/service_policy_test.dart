@@ -5,10 +5,6 @@ import 'package:deflockapp/services/service_policy.dart';
 
 void main() {
   group('ServicePolicyResolver', () {
-    setUp(() {
-      ServicePolicyResolver.clearCustomPolicies();
-    });
-
     group('resolveType', () {
       test('resolves OSM editing API from production URL', () {
         expect(
@@ -200,63 +196,6 @@ void main() {
       });
     });
 
-    group('custom policy overrides', () {
-      test('custom override takes precedence over built-in', () {
-        ServicePolicyResolver.registerCustomPolicy(
-          'overpass-api.de',
-          const ServicePolicy.custom(maxConcurrent: 20, allowsOffline: true),
-        );
-
-        final policy = ServicePolicyResolver.resolve(
-          'https://overpass-api.de/api/interpreter',
-        );
-        expect(policy.maxConcurrentRequests, 20);
-      });
-
-      test('custom policy for self-hosted tiles allows offline', () {
-        ServicePolicyResolver.registerCustomPolicy(
-          'tiles.myserver.com',
-          const ServicePolicy.custom(allowsOffline: true, maxConcurrent: 16),
-        );
-
-        final policy = ServicePolicyResolver.resolve(
-          'https://tiles.myserver.com/{z}/{x}/{y}.png',
-        );
-        expect(policy.allowsOfflineDownload, true);
-        expect(policy.maxConcurrentRequests, 16);
-      });
-
-      test('removing custom override restores built-in policy', () {
-        ServicePolicyResolver.registerCustomPolicy(
-          'overpass-api.de',
-          const ServicePolicy.custom(maxConcurrent: 20),
-        );
-        expect(
-          ServicePolicyResolver.resolve('https://overpass-api.de/api/interpreter').maxConcurrentRequests,
-          20,
-        );
-
-        ServicePolicyResolver.removeCustomPolicy('overpass-api.de');
-        // Should fall back to built-in Overpass policy (maxConcurrent: 0 = managed elsewhere)
-        expect(
-          ServicePolicyResolver.resolve('https://overpass-api.de/api/interpreter').maxConcurrentRequests,
-          0,
-        );
-      });
-
-      test('clearCustomPolicies removes all overrides', () {
-        ServicePolicyResolver.registerCustomPolicy('a.com', const ServicePolicy.custom(maxConcurrent: 1));
-        ServicePolicyResolver.registerCustomPolicy('b.com', const ServicePolicy.custom(maxConcurrent: 2));
-
-        ServicePolicyResolver.clearCustomPolicies();
-
-        // Both should now return custom (default) policy
-        expect(
-          ServicePolicyResolver.resolve('https://a.com/test').maxConcurrentRequests,
-          8, // default custom maxConcurrent
-        );
-      });
-    });
   });
 
   group('ServiceRateLimiter', () {
@@ -421,6 +360,199 @@ void main() {
       expect(policy.maxConcurrentRequests, 20);
       expect(policy.allowsOfflineDownload, false);
       expect(policy.attributionUrl, 'https://example.com/license');
+    });
+  });
+
+  group('ResiliencePolicy', () {
+    test('retryDelay uses exponential backoff', () {
+      const policy = ResiliencePolicy(
+        retryBackoffBase: Duration(milliseconds: 100),
+        retryBackoffMaxMs: 2000,
+      );
+      expect(policy.retryDelay(0), const Duration(milliseconds: 100));
+      expect(policy.retryDelay(1), const Duration(milliseconds: 200));
+      expect(policy.retryDelay(2), const Duration(milliseconds: 400));
+    });
+
+    test('retryDelay clamps to max', () {
+      const policy = ResiliencePolicy(
+        retryBackoffBase: Duration(milliseconds: 1000),
+        retryBackoffMaxMs: 3000,
+      );
+      expect(policy.retryDelay(0), const Duration(milliseconds: 1000));
+      expect(policy.retryDelay(1), const Duration(milliseconds: 2000));
+      expect(policy.retryDelay(2), const Duration(milliseconds: 3000)); // clamped
+      expect(policy.retryDelay(10), const Duration(milliseconds: 3000)); // clamped
+    });
+  });
+
+  group('executeWithFallback', () {
+    const policy = ResiliencePolicy(
+      maxRetries: 2,
+      retryBackoffBase: Duration.zero, // no delay in tests
+    );
+
+    test('abort error stops immediately, no fallback', () async {
+      int callCount = 0;
+
+      await expectLater(
+        () => executeWithFallback<String>(
+          primaryUrl: 'https://primary.example.com',
+          fallbackUrl: 'https://fallback.example.com',
+          execute: (url) {
+            callCount++;
+            throw Exception('bad request');
+          },
+          classifyError: (_) => ErrorDisposition.abort,
+          policy: policy,
+        ),
+        throwsA(isA<Exception>()),
+      );
+
+      expect(callCount, 1); // no retries, no fallback
+    });
+
+    test('fallback error skips retries, goes to fallback', () async {
+      final urlsSeen = <String>[];
+
+      final result = await executeWithFallback<String>(
+        primaryUrl: 'https://primary.example.com',
+        fallbackUrl: 'https://fallback.example.com',
+        execute: (url) {
+          urlsSeen.add(url);
+          if (url.contains('primary')) {
+            throw Exception('rate limited');
+          }
+          return Future.value('ok from fallback');
+        },
+        classifyError: (_) => ErrorDisposition.fallback,
+        policy: policy,
+      );
+
+      expect(result, 'ok from fallback');
+      // 1 primary (no retries) + 1 fallback = 2
+      expect(urlsSeen, ['https://primary.example.com', 'https://fallback.example.com']);
+    });
+
+    test('retry error retries N times then falls back', () async {
+      final urlsSeen = <String>[];
+
+      final result = await executeWithFallback<String>(
+        primaryUrl: 'https://primary.example.com',
+        fallbackUrl: 'https://fallback.example.com',
+        execute: (url) {
+          urlsSeen.add(url);
+          if (url.contains('primary')) {
+            throw Exception('server error');
+          }
+          return Future.value('ok from fallback');
+        },
+        classifyError: (_) => ErrorDisposition.retry,
+        policy: policy,
+      );
+
+      expect(result, 'ok from fallback');
+      // 3 primary attempts (1 + 2 retries) + 1 fallback = 4
+      expect(urlsSeen.where((u) => u.contains('primary')).length, 3);
+      expect(urlsSeen.where((u) => u.contains('fallback')).length, 1);
+    });
+
+    test('no fallback URL rethrows after retries', () async {
+      int callCount = 0;
+
+      await expectLater(
+        () => executeWithFallback<String>(
+          primaryUrl: 'https://primary.example.com',
+          fallbackUrl: null,
+          execute: (url) {
+            callCount++;
+            throw Exception('server error');
+          },
+          classifyError: (_) => ErrorDisposition.retry,
+          policy: policy,
+        ),
+        throwsA(isA<Exception>()),
+      );
+
+      // 3 attempts (1 + 2 retries), then rethrow
+      expect(callCount, 3);
+    });
+
+    test('fallback disposition with no fallback URL rethrows immediately', () async {
+      int callCount = 0;
+
+      await expectLater(
+        () => executeWithFallback<String>(
+          primaryUrl: 'https://primary.example.com',
+          fallbackUrl: null,
+          execute: (url) {
+            callCount++;
+            throw Exception('rate limited');
+          },
+          classifyError: (_) => ErrorDisposition.fallback,
+          policy: policy,
+        ),
+        throwsA(isA<Exception>()),
+      );
+
+      // Only 1 attempt — fallback disposition skips retries, and no fallback URL
+      expect(callCount, 1);
+    });
+
+    test('both fail propagates last error', () async {
+      await expectLater(
+        () => executeWithFallback<String>(
+          primaryUrl: 'https://primary.example.com',
+          fallbackUrl: 'https://fallback.example.com',
+          execute: (url) {
+            if (url.contains('fallback')) {
+              throw Exception('fallback also failed');
+            }
+            throw Exception('primary failed');
+          },
+          classifyError: (_) => ErrorDisposition.retry,
+          policy: policy,
+        ),
+        throwsA(isA<Exception>().having(
+          (e) => e.toString(), 'message', contains('fallback also failed'))),
+      );
+    });
+
+    test('success on first try returns immediately', () async {
+      int callCount = 0;
+
+      final result = await executeWithFallback<String>(
+        primaryUrl: 'https://primary.example.com',
+        fallbackUrl: 'https://fallback.example.com',
+        execute: (url) {
+          callCount++;
+          return Future.value('success');
+        },
+        classifyError: (_) => ErrorDisposition.retry,
+        policy: policy,
+      );
+
+      expect(result, 'success');
+      expect(callCount, 1);
+    });
+
+    test('success after retry does not try fallback', () async {
+      int callCount = 0;
+
+      final result = await executeWithFallback<String>(
+        primaryUrl: 'https://primary.example.com',
+        fallbackUrl: 'https://fallback.example.com',
+        execute: (url) {
+          callCount++;
+          if (callCount == 1) throw Exception('transient');
+          return Future.value('recovered');
+        },
+        classifyError: (_) => ErrorDisposition.retry,
+        policy: policy,
+      );
+
+      expect(result, 'recovered');
+      expect(callCount, 2); // 1 fail + 1 success, no fallback
     });
   });
 }
