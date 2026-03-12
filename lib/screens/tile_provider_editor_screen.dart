@@ -127,7 +127,9 @@ class _TileProviderEditorScreenState extends State<TileProviderEditorScreen> {
                         subtitle: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(tileType.urlTemplate),
+                            Text(tileType.isVector
+                                ? tileType.styleUrl ?? tileType.urlTemplate
+                                : tileType.urlTemplate),
                             Text(
                               tileType.attribution,
                               style: Theme.of(context).textTheme.bodySmall,
@@ -261,6 +263,8 @@ class _TileTypeDialogState extends State<_TileTypeDialog> {
   late final TextEditingController _urlController;
   late final TextEditingController _attributionController;
   late final TextEditingController _maxZoomController;
+  late final TextEditingController _styleUrlController;
+  late TileSourceType _sourceType;
   Uint8List? _previewTile;
   bool _isLoadingPreview = false;
 
@@ -272,6 +276,8 @@ class _TileTypeDialogState extends State<_TileTypeDialog> {
     _urlController = TextEditingController(text: tileType?.urlTemplate ?? '');
     _attributionController = TextEditingController(text: tileType?.attribution ?? '');
     _maxZoomController = TextEditingController(text: (tileType?.maxZoom ?? 18).toString());
+    _styleUrlController = TextEditingController(text: tileType?.styleUrl ?? '');
+    _sourceType = tileType?.sourceType ?? TileSourceType.rasterXyz;
     _previewTile = tileType?.previewTile;
   }
 
@@ -281,6 +287,7 @@ class _TileTypeDialogState extends State<_TileTypeDialog> {
     _urlController.dispose();
     _attributionController.dispose();
     _maxZoomController.dispose();
+    _styleUrlController.dispose();
     super.dispose();
   }
 
@@ -291,6 +298,8 @@ class _TileTypeDialogState extends State<_TileTypeDialog> {
       builder: (context, child) {
         final locService = LocalizationService.instance;
         
+        final isVector = _sourceType == TileSourceType.vectorStyle;
+
         return AlertDialog(
           title: Text(widget.tileType != null ? locService.t('tileTypeEditor.editTileType') : locService.t('tileTypeEditor.addTileType')),
           content: SizedBox(
@@ -300,6 +309,26 @@ class _TileTypeDialogState extends State<_TileTypeDialog> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
+                  // Source type selector
+                  SegmentedButton<TileSourceType>(
+                    segments: [
+                      ButtonSegment(
+                        value: TileSourceType.rasterXyz,
+                        label: Text(locService.t('tileTypeEditor.rasterTiles')),
+                        icon: const Icon(Icons.grid_on),
+                      ),
+                      ButtonSegment(
+                        value: TileSourceType.vectorStyle,
+                        label: Text(locService.t('tileTypeEditor.vectorTiles')),
+                        icon: const Icon(Icons.route),
+                      ),
+                    ],
+                    selected: {_sourceType},
+                    onSelectionChanged: (selected) {
+                      setState(() => _sourceType = selected.first);
+                    },
+                  ),
+                  const SizedBox(height: 16),
                   TextFormField(
                     controller: _nameController,
                     decoration: InputDecoration(
@@ -309,26 +338,43 @@ class _TileTypeDialogState extends State<_TileTypeDialog> {
                     validator: (value) => value?.trim().isEmpty == true ? locService.t('tileTypeEditor.nameRequired') : null,
                   ),
                   const SizedBox(height: 16),
-                  TextFormField(
-                    controller: _urlController,
-                    decoration: InputDecoration(
-                      labelText: locService.t('tileTypeEditor.urlTemplate'),
-                      hintText: locService.t('tileTypeEditor.urlTemplateHint'),
+                  if (isVector) ...[
+                    // Vector: show style URL field
+                    TextFormField(
+                      controller: _styleUrlController,
+                      decoration: InputDecoration(
+                        labelText: locService.t('tileTypeEditor.styleUrl'),
+                        hintText: locService.t('tileTypeEditor.styleUrlHint'),
+                      ),
+                      validator: (value) {
+                        if (value?.trim().isEmpty == true) {
+                          return locService.t('tileTypeEditor.styleUrlRequired');
+                        }
+                        return null;
+                      },
                     ),
-                    validator: (value) {
-                      if (value?.trim().isEmpty == true) return locService.t('tileTypeEditor.urlTemplateRequired');
-                      
-                      // Check for either quadkey OR x+y+z placeholders
-                      final hasQuadkey = value!.contains('{quadkey}');
-                      final hasXYZ = value.contains('{x}') && value.contains('{y}') && value.contains('{z}');
-                      
-                      if (!hasQuadkey && !hasXYZ) {
-                        return locService.t('tileTypeEditor.urlTemplatePlaceholders');
-                      }
-                      
-                      return null;
-                    },
-                  ),
+                  ] else ...[
+                    // Raster: show URL template field
+                    TextFormField(
+                      controller: _urlController,
+                      decoration: InputDecoration(
+                        labelText: locService.t('tileTypeEditor.urlTemplate'),
+                        hintText: locService.t('tileTypeEditor.urlTemplateHint'),
+                      ),
+                      validator: (value) {
+                        if (value?.trim().isEmpty == true) return locService.t('tileTypeEditor.urlTemplateRequired');
+
+                        final hasQuadkey = value!.contains('{quadkey}');
+                        final hasXYZ = value.contains('{x}') && value.contains('{y}') && value.contains('{z}');
+
+                        if (!hasQuadkey && !hasXYZ) {
+                          return locService.t('tileTypeEditor.urlTemplatePlaceholders');
+                        }
+
+                        return null;
+                      },
+                    ),
+                  ],
                   const SizedBox(height: 16),
                   TextFormField(
                     controller: _attributionController,
@@ -354,32 +400,34 @@ class _TileTypeDialogState extends State<_TileTypeDialog> {
                       return null;
                     },
                   ),
-                  const SizedBox(height: 16),
-                  Row(
-                    children: [
-                      TextButton.icon(
-                        onPressed: _isLoadingPreview ? null : _fetchPreviewTile,
-                        icon: _isLoadingPreview 
-                            ? const SizedBox(
-                                width: 16,
-                                height: 16,
-                                child: CircularProgressIndicator(strokeWidth: 2),
-                              )
-                            : const Icon(Icons.preview),
-                        label: Text(locService.t('tileTypeEditor.fetchPreview')),
-                      ),
-                      const SizedBox(width: 8),
-                      if (_previewTile != null)
-                        Container(
-                          width: 32,
-                          height: 32,
-                          decoration: BoxDecoration(
-                            border: Border.all(color: Colors.grey),
-                          ),
-                          child: Image.memory(_previewTile!, fit: BoxFit.cover),
+                  if (!isVector) ...[
+                    const SizedBox(height: 16),
+                    Row(
+                      children: [
+                        TextButton.icon(
+                          onPressed: _isLoadingPreview ? null : _fetchPreviewTile,
+                          icon: _isLoadingPreview
+                              ? const SizedBox(
+                                  width: 16,
+                                  height: 16,
+                                  child: CircularProgressIndicator(strokeWidth: 2),
+                                )
+                              : const Icon(Icons.preview),
+                          label: Text(locService.t('tileTypeEditor.fetchPreview')),
                         ),
-                    ],
-                  ),
+                        const SizedBox(width: 8),
+                        if (_previewTile != null)
+                          Container(
+                            width: 32,
+                            height: 32,
+                            decoration: BoxDecoration(
+                              border: Border.all(color: Colors.grey),
+                            ),
+                            child: Image.memory(_previewTile!, fit: BoxFit.cover),
+                          ),
+                      ],
+                    ),
+                  ],
                 ],
               ),
             ),
@@ -456,16 +504,26 @@ class _TileTypeDialogState extends State<_TileTypeDialog> {
   void _saveTileType() {
     if (!_formKey.currentState!.validate()) return;
 
-    final tileTypeId = widget.tileType?.id ?? 
+    final tileTypeId = widget.tileType?.id ??
         '${_nameController.text.toLowerCase().replaceAll(' ', '_')}_${DateTime.now().millisecondsSinceEpoch}';
-    
+
+    final isVector = _sourceType == TileSourceType.vectorStyle;
+    final styleUrl = isVector ? _styleUrlController.text.trim() : null;
+    // For vector types, use the style URL as the urlTemplate so
+    // ServicePolicyResolver can still extract the host.
+    final urlTemplate = isVector
+        ? (styleUrl ?? '')
+        : _urlController.text.trim();
+
     final tileType = TileType(
       id: tileTypeId,
       name: _nameController.text.trim(),
-      urlTemplate: _urlController.text.trim(),
+      urlTemplate: urlTemplate,
       attribution: _attributionController.text.trim(),
-      previewTile: _previewTile,
+      previewTile: isVector ? null : _previewTile,
       maxZoom: int.parse(_maxZoomController.text.trim()),
+      sourceType: _sourceType,
+      styleUrl: styleUrl,
     );
 
     widget.onSave(tileType);

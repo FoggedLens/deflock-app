@@ -17,6 +17,8 @@ import 'service_policy.dart';
 class OverpassService {
   static const String defaultEndpoint = 'https://overpass.deflock.org/api/interpreter';
   static const String fallbackEndpoint = 'https://overpass-api.de/api/interpreter';
+  static const String _statusEndpoint = 'https://overpass-api.de/api/status';
+  static const int defaultSlotCount = 4;
   static const _policy = ResiliencePolicy(
     maxRetries: 3,
     httpTimeout: Duration(seconds: 45),
@@ -120,6 +122,60 @@ class OverpassService {
     if (error is NodeLimitError) return ErrorDisposition.abort;
     if (error is RateLimitError) return ErrorDisposition.fallback;
     return ErrorDisposition.retry;
+  }
+
+  /// Query Overpass /api/status to get the rate limit (slot count per IP).
+  Future<int> getSlotCount() async {
+    try {
+      final response = await _client.get(Uri.parse(_statusEndpoint))
+          .timeout(const Duration(seconds: 5));
+      if (response.statusCode == 200) {
+        final match = RegExp(r'Rate limit:\s*(\d+)').firstMatch(response.body);
+        if (match != null) return int.parse(match.group(1)!);
+      }
+    } catch (e) {
+      debugPrint('[OverpassService] Failed to get slot count: $e');
+    }
+    return defaultSlotCount;
+  }
+
+  /// Poll /api/status until a slot is available. Returns observed slot count.
+  Future<int> waitForSlot({
+    Duration maxWait = const Duration(minutes: 2),
+    Duration Function()? elapsedFn,
+  }) async {
+    final stopwatch = Stopwatch()..start();
+    final elapsed = elapsedFn ?? () => stopwatch.elapsed;
+    int observedSlots = defaultSlotCount;
+
+    while (elapsed() < maxWait) {
+      try {
+        final response = await _client.get(Uri.parse(_statusEndpoint))
+            .timeout(const Duration(seconds: 5));
+
+        if (response.statusCode == 200) {
+          final slotMatch = RegExp(r'Rate limit:\s*(\d+)').firstMatch(response.body);
+          if (slotMatch != null) observedSlots = int.parse(slotMatch.group(1)!);
+
+          if (response.body.contains('slots available now')) return observedSlots;
+
+          final match = RegExp(r'in (\d+) seconds').firstMatch(response.body);
+          if (match != null) {
+            final wait = int.parse(match.group(1)!).clamp(1, 30);
+            debugPrint('[OverpassService] Waiting $wait seconds for slot');
+            await Future.delayed(Duration(seconds: wait));
+            continue;
+          }
+        }
+      } catch (e) {
+        debugPrint('[OverpassService] Status check failed: $e');
+      }
+
+      await Future.delayed(const Duration(seconds: 5));
+    }
+
+    debugPrint('[OverpassService] Max wait time exceeded, proceeding anyway');
+    return observedSlots;
   }
 
   /// Build Overpass QL query for given bounds and profiles

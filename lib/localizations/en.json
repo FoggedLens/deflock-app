@@ -337,7 +337,12 @@
     "fetchPreview": "Fetch Preview",
     "previewTileLoaded": "Preview tile loaded successfully",
     "previewTileFailed": "Failed to fetch preview: {}",
-    "save": "Save"
+    "save": "Save",
+    "rasterTiles": "Raster",
+    "vectorTiles": "Vector",
+    "styleUrl": "Style URL",
+    "styleUrlHint": "https://example.com/style.json",
+    "styleUrlRequired": "Style URL is required"
   },
   "profiles": {
     "nodeProfiles": "Node Profiles",

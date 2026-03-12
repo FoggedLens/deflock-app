@@ -337,7 +337,12 @@
     "fetchPreview": "Récupérer Aperçu",
     "previewTileLoaded": "Tuile d'aperçu chargée avec succès",
     "previewTileFailed": "Échec de récupération de l'aperçu: {}",
-    "save": "Sauvegarder"
+    "save": "Sauvegarder",
+    "rasterTiles": "Raster",
+    "vectorTiles": "Vectoriel",
+    "styleUrl": "URL de style",
+    "styleUrlHint": "https://exemple.com/style.json",
+    "styleUrlRequired": "L'URL de style est requise"
   },
   "profiles": {
     "nodeProfiles": "Profils de Nœuds",

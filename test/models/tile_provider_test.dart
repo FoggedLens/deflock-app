@@ -110,14 +110,124 @@ void main() {
     });
   });
 
+  group('TileType vector support', () {
+    test('isVector and isRaster getters', () {
+      final raster = TileType(
+        id: 'r',
+        name: 'Raster',
+        urlTemplate: 'https://example.com/{z}/{x}/{y}.png',
+        attribution: 'Test',
+      );
+      final vector = TileType(
+        id: 'v',
+        name: 'Vector',
+        urlTemplate: 'https://example.com/style.json',
+        attribution: 'Test',
+        sourceType: TileSourceType.vectorStyle,
+        styleUrl: 'https://example.com/style.json',
+      );
+
+      expect(raster.isRaster, isTrue);
+      expect(raster.isVector, isFalse);
+      expect(vector.isVector, isTrue);
+      expect(vector.isRaster, isFalse);
+    });
+
+    test('default sourceType is rasterXyz', () {
+      final t = TileType(
+        id: 'test',
+        name: 'Test',
+        urlTemplate: 'https://example.com/{z}/{x}/{y}.png',
+        attribution: 'Test',
+      );
+      expect(t.sourceType, TileSourceType.rasterXyz);
+      expect(t.styleUrl, isNull);
+    });
+
+    test('allowsOfflineDownload is false for vector types', () {
+      final vector = TileType(
+        id: 'v',
+        name: 'Vector',
+        urlTemplate: 'https://example.com/style.json',
+        attribution: 'Test',
+        sourceType: TileSourceType.vectorStyle,
+        styleUrl: 'https://example.com/style.json',
+      );
+      expect(vector.allowsOfflineDownload, isFalse);
+    });
+
+    test('backward-compatible deserialization: missing sourceType defaults to rasterXyz', () {
+      final json = {
+        'id': 'legacy',
+        'name': 'Legacy',
+        'urlTemplate': 'https://example.com/{z}/{x}/{y}.png',
+        'attribution': 'Test',
+      };
+      final t = TileType.fromJson(json);
+      expect(t.sourceType, TileSourceType.rasterXyz);
+      expect(t.styleUrl, isNull);
+      expect(t.isRaster, isTrue);
+    });
+
+    test('round-trip serialization for vector type', () {
+      final original = TileType(
+        id: 'vec',
+        name: 'Vec',
+        urlTemplate: 'https://tiles.stadia.com/style.json',
+        attribution: 'Stadia',
+        maxZoom: 20,
+        sourceType: TileSourceType.vectorStyle,
+        styleUrl: 'https://tiles.stadia.com/style.json',
+      );
+
+      final json = original.toJson();
+      expect(json['sourceType'], 'vectorStyle');
+      expect(json['styleUrl'], 'https://tiles.stadia.com/style.json');
+
+      final restored = TileType.fromJson(json);
+      expect(restored.sourceType, TileSourceType.vectorStyle);
+      expect(restored.styleUrl, 'https://tiles.stadia.com/style.json');
+      expect(restored.isVector, isTrue);
+      expect(restored.id, 'vec');
+    });
+
+    test('raster type omits sourceType and styleUrl from JSON', () {
+      final raster = TileType(
+        id: 'r',
+        name: 'Raster',
+        urlTemplate: 'https://example.com/{z}/{x}/{y}.png',
+        attribution: 'Test',
+      );
+      final json = raster.toJson();
+      expect(json.containsKey('sourceType'), isFalse);
+      expect(json.containsKey('styleUrl'), isFalse);
+    });
+
+    test('copyWith preserves sourceType and styleUrl', () {
+      final original = TileType(
+        id: 'v',
+        name: 'Vec',
+        urlTemplate: 'https://example.com/style.json',
+        attribution: 'Test',
+        sourceType: TileSourceType.vectorStyle,
+        styleUrl: 'https://example.com/style.json',
+      );
+
+      final copy = original.copyWith(name: 'Updated');
+      expect(copy.name, 'Updated');
+      expect(copy.sourceType, TileSourceType.vectorStyle);
+      expect(copy.styleUrl, 'https://example.com/style.json');
+    });
+  });
+
   group('DefaultTileProviders', () {
     test('contains Bing satellite provider', () {
       final providers = DefaultTileProviders.createDefaults();
       final bingProvider = providers.firstWhere((p) => p.id == 'bing');
-      
+
       expect(bingProvider.name, 'Bing Maps');
       expect(bingProvider.tileTypes, hasLength(1));
-      
+
       final satelliteType = bingProvider.tileTypes.first;
       expect(satelliteType.id, 'bing_satellite');
       expect(satelliteType.name, 'Satellite');
@@ -139,6 +249,34 @@ void main() {
               reason: '${provider.name} should be usable without API key');
         }
       }
+    });
+
+    test('contains Stadia Maps vector provider', () {
+      final providers = DefaultTileProviders.createDefaults();
+      final stadia = providers.firstWhere((p) => p.id == 'stadiamaps_vector');
+
+      expect(stadia.name, contains('Stadia'));
+      expect(stadia.tileTypes, hasLength(1));
+
+      final tileType = stadia.tileTypes.first;
+      expect(tileType.isVector, isTrue);
+      expect(tileType.sourceType, TileSourceType.vectorStyle);
+      expect(tileType.styleUrl, isNotNull);
+      expect(tileType.requiresApiKey, isTrue);
+      expect(tileType.allowsOfflineDownload, isFalse);
+    });
+
+    test('contains MapTiler vector provider', () {
+      final providers = DefaultTileProviders.createDefaults();
+      final maptiler = providers.firstWhere((p) => p.id == 'maptiler_vector');
+
+      expect(maptiler.name, contains('MapTiler'));
+      expect(maptiler.tileTypes, hasLength(1));
+
+      final tileType = maptiler.tileTypes.first;
+      expect(tileType.isVector, isTrue);
+      expect(tileType.requiresApiKey, isTrue);
+      expect(tileType.allowsOfflineDownload, isFalse);
     });
   });
 }

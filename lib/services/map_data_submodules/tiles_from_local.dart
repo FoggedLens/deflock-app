@@ -58,28 +58,35 @@ Future<List<int>> fetchLocalTile({
 
 /// O(1) check whether tile (z, x, y) falls within the given lat/lng bounds.
 ///
-/// Uses the same Mercator projection math as [latLonToTile] in
-/// offline_tile_utils.dart, but only computes the bounding tile range
-/// instead of enumerating every tile at that zoom level.
+/// Matches [computeTileList]'s inclusion rules: ±1 tile padding with clamping
+/// to `[0, nTiles-1]`. This ensures tiles downloaded along boundary edges
+/// (which include the padding) are found during offline lookups.
 ///
 /// Note: Y axis is inverted in tile coordinates — north = lower Y.
 @visibleForTesting
 bool tileInBounds(LatLngBounds bounds, int z, int x, int y) {
-  final n = pow(2.0, z);
+  final int nTiles = 1 << z;
+  final double n = nTiles.toDouble();
   final west = bounds.west;
   final east = bounds.east;
   final north = bounds.north;
   final south = bounds.south;
 
-  final minX = ((west + 180.0) / 360.0 * n).floor();
-  final maxX = ((east + 180.0) / 360.0 * n).floor();
+  int minX = ((west + 180.0) / 360.0 * n).floor();
+  int maxX = ((east + 180.0) / 360.0 * n).floor();
   // North → lower Y (Mercator projection inverts latitude)
-  final minY = ((1.0 - log(tan(north * pi / 180.0) +
+  int minY = ((1.0 - log(tan(north * pi / 180.0) +
           1.0 / cos(north * pi / 180.0)) /
       pi) / 2.0 * n).floor();
-  final maxY = ((1.0 - log(tan(south * pi / 180.0) +
+  int maxY = ((1.0 - log(tan(south * pi / 180.0) +
           1.0 / cos(south * pi / 180.0)) /
       pi) / 2.0 * n).floor();
+
+  // Match computeTileList behavior: expand by ±1 tile and clamp to [0, nTiles - 1].
+  minX = max(0, minX - 1);
+  maxX = min(nTiles - 1, maxX + 1);
+  minY = max(0, minY - 1);
+  maxY = min(nTiles - 1, maxY + 1);
 
   return x >= minX && x <= maxX && y >= minY && y <= maxY;
 }

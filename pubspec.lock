@@ -185,6 +185,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.2.3"
+  executor_lib:
+    dependency: transitive
+    description:
+      name: executor_lib
+      sha256: "95ddf2957d9942d9702855b38dd49677f0ee6a8b77d7b16c0e509c7669d17386"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.1.2"
   fake_async:
     dependency: "direct dev"
     description:
@@ -488,6 +496,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "4.1.2"
+  idb_shim:
+    dependency: transitive
+    description:
+      name: idb_shim
+      sha256: "921301da0a735f336a28fc35c3abdbd4498895cc205fa1ea9f7e785e7d854ceb"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.8.2+4"
   image:
     dependency: transitive
     description:
@@ -776,6 +792,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.1.0"
+  protobuf:
+    dependency: transitive
+    description:
+      name: protobuf
+      sha256: "68645b24e0716782e58948f8467fd42a880f255096a821f9e7d0ec625b00c84d"
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.1.0"
   provider:
     dependency: "direct main"
     description:
@@ -800,6 +824,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.3.1"
+  sembast:
+    dependency: transitive
+    description:
+      name: sembast
+      sha256: "139cf71496105de32e7a08a4e3a1ead0f81c4a616ec9703ed07e8f0d10cdd505"
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.8.6"
   shared_preferences:
     dependency: "direct main"
     description:
@@ -1085,6 +1117,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.2.0"
+  vector_map_tiles:
+    dependency: "direct main"
+    description:
+      name: vector_map_tiles
+      sha256: e35f090c428f05e44dd525fa4fedaafd1dbcd28b656cb0ea908528c6ce84a87d
+      url: "https://pub.dev"
+    source: hosted
+    version: "9.0.0-beta.8"
   vector_math:
     dependency: transitive
     description:
@@ -1093,6 +1133,30 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.2.0"
+  vector_tile:
+    dependency: transitive
+    description:
+      name: vector_tile
+      sha256: "7ae290246e3a8734422672dbe791d3f7b8ab631734489fc6d405f1cc2080e38c"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.0.1"
+  vector_tile_dem:
+    dependency: transitive
+    description:
+      name: vector_tile_dem
+      sha256: "81a3568d2213817bd2698f919357e5107c0261491ae1014e821ed4fc3c2bf740"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.0.2"
+  vector_tile_renderer:
+    dependency: "direct main"
+    description:
+      name: vector_tile_renderer
+      sha256: "99530edb073c1cea3c6a4bdb5ca9a5c6779c25ddf1a645678458504708dc221c"
+      url: "https://pub.dev"
+    source: hosted
+    version: "6.0.0"
   vm_service:
     dependency: transitive
     description:

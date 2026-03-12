@@ -337,7 +337,12 @@
     "fetchPreview": "Отримати Попередній Перегляд",
     "previewTileLoaded": "Плитка попереднього перегляду успішно завантажена",
     "previewTileFailed": "Не вдалося отримати попередній перегляд: {}",
-    "save": "Зберегти"
+    "save": "Зберегти",
+    "rasterTiles": "Растрові",
+    "vectorTiles": "Векторні",
+    "styleUrl": "URL стилю",
+    "styleUrlHint": "https://приклад.com/style.json",
+    "styleUrlRequired": "URL стилю є обов'язковим"
   },
   "profiles": {
     "nodeProfiles": "Профілі Вузлів",

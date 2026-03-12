@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import '../models/service_endpoint.dart';
+import '../models/tile_provider.dart' show kApiKeyPlaceholder;
 
 /// Identifies the type of external service being accessed.
 /// Used by [ServicePolicyResolver] to determine the correct compliance policy.
@@ -16,6 +17,8 @@ enum ServiceType {
   // Third-party tile services
   bingTiles, // *.tiles.virtualearth.net
   mapboxTiles, // api.mapbox.com
+  stadiaTiles, // tiles.stadiamaps.com
+  maptilerTiles, // api.maptiler.com
 
   // Everything else
   custom, // user's own infrastructure / unknown
@@ -130,6 +133,16 @@ class ServicePolicy {
         minCacheTtl = null,
         attributionUrl = null;
 
+  /// Vector tile services (Stadia Maps, MapTiler, etc.)
+  /// Concurrency managed by vector_map_tiles; offline download not yet supported.
+  const ServicePolicy.vectorTiles()
+      : maxConcurrentRequests = 0, // managed by vector_map_tiles
+        minRequestInterval = null,
+        allowsOfflineDownload = false,
+        requiresClientCaching = false,
+        minCacheTtl = null,
+        attributionUrl = null;
+
   /// Custom/self-hosted service — permissive defaults.
   const ServicePolicy.custom({
     int maxConcurrent = 8,
@@ -170,6 +183,8 @@ class ServicePolicyResolver {
     'taginfo.openstreetmap.org': ServiceType.tagInfo,
     'tiles.virtualearth.net': ServiceType.bingTiles,
     'api.mapbox.com': ServiceType.mapboxTiles,
+    'tiles.stadiamaps.com': ServiceType.stadiaTiles,
+    'api.maptiler.com': ServiceType.maptilerTiles,
   };
 
   /// ServiceType → policy mapping.
@@ -181,6 +196,8 @@ class ServicePolicyResolver {
     ServiceType.tagInfo: const ServicePolicy.tagInfo(),
     ServiceType.bingTiles: const ServicePolicy.bingTiles(),
     ServiceType.mapboxTiles: const ServicePolicy.mapboxTiles(),
+    ServiceType.stadiaTiles: const ServicePolicy.vectorTiles(),
+    ServiceType.maptilerTiles: const ServicePolicy.vectorTiles(),
     ServiceType.custom: const ServicePolicy(),
   };
 
@@ -234,7 +251,7 @@ class ServicePolicyResolver {
           .replaceAll(RegExp(r'\{z\}'), '0')
           .replaceAll(RegExp(r'\{x\}'), '0')
           .replaceAll(RegExp(r'\{y\}'), '0')
-          .replaceAll(RegExp(r'\{api_key\}'), 'key');
+          .replaceAll(kApiKeyPlaceholder, 'key');
       return Uri.parse(cleaned).host.toLowerCase();
     } catch (_) {
       return null;
