@@ -132,7 +132,9 @@
     "editQueuedForUpload": "Edição de nó na fila para envio",
     "deleteQueuedForUpload": "Exclusão de nó na fila para envio",
     "confirmDeleteTitle": "Excluir Nó",
-    "confirmDeleteMessage": "Tem certeza de que deseja excluir o nó #{}? Esta ação não pode ser desfeita."
+    "confirmDeleteMessage": "Tem certeza de que deseja excluir o nó #{}? Esta ação não pode ser desfeita.",
+    "deleteReasonLabel": "Motivo para Exclusão (Opcional)",
+    "deleteReasonHint": "ex. dispositivo removido, localização incorreta, duplicado..."
   },
   "addNode": {
     "profile": "Perfil",
@@ -284,6 +286,9 @@
     "addProvider": "Adicionar Provedor",
     "deleteProvider": "Excluir Provedor",
     "deleteProviderConfirm": "Tem certeza de que deseja excluir \"{}\"?",
+    "clearCaches": "Limpar Caches",
+    "clearCachesConfirm": "Limpar todos os caches de mapas para \"{}\"? Isso liberará espaço de armazenamento, mas os mapas precisarão ser baixados novamente ao visualizar essas áreas.",
+    "cachesCleared": "Caches limpos para \"{}\"",
     "providerName": "Nome do Provedor",
     "providerNameHint": "ex., Mapas Personalizados Inc.",
     "providerNameRequired": "Nome do provedor é obrigatório",

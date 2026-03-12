@@ -132,7 +132,9 @@
     "editQueuedForUpload": "Edición de nodo en cola para subir",
     "deleteQueuedForUpload": "Eliminación de nodo en cola para subir",
     "confirmDeleteTitle": "Eliminar Nodo",
-    "confirmDeleteMessage": "¿Estás seguro de que quieres eliminar el nodo #{}? Esta acción no se puede deshacer."
+    "confirmDeleteMessage": "¿Estás seguro de que quieres eliminar el nodo #{}? Esta acción no se puede deshacer.",
+    "deleteReasonLabel": "Razón para Eliminación (Opcional)",
+    "deleteReasonHint": "ej. dispositivo removido, ubicación incorrecta, duplicado..."
   },
   "addNode": {
     "profile": "Perfil",
@@ -284,6 +286,9 @@
     "addProvider": "Agregar Proveedor",
     "deleteProvider": "Eliminar Proveedor",
     "deleteProviderConfirm": "¿Está seguro de que desea eliminar \"{}\"?",
+    "clearCaches": "Limpiar Caché",
+    "clearCachesConfirm": "¿Limpiar todo el caché de mosaicos para \"{}\"? Esto liberará espacio de almacenamiento pero los mosaicos deberán descargarse nuevamente al ver esas áreas.",
+    "cachesCleared": "Caché limpiado para \"{}\"",
     "providerName": "Nombre del Proveedor",
     "providerNameHint": "ej., Mapas Personalizados Inc.",
     "providerNameRequired": "El nombre del proveedor es requerido",

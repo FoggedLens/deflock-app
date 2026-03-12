@@ -90,7 +90,7 @@ bool enableNavigationFeatures({required bool offlineMode}) {
 // Marker/node interaction
 const int kNodeMinZoomLevel = 10; // Minimum zoom to show nodes (Overpass)
 const int kOsmApiMinZoomLevel = 13; // Minimum zoom for OSM API bbox queries (sandbox mode)
-const int kMinZoomForNodeEditingSheets = 15; // Minimum zoom to open add/edit node sheets
+const int kMinZoomForNodeEditingSheets = 16; // Minimum zoom to open add/edit node sheets
 const int kMinZoomForOfflineDownload = 10; // Minimum zoom to download offline areas (prevents large area crashes)
 const Duration kMarkerTapTimeout = Duration(milliseconds: 250);
 const Duration kDebounceCameraRefresh = Duration(milliseconds: 500);
@@ -128,7 +128,7 @@ const int kProximityAlertMaxDistance = 1600; // meters
 const Duration kProximityAlertCooldown = Duration(minutes: 10); // Cooldown between alerts for same node
 
 // Node proximity warning configuration (for new/edited nodes that are too close to existing ones)
-const double kNodeProximityWarningDistance = 15.0; // meters - distance threshold to show warning
+const double kNodeProximityWarningDistance = 50.0; // meters - distance threshold to show warning
 
 // Positioning tutorial configuration
 const double kPositioningTutorialBlurSigma = 3.0; // Blur strength for sheet overlay
@@ -136,7 +136,7 @@ const double kPositioningTutorialMinMovementMeters = 1.0; // Minimum map movemen
 
 // Navigation route planning configuration
 const double kNavigationMinRouteDistance = 100.0; // meters - minimum distance between start and end points
-const double kNavigationDistanceWarningThreshold = 20000.0; // meters - distance threshold for timeout warning (30km)
+const double kNavigationDistanceWarningThreshold = 300000.0; // meters - distance threshold for timeout warning (30km)
 
 // Node display configuration
 const int kDefaultMaxNodes = 500; // Default maximum number of nodes to render on the map at once

@@ -132,7 +132,9 @@
     "editQueuedForUpload": "Düğüm düzenlemesi yükleme için sıraya alındı",
     "deleteQueuedForUpload": "Düğüm silme işlemi yükleme için sıraya alındı",
     "confirmDeleteTitle": "Düğümü Sil",
-    "confirmDeleteMessage": "#{} düğümünü silmek istediğinizden emin misiniz? Bu işlem geri alınamaz."
+    "confirmDeleteMessage": "#{} düğümünü silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.",
+    "deleteReasonLabel": "Silme Nedeni (İsteğe Bağlı)",
+    "deleteReasonHint": "örn. cihaz kaldırıldı, yanlış konum, duplikat..."
   },
   "addNode": {
     "profile": "Profil",
@@ -284,6 +286,9 @@
     "addProvider": "Sağlayıcı Ekle",
     "deleteProvider": "Sağlayıcıyı Sil",
     "deleteProviderConfirm": "\"{}\" silmek istediğinizden emin misiniz?",
+    "clearCaches": "Önbellekleri Temizle",
+    "clearCachesConfirm": "\"{}\" için tüm döşeme önbelleklerini temizle? Bu depolama alanını boşaltacak ancak bu alanları görüntülerken döşemelerin tekrar indirilmesi gerekecek.",
+    "cachesCleared": "\"{}\" için önbellekler temizlendi",
     "providerName": "Sağlayıcı Adı",
     "providerNameHint": "örn., Özel Haritalar A.Ş.",
     "providerNameRequired": "Sağlayıcı adı gerekli",

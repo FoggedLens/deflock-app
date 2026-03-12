@@ -132,7 +132,9 @@
     "editQueuedForUpload": "节点编辑已排队上传",
     "deleteQueuedForUpload": "节点删除已排队上传",
     "confirmDeleteTitle": "删除节点",
-    "confirmDeleteMessage": "您确定要删除节点 #{} 吗？此操作无法撤销。"
+    "confirmDeleteMessage": "您确定要删除节点 #{} 吗？此操作无法撤销。",
+    "deleteReasonLabel": "删除原因（可选）",
+    "deleteReasonHint": "例如：设备已移除、位置错误、重复..."
   },
   "addNode": {
     "profile": "配置文件",
@@ -284,6 +286,9 @@
     "addProvider": "添加提供商",
     "deleteProvider": "删除提供商",
     "deleteProviderConfirm": "您确定要删除 \"{}\" 吗？",
+    "clearCaches": "清除缓存",
+    "clearCachesConfirm": "清除 \"{}\" 的所有瓦片缓存？这将释放存储空间，但在查看这些区域时需要重新下载瓦片。",
+    "cachesCleared": "已清除 \"{}\" 的缓存",
     "providerName": "提供商名称",
     "providerNameHint": "例如，自定义地图公司",
     "providerNameRequired": "提供商名称为必填项",

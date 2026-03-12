@@ -132,7 +132,9 @@
     "editQueuedForUpload": "Edycja węzła umieszczona w kolejce do przesłania",
     "deleteQueuedForUpload": "Usuwanie węzła umieszczone w kolejce do przesłania",
     "confirmDeleteTitle": "Usuń Węzeł",
-    "confirmDeleteMessage": "Czy na pewno chcesz usunąć węzeł #{}? Tej akcji nie można cofnąć."
+    "confirmDeleteMessage": "Czy na pewno chcesz usunąć węzeł #{}? Tej akcji nie można cofnąć.",
+    "deleteReasonLabel": "Powód Usunięcia (Opcjonalny)",
+    "deleteReasonHint": "np. urządzenie usunięte, nieprawidłowa lokalizacja, duplikat..."
   },
   "addNode": {
     "profile": "Profil",
@@ -284,6 +286,9 @@
     "addProvider": "Dodaj Dostawcę",
     "deleteProvider": "Usuń Dostawcę",
     "deleteProviderConfirm": "Czy na pewno chcesz usunąć \"{}\"?",
+    "clearCaches": "Wyczyść Cache",
+    "clearCachesConfirm": "Wyczyścić wszystkie cache kafelków dla \"{}\"? To zwolni miejsce na dysku, ale kafelki będą musiały zostać ponownie pobrane podczas przeglądania tych obszarów.",
+    "cachesCleared": "Cache wyczyszczone dla \"{}\"",
     "providerName": "Nazwa Dostawcy",
     "providerNameHint": "np., Niestandardowe Mapy Sp. z o.o.",
     "providerNameRequired": "Nazwa dostawcy jest wymagana",

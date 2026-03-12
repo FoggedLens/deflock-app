@@ -65,30 +65,17 @@ class NodeTagSheet extends StatelessWidget {
         }
 
         void deleteNode() async {
-          final shouldDelete = await showDialog<bool>(
+          final result = await showDialog<({bool confirmed, String comment})>(
             context: context,
-            builder: (BuildContext context) {
-              return AlertDialog(
-                title: Text(locService.t('node.confirmDeleteTitle')),
-                content: Text(locService.t('node.confirmDeleteMessage', params: [node.id.toString()])),
-                actions: [
-                  TextButton(
-                    onPressed: () => Navigator.of(context).pop(false),
-                    child: Text(locService.cancel),
-                  ),
-                  TextButton(
-                    onPressed: () => Navigator.of(context).pop(true),
-                    style: TextButton.styleFrom(foregroundColor: Colors.red),
-                    child: Text(locService.t('actions.delete')),
-                  ),
-                ],
-              );
-            },
+            builder: (BuildContext context) => _DeleteNodeDialog(
+              nodeId: node.id.toString(),
+              locService: locService,
+            ),
           );
 
-          if (shouldDelete == true && context.mounted) {
+          if ((result?.confirmed ?? false) && context.mounted) {
             Navigator.pop(context); // Close this sheet first
-            appState.deleteNode(node);
+            appState.deleteNode(node, changesetComment: result!.comment);
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text(locService.t('node.deleteQueuedForUpload'))),
             );
@@ -258,6 +245,82 @@ class NodeTagSheet extends StatelessWidget {
           },
         );
       },
+    );
+  }
+}
+
+class _DeleteNodeDialog extends StatefulWidget {
+  final String nodeId;
+  final LocalizationService locService;
+
+  const _DeleteNodeDialog({
+    required this.nodeId,
+    required this.locService,
+  });
+
+  @override
+  State<_DeleteNodeDialog> createState() => _DeleteNodeDialogState();
+}
+
+class _DeleteNodeDialogState extends State<_DeleteNodeDialog> {
+  late final TextEditingController _commentController;
+
+  @override
+  void initState() {
+    super.initState();
+    _commentController = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    _commentController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Text(widget.locService.t('node.confirmDeleteTitle')),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(widget.locService.t('node.confirmDeleteMessage', params: [widget.nodeId])),
+          const SizedBox(height: 16),
+          Text(
+            widget.locService.t('node.deleteReasonLabel'),
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 8),
+          TextField(
+            controller: _commentController,
+            decoration: InputDecoration(
+              hintText: widget.locService.t('node.deleteReasonHint'),
+              border: const OutlineInputBorder(),
+              isDense: true,
+            ),
+            maxLines: 2,
+            textCapitalization: TextCapitalization.sentences,
+          ),
+        ],
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop((confirmed: false, comment: '')),
+          child: Text(widget.locService.cancel),
+        ),
+        TextButton(
+          onPressed: () {
+            final comment = _commentController.text.trim();
+            final finalComment = comment.isEmpty 
+                ? 'Delete a surveillance node'
+                : 'Delete a surveillance node: $comment';
+            Navigator.of(context).pop((confirmed: true, comment: finalComment));
+          },
+          style: TextButton.styleFrom(foregroundColor: Colors.red),
+          child: Text(widget.locService.t('actions.delete')),
+        ),
+      ],
     );
   }
 }

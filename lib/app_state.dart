@@ -581,8 +581,8 @@ class AppState extends ChangeNotifier {
     }
   }
 
-  void deleteNode(OsmNode node) {
-    _uploadQueueState.addFromNodeDeletion(node, uploadMode: uploadMode);
+  void deleteNode(OsmNode node, {String? changesetComment}) {
+    _uploadQueueState.addFromNodeDeletion(node, uploadMode: uploadMode, changesetComment: changesetComment);
     _startUploader();
   }
 
@@ -715,6 +715,11 @@ class AppState extends ChangeNotifier {
   /// Delete a tile provider
   Future<void> deleteTileProvider(String providerId) async {
     await _settingsState.deleteTileProvider(providerId);
+  }
+
+  /// Clear all tile caches for a specific provider
+  Future<void> clearTileProviderCaches(String providerId) async {
+    await _settingsState.clearTileProviderCaches(providerId);
   }
 
   /// Set follow-me mode

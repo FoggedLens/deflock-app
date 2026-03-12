@@ -253,12 +253,12 @@ class UploadQueueState extends ChangeNotifier {
   }
 
   // Add a node deletion to the upload queue
-  void addFromNodeDeletion(OsmNode node, {required UploadMode uploadMode}) {
+  void addFromNodeDeletion(OsmNode node, {required UploadMode uploadMode, String? changesetComment}) {
     final upload = PendingUpload(
       coord: node.coord,
       direction: node.directionDeg.isNotEmpty ? node.directionDeg.first : 0, // Direction not used for deletions but required for API
       profile: null, // No profile needed for deletions - just delete by node ID
-      changesetComment: 'Delete a surveillance node', // Default comment for deletions  
+      changesetComment: changesetComment ?? 'Delete a surveillance node', // Use provided comment or default
       uploadMode: uploadMode,
       operation: UploadOperation.delete,
       originalNodeId: node.id,

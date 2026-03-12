@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:collection/collection.dart';
 
 import '../models/tile_provider.dart';
+import '../services/provider_tile_cache_manager.dart';
 import '../dev_config.dart';
 import '../keys.dart';
 
@@ -330,6 +331,17 @@ class SettingsState extends ChangeNotifier {
     final prefs = await SharedPreferences.getInstance();
     await _saveTileProviders(prefs);
     notifyListeners();
+  }
+
+  /// Clear all tile caches for a specific provider
+  Future<void> clearTileProviderCaches(String providerId) async {
+    final provider = _tileProviders.firstWhereOrNull((p) => p.id == providerId);
+    if (provider == null) return;
+    
+    // Clear cache for each tile type in this provider
+    for (final tileType in provider.tileTypes) {
+      await ProviderTileCacheManager.deleteCache(providerId, tileType.id);
+    }
   }
 
   /// Set follow-me mode

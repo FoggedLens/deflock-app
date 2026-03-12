@@ -132,7 +132,9 @@
     "editQueuedForUpload": "Modification de nœud mise en file pour envoi",
     "deleteQueuedForUpload": "Suppression de nœud mise en file pour envoi",
     "confirmDeleteTitle": "Supprimer le Nœud",
-    "confirmDeleteMessage": "Êtes-vous sûr de vouloir supprimer le nœud #{} ? Cette action ne peut pas être annulée."
+    "confirmDeleteMessage": "Êtes-vous sûr de vouloir supprimer le nœud #{} ? Cette action ne peut pas être annulée.",
+    "deleteReasonLabel": "Raison de Suppression (Optionnel)",
+    "deleteReasonHint": "ex. appareil retiré, emplacement incorrect, doublon..."
   },
   "addNode": {
     "profile": "Profil",
@@ -284,6 +286,9 @@
     "addProvider": "Ajouter Fournisseur",
     "deleteProvider": "Supprimer Fournisseur",
     "deleteProviderConfirm": "Êtes-vous sûr de vouloir supprimer \"{}\"?",
+    "clearCaches": "Vider les Caches",
+    "clearCachesConfirm": "Vider tous les caches de tuiles pour \"{}\"? Cela libérera de l'espace de stockage mais les tuiles devront être téléchargées à nouveau lors de la consultation de ces zones.",
+    "cachesCleared": "Caches vidés pour \"{}\"",
     "providerName": "Nom du Fournisseur",
     "providerNameHint": "ex., Cartes Personnalisées Inc.",
     "providerNameRequired": "Le nom du fournisseur est requis",

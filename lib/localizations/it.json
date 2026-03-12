@@ -132,7 +132,9 @@
     "editQueuedForUpload": "Modifica nodo in coda per il caricamento",
     "deleteQueuedForUpload": "Eliminazione nodo in coda per il caricamento",
     "confirmDeleteTitle": "Elimina Nodo",
-    "confirmDeleteMessage": "Sei sicuro di voler eliminare il nodo #{}? Questa azione non può essere annullata."
+    "confirmDeleteMessage": "Sei sicuro di voler eliminare il nodo #{}? Questa azione non può essere annullata.",
+    "deleteReasonLabel": "Motivo per Eliminazione (Opzionale)",
+    "deleteReasonHint": "es. dispositivo rimosso, posizione errata, duplicato..."
   },
   "addNode": {
     "profile": "Profilo",
@@ -284,6 +286,9 @@
     "addProvider": "Aggiungi Fornitore",
     "deleteProvider": "Elimina Fornitore",
     "deleteProviderConfirm": "Sei sicuro di voler eliminare \"{}\"?",
+    "clearCaches": "Svuota Cache",
+    "clearCachesConfirm": "Svuotare tutte le cache delle tessere per \"{}\"? Questo libererà spazio di archiviazione ma le tessere dovranno essere scaricate nuovamente quando si visualizzano quelle aree.",
+    "cachesCleared": "Cache svuotate per \"{}\"",
     "providerName": "Nome Fornitore",
     "providerNameHint": "es., Mappe Personalizzate Inc.",
     "providerNameRequired": "Il nome del fornitore è obbligatorio",

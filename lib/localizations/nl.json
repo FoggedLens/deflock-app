@@ -131,8 +131,10 @@
     "queuedForUpload": "Node in wachtrij geplaatst voor upload",
     "editQueuedForUpload": "Node bewerking in wachtrij geplaatst voor upload",
     "deleteQueuedForUpload": "Node verwijdering in wachtrij geplaatst voor upload",
-    "confirmDeleteTitle": "Verwijder Node",
-    "confirmDeleteMessage": "Weet u zeker dat u node #{} wilt verwijderen? Deze actie kan niet ongedaan worden gemaakt."
+    "confirmDeleteTitle": "Verwijder Node", 
+    "confirmDeleteMessage": "Weet u zeker dat u node #{} wilt verwijderen? Deze actie kan niet ongedaan worden gemaakt.",
+    "deleteReasonLabel": "Reden voor Verwijdering (Optioneel)",
+    "deleteReasonHint": "bijv. apparaat verwijderd, onjuiste locatie, duplicaat..."
   },
   "addNode": {
     "profile": "Profiel",
@@ -284,6 +286,9 @@
     "addProvider": "Voeg Provider Toe",
     "deleteProvider": "Verwijder Provider",
     "deleteProviderConfirm": "Weet u zeker dat u \"{}\" wilt verwijderen?",
+    "clearCaches": "Cache Wissen",
+    "clearCachesConfirm": "Alle tegelcaches wissen voor \"{}\"? Dit zal opslagruimte vrijmaken maar tegels moeten opnieuw worden gedownload bij het bekijken van die gebieden.",
+    "cachesCleared": "Caches gewist voor \"{}\"",
     "providerName": "Provider Naam",
     "providerNameHint": "bijv., Aangepaste Kaarten B.V.",
     "providerNameRequired": "Provider naam is vereist",

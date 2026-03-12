@@ -95,7 +95,9 @@
     "editQueuedForUpload": "Knotenbearbeitung zum Upload eingereiht",
     "deleteQueuedForUpload": "Knoten-Löschung zum Upload eingereiht",
     "confirmDeleteTitle": "Knoten löschen",
-    "confirmDeleteMessage": "Sind Sie sicher, dass Sie Knoten #{} löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden."
+    "confirmDeleteMessage": "Sind Sie sicher, dass Sie Knoten #{} löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden.",
+    "deleteReasonLabel": "Grund für Löschung (Optional)",
+    "deleteReasonHint": "z.B. Gerät entfernt, falsche Position, Duplikat..."
   },
   "addNode": {
     "profile": "Profil",
@@ -247,6 +249,9 @@
     "addProvider": "Anbieter Hinzufügen",
     "deleteProvider": "Anbieter Löschen",
     "deleteProviderConfirm": "Sind Sie sicher, dass Sie \"{}\" löschen möchten?",
+    "clearCaches": "Caches Leeren",
+    "clearCachesConfirm": "Alle Kachel-Caches für \"{}\" löschen? Dies wird Speicherplatz freigeben, aber die Kacheln müssen beim Betrachten dieser Bereiche erneut heruntergeladen werden.",
+    "cachesCleared": "Caches für \"{}\" geleert",
     "providerName": "Anbieter-Name",
     "providerNameHint": "z.B. Benutzerdefinierte Karten GmbH",
     "providerNameRequired": "Anbieter-Name ist erforderlich",

@@ -61,10 +61,13 @@ class ProviderTileCacheManager {
   /// Delete a specific provider's cache directory and remove the store.
   static Future<void> deleteCache(String providerId, String tileTypeId) async {
     final key = '$providerId/$tileTypeId';
-    final store = _stores.remove(key);
+    final store = _stores[key];
     if (store != null) {
+      // Use the store's clear method to properly reset its internal state
       await store.clear();
+      // Don't remove from registry - let it be reused with clean state
     } else if (_baseCacheDir != null) {
+      // Fallback for stores not in registry
       final cacheDir = Directory(p.join(_baseCacheDir!, providerId, tileTypeId));
       if (await cacheDir.exists()) {
         await cacheDir.delete(recursive: true);

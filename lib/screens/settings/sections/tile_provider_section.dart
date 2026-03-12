@@ -104,6 +104,9 @@ class TileProviderSection extends StatelessWidget {
                     case 'edit':
                       _editProvider(context, provider);
                       break;
+                    case 'clear_cache':
+                      _clearProviderCaches(context, provider);
+                      break;
                     case 'delete':
                       _deleteProvider(context, provider);
                       break;
@@ -117,6 +120,16 @@ class TileProviderSection extends StatelessWidget {
                         const Icon(Icons.edit),
                         const SizedBox(width: 8),
                         Text(locService.t('actions.edit')),
+                      ],
+                    ),
+                  ),
+                  PopupMenuItem(
+                    value: 'clear_cache',
+                    child: Row(
+                      children: [
+                        const Icon(Icons.clear_all),
+                        const SizedBox(width: 8),
+                        Text(locService.t('tileProviders.clearCaches')),
                       ],
                     ),
                   ),
@@ -150,6 +163,37 @@ class TileProviderSection extends StatelessWidget {
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (context) => TileProviderEditorScreen(provider: provider),
+      ),
+    );
+  }
+
+  void _clearProviderCaches(BuildContext context, TileProvider provider) {
+    final locService = LocalizationService.instance;
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(locService.t('tileProviders.clearCaches')),
+        content: Text(locService.t('tileProviders.clearCachesConfirm', params: [provider.name])),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text(locService.t('actions.cancel')),
+          ),
+          TextButton(
+            onPressed: () async {
+              Navigator.of(context).pop();
+              await context.read<AppState>().clearTileProviderCaches(provider.id);
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(locService.t('tileProviders.cachesCleared', params: [provider.name])),
+                  ),
+                );
+              }
+            },
+            child: Text(locService.t('tileProviders.clearCaches')),
+          ),
+        ],
       ),
     );
   }

@@ -76,6 +76,9 @@ class AboutScreen extends StatelessWidget {
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 24),
+              // About OpenStreetMap section
+              _buildAboutOSMSection(context),
+              const SizedBox(height: 24),
               // Information dialogs section
               _buildDialogButtons(context),
               const SizedBox(height: 24),
@@ -117,6 +120,39 @@ class AboutScreen extends StatelessWidget {
           decoration: TextDecoration.underline,
         ),
         textAlign: TextAlign.center,
+      ),
+    );
+  }
+
+  Widget _buildAboutOSMSection(BuildContext context) {
+    final locService = LocalizationService.instance;
+    
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              locService.t('auth.aboutOSM'),
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              locService.t('auth.aboutOSMDescription'),
+              style: Theme.of(context).textTheme.bodyMedium,
+            ),
+            const SizedBox(height: 16),
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                onPressed: () => _launchUrl('https://openstreetmap.org', context),
+                icon: const Icon(Icons.open_in_new),
+                label: Text(locService.t('auth.visitOSM')),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
