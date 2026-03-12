@@ -316,6 +316,96 @@ class ResiliencePolicy {
   }
 }
 
+/// In-memory counters for retry/fallback behavior.
+///
+/// Metrics reset on app restart — no persistence or remote telemetry.
+class ResilienceMetrics {
+  static final ResilienceMetrics _instance = ResilienceMetrics._();
+  factory ResilienceMetrics() => _instance;
+  ResilienceMetrics._();
+
+  int _totalRequests = 0;
+  int _primarySuccesses = 0;
+  int _fallbackSuccesses = 0;
+  int _totalRetries = 0;
+  int _fallbackInvocations = 0;
+  int _aborts = 0;
+  int _totalFailures = 0;
+  final Map<String, int> _errorsByType = {};
+  Duration _totalLatency = Duration.zero;
+  int _latencySamples = 0;
+
+  int get totalRequests => _totalRequests;
+  int get primarySuccesses => _primarySuccesses;
+  int get fallbackSuccesses => _fallbackSuccesses;
+  int get totalRetries => _totalRetries;
+  int get fallbackInvocations => _fallbackInvocations;
+  int get aborts => _aborts;
+  int get totalFailures => _totalFailures;
+  Map<String, int> get errorsByType => Map.unmodifiable(_errorsByType);
+  double get avgLatencyMs =>
+      _latencySamples > 0 ? _totalLatency.inMilliseconds / _latencySamples : 0.0;
+
+  void recordRequest() => _totalRequests++;
+  void recordPrimarySuccess(Duration latency) {
+    _primarySuccesses++;
+    _recordLatency(latency);
+  }
+  void recordFallbackSuccess(Duration latency) {
+    _fallbackSuccesses++;
+    _recordLatency(latency);
+  }
+  void recordRetry() => _totalRetries++;
+  void recordFallbackInvocation() => _fallbackInvocations++;
+  void recordAbort() => _aborts++;
+  void recordFailure() => _totalFailures++;
+  void recordError(Object error) {
+    final key = error.runtimeType.toString();
+    _errorsByType[key] = (_errorsByType[key] ?? 0) + 1;
+  }
+  void _recordLatency(Duration d) {
+    _totalLatency += d;
+    _latencySamples++;
+  }
+
+  String get summary => 'ResilienceMetrics('
+      'requests: $_totalRequests, '
+      'primaryOk: $_primarySuccesses, '
+      'fallbackOk: $_fallbackSuccesses, '
+      'retries: $_totalRetries, '
+      'fallbacks: $_fallbackInvocations, '
+      'aborts: $_aborts, '
+      'failures: $_totalFailures, '
+      'avgLatency: ${avgLatencyMs.toStringAsFixed(0)}ms, '
+      'errors: $_errorsByType)';
+
+  void printSummary() => debugPrint('[Resilience] $summary');
+
+  @visibleForTesting
+  void reset() {
+    _totalRequests = 0;
+    _primarySuccesses = 0;
+    _fallbackSuccesses = 0;
+    _totalRetries = 0;
+    _fallbackInvocations = 0;
+    _aborts = 0;
+    _totalFailures = 0;
+    _errorsByType.clear();
+    _totalLatency = Duration.zero;
+    _latencySamples = 0;
+  }
+}
+
+/// Wraps an error with its already-classified [ErrorDisposition].
+///
+/// Thrown by [_executeWithRetries] so that callers can act on the disposition
+/// without re-calling [classifyError] on the same error.
+class _ClassifiedError {
+  final ErrorDisposition disposition;
+  final Object error;
+  _ClassifiedError(this.disposition, this.error);
+}
+
 /// Execute a request against an ordered list of endpoints with retry and fallback.
 ///
 /// Tries each enabled endpoint in list order. For each endpoint:
@@ -326,19 +416,28 @@ class ResiliencePolicy {
 ///
 /// Throws [StateError] if no endpoints are enabled.
 /// Rethrows the last error if all endpoints are exhausted.
+///
+/// [serviceName] is used in log messages. Defaults to the first endpoint's name.
 Future<T> executeWithEndpointList<T>({
   required List<ServiceEndpoint> endpoints,
   required Future<T> Function(String url) execute,
   required ErrorDisposition Function(Object error) classifyError,
   ResiliencePolicy defaultPolicy = const ResiliencePolicy(),
+  String? serviceName,
 }) async {
   final enabled = endpoints.where((e) => e.enabled).toList(growable: false);
   if (enabled.isEmpty) {
     throw StateError('No enabled endpoints configured');
   }
 
+  final label = serviceName ?? enabled.first.name;
+  final metrics = ResilienceMetrics();
+  final stopwatch = Stopwatch()..start();
+  metrics.recordRequest();
+
   Object? lastError;
-  for (final endpoint in enabled) {
+  for (int i = 0; i < enabled.length; i++) {
+    final endpoint = enabled[i];
     final effectivePolicy = ResiliencePolicy(
       maxRetries: endpoint.maxRetries ?? defaultPolicy.maxRetries,
       httpTimeout: endpoint.timeoutSeconds != null
@@ -348,48 +447,34 @@ Future<T> executeWithEndpointList<T>({
       retryBackoffMaxMs: defaultPolicy.retryBackoffMaxMs,
     );
     try {
-      return await _executeWithRetries(
+      final result = await _executeWithRetries(
         endpoint.url,
         execute,
         classifyError,
         effectivePolicy,
+        label,
       );
-    } catch (e) {
-      final disposition = classifyError(e);
-      if (disposition == ErrorDisposition.abort) rethrow;
-      lastError = e;
-      debugPrint('[Resilience] Endpoint ${endpoint.name} failed ($e), trying next');
+      if (i == 0) {
+        metrics.recordPrimarySuccess(stopwatch.elapsed);
+      } else {
+        metrics.recordFallbackSuccess(stopwatch.elapsed);
+      }
+      return result;
+    } on _ClassifiedError catch (ce) {
+      if (ce.disposition == ErrorDisposition.abort) {
+        metrics.recordAbort();
+        throw ce.error;
+      }
+      lastError = ce.error;
+      if (i < enabled.length - 1) {
+        metrics.recordFallbackInvocation();
+        debugPrint('[Resilience] $label | endpoint ${endpoint.name} failed | '
+            'trying ${enabled[i + 1].name}');
+      }
     }
   }
+  metrics.recordFailure();
   throw lastError!; // All endpoints exhausted
-}
-
-/// Execute a request with retry and fallback logic.
-///
-/// 1. Tries [execute] against [primaryUrl] up to `policy.maxRetries + 1` times.
-/// 2. On each failure, calls [classifyError] to determine disposition:
-///    - [ErrorDisposition.abort]: rethrows immediately
-///    - [ErrorDisposition.fallback]: skips retries, tries fallback (if available)
-///    - [ErrorDisposition.retry]: retries with backoff, then fallback if exhausted
-/// 3. If [fallbackUrl] is non-null and the error is fallback-worthy,
-///    repeats the retry loop against the fallback.
-@Deprecated('Use executeWithEndpointList instead')
-Future<T> executeWithFallback<T>({
-  required String primaryUrl,
-  required String? fallbackUrl,
-  required Future<T> Function(String url) execute,
-  required ErrorDisposition Function(Object error) classifyError,
-  ResiliencePolicy policy = const ResiliencePolicy(),
-}) async {
-  try {
-    return await _executeWithRetries(primaryUrl, execute, classifyError, policy);
-  } catch (e) {
-    final disposition = classifyError(e);
-    if (disposition == ErrorDisposition.abort) rethrow;
-    if (fallbackUrl == null) rethrow;
-    debugPrint('[Resilience] Primary failed ($e), trying fallback');
-    return _executeWithRetries(fallbackUrl, execute, classifyError, policy);
-  }
 }
 
 Future<T> _executeWithRetries<T>(
@@ -397,22 +482,37 @@ Future<T> _executeWithRetries<T>(
   Future<T> Function(String url) execute,
   ErrorDisposition Function(Object error) classifyError,
   ResiliencePolicy policy,
+  String label,
 ) async {
-  for (int attempt = 0; attempt <= policy.maxRetries; attempt++) {
+  final metrics = ResilienceMetrics();
+  final maxAttempts = policy.maxRetries + 1;
+  for (int attempt = 0; attempt < maxAttempts; attempt++) {
     try {
       return await execute(url);
     } catch (e) {
       final disposition = classifyError(e);
-      if (disposition == ErrorDisposition.abort) rethrow;
-      if (disposition == ErrorDisposition.fallback) rethrow; // caller handles fallback
+      metrics.recordError(e);
+      if (disposition == ErrorDisposition.abort) {
+        debugPrint('[Resilience] $label | attempt ${attempt + 1}/$maxAttempts '
+            '| ${e.runtimeType} | disposition=abort');
+        throw _ClassifiedError(disposition, e);
+      }
+      if (disposition == ErrorDisposition.fallback) {
+        debugPrint('[Resilience] $label | attempt ${attempt + 1}/$maxAttempts '
+            '| ${e.runtimeType} | disposition=fallback');
+        throw _ClassifiedError(disposition, e);
+      }
       // disposition == retry
-      if (attempt < policy.maxRetries) {
+      if (attempt + 1 < maxAttempts) {
         final delay = policy.retryDelay(attempt);
-        debugPrint('[Resilience] Attempt ${attempt + 1} failed, retrying in ${delay.inMilliseconds}ms');
+        metrics.recordRetry();
+        debugPrint('[Resilience] $label | attempt ${attempt + 1}/$maxAttempts '
+            '| ${e.runtimeType} | disposition=retry | retrying in ${delay.inMilliseconds}ms');
         await Future.delayed(delay);
         continue;
       }
-      rethrow; // retries exhausted, let caller try fallback
+      debugPrint('[Resilience] $label | exhausted $maxAttempts attempts');
+      throw _ClassifiedError(disposition, e);
     }
   }
   throw StateError('Unreachable'); // loop always returns or throws

@@ -96,6 +96,7 @@ class RoutingService {
       execute: (url) => _postRoute(url, params),
       classifyError: _classifyError,
       defaultPolicy: _policy,
+      serviceName: 'routing',
     );
   }
 

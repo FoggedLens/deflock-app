@@ -65,10 +65,11 @@ class OverpassService {
       execute: (url) => _attemptFetch(url, query),
       classifyError: _classifyError,
       defaultPolicy: effectivePolicy,
+      serviceName: 'overpass',
     );
   }
 
-  /// Single POST + parse attempt (no retry logic — handled by executeWithFallback).
+  /// Single POST + parse attempt (no retry logic — handled by executeWithEndpointList).
   Future<List<OsmNode>> _attemptFetch(String endpoint, String query) async {
     debugPrint('[OverpassService] POST $endpoint');
 

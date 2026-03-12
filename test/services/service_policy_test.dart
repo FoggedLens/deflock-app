@@ -454,6 +454,10 @@ void main() {
       retryBackoffBase: Duration.zero,
     );
 
+    setUp(() {
+      ResilienceMetrics().reset();
+    });
+
     test('throws StateError when no endpoints enabled', () async {
       await expectLater(
         () => executeWithEndpointList<String>(
@@ -653,174 +657,141 @@ void main() {
     });
   });
 
-  // ignore: deprecated_member_use_from_same_package
-  group('executeWithFallback', () {
-    const policy = ResiliencePolicy(
-      maxRetries: 2,
-      retryBackoffBase: Duration.zero, // no delay in tests
-    );
-
-    test('abort error stops immediately, no fallback', () async {
-      int callCount = 0;
-
-      await expectLater(
-        () => executeWithFallback<String>(
-          primaryUrl: 'https://primary.example.com',
-          fallbackUrl: 'https://fallback.example.com',
-          execute: (url) {
-            callCount++;
-            throw Exception('bad request');
-          },
-          classifyError: (_) => ErrorDisposition.abort,
-          policy: policy,
-        ),
-        throwsA(isA<Exception>()),
-      );
-
-      expect(callCount, 1); // no retries, no fallback
+  group('ResilienceMetrics', () {
+    setUp(() {
+      ResilienceMetrics().reset();
     });
 
-    test('fallback error skips retries, goes to fallback', () async {
-      final urlsSeen = <String>[];
+    test('records primary success via endpoint list', () async {
+      await executeWithEndpointList<String>(
+        endpoints: const [
+          ServiceEndpoint(id: 'a', name: 'A', url: 'https://a.com'),
+        ],
+        execute: (_) => Future.value('ok'),
+        classifyError: (_) => ErrorDisposition.retry,
+      );
 
-      final result = await executeWithFallback<String>(
-        primaryUrl: 'https://primary.example.com',
-        fallbackUrl: 'https://fallback.example.com',
+      final m = ResilienceMetrics();
+      expect(m.totalRequests, 1);
+      expect(m.primarySuccesses, 1);
+      expect(m.fallbackSuccesses, 0);
+      expect(m.totalRetries, 0);
+      expect(m.fallbackInvocations, 0);
+      expect(m.aborts, 0);
+      expect(m.totalFailures, 0);
+    });
+
+    test('records fallback success via endpoint list', () async {
+      await executeWithEndpointList<String>(
+        endpoints: const [
+          ServiceEndpoint(id: 'a', name: 'A', url: 'https://a.com'),
+          ServiceEndpoint(id: 'b', name: 'B', url: 'https://b.com'),
+        ],
         execute: (url) {
-          urlsSeen.add(url);
-          if (url.contains('primary')) {
-            throw Exception('rate limited');
-          }
-          return Future.value('ok from fallback');
+          if (url == 'https://a.com') throw Exception('down');
+          return Future.value('ok');
         },
         classifyError: (_) => ErrorDisposition.fallback,
-        policy: policy,
-      );
-
-      expect(result, 'ok from fallback');
-      // 1 primary (no retries) + 1 fallback = 2
-      expect(urlsSeen, ['https://primary.example.com', 'https://fallback.example.com']);
-    });
-
-    test('retry error retries N times then falls back', () async {
-      final urlsSeen = <String>[];
-
-      final result = await executeWithFallback<String>(
-        primaryUrl: 'https://primary.example.com',
-        fallbackUrl: 'https://fallback.example.com',
-        execute: (url) {
-          urlsSeen.add(url);
-          if (url.contains('primary')) {
-            throw Exception('server error');
-          }
-          return Future.value('ok from fallback');
-        },
-        classifyError: (_) => ErrorDisposition.retry,
-        policy: policy,
-      );
-
-      expect(result, 'ok from fallback');
-      // 3 primary attempts (1 + 2 retries) + 1 fallback = 4
-      expect(urlsSeen.where((u) => u.contains('primary')).length, 3);
-      expect(urlsSeen.where((u) => u.contains('fallback')).length, 1);
-    });
-
-    test('no fallback URL rethrows after retries', () async {
-      int callCount = 0;
-
-      await expectLater(
-        () => executeWithFallback<String>(
-          primaryUrl: 'https://primary.example.com',
-          fallbackUrl: null,
-          execute: (url) {
-            callCount++;
-            throw Exception('server error');
-          },
-          classifyError: (_) => ErrorDisposition.retry,
-          policy: policy,
+        defaultPolicy: const ResiliencePolicy(
+          maxRetries: 0,
+          retryBackoffBase: Duration.zero,
         ),
-        throwsA(isA<Exception>()),
       );
 
-      // 3 attempts (1 + 2 retries), then rethrow
-      expect(callCount, 3);
+      final m = ResilienceMetrics();
+      expect(m.totalRequests, 1);
+      expect(m.primarySuccesses, 0);
+      expect(m.fallbackSuccesses, 1);
+      expect(m.fallbackInvocations, 1);
     });
 
-    test('fallback disposition with no fallback URL rethrows immediately', () async {
+    test('records retries on transient failure then success', () async {
       int callCount = 0;
-
-      await expectLater(
-        () => executeWithFallback<String>(
-          primaryUrl: 'https://primary.example.com',
-          fallbackUrl: null,
-          execute: (url) {
-            callCount++;
-            throw Exception('rate limited');
-          },
-          classifyError: (_) => ErrorDisposition.fallback,
-          policy: policy,
-        ),
-        throwsA(isA<Exception>()),
-      );
-
-      // Only 1 attempt — fallback disposition skips retries, and no fallback URL
-      expect(callCount, 1);
-    });
-
-    test('both fail propagates last error', () async {
-      await expectLater(
-        () => executeWithFallback<String>(
-          primaryUrl: 'https://primary.example.com',
-          fallbackUrl: 'https://fallback.example.com',
-          execute: (url) {
-            if (url.contains('fallback')) {
-              throw Exception('fallback also failed');
-            }
-            throw Exception('primary failed');
-          },
-          classifyError: (_) => ErrorDisposition.retry,
-          policy: policy,
-        ),
-        throwsA(isA<Exception>().having(
-          (e) => e.toString(), 'message', contains('fallback also failed'))),
-      );
-    });
-
-    test('success on first try returns immediately', () async {
-      int callCount = 0;
-
-      final result = await executeWithFallback<String>(
-        primaryUrl: 'https://primary.example.com',
-        fallbackUrl: 'https://fallback.example.com',
-        execute: (url) {
+      await executeWithEndpointList<String>(
+        endpoints: const [
+          ServiceEndpoint(id: 'a', name: 'A', url: 'https://a.com'),
+        ],
+        execute: (_) {
           callCount++;
-          return Future.value('success');
+          if (callCount < 3) throw Exception('transient');
+          return Future.value('ok');
         },
         classifyError: (_) => ErrorDisposition.retry,
-        policy: policy,
+        defaultPolicy: const ResiliencePolicy(
+          maxRetries: 2,
+          retryBackoffBase: Duration.zero,
+        ),
       );
 
-      expect(result, 'success');
-      expect(callCount, 1);
+      final m = ResilienceMetrics();
+      expect(m.totalRequests, 1);
+      expect(m.primarySuccesses, 1);
+      expect(m.totalRetries, 2);
     });
 
-    test('success after retry does not try fallback', () async {
-      int callCount = 0;
+    test('records abort via endpoint list', () async {
+      try {
+        await executeWithEndpointList<String>(
+          endpoints: const [
+            ServiceEndpoint(id: 'a', name: 'A', url: 'https://a.com'),
+            ServiceEndpoint(id: 'b', name: 'B', url: 'https://b.com'),
+          ],
+          execute: (_) => throw Exception('bad request'),
+          classifyError: (_) => ErrorDisposition.abort,
+        );
+      } catch (_) {}
 
-      final result = await executeWithFallback<String>(
-        primaryUrl: 'https://primary.example.com',
-        fallbackUrl: 'https://fallback.example.com',
-        execute: (url) {
-          callCount++;
-          if (callCount == 1) throw Exception('transient');
-          return Future.value('recovered');
-        },
-        classifyError: (_) => ErrorDisposition.retry,
-        policy: policy,
-      );
+      final m = ResilienceMetrics();
+      expect(m.totalRequests, 1);
+      expect(m.aborts, 1);
+      expect(m.fallbackInvocations, 0);
+      expect(m.totalFailures, 0);
+    });
 
-      expect(result, 'recovered');
-      expect(callCount, 2); // 1 fail + 1 success, no fallback
+    test('records total failure when all endpoints fail', () async {
+      try {
+        await executeWithEndpointList<String>(
+          endpoints: const [
+            ServiceEndpoint(id: 'a', name: 'A', url: 'https://a.com'),
+            ServiceEndpoint(id: 'b', name: 'B', url: 'https://b.com'),
+          ],
+          execute: (_) => throw Exception('down'),
+          classifyError: (_) => ErrorDisposition.retry,
+          defaultPolicy: const ResiliencePolicy(
+            maxRetries: 0,
+            retryBackoffBase: Duration.zero,
+          ),
+        );
+      } catch (_) {}
+
+      final m = ResilienceMetrics();
+      expect(m.totalRequests, 1);
+      expect(m.fallbackInvocations, 1);
+      expect(m.totalFailures, 1);
+      expect(m.primarySuccesses, 0);
+      expect(m.fallbackSuccesses, 0);
+    });
+
+    test('records error types', () async {
+      try {
+        await executeWithEndpointList<String>(
+          endpoints: const [
+            ServiceEndpoint(id: 'a', name: 'A', url: 'https://a.com'),
+          ],
+          execute: (_) => throw FormatException('bad'),
+          classifyError: (_) => ErrorDisposition.abort,
+        );
+      } catch (_) {}
+
+      final m = ResilienceMetrics();
+      expect(m.errorsByType['FormatException'], 1);
+    });
+
+    test('summary is human-readable', () {
+      final m = ResilienceMetrics();
+      expect(m.summary, contains('requests:'));
+      expect(m.summary, contains('primaryOk:'));
+      expect(m.summary, contains('avgLatency:'));
     });
   });
 }
