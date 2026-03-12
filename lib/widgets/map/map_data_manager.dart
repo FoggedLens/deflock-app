@@ -10,6 +10,13 @@ import '../../dev_config.dart';
 /// Manages data fetching, filtering, and node limit logic for the map.
 /// Handles profile changes, zoom level restrictions, and node rendering limits.
 class MapDataManager {
+  final List<OsmNode> Function(LatLngBounds bounds) _getNodesForBounds;
+
+  MapDataManager({
+    List<OsmNode> Function(LatLngBounds bounds)? getNodesForBounds,
+  }) : _getNodesForBounds = getNodesForBounds ??
+           ((bounds) => NodeProviderWithCache.instance.getCachedNodesForBounds(bounds));
+
   // Track node limit state for parent notification
   bool _lastNodeLimitState = false;
 
@@ -51,28 +58,42 @@ class MapDataManager {
     List<OsmNode> allNodes;
     List<OsmNode> nodesToRender;
     bool isLimitActive = false;
-    
+    int validNodesCount = 0;
+
     if (currentZoom >= minZoom) {
       // Above minimum zoom - get cached nodes with expanded bounds to prevent edge blinking
       if (mapBounds != null) {
         final expandedBounds = _expandBounds(mapBounds, kNodeRenderingBoundsExpansion);
-        allNodes = NodeProviderWithCache.instance.getCachedNodesForBounds(expandedBounds);
+        allNodes = _getNodesForBounds(expandedBounds);
       } else {
         allNodes = <OsmNode>[];
       }
-      
+
       // Filter out invalid coordinates before applying limit
       final validNodes = allNodes.where((node) {
         return (node.coord.latitude != 0 || node.coord.longitude != 0) &&
-               node.coord.latitude.abs() <= 90 && 
+               node.coord.latitude.abs() <= 90 &&
                node.coord.longitude.abs() <= 180;
       }).toList();
-      
-      // Apply rendering limit to prevent UI lag
-      if (validNodes.length > maxNodes) {
+      validNodesCount = validNodes.length;
+
+      // Apply rendering limit to prevent UI lag.
+      // Sort by distance from viewport center so the most visible nodes
+      // always make the cut, preventing gaps that shift as you pan.
+      if (validNodesCount > maxNodes) {
+        final bounds = mapBounds!;
+        final centerLat = (bounds.north + bounds.south) / 2;
+        final centerLng = (bounds.east + bounds.west) / 2;
+        validNodes.sort((a, b) {
+          final distA = (a.coord.latitude - centerLat) * (a.coord.latitude - centerLat) +
+                        (a.coord.longitude - centerLng) * (a.coord.longitude - centerLng);
+          final distB = (b.coord.latitude - centerLat) * (b.coord.latitude - centerLat) +
+                        (b.coord.longitude - centerLng) * (b.coord.longitude - centerLng);
+          final cmp = distA.compareTo(distB);
+          return cmp != 0 ? cmp : a.id.compareTo(b.id);
+        });
         nodesToRender = validNodes.take(maxNodes).toList();
         isLimitActive = true;
-        debugPrint('[MapDataManager] Node limit active: rendering ${nodesToRender.length} of ${validNodes.length} devices');
       } else {
         nodesToRender = validNodes;
         isLimitActive = false;
@@ -87,6 +108,9 @@ class MapDataManager {
     // Notify parent if limit state changed (for button disabling)
     if (isLimitActive != _lastNodeLimitState) {
       _lastNodeLimitState = isLimitActive;
+      if (isLimitActive) {
+        debugPrint('[MapDataManager] Node limit active: rendering ${nodesToRender.length} of $validNodesCount valid devices');
+      }
       // Schedule callback after build completes to avoid setState during build
       WidgetsBinding.instance.addPostFrameCallback((_) {
         onNodeLimitChanged?.call(isLimitActive);
@@ -97,11 +121,7 @@ class MapDataManager {
       allNodes: allNodes,
       nodesToRender: nodesToRender,
       isLimitActive: isLimitActive,
-      validNodesCount: isLimitActive ? allNodes.where((node) {
-        return (node.coord.latitude != 0 || node.coord.longitude != 0) &&
-               node.coord.latitude.abs() <= 90 && 
-               node.coord.longitude.abs() <= 180;
-      }).length : 0,
+      validNodesCount: isLimitActive ? validNodesCount : 0,
     );
   }
 
