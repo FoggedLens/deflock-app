@@ -82,6 +82,22 @@ class _OSMAccountScreenState extends State<OSMAccountScreen> {
                       },
                     ),
                     
+                    if (!appState.isLoggedIn) ...[
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                        child: SizedBox(
+                          width: double.infinity,
+                          child: FilledButton.icon(
+                            onPressed: () async {
+                              await appState.forceLogin();
+                            },
+                            icon: const Icon(Icons.login),
+                            label: Text(locService.t('auth.loginToOSM')),
+                          ),
+                        ),
+                      ),
+                    ],
+                    
                     if (appState.isLoggedIn) ...[
                       const Divider(),
                       ListTile(
@@ -214,24 +230,24 @@ class _OSMAccountScreenState extends State<OSMAccountScreen> {
                         locService.t('auth.aboutOSMDescription'),
                         style: Theme.of(context).textTheme.bodyMedium,
                       ),
-                      const SizedBox(height: 16),
-                      SizedBox(
-                        width: double.infinity,
-                        child: OutlinedButton.icon(
-                          onPressed: () async {
-                            final url = Uri.parse('https://openstreetmap.org');
-                            if (await canLaunchUrl(url)) {
-                              await launchUrl(url, mode: LaunchMode.externalApplication);
-                            } else {
-                              if (context.mounted) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(content: Text(locService.t('advancedEdit.couldNotOpenOSMWebsite'))),
-                                );
-                              }
+                      TextButton.icon(
+                        onPressed: () async {
+                          final url = Uri.parse('https://openstreetmap.org');
+                          if (await canLaunchUrl(url)) {
+                            await launchUrl(url, mode: LaunchMode.externalApplication);
+                          } else {
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text(locService.t('advancedEdit.couldNotOpenOSMWebsite'))),
+                              );
                             }
-                          },
-                          icon: const Icon(Icons.open_in_new),
-                          label: Text(locService.t('auth.visitOSM')),
+                          }
+                        },
+                        icon: const Icon(Icons.open_in_new, size: 16),
+                        label: Text(locService.t('auth.visitOSM')),
+                        style: TextButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(horizontal: 4),
+                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                         ),
                       ),
                     ],
