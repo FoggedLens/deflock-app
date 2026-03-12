@@ -250,11 +250,11 @@ class NavigationState extends ChangeNotifier {
     _calculateRoute();
   }
   
-  /// Calculate route using alprwatch
+  /// Calculate route via RoutingService (primary + fallback endpoints).
   void _calculateRoute() {
     if (_routeStart == null || _routeEnd == null) return;
 
-    debugPrint('[NavigationState] Calculating route with alprwatch...');
+    debugPrint('[NavigationState] Calculating route...');
     _isCalculating = true;
     _routingError = null;
     notifyListeners();
@@ -271,7 +271,7 @@ class NavigationState extends ChangeNotifier {
       _showingOverview = true;
       _provisionalPinLocation = null; // Hide provisional pin
       
-      debugPrint('[NavigationState] alprwatch route calculated: ${routeResult.toString()}');
+      debugPrint('[NavigationState] Route calculated: ${routeResult.toString()}');
       notifyListeners();
       
     }).catchError((error) {
