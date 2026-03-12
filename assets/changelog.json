@@ -1,4 +1,9 @@
 {
+  "2.9.1": {
+    "content": [
+      "• When hitting node render limit, only render nodes closest to center of viewport."
+    ]
+  },
   "2.9.0": {
     "content": [
       "• Caching, tile retries, offline areas, now working properly. Map imagery should load correctly."
