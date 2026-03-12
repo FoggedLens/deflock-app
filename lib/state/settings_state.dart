@@ -3,9 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:collection/collection.dart';
 
+import '../models/service_endpoint.dart';
 import '../models/tile_provider.dart';
 import '../dev_config.dart';
 import '../keys.dart';
+import 'service_registry.dart';
 
 // Enum for upload mode (Production, OSM Sandbox, Simulate)
 enum UploadMode { production, sandbox, simulate }
@@ -38,6 +40,10 @@ class SettingsState extends ChangeNotifier {
   static const String _pauseQueueProcessingPrefsKey = 'pause_queue_processing';
   static const String _navigationAvoidanceDistancePrefsKey = 'navigation_avoidance_distance';
   static const String _distanceUnitPrefsKey = 'distance_unit';
+  static const String _routingEndpointPrefsKey = 'routing_endpoint';
+  static const String _overpassEndpointPrefsKey = 'overpass_endpoint';
+  static const String _routingEndpointsPrefsKey = 'routing_endpoints';
+  static const String _overpassEndpointsPrefsKey = 'overpass_endpoints';
 
   bool _offlineMode = false;
   bool _pauseQueueProcessing = false;
@@ -54,6 +60,20 @@ class SettingsState extends ChangeNotifier {
   int _navigationAvoidanceDistance = 250; // meters
   DistanceUnit _distanceUnit = DistanceUnit.metric;
 
+  late final ServiceRegistry<ServiceEndpoint> _routingRegistry = ServiceRegistry(
+    prefsKey: _routingEndpointsPrefsKey,
+    fromJson: ServiceEndpoint.fromJson,
+    createDefaults: DefaultServiceEndpoints.routing,
+    onChanged: notifyListeners,
+  );
+
+  late final ServiceRegistry<ServiceEndpoint> _overpassRegistry = ServiceRegistry(
+    prefsKey: _overpassEndpointsPrefsKey,
+    fromJson: ServiceEndpoint.fromJson,
+    createDefaults: DefaultServiceEndpoints.overpass,
+    onChanged: notifyListeners,
+  );
+
   // Getters
   bool get offlineMode => _offlineMode;
   bool get pauseQueueProcessing => _pauseQueueProcessing;
@@ -68,7 +88,25 @@ class SettingsState extends ChangeNotifier {
   String get selectedTileTypeId => _selectedTileTypeId;
   int get navigationAvoidanceDistance => _navigationAvoidanceDistance;
   DistanceUnit get distanceUnit => _distanceUnit;
-  
+
+  /// Ordered list of routing endpoints (priority order).
+  List<ServiceEndpoint> get routingEndpoints => _routingRegistry.entries;
+
+  /// Only enabled routing endpoints.
+  List<ServiceEndpoint> get enabledRoutingEndpoints => _routingRegistry.enabledEntries;
+
+  /// Ordered list of Overpass endpoints (priority order).
+  List<ServiceEndpoint> get overpassEndpoints => _overpassRegistry.entries;
+
+  /// Only enabled Overpass endpoints.
+  List<ServiceEndpoint> get enabledOverpassEndpoints => _overpassRegistry.enabledEntries;
+
+  /// The routing registry for direct UI manipulation.
+  ServiceRegistry<ServiceEndpoint> get routingRegistry => _routingRegistry;
+
+  /// The Overpass registry for direct UI manipulation.
+  ServiceRegistry<ServiceEndpoint> get overpassRegistry => _overpassRegistry;
+
   /// Get the currently selected tile type
   TileType? get selectedTileType {
     for (final provider in _tileProviders) {
@@ -167,6 +205,22 @@ class SettingsState extends ChangeNotifier {
       await prefs.setInt(_uploadModePrefsKey, _uploadMode.index);
     }
     
+    // Migrate old single-string endpoints to new registry format
+    await _migrateOldEndpoint(
+      prefs: prefs,
+      oldKey: _routingEndpointPrefsKey,
+      registry: _routingRegistry,
+    );
+    await _migrateOldEndpoint(
+      prefs: prefs,
+      oldKey: _overpassEndpointPrefsKey,
+      registry: _overpassRegistry,
+    );
+
+    // Load endpoint registries
+    await _routingRegistry.load(prefs);
+    await _overpassRegistry.load(prefs);
+
     // Load tile providers (default to built-in providers if none saved)
     await _loadTileProviders(prefs);
     
@@ -405,4 +459,37 @@ class SettingsState extends ChangeNotifier {
     }
   }
 
+  /// Migrate old single-string endpoint to new registry list format.
+  Future<void> _migrateOldEndpoint({
+    required SharedPreferences prefs,
+    required String oldKey,
+    required ServiceRegistry<ServiceEndpoint> registry,
+  }) async {
+    // Skip if new format already exists or old format doesn't
+    if (prefs.containsKey(registry.prefsKey) || !prefs.containsKey(oldKey)) return;
+
+    final oldUrl = prefs.getString(oldKey);
+    if (oldUrl != null && oldUrl.isNotEmpty) {
+      // Create a list: custom endpoint first (highest priority), then defaults
+      final defaults = registry.createDefaults();
+      // Check if custom URL matches any default
+      final isDefault = defaults.any((d) => d.url == oldUrl);
+      if (!isDefault) {
+        final customEntry = ServiceEndpoint(
+          id: 'custom-${oldKey.replaceAll('_', '-')}',
+          name: 'Custom',
+          url: oldUrl,
+        );
+        final migrated = [customEntry, ...defaults];
+        await prefs.setString(
+          registry.prefsKey,
+          jsonEncode(migrated.map((e) => e.toJson()).toList()),
+        );
+      }
+    }
+    // Clean up old key
+    await prefs.remove(oldKey);
+  }
+
 }
+

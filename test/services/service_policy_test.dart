@@ -1,6 +1,7 @@
 import 'package:fake_async/fake_async.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:deflockapp/models/service_endpoint.dart';
 import 'package:deflockapp/services/service_policy.dart';
 
 void main() {
@@ -421,6 +422,376 @@ void main() {
       expect(policy.maxConcurrentRequests, 20);
       expect(policy.allowsOfflineDownload, false);
       expect(policy.attributionUrl, 'https://example.com/license');
+    });
+  });
+
+  group('ResiliencePolicy', () {
+    test('retryDelay uses exponential backoff', () {
+      const policy = ResiliencePolicy(
+        retryBackoffBase: Duration(milliseconds: 100),
+        retryBackoffMaxMs: 2000,
+      );
+      expect(policy.retryDelay(0), const Duration(milliseconds: 100));
+      expect(policy.retryDelay(1), const Duration(milliseconds: 200));
+      expect(policy.retryDelay(2), const Duration(milliseconds: 400));
+    });
+
+    test('retryDelay clamps to max', () {
+      const policy = ResiliencePolicy(
+        retryBackoffBase: Duration(milliseconds: 1000),
+        retryBackoffMaxMs: 3000,
+      );
+      expect(policy.retryDelay(0), const Duration(milliseconds: 1000));
+      expect(policy.retryDelay(1), const Duration(milliseconds: 2000));
+      expect(policy.retryDelay(2), const Duration(milliseconds: 3000)); // clamped
+      expect(policy.retryDelay(10), const Duration(milliseconds: 3000)); // clamped
+    });
+  });
+
+  group('executeWithEndpointList', () {
+    const defaultPolicy = ResiliencePolicy(
+      maxRetries: 1,
+      retryBackoffBase: Duration.zero,
+    );
+
+    setUp(() {
+      ResilienceMetrics().reset();
+    });
+
+    test('throws StateError when no endpoints enabled', () async {
+      await expectLater(
+        () => executeWithEndpointList<String>(
+          endpoints: const [
+            ServiceEndpoint(id: 'a', name: 'A', url: 'https://a.com', enabled: false),
+          ],
+          execute: (url) => Future.value('ok'),
+          classifyError: (_) => ErrorDisposition.retry,
+        ),
+        throwsA(isA<StateError>()),
+      );
+    });
+
+    test('succeeds with single enabled endpoint', () async {
+      final result = await executeWithEndpointList<String>(
+        endpoints: const [
+          ServiceEndpoint(id: 'a', name: 'A', url: 'https://a.com'),
+        ],
+        execute: (url) => Future.value('ok'),
+        classifyError: (_) => ErrorDisposition.retry,
+      );
+      expect(result, 'ok');
+    });
+
+    test('tries next endpoint when retry exhausted', () async {
+      final urlsSeen = <String>[];
+
+      final result = await executeWithEndpointList<String>(
+        endpoints: const [
+          ServiceEndpoint(id: 'a', name: 'A', url: 'https://a.com'),
+          ServiceEndpoint(id: 'b', name: 'B', url: 'https://b.com'),
+        ],
+        execute: (url) {
+          urlsSeen.add(url);
+          if (url == 'https://a.com') throw Exception('fail');
+          return Future.value('ok from b');
+        },
+        classifyError: (_) => ErrorDisposition.retry,
+        defaultPolicy: defaultPolicy,
+      );
+
+      expect(result, 'ok from b');
+      // endpoint A: 1 attempt + 1 retry = 2 calls, then endpoint B: 1 call
+      expect(urlsSeen.where((u) => u == 'https://a.com').length, 2);
+      expect(urlsSeen.where((u) => u == 'https://b.com').length, 1);
+    });
+
+    test('fallback disposition skips to next immediately', () async {
+      final urlsSeen = <String>[];
+
+      final result = await executeWithEndpointList<String>(
+        endpoints: const [
+          ServiceEndpoint(id: 'a', name: 'A', url: 'https://a.com'),
+          ServiceEndpoint(id: 'b', name: 'B', url: 'https://b.com'),
+        ],
+        execute: (url) {
+          urlsSeen.add(url);
+          if (url == 'https://a.com') throw Exception('rate limited');
+          return Future.value('ok from b');
+        },
+        classifyError: (_) => ErrorDisposition.fallback,
+        defaultPolicy: defaultPolicy,
+      );
+
+      expect(result, 'ok from b');
+      // Fallback: only 1 call to A (no retries), then 1 call to B
+      expect(urlsSeen.where((u) => u == 'https://a.com').length, 1);
+      expect(urlsSeen.where((u) => u == 'https://b.com').length, 1);
+    });
+
+    test('abort stops entire chain', () async {
+      final urlsSeen = <String>[];
+
+      await expectLater(
+        () => executeWithEndpointList<String>(
+          endpoints: const [
+            ServiceEndpoint(id: 'a', name: 'A', url: 'https://a.com'),
+            ServiceEndpoint(id: 'b', name: 'B', url: 'https://b.com'),
+          ],
+          execute: (url) {
+            urlsSeen.add(url);
+            throw Exception('validation error');
+          },
+          classifyError: (_) => ErrorDisposition.abort,
+          defaultPolicy: defaultPolicy,
+        ),
+        throwsA(isA<Exception>()),
+      );
+
+      // Only A called once, B never called
+      expect(urlsSeen, ['https://a.com']);
+    });
+
+    test('per-endpoint maxRetries override', () async {
+      int callCount = 0;
+
+      await expectLater(
+        () => executeWithEndpointList<String>(
+          endpoints: const [
+            ServiceEndpoint(id: 'a', name: 'A', url: 'https://a.com', maxRetries: 0),
+          ],
+          execute: (url) {
+            callCount++;
+            throw Exception('fail');
+          },
+          classifyError: (_) => ErrorDisposition.retry,
+          defaultPolicy: const ResiliencePolicy(
+            maxRetries: 5,
+            retryBackoffBase: Duration.zero,
+          ),
+        ),
+        throwsA(isA<Exception>()),
+      );
+
+      // maxRetries=0 means only 1 attempt (no retries)
+      expect(callCount, 1);
+    });
+
+    test('per-endpoint timeout override is used in effective policy', () async {
+      // We can't easily test the actual timeout behavior, but we can verify
+      // the endpoint is used successfully with the override
+      final result = await executeWithEndpointList<String>(
+        endpoints: const [
+          ServiceEndpoint(id: 'a', name: 'A', url: 'https://a.com', timeoutSeconds: 1),
+        ],
+        execute: (url) => Future.value('ok'),
+        classifyError: (_) => ErrorDisposition.retry,
+      );
+      expect(result, 'ok');
+    });
+
+    test('disabled endpoints skipped', () async {
+      final urlsSeen = <String>[];
+
+      final result = await executeWithEndpointList<String>(
+        endpoints: const [
+          ServiceEndpoint(id: 'disabled', name: 'Disabled', url: 'https://disabled.com', enabled: false),
+          ServiceEndpoint(id: 'enabled', name: 'Enabled', url: 'https://enabled.com'),
+        ],
+        execute: (url) {
+          urlsSeen.add(url);
+          return Future.value('ok');
+        },
+        classifyError: (_) => ErrorDisposition.retry,
+      );
+
+      expect(result, 'ok');
+      expect(urlsSeen, ['https://enabled.com']);
+    });
+
+    test('all endpoints fail rethrows last error', () async {
+      await expectLater(
+        () => executeWithEndpointList<String>(
+          endpoints: const [
+            ServiceEndpoint(id: 'a', name: 'A', url: 'https://a.com'),
+            ServiceEndpoint(id: 'b', name: 'B', url: 'https://b.com'),
+          ],
+          execute: (url) {
+            if (url == 'https://b.com') throw Exception('b failed');
+            throw Exception('a failed');
+          },
+          classifyError: (_) => ErrorDisposition.retry,
+          defaultPolicy: const ResiliencePolicy(
+            maxRetries: 0,
+            retryBackoffBase: Duration.zero,
+          ),
+        ),
+        throwsA(isA<Exception>().having(
+          (e) => e.toString(), 'message', contains('b failed'),
+        )),
+      );
+    });
+
+    test('3 endpoints, first 2 fail, third succeeds', () async {
+      final urlsSeen = <String>[];
+
+      final result = await executeWithEndpointList<String>(
+        endpoints: const [
+          ServiceEndpoint(id: 'a', name: 'A', url: 'https://a.com'),
+          ServiceEndpoint(id: 'b', name: 'B', url: 'https://b.com'),
+          ServiceEndpoint(id: 'c', name: 'C', url: 'https://c.com'),
+        ],
+        execute: (url) {
+          urlsSeen.add(url);
+          if (url == 'https://c.com') return Future.value('ok from c');
+          throw Exception('fail');
+        },
+        classifyError: (_) => ErrorDisposition.retry,
+        defaultPolicy: const ResiliencePolicy(
+          maxRetries: 0,
+          retryBackoffBase: Duration.zero,
+        ),
+      );
+
+      expect(result, 'ok from c');
+      expect(urlsSeen, ['https://a.com', 'https://b.com', 'https://c.com']);
+    });
+  });
+
+  group('ResilienceMetrics', () {
+    setUp(() {
+      ResilienceMetrics().reset();
+    });
+
+    test('records primary success via endpoint list', () async {
+      await executeWithEndpointList<String>(
+        endpoints: const [
+          ServiceEndpoint(id: 'a', name: 'A', url: 'https://a.com'),
+        ],
+        execute: (_) => Future.value('ok'),
+        classifyError: (_) => ErrorDisposition.retry,
+      );
+
+      final m = ResilienceMetrics();
+      expect(m.totalRequests, 1);
+      expect(m.primarySuccesses, 1);
+      expect(m.fallbackSuccesses, 0);
+      expect(m.totalRetries, 0);
+      expect(m.fallbackInvocations, 0);
+      expect(m.aborts, 0);
+      expect(m.totalFailures, 0);
+    });
+
+    test('records fallback success via endpoint list', () async {
+      await executeWithEndpointList<String>(
+        endpoints: const [
+          ServiceEndpoint(id: 'a', name: 'A', url: 'https://a.com'),
+          ServiceEndpoint(id: 'b', name: 'B', url: 'https://b.com'),
+        ],
+        execute: (url) {
+          if (url == 'https://a.com') throw Exception('down');
+          return Future.value('ok');
+        },
+        classifyError: (_) => ErrorDisposition.fallback,
+        defaultPolicy: const ResiliencePolicy(
+          maxRetries: 0,
+          retryBackoffBase: Duration.zero,
+        ),
+      );
+
+      final m = ResilienceMetrics();
+      expect(m.totalRequests, 1);
+      expect(m.primarySuccesses, 0);
+      expect(m.fallbackSuccesses, 1);
+      expect(m.fallbackInvocations, 1);
+    });
+
+    test('records retries on transient failure then success', () async {
+      int callCount = 0;
+      await executeWithEndpointList<String>(
+        endpoints: const [
+          ServiceEndpoint(id: 'a', name: 'A', url: 'https://a.com'),
+        ],
+        execute: (_) {
+          callCount++;
+          if (callCount < 3) throw Exception('transient');
+          return Future.value('ok');
+        },
+        classifyError: (_) => ErrorDisposition.retry,
+        defaultPolicy: const ResiliencePolicy(
+          maxRetries: 2,
+          retryBackoffBase: Duration.zero,
+        ),
+      );
+
+      final m = ResilienceMetrics();
+      expect(m.totalRequests, 1);
+      expect(m.primarySuccesses, 1);
+      expect(m.totalRetries, 2);
+    });
+
+    test('records abort via endpoint list', () async {
+      try {
+        await executeWithEndpointList<String>(
+          endpoints: const [
+            ServiceEndpoint(id: 'a', name: 'A', url: 'https://a.com'),
+            ServiceEndpoint(id: 'b', name: 'B', url: 'https://b.com'),
+          ],
+          execute: (_) => throw Exception('bad request'),
+          classifyError: (_) => ErrorDisposition.abort,
+        );
+      } catch (_) {}
+
+      final m = ResilienceMetrics();
+      expect(m.totalRequests, 1);
+      expect(m.aborts, 1);
+      expect(m.fallbackInvocations, 0);
+      expect(m.totalFailures, 0);
+    });
+
+    test('records total failure when all endpoints fail', () async {
+      try {
+        await executeWithEndpointList<String>(
+          endpoints: const [
+            ServiceEndpoint(id: 'a', name: 'A', url: 'https://a.com'),
+            ServiceEndpoint(id: 'b', name: 'B', url: 'https://b.com'),
+          ],
+          execute: (_) => throw Exception('down'),
+          classifyError: (_) => ErrorDisposition.retry,
+          defaultPolicy: const ResiliencePolicy(
+            maxRetries: 0,
+            retryBackoffBase: Duration.zero,
+          ),
+        );
+      } catch (_) {}
+
+      final m = ResilienceMetrics();
+      expect(m.totalRequests, 1);
+      expect(m.fallbackInvocations, 1);
+      expect(m.totalFailures, 1);
+      expect(m.primarySuccesses, 0);
+      expect(m.fallbackSuccesses, 0);
+    });
+
+    test('records error types', () async {
+      try {
+        await executeWithEndpointList<String>(
+          endpoints: const [
+            ServiceEndpoint(id: 'a', name: 'A', url: 'https://a.com'),
+          ],
+          execute: (_) => throw FormatException('bad'),
+          classifyError: (_) => ErrorDisposition.abort,
+        );
+      } catch (_) {}
+
+      final m = ResilienceMetrics();
+      expect(m.errorsByType['FormatException'], 1);
+    });
+
+    test('summary is human-readable', () {
+      final m = ResilienceMetrics();
+      expect(m.summary, contains('requests:'));
+      expect(m.summary, contains('primaryOk:'));
+      expect(m.summary, contains('avgLatency:'));
     });
   });
 }

@@ -5,20 +5,21 @@ import 'package:latlong2/latlong.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../app_state.dart';
-import '../dev_config.dart';
+import '../models/service_endpoint.dart';
 import 'http_client.dart';
+import 'service_policy.dart';
 
 class RouteResult {
   final List<LatLng> waypoints;
   final double distanceMeters;
   final double durationSeconds;
-  
+
   const RouteResult({
     required this.waypoints,
     required this.distanceMeters,
     required this.durationSeconds,
   });
-  
+
   @override
   String toString() {
     return 'RouteResult(waypoints: ${waypoints.length}, distance: ${(distanceMeters/1000).toStringAsFixed(1)}km, duration: ${(durationSeconds/60).toStringAsFixed(1)}min)';
@@ -26,14 +27,36 @@ class RouteResult {
 }
 
 class RoutingService {
-  static const String _baseUrl = 'https://alprwatch.org/api/v1/deflock/directions';
-  final http.Client _client;
+  static const String defaultUrl = 'https://api.dontgetflocked.com/api/v1/deflock/directions';
+  static const String fallbackUrl = 'https://alprwatch.org/api/v1/deflock/directions';
+  static const _policy = ResiliencePolicy(
+    maxRetries: 1,
+    httpTimeout: Duration(seconds: 30),
+  );
 
-  RoutingService({http.Client? client}) : _client = client ?? UserAgentClient();
+  final http.Client _client;
+  /// Optional override endpoints for testing.
+  final List<ServiceEndpoint>? _endpointsOverride;
+
+  RoutingService({http.Client? client, List<ServiceEndpoint>? endpoints})
+      : _client = client ?? UserAgentClient(),
+        _endpointsOverride = endpoints;
 
   void close() => _client.close();
 
-  // Calculate route between two points using alprwatch
+  /// Resolve the endpoint list: constructor override > AppState > defaults.
+  List<ServiceEndpoint> get _endpoints {
+    if (_endpointsOverride != null) return _endpointsOverride;
+    try {
+      final endpoints = AppState.instance.enabledRoutingEndpoints;
+      if (endpoints.isNotEmpty) return endpoints;
+    } catch (_) {
+      // AppState may not be initialized yet (e.g., in tests)
+    }
+    return DefaultServiceEndpoints.routing();
+  }
+
+  // Calculate route between two points
   Future<RouteResult> calculateRoute({
     required LatLng start,
     required LatLng end,
@@ -53,8 +76,7 @@ class RoutingService {
         'tags': tags,
       };
     }).toList();
-    
-    final uri = Uri.parse(_baseUrl);
+
     final params = {
       'start': {
         'longitude': start.longitude,
@@ -66,11 +88,22 @@ class RoutingService {
       },
       'avoidance_distance': avoidanceDistance,
       'enabled_profiles': enabledProfiles,
-      'show_exclusion_zone': false, // for debugging: if true, returns a GeoJSON Feature MultiPolygon showing what areas are avoided in calculating the route
+      'show_exclusion_zone': false,
     };
-    
-    debugPrint('[RoutingService] alprwatch request: $uri $params');
-    
+
+    return executeWithEndpointList<RouteResult>(
+      endpoints: _endpoints,
+      execute: (url) => _postRoute(url, params),
+      classifyError: _classifyError,
+      defaultPolicy: _policy,
+      serviceName: 'routing',
+    );
+  }
+
+  Future<RouteResult> _postRoute(String url, Map<String, dynamic> params) async {
+    final uri = Uri.parse(url);
+    debugPrint('[RoutingService] POST $uri');
+
     try {
       final response = await _client.post(
         uri,
@@ -78,7 +111,7 @@ class RoutingService {
           'Content-Type': 'application/json'
         },
         body: json.encode(params)
-      ).timeout(kNavigationRoutingTimeout);
+      ).timeout(_policy.httpTimeout);
 
       if (response.statusCode != 200) {
         if (kDebugMode) {
@@ -91,24 +124,25 @@ class RoutingService {
               : body;
           debugPrint('[RoutingService] Error response body ($maxLen char max): $truncated');
         }
-        throw RoutingException('HTTP ${response.statusCode}: ${response.reasonPhrase}');
+        throw RoutingException('HTTP ${response.statusCode}: ${response.reasonPhrase}',
+            statusCode: response.statusCode);
       }
-      
+
       final data = json.decode(response.body) as Map<String, dynamic>;
-      debugPrint('[RoutingService] alprwatch response data: $data');
-      
-      // Check alprwatch response status
+      debugPrint('[RoutingService] response data: $data');
+
+      // Check response status
       final ok = data['ok'] as bool? ?? false;
       if ( ! ok ) {
         final message = data['error'] as String? ?? 'Unknown routing error';
-        throw RoutingException('alprwatch error: $message');
+        throw RoutingException('API error: $message', isApiError: true);
       }
-      
+
       final route = data['result']['route'] as Map<String, dynamic>?;
       if (route == null) {
-        throw RoutingException('No route found between these points');
+        throw RoutingException('No route found between these points', isApiError: true);
       }
-     
+
       final waypoints = (route['coordinates'] as List<dynamic>?)
         ?.map((inner) {
           final pair = inner as List<dynamic>;
@@ -116,19 +150,19 @@ class RoutingService {
           final lng = (pair[0] as num).toDouble();
           final lat = (pair[1] as num).toDouble();
           return LatLng(lat, lng);
-      }).whereType<LatLng>().toList() ?? []; 
+      }).whereType<LatLng>().toList() ?? [];
       final distance = (route['distance'] as num?)?.toDouble() ?? 0.0;
       final duration = (route['duration'] as num?)?.toDouble() ?? 0.0;
-      
+
       final result = RouteResult(
         waypoints: waypoints,
         distanceMeters: distance,
         durationSeconds: duration,
       );
-      
+
       debugPrint('[RoutingService] Route calculated: $result');
       return result;
-      
+
     } catch (e) {
       debugPrint('[RoutingService] Route calculation failed: $e');
       if (e is RoutingException) {
@@ -138,13 +172,26 @@ class RoutingService {
       }
     }
   }
+
+  static ErrorDisposition _classifyError(Object error) {
+    if (error is! RoutingException) return ErrorDisposition.retry;
+    if (error.isApiError) return ErrorDisposition.abort;
+    final status = error.statusCode;
+    if (status != null && status >= 400 && status < 500) {
+      if (status == 429) return ErrorDisposition.fallback;
+      return ErrorDisposition.abort;
+    }
+    return ErrorDisposition.retry;
+  }
 }
 
 class RoutingException implements Exception {
   final String message;
-  
-  const RoutingException(this.message);
-  
+  final int? statusCode;
+  final bool isApiError;
+
+  const RoutingException(this.message, {this.statusCode, this.isApiError = false});
+
   @override
   String toString() => 'RoutingException: $message';
 }
