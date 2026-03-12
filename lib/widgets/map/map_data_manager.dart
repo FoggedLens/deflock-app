@@ -81,8 +81,9 @@ class MapDataManager {
       // Sort by distance from viewport center so the most visible nodes
       // always make the cut, preventing gaps that shift as you pan.
       if (validNodesCount > maxNodes) {
-        final centerLat = (mapBounds!.north + mapBounds.south) / 2;
-        final centerLng = (mapBounds.east + mapBounds.west) / 2;
+        final bounds = mapBounds!;
+        final centerLat = (bounds.north + bounds.south) / 2;
+        final centerLng = (bounds.east + bounds.west) / 2;
         validNodes.sort((a, b) {
           final distA = (a.coord.latitude - centerLat) * (a.coord.latitude - centerLat) +
                         (a.coord.longitude - centerLng) * (a.coord.longitude - centerLng);
