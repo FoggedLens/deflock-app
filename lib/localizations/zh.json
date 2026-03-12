@@ -332,7 +332,12 @@
     "fetchPreview": "获取预览",
     "previewTileLoaded": "预览瓦片加载成功",
     "previewTileFailed": "获取预览失败：{}",
-    "save": "保存"
+    "save": "保存",
+    "rasterTiles": "栅格",
+    "vectorTiles": "矢量",
+    "styleUrl": "样式 URL",
+    "styleUrlHint": "https://example.com/style.json",
+    "styleUrlRequired": "样式 URL 为必填项"
   },
   "profiles": {
     "nodeProfiles": "节点配置文件",

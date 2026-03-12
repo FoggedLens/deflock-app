@@ -332,7 +332,12 @@
     "fetchPreview": "Önizleme Getir",
     "previewTileLoaded": "Önizleme döşemesi başarıyla yüklendi",
     "previewTileFailed": "Önizleme getirilemedi: {}",
-    "save": "Kaydet"
+    "save": "Kaydet",
+    "rasterTiles": "Raster",
+    "vectorTiles": "Vektör",
+    "styleUrl": "Stil URL'si",
+    "styleUrlHint": "https://ornek.com/style.json",
+    "styleUrlRequired": "Stil URL'si gerekli"
   },
   "profiles": {
     "nodeProfiles": "Düğüm Profilleri",

@@ -332,7 +332,12 @@
     "fetchPreview": "Pobierz Podgląd",
     "previewTileLoaded": "Kafelek podglądu załadowany pomyślnie",
     "previewTileFailed": "Nie udało się pobrać podglądu: {}",
-    "save": "Zapisz"
+    "save": "Zapisz",
+    "rasterTiles": "Rastrowe",
+    "vectorTiles": "Wektorowe",
+    "styleUrl": "URL stylu",
+    "styleUrlHint": "https://przyklad.com/style.json",
+    "styleUrlRequired": "URL stylu jest wymagany"
   },
   "profiles": {
     "nodeProfiles": "Profile Węzłów",

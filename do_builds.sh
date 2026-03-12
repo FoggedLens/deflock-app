@@ -62,9 +62,10 @@ if [ ! -f "build_keys.conf" ]; then
   exit 1
 fi
 
-echo "Loading OSM client IDs from build_keys.conf..."
+echo "Loading keys from build_keys.conf..."
 OSM_PROD_CLIENTID=$(read_from_file "OSM_PROD_CLIENTID")
 OSM_SANDBOX_CLIENTID=$(read_from_file "OSM_SANDBOX_CLIENTID")
+STADIA_API_KEY=$(read_from_file "STADIA_API_KEY")
 
 # Check required keys
 if [ -z "$OSM_PROD_CLIENTID" ]; then
@@ -79,6 +80,14 @@ fi
 
 # Build the dart-define arguments
 DART_DEFINE_ARGS="--dart-define=OSM_PROD_CLIENTID=$OSM_PROD_CLIENTID --dart-define=OSM_SANDBOX_CLIENTID=$OSM_SANDBOX_CLIENTID"
+
+# Optional keys
+if [ -n "$STADIA_API_KEY" ]; then
+  DART_DEFINE_ARGS="$DART_DEFINE_ARGS --dart-define=STADIA_API_KEY=$STADIA_API_KEY"
+  echo "  Stadia Maps API key: configured"
+else
+  echo "  Stadia Maps API key: not set (vector tiles will require manual key entry)"
+fi
 
 # Run tests before building
 echo "Running tests..."

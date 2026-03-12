@@ -1,7 +1,17 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import '../keys.dart';
 import '../services/service_policy.dart';
+
+/// Placeholder token in URL templates that gets replaced with the actual API key.
+const kApiKeyPlaceholder = '{api_key}';
+
+/// Whether a tile type serves raster (PNG/JPEG) or vector (style JSON) tiles.
+enum TileSourceType {
+  rasterXyz,
+  vectorStyle,
+}
 
 /// A specific tile type within a provider
 class TileType {
@@ -11,6 +21,8 @@ class TileType {
   final String attribution;
   final Uint8List? previewTile; // Single tile image data for preview
   final int maxZoom; // Maximum zoom level for this tile type
+  final TileSourceType sourceType;
+  final String? styleUrl; // Vector style JSON URL (for vectorStyle types)
 
   TileType({
     required this.id,
@@ -19,7 +31,15 @@ class TileType {
     required this.attribution,
     this.previewTile,
     this.maxZoom = 18, // Default max zoom level
+    this.sourceType = TileSourceType.rasterXyz,
+    this.styleUrl,
   });
+
+  /// Whether this tile type uses vector tiles.
+  bool get isVector => sourceType == TileSourceType.vectorStyle;
+
+  /// Whether this tile type uses raster tiles.
+  bool get isRaster => sourceType == TileSourceType.rasterXyz;
 
   /// Create URL for a specific tile, replacing template variables
   /// 
@@ -56,7 +76,7 @@ class TileType {
         .replaceAll('{y}', y.toString());
     
     if (apiKey != null && apiKey.isNotEmpty) {
-      url = url.replaceAll('{api_key}', apiKey);
+      url = url.replaceAll(kApiKeyPlaceholder, apiKey);
     }
     
     return url;
@@ -76,7 +96,7 @@ class TileType {
   }
 
   /// Check if this tile type needs an API key
-  bool get requiresApiKey => urlTemplate.contains('{api_key}');
+  bool get requiresApiKey => urlTemplate.contains(kApiKeyPlaceholder);
 
   /// The service policy that applies to this tile type's server.
   /// Cached because [urlTemplate] is immutable.
@@ -84,8 +104,10 @@ class TileType {
       ServicePolicyResolver.resolve(urlTemplate);
 
   /// Whether this tile server's usage policy permits offline/bulk downloading.
-  /// Resolved via [ServicePolicyResolver] from the URL template.
-  bool get allowsOfflineDownload => servicePolicy.allowsOfflineDownload;
+  /// Always false for vector tile types (offline download not yet supported).
+  /// For raster types, resolved via [ServicePolicyResolver] from the URL template.
+  bool get allowsOfflineDownload =>
+      isVector ? false : servicePolicy.allowsOfflineDownload;
 
   Map<String, dynamic> toJson() => {
     'id': id,
@@ -94,18 +116,33 @@ class TileType {
     'attribution': attribution,
     'previewTile': previewTile != null ? base64Encode(previewTile!) : null,
     'maxZoom': maxZoom,
+    if (sourceType != TileSourceType.rasterXyz)
+      'sourceType': sourceType.name,
+    if (styleUrl != null) 'styleUrl': styleUrl,
   };
 
-  static TileType fromJson(Map<String, dynamic> json) => TileType(
-    id: json['id'],
-    name: json['name'],
-    urlTemplate: json['urlTemplate'],
-    attribution: json['attribution'],
-    previewTile: json['previewTile'] != null 
-        ? base64Decode(json['previewTile'])
-        : null,
-    maxZoom: json['maxZoom'] ?? 18, // Default to 18 if not specified
-  );
+  static TileType fromJson(Map<String, dynamic> json) {
+    final sourceTypeName = json['sourceType'] as String?;
+    final sourceType = sourceTypeName != null
+        ? TileSourceType.values.firstWhere(
+            (e) => e.name == sourceTypeName,
+            orElse: () => TileSourceType.rasterXyz,
+          )
+        : TileSourceType.rasterXyz;
+
+    return TileType(
+      id: json['id'],
+      name: json['name'],
+      urlTemplate: json['urlTemplate'],
+      attribution: json['attribution'],
+      previewTile: json['previewTile'] != null
+          ? base64Decode(json['previewTile'])
+          : null,
+      maxZoom: json['maxZoom'] ?? 18,
+      sourceType: sourceType,
+      styleUrl: json['styleUrl'],
+    );
+  }
 
   TileType copyWith({
     String? id,
@@ -114,6 +151,8 @@ class TileType {
     String? attribution,
     Uint8List? previewTile,
     int? maxZoom,
+    TileSourceType? sourceType,
+    String? styleUrl,
   }) => TileType(
     id: id ?? this.id,
     name: name ?? this.name,
@@ -121,6 +160,8 @@ class TileType {
     attribution: attribution ?? this.attribution,
     previewTile: previewTile ?? this.previewTile,
     maxZoom: maxZoom ?? this.maxZoom,
+    sourceType: sourceType ?? this.sourceType,
+    styleUrl: styleUrl ?? this.styleUrl,
   );
 
   @override
@@ -253,6 +294,37 @@ class DefaultTileProviders {
             urlTemplate: 'https://tile.memomaps.de/tilegen/{z}/{x}/{y}.png',
             attribution: 'Kartendaten: © OpenStreetMap-Mitwirkende, SRTM | Kartendarstellung: © OpenTopoMap (CC-BY-SA)',
             maxZoom: 18,
+          ),
+        ],
+      ),
+      TileProvider(
+        id: 'stadiamaps_vector',
+        name: 'Stadia Maps (Vector)',
+        apiKey: kStadiaApiKey.isNotEmpty ? kStadiaApiKey : null,
+        tileTypes: [
+          TileType(
+            id: 'stadia_osm_bright',
+            name: 'OSM Bright',
+            urlTemplate: 'https://tiles.stadiamaps.com/styles/osm_bright.json?api_key={api_key}',
+            attribution: '© Stadia Maps © OpenMapTiles © OpenStreetMap contributors',
+            maxZoom: 20,
+            sourceType: TileSourceType.vectorStyle,
+            styleUrl: 'https://tiles.stadiamaps.com/styles/osm_bright.json?api_key={api_key}',
+          ),
+        ],
+      ),
+      TileProvider(
+        id: 'maptiler_vector',
+        name: 'MapTiler (Vector)',
+        tileTypes: [
+          TileType(
+            id: 'maptiler_streets',
+            name: 'Streets',
+            urlTemplate: 'https://api.maptiler.com/maps/streets-v2/style.json?key={api_key}',
+            attribution: '© MapTiler © OpenStreetMap contributors',
+            maxZoom: 20,
+            sourceType: TileSourceType.vectorStyle,
+            styleUrl: 'https://api.maptiler.com/maps/streets-v2/style.json?key={api_key}',
           ),
         ],
       ),

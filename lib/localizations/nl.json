@@ -332,7 +332,12 @@
     "fetchPreview": "Haal Voorbeeld Op",
     "previewTileLoaded": "Voorbeeld tile succesvol geladen",
     "previewTileFailed": "Kon voorbeeld niet ophalen: {}",
-    "save": "Opslaan"
+    "save": "Opslaan",
+    "rasterTiles": "Raster",
+    "vectorTiles": "Vector",
+    "styleUrl": "Stijl-URL",
+    "styleUrlHint": "https://voorbeeld.com/style.json",
+    "styleUrlRequired": "Stijl-URL is vereist"
   },
   "profiles": {
     "nodeProfiles": "Node Profielen",

@@ -295,7 +295,12 @@
     "fetchPreview": "Vorschau Laden",
     "previewTileLoaded": "Vorschau-Kachel erfolgreich geladen",
     "previewTileFailed": "Vorschau laden fehlgeschlagen: {}",
-    "save": "Speichern"
+    "save": "Speichern",
+    "rasterTiles": "Raster",
+    "vectorTiles": "Vektor",
+    "styleUrl": "Stil-URL",
+    "styleUrlHint": "https://beispiel.com/style.json",
+    "styleUrlRequired": "Stil-URL ist erforderlich"
   },
   "profiles": {
     "nodeProfiles": "Knoten-Profile",

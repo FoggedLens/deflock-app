@@ -192,10 +192,11 @@ class _TileTypeListItem extends StatelessWidget {
                 child: Image.memory(
                   tileType.previewTile!,
                   fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) => _FallbackPreview(),
+                  errorBuilder: (context, error, stackTrace) =>
+                      _FallbackPreview(isVector: tileType.isVector),
                 ),
               )
-            : _FallbackPreview(),
+            : _FallbackPreview(isVector: tileType.isVector),
       ),
       title: Text(
         tileType.name,
@@ -220,13 +221,17 @@ class _TileTypeListItem extends StatelessWidget {
 }
 
 class _FallbackPreview extends StatelessWidget {
+  final bool isVector;
+
+  const _FallbackPreview({this.isVector = false});
+
   @override
   Widget build(BuildContext context) {
     return Container(
       color: Colors.grey.shade200,
-      child: const Center(
+      child: Center(
         child: Icon(
-          Icons.map,
+          isVector ? Icons.route : Icons.map,
           size: 24,
           color: Colors.grey,
         ),

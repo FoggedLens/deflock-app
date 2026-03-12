@@ -332,7 +332,12 @@
     "fetchPreview": "Buscar Preview",
     "previewTileLoaded": "Tile de preview carregado com sucesso",
     "previewTileFailed": "Falha ao buscar preview: {}",
-    "save": "Salvar"
+    "save": "Salvar",
+    "rasterTiles": "Raster",
+    "vectorTiles": "Vetorial",
+    "styleUrl": "URL do estilo",
+    "styleUrlHint": "https://exemplo.com/style.json",
+    "styleUrlRequired": "URL do estilo é obrigatório"
   },
   "profiles": {
     "nodeProfiles": "Perfis de Nó",

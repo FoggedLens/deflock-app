@@ -332,7 +332,12 @@
     "fetchPreview": "Ottieni Anteprima",
     "previewTileLoaded": "Tile di anteprima caricato con successo",
     "previewTileFailed": "Impossibile ottenere l'anteprima: {}",
-    "save": "Salva"
+    "save": "Salva",
+    "rasterTiles": "Raster",
+    "vectorTiles": "Vettoriale",
+    "styleUrl": "URL dello stile",
+    "styleUrlHint": "https://esempio.com/style.json",
+    "styleUrlRequired": "L'URL dello stile è obbligatorio"
   },
   "profiles": {
     "nodeProfiles": "Profili Nodo",
