@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_map_animations/flutter_map_animations.dart';
+import 'package:flutter_map_marker_cluster/flutter_map_marker_cluster.dart';
 import 'package:latlong2/latlong.dart';
 
 import '../../models/osm_node.dart';
@@ -8,6 +9,7 @@ import '../../models/suspected_location.dart';
 import '../../app_state.dart';
 import '../../dev_config.dart';
 import '../camera_icon.dart';
+import '../cluster_icon.dart';
 import '../provisional_pin.dart';
 import 'node_markers.dart';
 import 'suspected_location_markers.dart';
@@ -44,8 +46,10 @@ class LocationPin extends StatelessWidget {
 /// session markers, navigation pins, and route visualization.
 class MarkerLayerBuilder {
   
-  /// Build complete marker layers for the map
-  static Widget buildMarkerLayers({
+  /// Build complete marker layers for the map.
+  /// Returns a list of widgets: a cluster layer for node markers and
+  /// a regular MarkerLayer for all other markers.
+  static List<Widget> buildMarkerLayers({
     required List<OsmNode> nodesToRender,
     required AnimatedMapController mapController,
     required AppState appState,
@@ -58,85 +62,111 @@ class MarkerLayerBuilder {
     required Function(OsmNode)? onNodeTap,
     required Function(SuspectedLocation)? onSuspectedLocationTap,
   }) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        
-        // Determine if nodes should be dimmed and/or disabled
-        final shouldDimNodes = appState.selectedSuspectedLocation != null ||
-                               appState.isInSearchMode ||
-                               appState.showingOverview;
-        
-        // Disable node interactions when navigation is in conflicting state
-        final shouldDisableNodeTaps = appState.isInSearchMode || appState.showingOverview;
-        
-        final markers = NodeMarkersBuilder.buildNodeMarkers(
-          nodes: nodesToRender,
-          mapController: mapController.mapController,
-          userLocation: userLocation,
-          selectedNodeId: selectedNodeId,
-          onNodeTap: onNodeTap, // Keep the original callback
-          shouldDim: shouldDimNodes,
-          enabled: !shouldDisableNodeTaps, // Use enabled parameter instead
-        );
+    // Determine if nodes should be dimmed and/or disabled
+    final shouldDimNodes = appState.selectedSuspectedLocation != null ||
+                           appState.isInSearchMode ||
+                           appState.showingOverview;
 
-        // Build suspected location markers (respect same zoom and count limits as nodes)
-        final suspectedLocationMarkers = <Marker>[];
-        if (appState.suspectedLocationsEnabled && mapBounds != null && 
-            currentZoom >= (appState.uploadMode == UploadMode.sandbox ? kOsmApiMinZoomLevel : kNodeMinZoomLevel)) {
-          final suspectedLocations = appState.getSuspectedLocationsInBoundsSync(
-            north: mapBounds.north,
-            south: mapBounds.south,
-            east: mapBounds.east,
-            west: mapBounds.west,
-          );
-          
-          // Apply same node count limit as surveillance nodes
-          final maxNodes = appState.maxNodes;
-          final limitedSuspectedLocations = suspectedLocations.take(maxNodes).toList();
-          
-          // Filter out suspected locations that are too close to real nodes
-          final filteredSuspectedLocations = _filterSuspectedLocationsByProximity(
-            suspectedLocations: limitedSuspectedLocations,
-            realNodes: nodesToRender,
-            minDistance: appState.suspectedLocationMinDistance,
-          );
-          
-          suspectedLocationMarkers.addAll(
-            SuspectedLocationMarkersBuilder.buildSuspectedLocationMarkers(
-              locations: filteredSuspectedLocations,
-              mapController: mapController.mapController,
-              selectedLocationId: appState.selectedSuspectedLocation?.ticketNo,
-              onLocationTap: onSuspectedLocationTap, // Keep the original callback
-              shouldDimAll: shouldDisableNodeTaps,
-              enabled: !shouldDisableNodeTaps, // Use enabled parameter instead
-            ),
-          );
-        }
+    // Disable node interactions when navigation is in conflicting state
+    final shouldDisableNodeTaps = appState.isInSearchMode || appState.showingOverview;
 
-        // Build center marker for add/edit sessions
-        final centerMarkers = _buildSessionMarkers(
-          mapController: mapController,
-          session: session,
-          editSession: editSession,
-        );
-
-        // Build provisional pin for navigation/search mode
-        final navigationMarkers = _buildNavigationMarkers(appState);
-
-        // Build start/end pins for route visualization
-        final routeMarkers = _buildRouteMarkers(appState);
-
-        return MarkerLayer(
-          markers: [
-            ...suspectedLocationMarkers, 
-            ...markers, 
-            ...centerMarkers,
-            ...navigationMarkers,
-            ...routeMarkers,
-          ]
-        );
-      },
+    final markers = NodeMarkersBuilder.buildNodeMarkers(
+      nodes: nodesToRender,
+      mapController: mapController.mapController,
+      zoom: currentZoom,
+      selectedNodeId: selectedNodeId,
+      onNodeTap: onNodeTap,
+      shouldDim: shouldDimNodes,
+      enabled: !shouldDisableNodeTaps,
     );
+
+    // User location marker (separate from node markers for clustering)
+    final userLocationMarkers = <Marker>[
+      if (userLocation != null)
+        Marker(
+          point: userLocation,
+          width: 16,
+          height: 16,
+          child: const Icon(Icons.my_location, color: Colors.blue),
+        ),
+    ];
+
+    // Build suspected location markers (respect same zoom and count limits as nodes)
+    final suspectedLocationMarkers = <Marker>[];
+    if (appState.suspectedLocationsEnabled && mapBounds != null &&
+        currentZoom >= (appState.uploadMode == UploadMode.sandbox ? kOsmApiMinZoomLevel : kNodeMinZoomLevel)) {
+      final suspectedLocations = appState.getSuspectedLocationsInBoundsSync(
+        north: mapBounds.north,
+        south: mapBounds.south,
+        east: mapBounds.east,
+        west: mapBounds.west,
+      );
+
+      // Apply same node count limit as surveillance nodes
+      final maxNodes = appState.maxNodes;
+      final limitedSuspectedLocations = suspectedLocations.take(maxNodes).toList();
+
+      // Filter out suspected locations that are too close to real nodes
+      final filteredSuspectedLocations = _filterSuspectedLocationsByProximity(
+        suspectedLocations: limitedSuspectedLocations,
+        realNodes: nodesToRender,
+        minDistance: appState.suspectedLocationMinDistance,
+      );
+
+      suspectedLocationMarkers.addAll(
+        SuspectedLocationMarkersBuilder.buildSuspectedLocationMarkers(
+          locations: filteredSuspectedLocations,
+          mapController: mapController.mapController,
+          selectedLocationId: appState.selectedSuspectedLocation?.ticketNo,
+          onLocationTap: onSuspectedLocationTap,
+          shouldDimAll: shouldDisableNodeTaps,
+          enabled: !shouldDisableNodeTaps,
+        ),
+      );
+    }
+
+    // Build center marker for add/edit sessions
+    final centerMarkers = _buildSessionMarkers(
+      mapController: mapController,
+      session: session,
+      editSession: editSession,
+    );
+
+    // Build provisional pin for navigation/search mode
+    final navigationMarkers = _buildNavigationMarkers(appState);
+
+    // Build start/end pins for route visualization
+    final routeMarkers = _buildRouteMarkers(appState);
+
+    // Node markers go into cluster layer
+    final clusterLayer = MarkerClusterLayerWidget(
+      options: MarkerClusterLayerOptions(
+        markers: markers,
+        maxClusterRadius: 80,
+        disableClusteringAtZoom: kNodeClusterMaxZoomLevel,
+        zoomToBoundsOnClick: true,
+        spiderfyCluster: false,
+        centerMarkerOnClick: false,
+        markerChildBehavior: true, // Let NodeMapMarker handle its own gestures
+        size: Size(kClusterIconDiameter, kClusterIconDiameter),
+        builder: (context, clusterMarkers) {
+          return ClusterIcon(count: clusterMarkers.length);
+        },
+      ),
+    );
+
+    // All other markers stay in a regular layer
+    final otherMarkersLayer = MarkerLayer(
+      markers: [
+        ...suspectedLocationMarkers,
+        ...userLocationMarkers,
+        ...centerMarkers,
+        ...navigationMarkers,
+        ...routeMarkers,
+      ],
+    );
+
+    return [clusterLayer, otherMarkersLayer];
   }
 
   /// Build center markers for add/edit sessions

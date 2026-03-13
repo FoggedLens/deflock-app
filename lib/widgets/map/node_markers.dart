@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
-import 'package:latlong2/latlong.dart';
 
 import '../../dev_config.dart';
 import '../../models/osm_node.dart';
@@ -14,12 +13,14 @@ class NodeMapMarker extends StatefulWidget {
   final MapController mapController;
   final void Function(OsmNode)? onNodeTap;
   final bool enabled;
-  
+  final double diameter;
+
   const NodeMapMarker({
-    required this.node, 
-    required this.mapController, 
+    required this.node,
+    required this.mapController,
     this.onNodeTap,
     this.enabled = true,
+    this.diameter = kNodeIconDiameter,
     super.key,
   });
 
@@ -91,7 +92,7 @@ class _NodeMapMarkerState extends State<NodeMapMarker> {
     return GestureDetector(
       onTap: _onTap,
       onDoubleTap: _onDoubleTap,
-      child: CameraIcon(type: iconType),
+      child: CameraIcon(type: iconType, diameter: widget.diameter),
     );
   }
 }
@@ -101,12 +102,13 @@ class NodeMarkersBuilder {
   static List<Marker> buildNodeMarkers({
     required List<OsmNode> nodes,
     required MapController mapController,
-    LatLng? userLocation,
+    required double zoom,
     int? selectedNodeId,
     void Function(OsmNode)? onNodeTap,
     bool shouldDim = false,
     bool enabled = true,
   }) {
+    final diameter = getScaledNodeDiameter(zoom);
     final markers = <Marker>[
       // Node markers
       ...nodes
@@ -115,31 +117,23 @@ class NodeMarkersBuilder {
           // Check if this node should be highlighted (selected) or dimmed
           final isSelected = selectedNodeId == n.id;
           final shouldDimNode = shouldDim || (selectedNodeId != null && !isSelected);
-          
+
           return Marker(
             point: n.coord,
-            width: kNodeIconDiameter,
-            height: kNodeIconDiameter,
+            width: diameter,
+            height: diameter,
             child: Opacity(
               opacity: shouldDimNode ? 0.5 : 1.0,
               child: NodeMapMarker(
-                node: n, 
+                node: n,
                 mapController: mapController,
                 onNodeTap: onNodeTap,
                 enabled: enabled,
+                diameter: diameter,
               ),
             ),
           );
         }),
-      
-      // User location marker
-      if (userLocation != null)
-        Marker(
-          point: userLocation,
-          width: 16,
-          height: 16,
-          child: const Icon(Icons.my_location, color: Colors.blue),
-        ),
     ];
 
     return markers;
