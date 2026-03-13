@@ -111,7 +111,23 @@
     "advancedSettings": "Configuración Avanzada",
     "advancedSettingsSubtitle": "Configuración de rendimiento, alertas y proveedores de teselas",
     "proximityAlerts": "Alertas de Proximidad",
-    "networkStatusIndicator": "Indicador de Estado de Red"
+    "networkStatusIndicator": "Indicador de Estado de Red",
+    "apiEndpoints": "Endpoints de API",
+    "apiEndpointsDescription": "Configurar el orden de prioridad de los endpoints de API, agregar endpoints personalizados o restablecer valores predeterminados.",
+    "apiEndpointRouting": "Enrutamiento",
+    "apiEndpointNodeSource": "Fuente de nodos",
+    "invalidUrl": "Ingrese una URL HTTPS válida",
+    "addEndpoint": "Agregar Endpoint",
+    "editEndpoint": "Editar Endpoint",
+    "resetToDefaults": "Restablecer Valores Predeterminados",
+    "endpointName": "Nombre del Endpoint",
+    "endpointUrl": "URL del Endpoint",
+    "endpointMaxRetries": "Máx. Reintentos",
+    "endpointTimeout": "Tiempo de espera (segundos)",
+    "endpointEnabled": "Habilitado",
+    "noEnabledEndpoints": "Al menos un endpoint debe permanecer habilitado",
+    "confirmResetEndpoints": "¿Restablecer todos los endpoints a su configuración predeterminada?",
+    "builtInEndpoint": "Incorporado"
   },
   "proximityAlerts": {
     "getNotified": "Recibe notificaciones al acercarte a dispositivos de vigilancia",
@@ -321,7 +337,12 @@
     "fetchPreview": "Obtener Vista Previa",
     "previewTileLoaded": "Tile de vista previa cargado exitosamente",
     "previewTileFailed": "Falló al obtener vista previa: {}",
-    "save": "Guardar"
+    "save": "Guardar",
+    "rasterTiles": "Ráster",
+    "vectorTiles": "Vectorial",
+    "styleUrl": "URL de estilo",
+    "styleUrlHint": "https://ejemplo.com/style.json",
+    "styleUrlRequired": "La URL de estilo es obligatoria"
   },
   "profiles": {
     "nodeProfiles": "Perfiles de Nodos",

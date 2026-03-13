@@ -111,7 +111,23 @@
     "advancedSettings": "Ustawienia Zaawansowane",
     "advancedSettingsSubtitle": "Wydajność, alerty i ustawienia dostawców kafelków",
     "proximityAlerts": "Alerty Bliskości",
-    "networkStatusIndicator": "Wskaźnik Stanu Sieci"
+    "networkStatusIndicator": "Wskaźnik Stanu Sieci",
+    "apiEndpoints": "Punkty końcowe API",
+    "apiEndpointsDescription": "Skonfiguruj kolejność priorytetów punktów końcowych API, dodaj niestandardowe punkty końcowe lub przywróć wartości domyślne.",
+    "apiEndpointRouting": "Trasowanie",
+    "apiEndpointNodeSource": "Źródło węzłów",
+    "invalidUrl": "Wprowadź prawidłowy URL HTTPS",
+    "addEndpoint": "Dodaj Punkt Końcowy",
+    "editEndpoint": "Edytuj Punkt Końcowy",
+    "resetToDefaults": "Przywróć Domyślne",
+    "endpointName": "Nazwa Punktu Końcowego",
+    "endpointUrl": "URL Punktu Końcowego",
+    "endpointMaxRetries": "Maks. Powtórzeń",
+    "endpointTimeout": "Limit czasu (sekundy)",
+    "endpointEnabled": "Włączony",
+    "noEnabledEndpoints": "Co najmniej jeden punkt końcowy musi pozostać włączony",
+    "confirmResetEndpoints": "Przywrócić wszystkie punkty końcowe do konfiguracji domyślnej?",
+    "builtInEndpoint": "Wbudowany"
   },
   "proximityAlerts": {
     "getNotified": "Otrzymuj powiadomienia przy zbliżaniu się do urządzeń nadzoru",
@@ -321,7 +337,12 @@
     "fetchPreview": "Pobierz Podgląd",
     "previewTileLoaded": "Kafelek podglądu załadowany pomyślnie",
     "previewTileFailed": "Nie udało się pobrać podglądu: {}",
-    "save": "Zapisz"
+    "save": "Zapisz",
+    "rasterTiles": "Rastrowe",
+    "vectorTiles": "Wektorowe",
+    "styleUrl": "URL stylu",
+    "styleUrlHint": "https://przyklad.com/style.json",
+    "styleUrlRequired": "URL stylu jest wymagany"
   },
   "profiles": {
     "nodeProfiles": "Profile Węzłów",

@@ -111,7 +111,23 @@
     "advancedSettings": "Gelişmiş Ayarlar",
     "advancedSettingsSubtitle": "Performans, uyarılar ve döşeme sağlayıcı ayarları",
     "proximityAlerts": "Yakınlık Uyarıları",
-    "networkStatusIndicator": "Ağ Durumu Göstergesi"
+    "networkStatusIndicator": "Ağ Durumu Göstergesi",
+    "apiEndpoints": "API Uç Noktaları",
+    "apiEndpointsDescription": "API uç noktası öncelik sırasını yapılandırın, özel uç noktalar ekleyin veya varsayılanlara sıfırlayın.",
+    "apiEndpointRouting": "Yönlendirme",
+    "apiEndpointNodeSource": "Düğüm kaynağı",
+    "invalidUrl": "Geçerli bir HTTPS URL'si girin",
+    "addEndpoint": "Uç Nokta Ekle",
+    "editEndpoint": "Uç Noktayı Düzenle",
+    "resetToDefaults": "Varsayılanlara Sıfırla",
+    "endpointName": "Uç Nokta Adı",
+    "endpointUrl": "Uç Nokta URL'si",
+    "endpointMaxRetries": "Maks. Yeniden Deneme",
+    "endpointTimeout": "Zaman Aşımı (saniye)",
+    "endpointEnabled": "Etkin",
+    "noEnabledEndpoints": "En az bir uç nokta etkin kalmalıdır",
+    "confirmResetEndpoints": "Tüm uç noktalar varsayılan yapılandırmaya sıfırlansın mı?",
+    "builtInEndpoint": "Yerleşik"
   },
   "proximityAlerts": {
     "getNotified": "Gözetleme cihazlarına yaklaşırken bildirim al",
@@ -321,7 +337,12 @@
     "fetchPreview": "Önizleme Getir",
     "previewTileLoaded": "Önizleme döşemesi başarıyla yüklendi",
     "previewTileFailed": "Önizleme getirilemedi: {}",
-    "save": "Kaydet"
+    "save": "Kaydet",
+    "rasterTiles": "Raster",
+    "vectorTiles": "Vektör",
+    "styleUrl": "Stil URL'si",
+    "styleUrlHint": "https://ornek.com/style.json",
+    "styleUrlRequired": "Stil URL'si gerekli"
   },
   "profiles": {
     "nodeProfiles": "Düğüm Profilleri",

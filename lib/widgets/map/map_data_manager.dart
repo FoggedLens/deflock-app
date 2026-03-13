@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
-import 'package:latlong2/latlong.dart';
 
 import '../../models/osm_node.dart';
 import '../../app_state.dart';
+import '../../services/node_data_manager.dart' show expandBounds;
 import '../node_provider_with_cache.dart';
 import '../../dev_config.dart';
 
@@ -30,21 +30,6 @@ class MapDataManager {
     }
   }
 
-  /// Expand bounds by the given multiplier, maintaining center point.
-  /// Used to expand rendering bounds to prevent nodes blinking at screen edges.
-  LatLngBounds _expandBounds(LatLngBounds bounds, double multiplier) {
-    final centerLat = (bounds.north + bounds.south) / 2;
-    final centerLng = (bounds.east + bounds.west) / 2;
-
-    final latSpan = (bounds.north - bounds.south) * multiplier / 2;
-    final lngSpan = (bounds.east - bounds.west) * multiplier / 2;
-
-    return LatLngBounds(
-      LatLng(centerLat - latSpan, centerLng - lngSpan),
-      LatLng(centerLat + latSpan, centerLng + lngSpan),
-    );
-  }
-
   /// Get nodes to render based on current map state
   /// Returns a MapDataResult containing all relevant node data and limit state
   MapDataResult getNodesForRendering({
@@ -63,7 +48,7 @@ class MapDataManager {
     if (currentZoom >= minZoom) {
       // Above minimum zoom - get cached nodes with expanded bounds to prevent edge blinking
       if (mapBounds != null) {
-        final expandedBounds = _expandBounds(mapBounds, kNodeRenderingBoundsExpansion);
+        final expandedBounds = expandBounds(mapBounds, kNodeRenderingBoundsExpansion);
         allNodes = _getNodesForBounds(expandedBounds);
       } else {
         allNodes = <OsmNode>[];

@@ -1,6 +1,8 @@
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
+import '../models/service_endpoint.dart';
+import '../models/tile_provider.dart' show kApiKeyPlaceholder;
 
 /// Identifies the type of external service being accessed.
 /// Used by [ServicePolicyResolver] to determine the correct compliance policy.
@@ -15,6 +17,8 @@ enum ServiceType {
   // Third-party tile services
   bingTiles, // *.tiles.virtualearth.net
   mapboxTiles, // api.mapbox.com
+  stadiaTiles, // tiles.stadiamaps.com
+  maptilerTiles, // api.maptiler.com
 
   // Everything else
   custom, // user's own infrastructure / unknown
@@ -129,6 +133,16 @@ class ServicePolicy {
         minCacheTtl = null,
         attributionUrl = null;
 
+  /// Vector tile services (Stadia Maps, MapTiler, etc.)
+  /// Concurrency managed by vector_map_tiles; offline download not yet supported.
+  const ServicePolicy.vectorTiles()
+      : maxConcurrentRequests = 0, // managed by vector_map_tiles
+        minRequestInterval = null,
+        allowsOfflineDownload = false,
+        requiresClientCaching = false,
+        minCacheTtl = null,
+        attributionUrl = null;
+
   /// Custom/self-hosted service — permissive defaults.
   const ServicePolicy.custom({
     int maxConcurrent = 8,
@@ -169,6 +183,8 @@ class ServicePolicyResolver {
     'taginfo.openstreetmap.org': ServiceType.tagInfo,
     'tiles.virtualearth.net': ServiceType.bingTiles,
     'api.mapbox.com': ServiceType.mapboxTiles,
+    'tiles.stadiamaps.com': ServiceType.stadiaTiles,
+    'api.maptiler.com': ServiceType.maptilerTiles,
   };
 
   /// ServiceType → policy mapping.
@@ -180,6 +196,8 @@ class ServicePolicyResolver {
     ServiceType.tagInfo: const ServicePolicy.tagInfo(),
     ServiceType.bingTiles: const ServicePolicy.bingTiles(),
     ServiceType.mapboxTiles: const ServicePolicy.mapboxTiles(),
+    ServiceType.stadiaTiles: const ServicePolicy.vectorTiles(),
+    ServiceType.maptilerTiles: const ServicePolicy.vectorTiles(),
     ServiceType.custom: const ServicePolicy(),
   };
 
@@ -233,7 +251,7 @@ class ServicePolicyResolver {
           .replaceAll(RegExp(r'\{z\}'), '0')
           .replaceAll(RegExp(r'\{x\}'), '0')
           .replaceAll(RegExp(r'\{y\}'), '0')
-          .replaceAll(RegExp(r'\{api_key\}'), 'key');
+          .replaceAll(kApiKeyPlaceholder, 'key');
       return Uri.parse(cleaned).host.toLowerCase();
     } catch (_) {
       return null;
@@ -255,22 +273,69 @@ enum ErrorDisposition {
 class ResiliencePolicy {
   final int maxRetries;
   final Duration httpTimeout;
-  final Duration _retryBackoffBase;
-  final int _retryBackoffMaxMs;
+  final Duration retryBackoffBase;
+  final int retryBackoffMaxMs;
 
   const ResiliencePolicy({
     this.maxRetries = 1,
     this.httpTimeout = const Duration(seconds: 30),
-    Duration retryBackoffBase = const Duration(milliseconds: 200),
-    int retryBackoffMaxMs = 5000,
-  })  : _retryBackoffBase = retryBackoffBase,
-        _retryBackoffMaxMs = retryBackoffMaxMs;
+    this.retryBackoffBase = const Duration(milliseconds: 200),
+    this.retryBackoffMaxMs = 5000,
+  });
 
   Duration retryDelay(int attempt) {
-    final ms = (_retryBackoffBase.inMilliseconds * (1 << attempt))
-        .clamp(0, _retryBackoffMaxMs);
+    final ms = (retryBackoffBase.inMilliseconds * (1 << attempt))
+        .clamp(0, retryBackoffMaxMs);
     return Duration(milliseconds: ms);
   }
+}
+
+/// Execute a request against an ordered list of endpoints with retry and fallback.
+///
+/// Tries each enabled endpoint in list order. For each endpoint:
+/// 1. Applies per-endpoint policy overrides (maxRetries, timeout) over [defaultPolicy]
+/// 2. Retries on [ErrorDisposition.retry] errors up to the effective maxRetries
+/// 3. On [ErrorDisposition.fallback], skips remaining retries and moves to next endpoint
+/// 4. On [ErrorDisposition.abort], rethrows immediately (no further endpoints tried)
+///
+/// Throws [StateError] if no endpoints are enabled.
+/// Rethrows the last error if all endpoints are exhausted.
+Future<T> executeWithEndpointList<T>({
+  required List<ServiceEndpoint> endpoints,
+  required Future<T> Function(String url) execute,
+  required ErrorDisposition Function(Object error) classifyError,
+  ResiliencePolicy defaultPolicy = const ResiliencePolicy(),
+}) async {
+  final enabled = endpoints.where((e) => e.enabled).toList(growable: false);
+  if (enabled.isEmpty) {
+    throw StateError('No enabled endpoints configured');
+  }
+
+  Object? lastError;
+  for (final endpoint in enabled) {
+    final effectivePolicy = ResiliencePolicy(
+      maxRetries: endpoint.maxRetries ?? defaultPolicy.maxRetries,
+      httpTimeout: endpoint.timeoutSeconds != null
+          ? Duration(seconds: endpoint.timeoutSeconds!)
+          : defaultPolicy.httpTimeout,
+      retryBackoffBase: defaultPolicy.retryBackoffBase,
+      retryBackoffMaxMs: defaultPolicy.retryBackoffMaxMs,
+    );
+    try {
+      return await _executeWithRetries(
+        endpoint.url,
+        execute,
+        classifyError,
+        effectivePolicy,
+      );
+    } catch (e) {
+      final disposition = classifyError(e);
+      if (disposition == ErrorDisposition.abort) rethrow;
+      lastError = e;
+      debugPrint('[Resilience] Endpoint ${endpoint.name} failed ($e), trying next');
+    }
+  }
+  throw lastError!; // All endpoints exhausted
 }
 
 /// Execute a request with retry and fallback logic.
@@ -282,6 +347,7 @@ class ResiliencePolicy {
 ///    - [ErrorDisposition.retry]: retries with backoff, then fallback if exhausted
 /// 3. If [fallbackUrl] is non-null and primary failed with a non-abort error,
 ///    repeats the retry loop against the fallback.
+@Deprecated('Use executeWithEndpointList instead')
 Future<T> executeWithFallback<T>({
   required String primaryUrl,
   required String? fallbackUrl,

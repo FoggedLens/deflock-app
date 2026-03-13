@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_map_animations/flutter_map_animations.dart';
@@ -83,7 +85,10 @@ class MapViewState extends State<MapView> {
 
   // Track active pointers to suppress follow-me animations during touch
   int _activePointers = 0;
-  
+
+  // Subscription for vector style loaded events
+  StreamSubscription<void>? _styleLoadedSub;
+
 
 
   @override
@@ -94,6 +99,9 @@ class MapViewState extends State<MapView> {
     _positionManager = MapPositionManager();
     _tileManager = TileLayerManager();
     _tileManager.initialize();
+    _styleLoadedSub = _tileManager.styleLoaded.listen((_) {
+      if (mounted) setState(() {});
+    });
     _nodeController = NodeRefreshController();
     _nodeController.initialize(onNodesUpdated: _onNodesUpdated);
     _gpsController = GpsController();
@@ -207,6 +215,7 @@ class MapViewState extends State<MapView> {
 
   @override
   void dispose() {
+    _styleLoadedSub?.cancel();
     _cameraDebounce.dispose();
     _tileDebounce.dispose();
     _mapPositionDebounce.dispose();

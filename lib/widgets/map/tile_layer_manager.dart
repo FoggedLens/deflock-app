@@ -3,10 +3,12 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:vector_map_tiles/vector_map_tiles.dart';
 
 import '../../models/tile_provider.dart' as models;
 import '../../services/deflock_tile_provider.dart';
 import '../../services/provider_tile_cache_manager.dart';
+import '../../services/vector_style_service.dart';
 
 /// Manages tile layer creation with per-provider caching and provider switching.
 ///
@@ -21,13 +23,25 @@ class TileLayerManager {
   String? _lastTileTypeId;
   bool? _lastOfflineMode;
 
+  /// Keys currently being loaded to prevent duplicate async loads.
+  final Set<String> _pendingStyleLoads = {};
+
+  /// Fires when a vector style finishes loading asynchronously.
+  /// Subscribers (e.g., MapView) call setState to trigger a rebuild.
+  final StreamController<void> _styleLoadedController =
+      StreamController<void>.broadcast();
+
+  /// Stream that fires when a vector style has been loaded.
+  Stream<void> get styleLoaded => _styleLoadedController.stream;
+
   /// Stream that triggers flutter_map to drop all tiles and reload.
   /// Fired after a debounced delay when tile errors are detected.
   final StreamController<void> _resetController =
       StreamController<void>.broadcast();
 
-  /// Debounce timer for scheduling a tile reset after errors.
-  Timer? _retryTimer;
+  /// Separate retry timers for raster and vector tile errors.
+  Timer? _rasterRetryTimer;
+  Timer? _vectorRetryTimer;
 
   /// Current retry delay — starts at [_minRetryDelay] and doubles on each
   /// retry cycle (capped at [_maxRetryDelay]).  Resets to [_minRetryDelay]
@@ -64,8 +78,11 @@ class TileLayerManager {
   /// called it when the TileLayer widget was removed, and it's safe to call
   /// again but unnecessary.)
   void dispose() {
-    _retryTimer?.cancel();
+    _rasterRetryTimer?.cancel();
+    _vectorRetryTimer?.cancel();
     _resetController.close();
+    _styleLoadedController.close();
+    _pendingStyleLoads.clear();
     for (final provider in _providers.values) {
       provider.shutdown();
     }
@@ -100,7 +117,8 @@ class TileLayerManager {
       // Reset backoff so the new provider starts with a clean slate.
       // Cancel any pending retry timer — it belongs to the old provider's errors.
       _retryDelay = _minRetryDelay;
-      _retryTimer?.cancel();
+      _rasterRetryTimer?.cancel();
+      _vectorRetryTimer?.cancel();
       debugPrint('[TileLayerManager] *** CACHE CLEAR *** $reason changed - rebuilding map $_mapRebuildKey');
     }
 
@@ -159,26 +177,46 @@ class TileLayerManager {
   }
 
   /// Schedule a debounced tile reset with exponential backoff.
-  ///
-  /// Cancels any pending retry timer and starts a new one at the current
-  /// [_retryDelay].  After the timer fires, [_retryDelay] doubles (capped
-  /// at [_maxRetryDelay]).
   @visibleForTesting
-  void scheduleRetry() {
-    _retryTimer?.cancel();
-    _retryTimer = Timer(_retryDelay, () {
-      if (!_resetController.isClosed) {
-        debugPrint('[TileLayerManager] Firing tile reset to retry failed tiles');
-        _resetController.add(null);
+  void scheduleRetry() => _scheduleRetryOn(
+        timer: _rasterRetryTimer,
+        setTimer: (t) => _rasterRetryTimer = t,
+        controller: _resetController,
+        label: 'raster tile',
+      );
+
+  /// Schedule a delayed vector style retry with exponential backoff.
+  void _scheduleVectorRetry() => _scheduleRetryOn(
+        timer: _vectorRetryTimer,
+        setTimer: (t) => _vectorRetryTimer = t,
+        controller: _styleLoadedController,
+        label: 'vector style',
+        onFire: () => _mapRebuildKey++,
+      );
+
+  /// Shared retry helper: cancels [timer], fires [controller] after
+  /// [_retryDelay], then doubles the delay (capped at [_maxRetryDelay]).
+  void _scheduleRetryOn({
+    required Timer? timer,
+    required void Function(Timer) setTimer,
+    required StreamController<void> controller,
+    required String label,
+    void Function()? onFire,
+  }) {
+    timer?.cancel();
+    setTimer(Timer(_retryDelay, () {
+      if (!controller.isClosed) {
+        debugPrint('[TileLayerManager] Retrying $label (delay was ${_retryDelay.inSeconds}s)');
+        onFire?.call();
+        controller.add(null);
       }
-      // Back off for next failure cycle
       _retryDelay = Duration(
         milliseconds: min(
           _retryDelay.inMilliseconds * 2,
           _maxRetryDelay.inMilliseconds,
         ),
       );
-    });
+    }));
   }
 
   /// Reset backoff to minimum delay.  Called when a tile loads successfully
@@ -195,9 +233,26 @@ class TileLayerManager {
 
   /// Build tile layer widget with current provider and type.
   ///
-  /// Gets or creates a [DeflockTileProvider] for the given provider/type
-  /// combination, each with its own isolated cache.
+  /// Dispatches to [_buildRasterTileLayer] or [_buildVectorTileLayer]
+  /// depending on [models.TileType.isVector].
   Widget buildTileLayer({
+    required models.TileProvider? selectedProvider,
+    required models.TileType? selectedTileType,
+  }) {
+    if (selectedTileType != null && selectedTileType.isVector) {
+      return _buildVectorTileLayer(
+        selectedProvider: selectedProvider,
+        selectedTileType: selectedTileType,
+      );
+    }
+    return _buildRasterTileLayer(
+      selectedProvider: selectedProvider,
+      selectedTileType: selectedTileType,
+    );
+  }
+
+  /// Build a raster [TileLayer] (existing behavior).
+  Widget _buildRasterTileLayer({
     required models.TileProvider? selectedProvider,
     required models.TileType? selectedTileType,
   }) {
@@ -206,9 +261,6 @@ class TileLayerManager {
       selectedTileType: selectedTileType,
     );
 
-    // Use the actual urlTemplate from the selected tile type. Our getTileUrl()
-    // override handles the real URL generation; flutter_map uses urlTemplate
-    // internally for cache key generation.
     final urlTemplate = selectedTileType?.urlTemplate
         ?? '${selectedProvider?.id ?? 'unknown'}/${selectedTileType?.id ?? 'unknown'}/{z}/{x}/{y}';
 
@@ -217,12 +269,71 @@ class TileLayerManager {
       userAgentPackageName: 'me.deflock.deflockapp',
       maxZoom: selectedTileType?.maxZoom.toDouble() ?? 18.0,
       tileProvider: tileProvider,
-      // Wire the reset stream so failed tiles get retried after a delay.
       reset: _resetController.stream,
       errorTileCallback: onTileLoadError,
-      // Clean up error tiles when they scroll off screen.
       evictErrorTileStrategy: EvictErrorTileStrategy.notVisible,
     );
+  }
+
+  /// Build a [VectorTileLayer] for vector style tile types.
+  ///
+  /// If the style is already cached, returns the layer immediately.
+  /// Otherwise, triggers an async load and returns a placeholder; when the
+  /// style loads, fires [styleLoaded] so the map can rebuild.
+  Widget _buildVectorTileLayer({
+    required models.TileProvider? selectedProvider,
+    required models.TileType? selectedTileType,
+  }) {
+    if (selectedTileType == null || selectedTileType.styleUrl == null) {
+      return const SizedBox.shrink();
+    }
+
+    final styleUrl = selectedTileType.styleUrl!;
+    final apiKey = selectedProvider?.apiKey;
+    final cached = VectorStyleService.instance.getCached(styleUrl, apiKey: apiKey);
+
+    if (cached != null) {
+      return VectorTileLayer(
+        tileProviders: cached.providers,
+        theme: cached.theme,
+        sprites: cached.sprites,
+        maximumZoom: selectedTileType.maxZoom.toDouble(),
+        tileOffset: TileOffset.mapbox,
+      );
+    }
+
+    // Style not loaded yet — trigger async load and return placeholder.
+    _loadVectorStyleAsync(
+      styleUrl: styleUrl,
+      apiKey: apiKey,
+    );
+
+    return const SizedBox.shrink();
+  }
+
+  /// Asynchronously load a vector style via [VectorStyleService].
+  void _loadVectorStyleAsync({
+    required String styleUrl,
+    String? apiKey,
+  }) {
+    final loadKey = '$styleUrl|${apiKey ?? ''}';
+    // Already in flight — VectorStyleService deduplicates, but skip the callback wiring.
+    if (_pendingStyleLoads.contains(loadKey)) return;
+    _pendingStyleLoads.add(loadKey);
+
+    VectorStyleService.instance
+        .load(styleUrl, apiKey: apiKey)
+        .then((_) {
+      _pendingStyleLoads.remove(loadKey);
+      if (!_styleLoadedController.isClosed) {
+        _mapRebuildKey++;
+        _styleLoadedController.add(null);
+      }
+    }).catchError((Object error) {
+      _pendingStyleLoads.remove(loadKey);
+      debugPrint('[TileLayerManager] Failed to load vector style: $error');
+      _scheduleVectorRetry();
+    });
   }
 
   /// Build a config fingerprint for drift detection.
