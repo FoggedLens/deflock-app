@@ -99,6 +99,8 @@ class AboutScreen extends StatelessWidget {
         const SizedBox(height: 8),
         _buildLinkText(context, 'Privacy Policy', 'https://deflock.me/privacy'),
         const SizedBox(height: 8),
+        _buildLinkText(context, 'Report issue with OSM base map', 'https://www.openstreetmap.org/fixthemap'),
+        const SizedBox(height: 8),
         _buildLinkText(context, 'DeFlock Discord', 'https://discord.gg/aV7v4R3sKT'),
         const SizedBox(height: 8),
         _buildLinkText(context, 'Source Code', 'https://github.com/FoggedLens/deflock-app'),

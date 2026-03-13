@@ -3,7 +3,8 @@
     "content": [
       "• Moved 'About OpenStreetMap' section from OSM Account page to Settings > About for better organization",
       "• Added 'Clear Caches' option to tile provider menus - easily free up storage space by clearing cached tiles for specific providers",
-      "• Enhanced node deletion workflow - users can now provide an informative reason when deleting surveillance devices"
+      "• Enhanced node deletion workflow - users can now provide an informative reason when deleting surveillance devices",
+      "• Added 'Report issue with OSM base map' link in About screen help section - easily report issues with the underlying OpenStreetMap data"
     ]
   },
   "2.9.1": {
