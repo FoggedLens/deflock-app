@@ -26,6 +26,46 @@ jobs:
       - name: Test
         run: flutter test
 
+  load-test-compile:
+    name: Load Test Compile & Unit Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 2
+
+      - name: Check for load-test changes
+        id: changes
+        run: |
+          if git diff --name-only HEAD~1 HEAD | grep -q '^load-tests/'; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          elif [ "${{ github.event_name }}" = "pull_request" ]; then
+            BASE=${{ github.event.pull_request.base.sha }}
+            if git diff --name-only "$BASE" HEAD | grep -q '^load-tests/'; then
+              echo "changed=true" >> "$GITHUB_OUTPUT"
+            else
+              echo "changed=false" >> "$GITHUB_OUTPUT"
+            fi
+          else
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Set up JDK 21
+        if: steps.changes.outputs.changed == 'true'
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Setup Gradle
+        if: steps.changes.outputs.changed == 'true'
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Compile & test
+        if: steps.changes.outputs.changed == 'true'
+        working-directory: load-tests
+        run: ./gradlew compileGatlingScala test
+
   build-debug-apk:
     name: Build Debug APK
     runs-on: ubuntu-latest
