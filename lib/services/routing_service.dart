@@ -5,6 +5,7 @@ import 'package:latlong2/latlong.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../app_state.dart';
+import '../models/service_endpoint.dart';
 import 'http_client.dart';
 import 'service_policy.dart';
 
@@ -34,17 +35,26 @@ class RoutingService {
   );
 
   final http.Client _client;
-  /// Optional override URL. When null, uses [defaultUrl].
-  final String? _baseUrlOverride;
+  /// Optional override endpoints for testing.
+  final List<ServiceEndpoint>? _endpointsOverride;
 
-  RoutingService({http.Client? client, String? baseUrl})
+  RoutingService({http.Client? client, List<ServiceEndpoint>? endpoints})
       : _client = client ?? UserAgentClient(),
-        _baseUrlOverride = baseUrl;
+        _endpointsOverride = endpoints;
 
   void close() => _client.close();
 
-  /// Resolve the primary URL to use: constructor override or default.
-  String get _primaryUrl => _baseUrlOverride ?? defaultUrl;
+  /// Resolve the endpoint list: constructor override > AppState > defaults.
+  List<ServiceEndpoint> get _endpoints {
+    if (_endpointsOverride != null) return _endpointsOverride;
+    try {
+      final endpoints = AppState.instance.enabledRoutingEndpoints;
+      if (endpoints.isNotEmpty) return endpoints;
+    } catch (_) {
+      // AppState may not be initialized yet (e.g., in tests)
+    }
+    return DefaultServiceEndpoints.routing();
+  }
 
   // Calculate route between two points
   Future<RouteResult> calculateRoute({
@@ -81,15 +91,11 @@ class RoutingService {
       'show_exclusion_zone': false,
     };
 
-    final primaryUrl = _primaryUrl;
-    final canFallback = _baseUrlOverride == null;
-
-    return executeWithFallback<RouteResult>(
-      primaryUrl: primaryUrl,
-      fallbackUrl: canFallback ? fallbackUrl : null,
+    return executeWithEndpointList<RouteResult>(
+      endpoints: _endpoints,
       execute: (url) => _postRoute(url, params),
       classifyError: _classifyError,
-      policy: _policy,
+      defaultPolicy: _policy,
     );
   }
 
