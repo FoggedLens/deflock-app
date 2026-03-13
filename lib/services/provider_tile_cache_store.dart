@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:collection';
 import 'dart:convert';
 import 'dart:io';
 
@@ -27,6 +28,10 @@ class ProviderTileCacheStore implements MapCachingProvider {
   /// [putTile] call to avoid blocking construction.
   int? _estimatedSize;
 
+  /// Semaphore to limit concurrent file I/O operations and prevent
+  /// "too many open files" errors during heavy tile loading.
+  static final _ioSemaphore = _Semaphore(20); // Max 20 concurrent file operations
+
   /// Throttle: don't re-scan more than once per minute.
   DateTime? _lastPruneCheck;
 
@@ -52,9 +57,16 @@ class ProviderTileCacheStore implements MapCachingProvider {
     final metaFile = File(p.join(cacheDirectory, '$key.meta'));
 
     try {
-      final bytes = await tileFile.readAsBytes();
-      final metaJson = json.decode(await metaFile.readAsString())
-          as Map<String, dynamic>;
+      // Use semaphore to limit concurrent file I/O operations
+      final result = await _ioSemaphore.execute(() async {
+        final bytes = await tileFile.readAsBytes();
+        final metaJson = json.decode(await metaFile.readAsString())
+            as Map<String, dynamic>;
+        return (bytes: bytes, metaJson: metaJson);
+      });
+      
+      final bytes = result.bytes;
+      final metaJson = result.metaJson;
 
       final metadata = CachedMapTileMetadata(
         staleAt: DateTime.fromMillisecondsSinceEpoch(
@@ -120,10 +132,13 @@ class ProviderTileCacheStore implements MapCachingProvider {
 
     // Write .tile before .meta: if we crash between the two writes, the
     // read path's both-must-exist check sees a miss rather than an orphan .meta.
-    if (bytes != null) {
-      await tileFile.writeAsBytes(bytes);
-    }
-    await metaFile.writeAsString(metaJson);
+    // Use semaphore to limit concurrent file I/O and prevent "too many open files" errors.
+    await _ioSemaphore.execute(() async {
+      if (bytes != null) {
+        await tileFile.writeAsBytes(bytes);
+      }
+      await metaFile.writeAsString(metaJson);
+    });
 
     // Reset size estimate so it resyncs from disk on next check.
     // This avoids drift from overwrites where the old size isn't subtracted.
@@ -250,14 +265,19 @@ class ProviderTileCacheStore implements MapCachingProvider {
         final metaFile = File(p.join(cacheDirectory, '$key.meta'));
 
         try {
-          await entry.file.delete();
-          freedBytes += entry.stat.size;
+          final deletedBytes = await _ioSemaphore.execute(() async {
+            await entry.file.delete();
+            var bytes = entry.stat.size;
+            if (await metaFile.exists()) {
+              final metaStat = await metaFile.stat();
+              await metaFile.delete();
+              bytes += metaStat.size;
+            }
+            return bytes;
+          });
+          
+          freedBytes += deletedBytes;
           evictedKeys.add(key);
-          if (await metaFile.exists()) {
-            final metaStat = await metaFile.stat();
-            await metaFile.delete();
-            freedBytes += metaStat.size;
-          }
         } catch (e) {
           debugPrint('[ProviderTileCacheStore] Failed to evict $key: $e');
         }
@@ -312,4 +332,45 @@ class ProviderTileCacheStore implements MapCachingProvider {
   /// Only exposed for testing — production code uses [_scheduleEvictionCheck].
   @visibleForTesting
   Future<void> forceEviction() => _evictIfNeeded();
+}
+
+/// Simple semaphore to limit concurrent operations and prevent resource exhaustion.
+class _Semaphore {
+  final int maxCount;
+  int _currentCount;
+  final Queue<Completer<void>> _waitQueue = Queue<Completer<void>>();
+
+  _Semaphore(this.maxCount) : _currentCount = maxCount;
+
+  /// Acquire a permit. Returns a Future that completes when a permit is available.
+  Future<void> acquire() {
+    if (_currentCount > 0) {
+      _currentCount--;
+      return Future.value();
+    } else {
+      final completer = Completer<void>();
+      _waitQueue.add(completer);
+      return completer.future;
+    }
+  }
+
+  /// Release a permit, potentially unblocking a waiting operation.
+  void release() {
+    if (_waitQueue.isNotEmpty) {
+      final completer = _waitQueue.removeFirst();
+      completer.complete();
+    } else {
+      _currentCount++;
+    }
+  }
+
+  /// Execute a function while holding a permit.
+  Future<T> execute<T>(Future<T> Function() operation) async {
+    await acquire();
+    try {
+      return await operation();
+    } finally {
+      release();
+    }
+  }
 }
