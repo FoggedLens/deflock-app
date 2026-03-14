@@ -215,7 +215,7 @@ class AboutScreen extends StatelessWidget {
   /// Dev-only nuclear reset button (only visible in debug mode)
   Widget _buildDevNuclearResetButton(BuildContext context) {
     return Card(
-      color: Theme.of(context).colorScheme.errorContainer.withOpacity(0.1),
+      color: Theme.of(context).colorScheme.errorContainer.withValues(alpha: 0.1),
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -242,7 +242,7 @@ class AboutScreen extends StatelessWidget {
             Text(
               'These tools are only available in debug mode for development and troubleshooting.',
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
               ),
             ),
             const SizedBox(height: 16),
