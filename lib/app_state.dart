@@ -414,6 +414,11 @@ class AppState extends ChangeNotifier {
   void deleteProfile(NodeProfile p) {
     _profileState.deleteProfile(p);
   }
+
+  /// Reload all profiles from storage (useful after migrations modify stored profiles)
+  Future<void> reloadProfiles() async {
+    await _profileState.reloadFromStorage();
+  }
   
   // Callback when a profile is deleted - clear any stale session references
   void _onProfileDeleted(NodeProfile deletedProfile) {

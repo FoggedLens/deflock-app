@@ -6,6 +6,7 @@ import 'app_state.dart';
 import 'services/profile_service.dart';
 import 'services/suspected_location_cache.dart';
 import 'widgets/nuclear_reset_dialog.dart';
+import 'dev_config.dart';
 
 /// One-time migrations that run when users upgrade to specific versions.
 /// Each migration function is named after the version where it should run.
@@ -142,6 +143,77 @@ class OneTimeMigrations {
     }
   }
 
+  /// Clear non-360 FOV values from all profiles (v2.10.0)
+  static Future<void> migrate_2_10_0(AppState appState) async {
+    debugPrint('[Migration] 2.10.0 STARTED: Clearing non-360 FOV values from profiles');
+    
+    try {
+      // Check dev config flag
+      debugPrint('[Migration] 2.10.0: kEnableNon360FOVs = $kEnableNon360FOVs');
+      
+      // Only perform this migration if non-360 FOVs are disabled
+      if (kEnableNon360FOVs) {
+        debugPrint('[Migration] 2.10.0: Non-360 FOVs enabled, skipping FOV cleanup');
+        return;
+      }
+
+      // Load all profiles from storage
+      debugPrint('[Migration] 2.10.0: Loading profiles from storage...');
+      final profiles = await ProfileService().load();
+      debugPrint('[Migration] 2.10.0: Loaded ${profiles.length} profiles');
+      
+      bool anyProfileChanged = false;
+      int profilesWithFOV = 0;
+      int profilesCleared = 0;
+
+      // Log all profiles and their FOV values for debugging
+      for (final profile in profiles) {
+        final fovStr = profile.fov?.toString() ?? 'null';
+        debugPrint('[Migration] 2.10.0: Profile "${profile.name}" (${profile.id}) has FOV: $fovStr');
+        if (profile.fov != null) profilesWithFOV++;
+      }
+
+      // Clear non-360 FOV values from all profiles
+      final updatedProfiles = profiles.map((profile) {
+        if (profile.fov != null) {
+          // Use approximation to handle floating point precision issues
+          final fovValue = profile.fov!;
+          final is360 = (fovValue - 360.0).abs() < 0.01; // Within 0.01 degrees of 360
+          
+          if (!is360) {
+            debugPrint('[Migration] 2.10.0: CLEARING FOV ${profile.fov} from profile: ${profile.name} (${profile.id})');
+            anyProfileChanged = true;
+            profilesCleared++;
+            return profile.copyWith(fov: null);
+          } else {
+            debugPrint('[Migration] 2.10.0: Keeping FOV ${profile.fov} (360-degree) for profile: ${profile.name} (${profile.id})');
+          }
+        }
+        return profile;
+      }).toList();
+
+      // Save updated profiles back to storage if any changes were made
+      if (anyProfileChanged) {
+        debugPrint('[Migration] 2.10.0: Saving ${updatedProfiles.length} profiles back to storage (${profilesCleared} profiles modified)...');
+        await ProfileService().save(updatedProfiles);
+        debugPrint('[Migration] 2.10.0: Updated profiles saved to storage successfully');
+        
+        // Reload profiles in AppState to reflect the changes immediately
+        debugPrint('[Migration] 2.10.0: Reloading profiles in AppState...');
+        await appState.reloadProfiles();
+        debugPrint('[Migration] 2.10.0: Profiles reloaded in AppState');
+      } else {
+        debugPrint('[Migration] 2.10.0: No profiles with non-360 FOV found (${profilesWithFOV} profiles had FOV values, none needed clearing)');
+      }
+
+      debugPrint('[Migration] 2.10.0 COMPLETED: cleared non-360 FOV values from profiles');
+    } catch (e, stackTrace) {
+      debugPrint('[Migration] 2.10.0 ERROR: Failed to clear non-360 FOV values: $e');
+      debugPrint('[Migration] 2.10.0 ERROR: Stack trace: $stackTrace');
+      // Don't rethrow - this is non-critical, FOV restrictions will still apply going forward
+    }
+  }
+
   /// Get the migration function for a specific version
   static Future<void> Function(AppState)? getMigrationForVersion(String version) {
     switch (version) {
@@ -157,6 +229,8 @@ class OneTimeMigrations {
         return migrate_2_1_0;
       case '2.7.3':
         return migrate_2_7_3;
+      case '2.10.0':
+        return migrate_2_10_0;
       default:
         return null;
     }

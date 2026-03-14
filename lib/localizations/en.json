@@ -361,6 +361,8 @@
     "fovHint": "FOV in degrees (leave empty for default)",
     "fovSubtitle": "Camera field of view - used for cone width and range submission format",
     "fovInvalid": "FOV must be between 1 and 360 degrees",
+    "fov360": "360 FOV",
+    "fov360Subtitle": "Camera has 360-degree omnidirectional field of view",
     "submittable": "Submittable",
     "submittableSubtitle": "Whether this profile can be used for camera submissions",
     "osmTags": "OSM Tags",

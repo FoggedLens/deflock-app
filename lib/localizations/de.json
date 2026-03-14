@@ -324,6 +324,8 @@
     "fovHint": "Sichtfeld in Grad (leer lassen für Standard)",
     "fovSubtitle": "Kamera-Sichtfeld - verwendet für Kegelbreite und Bereichsübertragungsformat",
     "fovInvalid": "Sichtfeld muss zwischen 1 und 360 Grad liegen",
+    "fov360": "360° Sichtfeld",
+    "fov360Subtitle": "Kamera hat 360-Grad omnidirektionales Sichtfeld",
     "submittable": "Übertragbar",
     "submittableSubtitle": "Ob dieses Profil für Kamera-Übertragungen verwendet werden kann",
     "osmTags": "OSM-Tags",

@@ -361,6 +361,8 @@
     "fovHint": "FOV w stopniach (zostaw puste dla domyślnego)",
     "fovSubtitle": "Pole widzenia kamery - używane dla szerokości stożka i formatu zgłaszania zasięgu",
     "fovInvalid": "FOV musi być między 1 a 360 stopniami",
+    "fov360": "Pole Widzenia 360°",
+    "fov360Subtitle": "Kamera ma wielokierunkowe pole widzenia o zasięgu 360 stopni",
     "submittable": "Możliwy do Zgłoszenia",
     "submittableSubtitle": "Czy ten profil może być używany do zgłoszeń kamer",
     "osmTags": "Tagi OSM",

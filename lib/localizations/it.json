@@ -361,6 +361,8 @@
     "fovHint": "Campo visivo in gradi (lasciare vuoto per il valore predefinito)",
     "fovSubtitle": "Campo visivo della telecamera - utilizzato per la larghezza del cono e il formato di invio per intervallo",
     "fovInvalid": "Il campo visivo deve essere tra 1 e 360 gradi",
+    "fov360": "Campo Visivo 360°",
+    "fov360Subtitle": "La telecamera ha un campo visivo omnidirezionale di 360 gradi",
     "submittable": "Inviabile",
     "submittableSubtitle": "Se questo profilo può essere usato per invii di telecamere",
     "osmTags": "Tag OSM",

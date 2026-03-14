@@ -225,8 +225,20 @@ class ChangelogService {
       versionsNeedingMigration.add('1.6.3');
     }
     
+    if (needsMigration(lastSeenVersion, currentVersion, '1.8.0')) {
+      versionsNeedingMigration.add('1.8.0');
+    }
+    
+    if (needsMigration(lastSeenVersion, currentVersion, '2.1.0')) {
+      versionsNeedingMigration.add('2.1.0');
+    }
+    
     if (needsMigration(lastSeenVersion, currentVersion, '2.7.3')) {
       versionsNeedingMigration.add('2.7.3');
+    }
+    
+    if (needsMigration(lastSeenVersion, currentVersion, '2.10.0')) {
+      versionsNeedingMigration.add('2.10.0');
     }
     
     // Future versions can be added here

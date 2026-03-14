@@ -82,6 +82,9 @@ const bool kEnableNodeEdits = true; // Set to false to temporarily disable node 
 // Node extraction features - set to false to hide extract functionality for constrained nodes
 const bool kEnableNodeExtraction = false; // Set to true to enable extract from way/relation feature (WIP)
 
+// Profile FOV features - set to false to restrict profiles to 360° FOV only
+const bool kEnableNon360FOVs = false; // Set to true to allow custom FOV values in profiles
+
 /// Navigation availability: only dev builds, and only when online
 bool enableNavigationFeatures({required bool offlineMode}) {
   return kEnableNavigationFeatures && !offlineMode;

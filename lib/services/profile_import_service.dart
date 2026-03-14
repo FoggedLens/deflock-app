@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:uuid/uuid.dart';
 
 import '../models/node_profile.dart';
+import '../dev_config.dart';
 
 class ProfileImportService {
   // Maximum size for base64 encoded profile data (approx 50KB decoded)
@@ -72,13 +73,17 @@ class ProfileImportService {
       final requiresDirection = data['requiresDirection'] ?? true;
       final submittable = data['submittable'] ?? true;
       
-      // Parse FOV if provided
+      // Parse FOV if provided, applying restrictions based on dev config
       double? fov;
       if (data['fov'] != null) {
         if (data['fov'] is num) {
           final fovValue = (data['fov'] as num).toDouble();
           if (fovValue > 0 && fovValue <= 360) {
-            fov = fovValue;
+            // If non-360 FOVs are disabled, only allow 360° FOV
+            if (kEnableNon360FOVs || fovValue == 360.0) {
+              fov = fovValue;
+            }
+            // Otherwise, clear non-360 FOV values (set fov to null)
           }
         }
       }

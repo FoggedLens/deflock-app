@@ -1,4 +1,11 @@
 {
+  "2.10.0": {
+    "content": [
+      "• Simplified profile field-of-view settings - profiles now use a simple '360 FOV' checkbox instead of custom degree values",
+      "• Existing profiles with non-360° FOV settings have been automatically updated to use default cone angles",
+      "• All existing functionality for reading and displaying surveillance devices with custom FOV ranges is preserved"
+    ]
+  },
   "2.9.2": {
     "content": [
       "• Moved 'About OpenStreetMap' section from OSM Account page to Settings > About for better organization",

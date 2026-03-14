@@ -361,6 +361,8 @@
     "fovHint": "FOV derece cinsinden (varsayılan için boş bırakın)",
     "fovSubtitle": "Kamera görüş alanı - koni genişliği ve aralık gönderim formatı için kullanılır",
     "fovInvalid": "FOV 1 ile 360 derece arasında olmalıdır",
+    "fov360": "360° Görüş Alanı",
+    "fov360Subtitle": "Kamera 360 derece çok yönlü görüş alanına sahiptir",
     "submittable": "Gönderilebilir",
     "submittableSubtitle": "Bu profilin kamera gönderimlerinde kullanılıp kullanılamayacağı",
     "osmTags": "OSM Etiketleri",

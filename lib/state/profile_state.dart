@@ -57,6 +57,28 @@ class ProfileState extends ChangeNotifier {
     _customOrder = prefs.getStringList(_profileOrderPrefsKey) ?? [];
   }
 
+  /// Reload all profiles from storage (useful after migrations modify stored profiles)
+  Future<void> reloadFromStorage() async {
+    // Preserve enabled state by ID
+    final enabledIds = _enabled.map((p) => p.id).toSet();
+    
+    // Clear and reload profiles
+    _profiles.clear();
+    _profiles.addAll(await ProfileService().load());
+    
+    // Restore enabled state for profiles that still exist
+    _enabled.clear();
+    _enabled.addAll(_profiles.where((p) => enabledIds.contains(p.id)));
+    
+    // Safety: Always have at least one enabled profile
+    if (_enabled.isEmpty && _profiles.isNotEmpty) {
+      final builtIn = _profiles.firstWhere((profile) => profile.builtin, orElse: () => _profiles.first);
+      _enabled.add(builtIn);
+    }
+    
+    notifyListeners();
+  }
+
   void toggleProfile(NodeProfile p, bool e) {
     if (e) {
       _enabled.add(p);

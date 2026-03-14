@@ -361,6 +361,8 @@
     "fovHint": "Champ de vision en degrés (laisser vide pour la valeur par défaut)",
     "fovSubtitle": "Champ de vision de la caméra - utilisé pour la largeur du cône et le format de soumission par plage",
     "fovInvalid": "Le champ de vision doit être entre 1 et 360 degrés",
+    "fov360": "Champ de Vision 360°",
+    "fov360Subtitle": "La caméra a un champ de vision omnidirectionnel de 360 degrés",
     "submittable": "Soumissible",
     "submittableSubtitle": "Si ce profil peut être utilisé pour les soumissions de caméras",
     "osmTags": "Balises OSM",

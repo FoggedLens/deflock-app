@@ -361,6 +361,8 @@
     "fovHint": "Campo de visión en grados (dejar vacío para el predeterminado)",
     "fovSubtitle": "Campo de visión de la cámara - usado para el ancho del cono y formato de envío por rango",
     "fovInvalid": "El campo de visión debe estar entre 1 y 360 grados",
+    "fov360": "Campo de Visión 360°",
+    "fov360Subtitle": "La cámara tiene un campo de visión omnidireccional de 360 grados",
     "submittable": "Envíable",
     "submittableSubtitle": "Si este perfil puede usarse para envíos de cámaras",
     "osmTags": "Etiquetas OSM",

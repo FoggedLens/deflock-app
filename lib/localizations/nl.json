@@ -361,6 +361,8 @@
     "fovHint": "FOV in graden (laat leeg voor standaard)",
     "fovSubtitle": "Camera gezichtsveld - gebruikt voor kegel breedte en bereik inzending formaat",
     "fovInvalid": "FOV moet tussen 1 en 360 graden zijn",
+    "fov360": "360° Gezichtsveld",
+    "fov360Subtitle": "Camera heeft een 360-graden omnidirectioneel gezichtsveld",
     "submittable": "Indienbaar",
     "submittableSubtitle": "Of dit profiel gebruikt kan worden voor camera inzendingen",
     "osmTags": "OSM Tags",

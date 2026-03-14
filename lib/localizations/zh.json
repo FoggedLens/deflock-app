@@ -361,6 +361,8 @@
     "fovHint": "视场角度数（留空使用默认值）",
     "fovSubtitle": "摄像头视场角 - 用于锥体宽度和范围提交格式",
     "fovInvalid": "视场角必须在1到360度之间",
+    "fov360": "360°视场角",
+    "fov360Subtitle": "摄像头具有360度全方向视场角",
     "submittable": "可提交",
     "submittableSubtitle": "此配置文件是否可用于摄像头提交",
     "osmTags": "OSM 标签",
