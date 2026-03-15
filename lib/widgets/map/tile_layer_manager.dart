@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io' as io;
 import 'dart:math';
 
 import 'package:flutter/material.dart';
@@ -299,6 +300,17 @@ class TileLayerManager {
         sprites: cached.sprites,
         maximumZoom: selectedTileType.maxZoom.toDouble(),
         tileOffset: TileOffset.mapbox,
+        fileCacheMaximumSizeInBytes: 200 * 1024 * 1024, // 200 MB
+        fileCacheTtl: const Duration(days: 30),
+        cacheFolder: ProviderTileCacheManager.isInitialized
+            // ignore: return_of_invalid_type_from_closure
+            ? () async => io.Directory(
+                  ProviderTileCacheManager.getCacheDirectory(
+                    providerId: selectedProvider!.id,
+                    tileTypeId: selectedTileType.id,
+                  ),
+                )
+            : null,
       );
     }
 
