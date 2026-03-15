@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../dev_config.dart';
 import '../services/localization_service.dart';
 import '../services/nuclear_reset_service.dart';
 import '../widgets/welcome_dialog.dart';
@@ -87,7 +88,7 @@ class AboutScreen extends StatelessWidget {
               _buildHelpLinks(context),
               
               // Dev-only nuclear reset button at very bottom
-              if (kDebugMode) ...[
+              if (kDebugMode || kEnableDevelopmentModes) ...[
                 const SizedBox(height: 32),
                 _buildDevNuclearResetButton(context),
                 const SizedBox(height: 16),
