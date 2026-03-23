@@ -442,6 +442,10 @@ class AppState extends ChangeNotifier {
     _operatorProfileState.deleteProfile(p);
   }
 
+  void reorderOperatorProfiles(int oldIndex, int newIndex) {
+    _operatorProfileState.reorderProfiles(oldIndex, newIndex);
+  }
+
   // ---------- Session Methods ----------
   void startAddSession() {
     _sessionState.startAddSession(enabledProfiles);

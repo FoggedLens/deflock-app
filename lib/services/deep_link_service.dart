@@ -3,8 +3,11 @@ import 'package:app_links/app_links.dart';
 import 'package:flutter/material.dart';
 
 import '../models/node_profile.dart';
+import '../models/operator_profile.dart';
 import 'profile_import_service.dart';
+import 'operator_profile_import_service.dart';
 import '../screens/profile_editor.dart';
+import '../screens/operator_profile_editor.dart';
 
 class DeepLinkService {
   static final DeepLinkService _instance = DeepLinkService._internal();
@@ -86,8 +89,16 @@ class DeepLinkService {
     }
   }
   
-  /// Handle profile add deep link: `deflockapp://profiles/add?p=<base64>`
+  /// Handle profile add deep link: `deflockapp://profiles/add?p=<base64>` or `deflockapp://profiles/add?op=<base64>`
   void _handleAddProfileLink(Uri uri) {
+    // Check for operator profile parameter first
+    final operatorBase64Data = uri.queryParameters['op'];
+    if (operatorBase64Data != null && operatorBase64Data.isNotEmpty) {
+      _handleOperatorProfileImport(operatorBase64Data);
+      return;
+    }
+    
+    // Otherwise check for device profile parameter
     final base64Data = uri.queryParameters['p'];
     
     if (base64Data == null || base64Data.isEmpty) {
@@ -107,6 +118,20 @@ class DeepLinkService {
     _navigateToProfileEditor(profile);
   }
   
+  /// Handle operator profile import from deep link
+  void _handleOperatorProfileImport(String base64Data) {
+    // Parse operator profile from base64
+    final operatorProfile = OperatorProfileImportService.parseProfileFromBase64(base64Data);
+    
+    if (operatorProfile == null) {
+      _showError('Invalid operator profile data');
+      return;
+    }
+    
+    // Navigate to operator profile editor with the imported profile
+    _navigateToOperatorProfileEditor(operatorProfile);
+  }
+  
   /// Navigate to profile editor with pre-filled profile data
   void _navigateToProfileEditor(NodeProfile profile) {
     final context = _navigatorKey?.currentContext;
@@ -120,6 +145,23 @@ class DeepLinkService {
       context,
       MaterialPageRoute(
         builder: (_) => ProfileEditor(profile: profile),
+      ),
+    );
+  }
+  
+  /// Navigate to operator profile editor with pre-filled operator profile data
+  void _navigateToOperatorProfileEditor(OperatorProfile operatorProfile) {
+    final context = _navigatorKey?.currentContext;
+    
+    if (context == null) {
+      debugPrint('[DeepLinkService] No navigator context available');
+      return;
+    }
+    
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => OperatorProfileEditor(profile: operatorProfile),
       ),
     );
   }

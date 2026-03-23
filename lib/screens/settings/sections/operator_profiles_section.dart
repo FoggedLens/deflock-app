@@ -54,47 +54,64 @@ class OperatorProfilesSection extends StatelessWidget {
                 ),
               )
             else
-              ...appState.operatorProfiles.map(
-                (p) => ListTile(
-                  title: Text(p.name),
-                  subtitle: Text(locService.t('operatorProfiles.tagsCount', params: [p.tags.length.toString()])),
-                  trailing: PopupMenuButton(
-                    itemBuilder: (context) => [
-                      PopupMenuItem(
-                        value: 'edit',
-                        child: Row(
-                          children: [
-                            const Icon(Icons.edit),
-                            const SizedBox(width: 8),
-                            Text(locService.t('actions.edit')),
-                          ],
-                        ),
+              ReorderableListView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: appState.operatorProfiles.length,
+                onReorder: (oldIndex, newIndex) {
+                  appState.reorderOperatorProfiles(oldIndex, newIndex);
+                },
+                itemBuilder: (context, index) {
+                  final p = appState.operatorProfiles[index];
+                  return ListTile(
+                    key: ValueKey(p.id),
+                    leading: ReorderableDragStartListener(
+                      index: index,
+                      child: const Icon(
+                        Icons.drag_handle,
+                        color: Colors.grey,
                       ),
-                      PopupMenuItem(
-                        value: 'delete',
-                        child: Row(
-                          children: [
-                            const Icon(Icons.delete, color: Colors.red),
-                            const SizedBox(width: 8),
-                            Text(locService.t('operatorProfiles.deleteOperatorProfile'), style: const TextStyle(color: Colors.red)),
-                          ],
-                        ),
-                      ),
-                    ],
-                    onSelected: (value) {
-                      if (value == 'edit') {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => OperatorProfileEditor(profile: p),
+                    ),
+                    title: Text(p.name),
+                    subtitle: Text(locService.t('operatorProfiles.tagsCount', params: [p.tags.length.toString()])),
+                    trailing: PopupMenuButton(
+                      itemBuilder: (context) => [
+                        PopupMenuItem(
+                          value: 'edit',
+                          child: Row(
+                            children: [
+                              const Icon(Icons.edit),
+                              const SizedBox(width: 8),
+                              Text(locService.t('actions.edit')),
+                            ],
                           ),
-                        );
-                      } else if (value == 'delete') {
-                        _showDeleteProfileDialog(context, p);
-                      }
-                    },
-                  ),
-                ),
+                        ),
+                        PopupMenuItem(
+                          value: 'delete',
+                          child: Row(
+                            children: [
+                              const Icon(Icons.delete, color: Colors.red),
+                              const SizedBox(width: 8),
+                              Text(locService.t('operatorProfiles.deleteOperatorProfile'), style: const TextStyle(color: Colors.red)),
+                            ],
+                          ),
+                        ),
+                      ],
+                      onSelected: (value) {
+                        if (value == 'edit') {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => OperatorProfileEditor(profile: p),
+                            ),
+                          );
+                        } else if (value == 'delete') {
+                          _showDeleteProfileDialog(context, p);
+                        }
+                      },
+                    ),
+                  );
+                },
               ),
           ],
         );

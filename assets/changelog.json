@@ -1,4 +1,11 @@
 {
+  "2.10.1": {
+    "content": [
+      "• Operator profiles are now reorderable - drag to reorder them in settings and on the refine tags page",
+      "• Added operator profile import via deep links - use ?op=<base64 json> URLs to import operator profiles",
+      "• Improved operator profile management UI consistency with device profiles"
+    ]
+  },
   "2.10.0": {
     "content": [
       "• Simplified profile field-of-view settings - profiles now use a simple '360 FOV' checkbox instead of custom degree values",
