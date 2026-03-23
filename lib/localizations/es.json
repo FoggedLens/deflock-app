@@ -526,7 +526,7 @@
     "dataSourceDescription": "Datos de permisos de servicios públicos que indican posibles sitios de instalación de infraestructura de vigilancia",
     "dataSourceCredit": "Recopilación y alojamiento de datos proporcionado por alprwatch.org",
     "minimumDistance": "Distancia Mínima de Nodos Reales",
-    "minimumDistanceSubtitle": "Ocultar ubicaciones sospechosas dentro de {}m de dispositivos de vigilancia existentes",
+    "minimumDistanceSubtitle": "Ocultar ubicaciones sospechosas dentro de {} de dispositivos de vigilancia existentes",
     "updating": "Actualizando Ubicaciones Sospechosas",
     "downloadingAndProcessing": "Descargando y procesando datos...",
     "updateSuccess": "Ubicaciones sospechosas actualizadas exitosamente",

@@ -526,7 +526,7 @@
     "dataSourceDescription": "Versorgungsgenehmigungsdaten, die auf potenzielle Installationsstandorte für Überwachungsinfrastruktur hinweisen",
     "dataSourceCredit": "Datensammlung und -hosting bereitgestellt von alprwatch.org",
     "minimumDistance": "Mindestabstand zu echten Geräten",
-    "minimumDistanceSubtitle": "Verdächtige Standorte innerhalb von {}m vorhandener Überwachungsgeräte ausblenden",
+    "minimumDistanceSubtitle": "Verdächtige Standorte innerhalb von {} vorhandener Überwachungsgeräte ausblenden",
     "updating": "Verdächtige Standorte werden aktualisiert",
     "downloadingAndProcessing": "Daten werden heruntergeladen und verarbeitet...",
     "updateSuccess": "Verdächtige Standorte erfolgreich aktualisiert",

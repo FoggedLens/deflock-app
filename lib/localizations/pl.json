@@ -526,7 +526,7 @@
     "dataSourceDescription": "Dane pozwoleń użyteczności publicznej wskazujące potencjalne miejsca instalacji infrastruktury nadzoru",
     "dataSourceCredit": "Zbieranie danych i hosting zapewnione przez alprwatch.org",
     "minimumDistance": "Minimalna Odległość od Rzeczywistych Węzłów",
-    "minimumDistanceSubtitle": "Ukryj podejrzane lokalizacje w promieniu {}m od istniejących urządzeń nadzoru",
+    "minimumDistanceSubtitle": "Ukryj podejrzane lokalizacje w promieniu {} od istniejących urządzeń nadzoru",
     "updating": "Aktualizowanie Podejrzanych Lokalizacji",
     "downloadingAndProcessing": "Pobieranie i przetwarzanie danych...",
     "updateSuccess": "Podejrzane lokalizacje zaktualizowane pomyślnie",

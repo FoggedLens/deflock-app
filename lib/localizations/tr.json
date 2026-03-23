@@ -526,7 +526,7 @@
     "dataSourceDescription": "Potansiyel gözetleme altyapısı kurulum sitelerini gösteren altyapı izin verileri",
     "dataSourceCredit": "Veri toplama ve barındırma alprwatch.org tarafından sağlanır",
     "minimumDistance": "Gerçek Düğümlerden Minimum Mesafe",
-    "minimumDistanceSubtitle": "Mevcut gözetleme cihazlarının {}m yakınındaki şüpheli konumları gizle",
+    "minimumDistanceSubtitle": "Mevcut gözetleme cihazlarının {} yakınındaki şüpheli konumları gizle",
     "updating": "Şüpheli Konumlar Güncelleniyor",
     "downloadingAndProcessing": "Veri indiriliyor ve işleniyor...",
     "updateSuccess": "Şüpheli konumlar başarıyla güncellendi",

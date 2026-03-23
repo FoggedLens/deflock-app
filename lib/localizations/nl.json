@@ -526,7 +526,7 @@
     "dataSourceDescription": "Nutsbedrijf vergunning data die mogelijke surveillance infrastructuur installatie sites aangeeft",
     "dataSourceCredit": "Gegevens verzameling en hosting geleverd door alprwatch.org",
     "minimumDistance": "Minimum Afstand van Echte Nodes",
-    "minimumDistanceSubtitle": "Verberg verdachte locaties binnen {}m van bestaande surveillance apparaten",
+    "minimumDistanceSubtitle": "Verberg verdachte locaties binnen {} van bestaande surveillance apparaten",
     "updating": "Verdachte Locaties Bijwerken",
     "downloadingAndProcessing": "Data downloaden en verwerken...",
     "updateSuccess": "Verdachte locaties succesvol bijgewerkt",
