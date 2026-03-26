@@ -86,18 +86,21 @@ class DirectionConesBuilder {
     }
     
     // Add cones for cameras with direction (but exclude camera being edited)
-    for (final node in cameras) {
-      if (_isValidCameraWithDirection(node) && 
-          (editSession == null || node.id != editSession.originalNode.id)) {
-        // Build a cone for each direction+fov pair
-        for (final directionFov in node.directionFovPairs) {
-          overlays.add(_buildConeWithFov(
-            node.coord, 
-            directionFov.centerDegrees,
-            directionFov.fovDegrees,
-            zoom,
-            context: context,
-          ));
+    // Only show at sufficient zoom where direction is meaningful
+    if (zoom >= kDirectionConeMinZoomLevel) {
+      for (final node in cameras) {
+        if (_isValidCameraWithDirection(node) &&
+            (editSession == null || node.id != editSession.originalNode.id)) {
+          // Build a cone for each direction+fov pair
+          for (final directionFov in node.directionFovPairs) {
+            overlays.add(_buildConeWithFov(
+              node.coord,
+              directionFov.centerDegrees,
+              directionFov.fovDegrees,
+              zoom,
+              context: context,
+            ));
+          }
         }
       }
     }
@@ -136,6 +139,7 @@ class DirectionConesBuilder {
   }
 
   /// Internal cone building method that handles the actual rendering
+  /// Builds a wedge/pie shape emanating from the camera center
   static Polygon _buildConeInternal({
     required LatLng origin,
     required double bearingDeg,
@@ -157,20 +161,17 @@ class DirectionConesBuilder {
         isActiveDirection: isActiveDirection,
       );
     }
-    
-    // Calculate pixel-based radii
-    final outerRadiusPx = kNodeIconDiameter + (kNodeIconDiameter * kDirectionConeBaseLength);
-    final innerRadiusPx = kNodeIconDiameter + (2 * getNodeRingThickness(context));
-    
+
+    // Calculate pixel-based outer radius using scaled marker diameter
+    final diameter = getScaledNodeDiameter(zoom);
+    final outerRadiusPx = diameter + (diameter * kDirectionConeBaseLength);
+
     // Convert pixels to coordinate distances with zoom scaling
     final pixelToCoordinate = 0.00001 * math.pow(2, 15 - zoom);
     final outerRadius = outerRadiusPx * pixelToCoordinate;
-    final innerRadius = innerRadiusPx * pixelToCoordinate;
-    
-    // Number of points for the outer arc (within our directional range)
-    // Scale arc points based on FOV width for better rendering
-    final baseArcPoints = 12;
-    final arcPoints = math.max(6, (baseArcPoints * halfAngleDeg / 45).round());
+
+    // Smooth arc: scale points by FOV width
+    final arcPoints = math.max(kDirectionConeMinArcPoints, (kDirectionConeArcPoints * halfAngleDeg / 90).round());
 
     LatLng project(double deg, double distance) {
       final rad = deg * math.pi / 180;
@@ -180,19 +181,12 @@ class DirectionConesBuilder {
       return LatLng(origin.latitude + dLat, origin.longitude + dLon);
     }
 
-    // Build outer arc points only within our directional sector
-    final points = <LatLng>[];
-    
-    // Add outer arc points from left to right (counterclockwise for proper polygon winding)
+    // Build wedge/pie shape: origin → outer arc → auto-closes back to origin
+    final points = <LatLng>[origin];
+
     for (int i = 0; i <= arcPoints; i++) {
       final angle = bearingDeg - halfAngleDeg + (i * 2 * halfAngleDeg / arcPoints);
       points.add(project(angle, outerRadius));
-    }
-    
-    // Add inner arc points from right to left (to close the donut shape)
-    for (int i = arcPoints; i >= 0; i--) {
-      final angle = bearingDeg - halfAngleDeg + (i * 2 * halfAngleDeg / arcPoints);
-      points.add(project(angle, innerRadius));
     }
 
     // Adjust opacity based on direction state
@@ -210,7 +204,6 @@ class DirectionConesBuilder {
   }
 
   /// Build a full circle for 360-degree FOV cases
-  /// Returns just the outer circle - we'll handle the donut effect differently
   static Polygon _buildFullCircle({
     required LatLng origin,
     required double zoom,
@@ -218,14 +211,14 @@ class DirectionConesBuilder {
     bool isSession = false,
     bool isActiveDirection = true,
   }) {
-    // Calculate pixel-based radii  
-    final outerRadiusPx = kNodeIconDiameter + (kNodeIconDiameter * kDirectionConeBaseLength);
-    
+    // Calculate pixel-based radius using scaled marker diameter
+    final diameter = getScaledNodeDiameter(zoom);
+    final outerRadiusPx = diameter + (diameter * kDirectionConeBaseLength);
+
     // Convert pixels to coordinate distances with zoom scaling
     final pixelToCoordinate = 0.00001 * math.pow(2, 15 - zoom);
     final outerRadius = outerRadiusPx * pixelToCoordinate;
-    
-    // Create simple filled circle - no donut complexity
+
     const int circlePoints = 60;
     final points = <LatLng>[];
 
@@ -236,9 +229,8 @@ class DirectionConesBuilder {
           distance * math.sin(rad) / math.cos(origin.latitude * math.pi / 180);
       return LatLng(origin.latitude + dLat, origin.longitude + dLon);
     }
-    
-    // Add outer circle points - simple complete circle
-    for (int i = 0; i <= circlePoints; i++) { // Note: <= to ensure closure
+
+    for (int i = 0; i < circlePoints; i++) {
       final angle = (i * 360.0 / circlePoints) % 360.0;
       points.add(project(angle, outerRadius));
     }

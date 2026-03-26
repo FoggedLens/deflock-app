@@ -111,7 +111,23 @@
     "advancedSettings": "Paramètres Avancés",
     "advancedSettingsSubtitle": "Paramètres de performance, alertes et fournisseurs de tuiles",
     "proximityAlerts": "Alertes de Proximité",
-    "networkStatusIndicator": "Indicateur de Statut Réseau"
+    "networkStatusIndicator": "Indicateur de Statut Réseau",
+    "apiEndpoints": "Points d'accès API",
+    "apiEndpointsDescription": "Configurer l'ordre de priorité des points d'accès API, ajouter des points d'accès personnalisés ou réinitialiser aux valeurs par défaut.",
+    "apiEndpointRouting": "Routage",
+    "apiEndpointNodeSource": "Source des nœuds",
+    "invalidUrl": "Entrez une URL HTTPS valide",
+    "addEndpoint": "Ajouter un Point d'accès",
+    "editEndpoint": "Modifier le Point d'accès",
+    "resetToDefaults": "Réinitialiser aux Valeurs par Défaut",
+    "endpointName": "Nom du Point d'accès",
+    "endpointUrl": "URL du Point d'accès",
+    "endpointMaxRetries": "Max. Tentatives",
+    "endpointTimeout": "Délai d'attente (secondes)",
+    "endpointEnabled": "Activé",
+    "noEnabledEndpoints": "Au moins un point d'accès doit rester activé",
+    "confirmResetEndpoints": "Réinitialiser tous les points d'accès à leur configuration par défaut ?",
+    "builtInEndpoint": "Intégré"
   },
   "proximityAlerts": {
     "getNotified": "Recevoir des notifications en s'approchant de dispositifs de surveillance",
@@ -321,7 +337,12 @@
     "fetchPreview": "Récupérer Aperçu",
     "previewTileLoaded": "Tuile d'aperçu chargée avec succès",
     "previewTileFailed": "Échec de récupération de l'aperçu: {}",
-    "save": "Sauvegarder"
+    "save": "Sauvegarder",
+    "rasterTiles": "Raster",
+    "vectorTiles": "Vectoriel",
+    "styleUrl": "URL de style",
+    "styleUrlHint": "https://exemple.com/style.json",
+    "styleUrlRequired": "L'URL de style est requise"
   },
   "profiles": {
     "nodeProfiles": "Profils de Nœuds",

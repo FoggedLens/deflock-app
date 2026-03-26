@@ -6,6 +6,7 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:http/http.dart';
+import 'package:http/io_client.dart';
 import 'package:http/retry.dart';
 
 import '../app_state.dart';
@@ -94,7 +95,11 @@ class DeflockTileProvider extends NetworkTileProvider {
     VoidCallback? onNetworkSuccess,
     String configFingerprint = '',
   }) {
-    final client = UserAgentClient(RetryClient(Client()));
+    // Limit per-host connections to avoid exhausting file descriptors when
+    // flutter_map requests many tiles concurrently during rapid pan/zoom.
+    final client = UserAgentClient(
+      RetryClient(IOClient(HttpClient()..maxConnectionsPerHost = 6)),
+    );
     return DeflockTileProvider._(
       httpClient: client,
       providerId: providerId,

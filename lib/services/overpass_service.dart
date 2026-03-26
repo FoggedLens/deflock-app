@@ -6,6 +6,8 @@ import 'package:flutter_map/flutter_map.dart';
 
 import '../models/node_profile.dart';
 import '../models/osm_node.dart';
+import '../models/service_endpoint.dart';
+import '../app_state.dart';
 import '../dev_config.dart';
 import 'http_client.dart';
 import 'service_policy.dart';
@@ -15,54 +17,68 @@ import 'service_policy.dart';
 class OverpassService {
   static const String defaultEndpoint = 'https://overpass.deflock.org/api/interpreter';
   static const String fallbackEndpoint = 'https://overpass-api.de/api/interpreter';
+  static const String _statusEndpoint = 'https://overpass-api.de/api/status';
+  static const int defaultSlotCount = 4;
   static const _policy = ResiliencePolicy(
     maxRetries: 3,
     httpTimeout: Duration(seconds: 45),
   );
 
   final http.Client _client;
-  /// Optional override endpoint. When null, uses [defaultEndpoint].
-  final String? _endpointOverride;
+  /// Optional override endpoints for testing.
+  final List<ServiceEndpoint>? _endpointsOverride;
 
-  OverpassService({http.Client? client, String? endpoint})
+  OverpassService({http.Client? client, List<ServiceEndpoint>? endpoints})
       : _client = client ?? UserAgentClient(),
-        _endpointOverride = endpoint;
+        _endpointsOverride = endpoints;
 
-  /// Resolve the primary endpoint: constructor override or default.
-  String get _primaryEndpoint => _endpointOverride ?? defaultEndpoint;
+  /// Resolve the endpoint list: constructor override > AppState > defaults.
+  List<ServiceEndpoint> get _endpoints {
+    if (_endpointsOverride != null) return _endpointsOverride;
+    try {
+      final endpoints = AppState.instance.enabledOverpassEndpoints;
+      if (endpoints.isNotEmpty) return endpoints;
+    } catch (_) {
+      // AppState may not be initialized (e.g., in tests)
+    }
+    return DefaultServiceEndpoints.overpass();
+  }
 
   /// Fetch surveillance nodes from Overpass API with retry and fallback.
   /// Throws NetworkError for retryable failures, NodeLimitError for area splitting.
   Future<List<OsmNode>> fetchNodes({
     required LatLngBounds bounds,
     required List<NodeProfile> profiles,
-    ResiliencePolicy? policy,
+    int? maxRetries,
   }) async {
     if (profiles.isEmpty) return [];
 
     final query = _buildQuery(bounds, profiles);
-    final endpoint = _primaryEndpoint;
-    final canFallback = _endpointOverride == null;
-    final effectivePolicy = policy ?? _policy;
 
-    return executeWithFallback<List<OsmNode>>(
-      primaryUrl: endpoint,
-      fallbackUrl: canFallback ? fallbackEndpoint : null,
-      execute: (url) => _attemptFetch(url, query, effectivePolicy),
+    final effectivePolicy = maxRetries != null
+        ? ResiliencePolicy(
+            maxRetries: maxRetries,
+            httpTimeout: _policy.httpTimeout,
+          )
+        : _policy;
+
+    return executeWithEndpointList<List<OsmNode>>(
+      endpoints: _endpoints,
+      execute: (url) => _attemptFetch(url, query),
       classifyError: _classifyError,
-      policy: effectivePolicy,
+      defaultPolicy: effectivePolicy,
     );
   }
 
   /// Single POST + parse attempt (no retry logic — handled by executeWithFallback).
-  Future<List<OsmNode>> _attemptFetch(String endpoint, String query, ResiliencePolicy policy) async {
+  Future<List<OsmNode>> _attemptFetch(String endpoint, String query) async {
     debugPrint('[OverpassService] POST $endpoint');
 
     try {
       final response = await _client.post(
         Uri.parse(endpoint),
         body: {'data': query},
-      ).timeout(policy.httpTimeout);
+      ).timeout(_policy.httpTimeout);
 
       if (response.statusCode == 200) {
         return _parseResponse(response.body);
@@ -106,6 +122,60 @@ class OverpassService {
     if (error is NodeLimitError) return ErrorDisposition.abort;
     if (error is RateLimitError) return ErrorDisposition.fallback;
     return ErrorDisposition.retry;
+  }
+
+  /// Query Overpass /api/status to get the rate limit (slot count per IP).
+  Future<int> getSlotCount() async {
+    try {
+      final response = await _client.get(Uri.parse(_statusEndpoint))
+          .timeout(const Duration(seconds: 5));
+      if (response.statusCode == 200) {
+        final match = RegExp(r'Rate limit:\s*(\d+)').firstMatch(response.body);
+        if (match != null) return int.parse(match.group(1)!);
+      }
+    } catch (e) {
+      debugPrint('[OverpassService] Failed to get slot count: $e');
+    }
+    return defaultSlotCount;
+  }
+
+  /// Poll /api/status until a slot is available. Returns observed slot count.
+  Future<int> waitForSlot({
+    Duration maxWait = const Duration(minutes: 2),
+    Duration Function()? elapsedFn,
+  }) async {
+    final stopwatch = Stopwatch()..start();
+    final elapsed = elapsedFn ?? () => stopwatch.elapsed;
+    int observedSlots = defaultSlotCount;
+
+    while (elapsed() < maxWait) {
+      try {
+        final response = await _client.get(Uri.parse(_statusEndpoint))
+            .timeout(const Duration(seconds: 5));
+
+        if (response.statusCode == 200) {
+          final slotMatch = RegExp(r'Rate limit:\s*(\d+)').firstMatch(response.body);
+          if (slotMatch != null) observedSlots = int.parse(slotMatch.group(1)!);
+
+          if (response.body.contains('slots available now')) return observedSlots;
+
+          final match = RegExp(r'in (\d+) seconds').firstMatch(response.body);
+          if (match != null) {
+            final wait = int.parse(match.group(1)!).clamp(1, 30);
+            debugPrint('[OverpassService] Waiting $wait seconds for slot');
+            await Future.delayed(Duration(seconds: wait));
+            continue;
+          }
+        }
+      } catch (e) {
+        debugPrint('[OverpassService] Status check failed: $e');
+      }
+
+      await Future.delayed(const Duration(seconds: 5));
+    }
+
+    debugPrint('[OverpassService] Max wait time exceeded, proceeding anyway');
+    return observedSlots;
   }
 
   /// Build Overpass QL query for given bounds and profiles
