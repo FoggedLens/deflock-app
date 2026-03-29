@@ -341,8 +341,8 @@ class MapViewState extends State<MapView> {
     Widget cameraLayers = LayoutBuilder(
       builder: (context, constraints) {
         
-        // Build all marker layers
-        final markerLayer = MarkerLayerBuilder.buildMarkerLayers(
+        // Build all marker layers (cluster layer + other markers layer)
+        final markerLayers = MarkerLayerBuilder.buildMarkerLayers(
           nodesToRender: nodeData.nodesToRender,
           mapController: _controller,
           appState: appState,
@@ -369,7 +369,7 @@ class MapViewState extends State<MapView> {
         return Stack(
           children: [
             ...overlayLayers,
-            markerLayer,
+            ...markerLayers,
           ],
         );
       },

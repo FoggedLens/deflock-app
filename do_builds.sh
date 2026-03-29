@@ -1,5 +1,12 @@
 #!/bin/bash
 
+# Prefer fvm-managed Flutter if available; fall back to system flutter.
+if command -v fvm &>/dev/null; then
+  FLUTTER="fvm flutter"
+else
+  FLUTTER="flutter"
+fi
+
 # Default options
 BUILD_IOS=true
 BUILD_ANDROID=true
@@ -82,7 +89,7 @@ DART_DEFINE_ARGS="--dart-define=OSM_PROD_CLIENTID=$OSM_PROD_CLIENTID --dart-defi
 
 # Run tests before building
 echo "Running tests..."
-flutter test || exit 1
+$FLUTTER test || exit 1
 echo
 
 appver=$(grep "version:" pubspec.yaml | head -1 | cut -d ':' -f 2 | tr -d ' ' | cut -d '+' -f 1)
@@ -92,7 +99,7 @@ echo
 
 if [ "$BUILD_IOS" = true ]; then
   echo "Building iOS..."
-  flutter build ios --no-codesign $DART_DEFINE_ARGS || exit 1
+  $FLUTTER build ios --no-codesign $DART_DEFINE_ARGS || exit 1
 
   echo "Converting .app to .ipa..."
   ./app2ipa.sh build/ios/iphoneos/Runner.app || exit 1
@@ -104,7 +111,7 @@ fi
 
 if [ "$BUILD_ANDROID" = true ]; then
   echo "Building Android..."
-  flutter build apk $DART_DEFINE_ARGS || exit 1
+  $FLUTTER build apk $DART_DEFINE_ARGS || exit 1
 
   echo "Moving Android files..."
   cp build/app/outputs/flutter-apk/app-release.apk "../deflock_v${appver}.apk" || exit 1
