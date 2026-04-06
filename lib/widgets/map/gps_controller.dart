@@ -4,6 +4,9 @@ import 'package:flutter_map_animations/flutter_map_animations.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
 
+import 'package:geolocator_android/geolocator_android.dart' show AndroidSettings;
+import 'package:flutter/foundation.dart' show defaultTargetPlatform, TargetPlatform;
+
 import '../../dev_config.dart';
 import '../../app_state.dart' show FollowMeMode;
 import '../../services/proximity_alert_service.dart';
@@ -145,15 +148,21 @@ class GpsController {
   void _startPositionStream() {
     final followMeMode = _getCurrentFollowMeMode?.call() ?? FollowMeMode.off;
     final distanceFilter = followMeMode == FollowMeMode.off ? 5 : 1; // 5m normal, 1m follow-me
-    
+
     debugPrint('[GpsController] Starting GPS position stream (${distanceFilter}m filter)');
-    
+
     try {
       _positionSub = Geolocator.getPositionStream(
-        locationSettings: LocationSettings(
-          accuracy: LocationAccuracy.high, // Request best, accept what we get
-          distanceFilter: distanceFilter,
-        ),
+        locationSettings: defaultTargetPlatform == TargetPlatform.android
+            ? AndroidSettings(
+                accuracy: LocationAccuracy.high,
+                distanceFilter: distanceFilter,
+                forceLocationManager: true,
+              )
+            : LocationSettings(
+                accuracy: LocationAccuracy.high,
+                distanceFilter: distanceFilter,
+              ),
       ).listen(
         _onPositionReceived,
         onError: _onPositionError,
