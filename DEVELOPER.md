@@ -854,6 +854,13 @@ To run the app with working OSM authentication, register OAuth2 applications:
 
 1. **Production OSM**: https://www.openstreetmap.org/oauth2/applications
 2. **Sandbox OSM**: https://master.apis.dev.openstreetmap.org/oauth2/applications
+3. **OAuth2 Application Permissions**
+   * Uncheck "Confidential application?"
+   * Read user preferences (read_prefs)
+   * Modify the map (write_api)
+   * Read, update status and delete user messages (consume_messages)
+4. **Redirect URIs**
+   * deflockapp://auth
 
 For local builds, create `build_keys.conf` (gitignored):
 ```bash
