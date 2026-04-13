@@ -3,8 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_map_animations/flutter_map_animations.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
-
-import 'package:geolocator_android/geolocator_android.dart' show AndroidSettings;
 import 'package:flutter/foundation.dart' show defaultTargetPlatform, TargetPlatform;
 
 import '../../dev_config.dart';
