@@ -1,0 +1,151 @@
+# Manual-trigger workflow to run Gatling load tests against overpass.deflock.org.
+#
+# Trigger from the Actions tab → "Load Test" → "Run workflow" → pick a scenario.
+# The HTML report is uploaded as a downloadable artifact (retained 30 days).
+#
+# When "all" is selected, all 4 simulations run in parallel on separate runners,
+# hitting the server simultaneously for distributed load. A summary job then
+# collects all reports and posts a PR comment with download links.
+
+name: Load Test
+
+on:
+  workflow_dispatch:
+    inputs:
+      scenario:
+        description: 'Test scenario to run'
+        required: true
+        default: 'baseline'
+        type: choice
+        options:
+          - baseline
+          - concurrent
+          - stress
+          - burst
+          - all
+
+concurrency:
+  group: load-test
+  cancel-in-progress: true
+
+jobs:
+  # Build the matrix dynamically based on the selected scenario.
+  # This avoids the `matrix` context parsing issue in job-level `if`.
+  resolve-matrix:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+      - id: set-matrix
+        run: |
+          if [ "${{ inputs.scenario }}" = "all" ]; then
+            echo 'matrix={"include":[{"name":"baseline","class":"deflock.OverpassSimulation"},{"name":"concurrent","class":"deflock.ConcurrentSimulation"},{"name":"stress","class":"deflock.StressSimulation"},{"name":"burst","class":"deflock.BurstSimulation"}]}' >> "$GITHUB_OUTPUT"
+          elif [ "${{ inputs.scenario }}" = "baseline" ]; then
+            echo 'matrix={"include":[{"name":"baseline","class":"deflock.OverpassSimulation"}]}' >> "$GITHUB_OUTPUT"
+          elif [ "${{ inputs.scenario }}" = "concurrent" ]; then
+            echo 'matrix={"include":[{"name":"concurrent","class":"deflock.ConcurrentSimulation"}]}' >> "$GITHUB_OUTPUT"
+          elif [ "${{ inputs.scenario }}" = "stress" ]; then
+            echo 'matrix={"include":[{"name":"stress","class":"deflock.StressSimulation"}]}' >> "$GITHUB_OUTPUT"
+          elif [ "${{ inputs.scenario }}" = "burst" ]; then
+            echo 'matrix={"include":[{"name":"burst","class":"deflock.BurstSimulation"}]}' >> "$GITHUB_OUTPUT"
+          fi
+
+  load-test:
+    needs: resolve-matrix
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(needs.resolve-matrix.outputs.matrix) }}
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      # Caches Gradle wrapper and dependencies between runs
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Run Gatling simulation (${{ matrix.name }})
+        working-directory: load-tests
+        run: ./gradlew gatlingRun --simulation ${{ matrix.class }} --non-interactive
+
+      - name: Upload Gatling report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gatling-report-${{ matrix.name }}
+          path: load-tests/build/reports/gatling/
+          retention-days: 30
+
+  # Post a summary comment on the PR (if triggered from a PR branch) with
+  # links to download each report artifact.
+  summary:
+    needs: load-test
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Find associated PR
+        id: find-pr
+        run: |
+          # Search for a PR with this branch as the head ref. Check the
+          # current repo first, then the parent (upstream) repo if this is a fork.
+          PR=$(gh pr list --repo "${{ github.repository }}" --head "${{ github.ref_name }}" --json number --jq '.[0].number' 2>/dev/null || echo "")
+          if [ -z "$PR" ]; then
+            PARENT=$(gh api "repos/${{ github.repository }}" --jq '.parent.full_name // empty' 2>/dev/null || echo "")
+            if [ -n "$PARENT" ]; then
+              PR=$(gh pr list --repo "$PARENT" --head "${{ github.ref_name }}" --json number --jq '.[0].number' 2>/dev/null || echo "")
+              if [ -n "$PR" ]; then
+                echo "pr_repo=$PARENT" >> "$GITHUB_OUTPUT"
+              fi
+            fi
+          else
+            echo "pr_repo=${{ github.repository }}" >> "$GITHUB_OUTPUT"
+          fi
+          echo "pr_number=$PR" >> "$GITHUB_OUTPUT"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Post PR comment with report links
+        if: steps.find-pr.outputs.pr_number != ''
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          SCENARIO="${{ inputs.scenario }}"
+          RUN_ID="${{ github.run_id }}"
+
+          # Build artifact links from the matrix
+          ARTIFACTS=""
+          if [ "$SCENARIO" = "all" ] || [ "$SCENARIO" = "baseline" ]; then
+            ARTIFACTS="$ARTIFACTS\n| Baseline | [Download]($RUN_URL/artifacts) |"
+          fi
+          if [ "$SCENARIO" = "all" ] || [ "$SCENARIO" = "concurrent" ]; then
+            ARTIFACTS="$ARTIFACTS\n| Concurrent | [Download]($RUN_URL/artifacts) |"
+          fi
+          if [ "$SCENARIO" = "all" ] || [ "$SCENARIO" = "stress" ]; then
+            ARTIFACTS="$ARTIFACTS\n| Stress | [Download]($RUN_URL/artifacts) |"
+          fi
+          if [ "$SCENARIO" = "all" ] || [ "$SCENARIO" = "burst" ]; then
+            ARTIFACTS="$ARTIFACTS\n| Burst | [Download]($RUN_URL/artifacts) |"
+          fi
+
+          BODY=$(cat <<EOF
+          ## Load Test Results — \`$SCENARIO\`
+
+          | Scenario | Report |
+          |----------|--------|
+          $(echo -e "$ARTIFACTS")
+
+          [View full run]($RUN_URL)
+
+          > Download the artifact ZIP → extract → open \`index.html\` for interactive charts.
+          EOF
+          )
+
+          gh pr comment "${{ steps.find-pr.outputs.pr_number }}" --repo "${{ steps.find-pr.outputs.pr_repo }}" --body "$BODY"
