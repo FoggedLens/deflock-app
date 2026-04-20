@@ -111,7 +111,23 @@
     "advancedSettings": "Advanced Settings",
     "advancedSettingsSubtitle": "Performance, alerts, and tile provider settings",
     "proximityAlerts": "Proximity Alerts",
-    "networkStatusIndicator": "Network Status Indicator"
+    "networkStatusIndicator": "Network Status Indicator",
+    "apiEndpoints": "API Endpoints",
+    "apiEndpointsDescription": "Configure API endpoint priority order, add custom endpoints, or reset to defaults.",
+    "apiEndpointRouting": "Routing",
+    "apiEndpointNodeSource": "Node Source",
+    "invalidUrl": "Enter a valid HTTPS URL",
+    "addEndpoint": "Add Endpoint",
+    "editEndpoint": "Edit Endpoint",
+    "resetToDefaults": "Reset to Defaults",
+    "endpointName": "Endpoint Name",
+    "endpointUrl": "Endpoint URL",
+    "endpointMaxRetries": "Max Retries",
+    "endpointTimeout": "Timeout (seconds)",
+    "endpointEnabled": "Enabled",
+    "noEnabledEndpoints": "At least one endpoint must remain enabled",
+    "confirmResetEndpoints": "Reset all endpoints to their default configuration?",
+    "builtInEndpoint": "Built-in"
   },
   "proximityAlerts": {
     "getNotified": "Get notified when approaching surveillance devices",
@@ -321,7 +337,12 @@
     "fetchPreview": "Fetch Preview",
     "previewTileLoaded": "Preview tile loaded successfully",
     "previewTileFailed": "Failed to fetch preview: {}",
-    "save": "Save"
+    "save": "Save",
+    "rasterTiles": "Raster",
+    "vectorTiles": "Vector",
+    "styleUrl": "Style URL",
+    "styleUrlHint": "https://example.com/style.json",
+    "styleUrlRequired": "Style URL is required"
   },
   "profiles": {
     "nodeProfiles": "Node Profiles",

@@ -27,6 +27,20 @@ class ProviderTileCacheManager {
   /// Whether the manager has been initialized.
   static bool get isInitialized => _baseCacheDir != null;
 
+  /// Returns the cache directory path for a provider/tileType combination.
+  ///
+  /// Useful for packages that manage their own file caching (e.g.
+  /// `vector_map_tiles`) but should write into the same directory tree.
+  static String getCacheDirectory({
+    required String providerId,
+    required String tileTypeId,
+  }) {
+    if (_baseCacheDir == null) {
+      throw StateError('ProviderTileCacheManager.init() must be called');
+    }
+    return p.join(_baseCacheDir!, providerId, tileTypeId);
+  }
+
   /// Get or create a cache store for a specific provider/tile type combination.
   ///
   /// Synchronous after [init] has been called. The cache store lazily creates
@@ -37,16 +51,13 @@ class ProviderTileCacheManager {
     required ServicePolicy policy,
     int? maxCacheBytes,
   }) {
-    if (_baseCacheDir == null) {
-      throw StateError(
-        'ProviderTileCacheManager.init() must be called before getOrCreate()',
-      );
-    }
-
     final key = '$providerId/$tileTypeId';
     if (_stores.containsKey(key)) return _stores[key]!;
 
-    final cacheDir = p.join(_baseCacheDir!, providerId, tileTypeId);
+    final cacheDir = getCacheDirectory(
+      providerId: providerId,
+      tileTypeId: tileTypeId,
+    );
 
     final store = ProviderTileCacheStore(
       cacheDirectory: cacheDir,
@@ -66,9 +77,12 @@ class ProviderTileCacheManager {
       // Use the store's clear method to properly reset its internal state
       await store.clear();
       // Don't remove from registry - let it be reused with clean state
-    } else if (_baseCacheDir != null) {
+    } else if (isInitialized) {
       // Fallback for stores not in registry
-      final cacheDir = Directory(p.join(_baseCacheDir!, providerId, tileTypeId));
+      final cacheDir = Directory(getCacheDirectory(
+        providerId: providerId,
+        tileTypeId: tileTypeId,
+      ));
       if (await cacheDir.exists()) {
         await cacheDir.delete(recursive: true);
       }

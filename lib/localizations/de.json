@@ -74,7 +74,23 @@
     "advancedSettings": "Erweiterte Einstellungen",
     "advancedSettingsSubtitle": "Leistungs-, Warnungs- und Kachelanbieter-Einstellungen",
     "proximityAlerts": "Näherungswarnungen",
-    "networkStatusIndicator": "Netzwerkstatus-Anzeige"
+    "networkStatusIndicator": "Netzwerkstatus-Anzeige",
+    "apiEndpoints": "API-Endpunkte",
+    "apiEndpointsDescription": "Prioritätsreihenfolge der API-Endpunkte konfigurieren, benutzerdefinierte Endpunkte hinzufügen oder auf Standard zurücksetzen.",
+    "apiEndpointRouting": "Routing",
+    "apiEndpointNodeSource": "Knotenquelle",
+    "invalidUrl": "Geben Sie eine gültige HTTPS-URL ein",
+    "addEndpoint": "Endpunkt hinzufügen",
+    "editEndpoint": "Endpunkt bearbeiten",
+    "resetToDefaults": "Auf Standard zurücksetzen",
+    "endpointName": "Endpunktname",
+    "endpointUrl": "Endpunkt-URL",
+    "endpointMaxRetries": "Max. Wiederholungen",
+    "endpointTimeout": "Timeout (Sekunden)",
+    "endpointEnabled": "Aktiviert",
+    "noEnabledEndpoints": "Mindestens ein Endpunkt muss aktiviert bleiben",
+    "confirmResetEndpoints": "Alle Endpunkte auf Standardkonfiguration zurücksetzen?",
+    "builtInEndpoint": "Eingebaut"
   },
   "proximityAlerts": {
     "getNotified": "Benachrichtigung erhalten beim Annähern an Überwachungsgeräte",
@@ -284,7 +300,12 @@
     "fetchPreview": "Vorschau Laden",
     "previewTileLoaded": "Vorschau-Kachel erfolgreich geladen",
     "previewTileFailed": "Vorschau laden fehlgeschlagen: {}",
-    "save": "Speichern"
+    "save": "Speichern",
+    "rasterTiles": "Raster",
+    "vectorTiles": "Vektor",
+    "styleUrl": "Stil-URL",
+    "styleUrlHint": "https://beispiel.com/style.json",
+    "styleUrlRequired": "Stil-URL ist erforderlich"
   },
   "profiles": {
     "nodeProfiles": "Knoten-Profile",
