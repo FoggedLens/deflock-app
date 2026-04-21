@@ -6,6 +6,8 @@ import 'package:flutter_map/flutter_map.dart';
 
 import '../models/node_profile.dart';
 import '../models/osm_node.dart';
+import '../models/service_endpoint.dart';
+import '../app_state.dart';
 import '../dev_config.dart';
 import 'http_client.dart';
 import 'service_policy.dart';
@@ -21,48 +23,60 @@ class OverpassService {
   );
 
   final http.Client _client;
-  /// Optional override endpoint. When null, uses [defaultEndpoint].
-  final String? _endpointOverride;
+  /// Optional override endpoints for testing.
+  final List<ServiceEndpoint>? _endpointsOverride;
 
-  OverpassService({http.Client? client, String? endpoint})
+  OverpassService({http.Client? client, List<ServiceEndpoint>? endpoints})
       : _client = client ?? UserAgentClient(),
-        _endpointOverride = endpoint;
+        _endpointsOverride = endpoints;
 
-  /// Resolve the primary endpoint: constructor override or default.
-  String get _primaryEndpoint => _endpointOverride ?? defaultEndpoint;
+  /// Resolve the endpoint list: constructor override > AppState > defaults.
+  List<ServiceEndpoint> get _endpoints {
+    if (_endpointsOverride != null) return _endpointsOverride;
+    try {
+      final endpoints = AppState.instance.enabledOverpassEndpoints;
+      if (endpoints.isNotEmpty) return endpoints;
+    } catch (_) {
+      // AppState may not be initialized (e.g., in tests)
+    }
+    return DefaultServiceEndpoints.overpass();
+  }
 
   /// Fetch surveillance nodes from Overpass API with retry and fallback.
   /// Throws NetworkError for retryable failures, NodeLimitError for area splitting.
   Future<List<OsmNode>> fetchNodes({
     required LatLngBounds bounds,
     required List<NodeProfile> profiles,
-    ResiliencePolicy? policy,
+    int? maxRetries,
   }) async {
     if (profiles.isEmpty) return [];
 
     final query = _buildQuery(bounds, profiles);
-    final endpoint = _primaryEndpoint;
-    final canFallback = _endpointOverride == null;
-    final effectivePolicy = policy ?? _policy;
 
-    return executeWithFallback<List<OsmNode>>(
-      primaryUrl: endpoint,
-      fallbackUrl: canFallback ? fallbackEndpoint : null,
-      execute: (url) => _attemptFetch(url, query, effectivePolicy),
+    final effectivePolicy = maxRetries != null
+        ? ResiliencePolicy(
+            maxRetries: maxRetries,
+            httpTimeout: _policy.httpTimeout,
+          )
+        : _policy;
+
+    return executeWithEndpointList<List<OsmNode>>(
+      endpoints: _endpoints,
+      execute: (url) => _attemptFetch(url, query),
       classifyError: _classifyError,
-      policy: effectivePolicy,
+      defaultPolicy: effectivePolicy,
     );
   }
 
   /// Single POST + parse attempt (no retry logic — handled by executeWithFallback).
-  Future<List<OsmNode>> _attemptFetch(String endpoint, String query, ResiliencePolicy policy) async {
+  Future<List<OsmNode>> _attemptFetch(String endpoint, String query) async {
     debugPrint('[OverpassService] POST $endpoint');
 
     try {
       final response = await _client.post(
         Uri.parse(endpoint),
         body: {'data': query},
-      ).timeout(policy.httpTimeout);
+      ).timeout(_policy.httpTimeout);
 
       if (response.statusCode == 200) {
         return _parseResponse(response.body);

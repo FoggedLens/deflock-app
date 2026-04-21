@@ -6,8 +6,8 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:mocktail/mocktail.dart';
 
 import 'package:deflockapp/models/node_profile.dart';
+import 'package:deflockapp/models/service_endpoint.dart';
 import 'package:deflockapp/services/overpass_service.dart';
-import 'package:deflockapp/services/service_policy.dart';
 
 class MockHttpClient extends Mock implements http.Client {}
 
@@ -37,8 +37,11 @@ void main() {
 
   setUp(() {
     mockClient = MockHttpClient();
-    // Initialize OverpassService with a mock HTTP client for testing
-    service = OverpassService(client: mockClient);
+    // Use explicit endpoints to avoid AppState dependency in tests
+    service = OverpassService(
+      client: mockClient,
+      endpoints: DefaultServiceEndpoints.overpass(),
+    );
   });
 
   /// Helper: stub a successful Overpass response with the given elements.
@@ -250,7 +253,7 @@ void main() {
 
       await expectLater(
         () => service.fetchNodes(
-            bounds: bounds, profiles: profiles, policy: const ResiliencePolicy(maxRetries: 0)),
+            bounds: bounds, profiles: profiles, maxRetries: 0),
         throwsA(isA<NodeLimitError>()),
       );
     });
@@ -260,7 +263,7 @@ void main() {
 
       await expectLater(
         () => service.fetchNodes(
-            bounds: bounds, profiles: profiles, policy: const ResiliencePolicy(maxRetries: 0)),
+            bounds: bounds, profiles: profiles, maxRetries: 0),
         throwsA(isA<NodeLimitError>()),
       );
     });
@@ -271,7 +274,7 @@ void main() {
 
       await expectLater(
         () => service.fetchNodes(
-            bounds: bounds, profiles: profiles, policy: const ResiliencePolicy(maxRetries: 0)),
+            bounds: bounds, profiles: profiles, maxRetries: 0),
         throwsA(isA<NodeLimitError>()),
       );
     });
@@ -281,7 +284,7 @@ void main() {
 
       await expectLater(
         () => service.fetchNodes(
-            bounds: bounds, profiles: profiles, policy: const ResiliencePolicy(maxRetries: 0)),
+            bounds: bounds, profiles: profiles, maxRetries: 0),
         throwsA(isA<RateLimitError>()),
       );
     });
@@ -291,7 +294,7 @@ void main() {
 
       await expectLater(
         () => service.fetchNodes(
-            bounds: bounds, profiles: profiles, policy: const ResiliencePolicy(maxRetries: 0)),
+            bounds: bounds, profiles: profiles, maxRetries: 0),
         throwsA(isA<RateLimitError>()),
       );
     });
@@ -302,7 +305,7 @@ void main() {
 
       await expectLater(
         () => service.fetchNodes(
-            bounds: bounds, profiles: profiles, policy: const ResiliencePolicy(maxRetries: 0)),
+            bounds: bounds, profiles: profiles, maxRetries: 0),
         throwsA(isA<NetworkError>()),
       );
     });
@@ -345,7 +348,7 @@ void main() {
       });
 
       final nodes = await service.fetchNodes(
-          bounds: bounds, profiles: profiles, policy: const ResiliencePolicy(maxRetries: 0));
+          bounds: bounds, profiles: profiles, maxRetries: 0);
 
       expect(nodes, hasLength(1));
       // primary (1 attempt, 0 retries) + fallback (1 attempt) = 2
@@ -361,7 +364,7 @@ void main() {
 
       await expectLater(
         () => service.fetchNodes(
-            bounds: bounds, profiles: profiles, policy: const ResiliencePolicy(maxRetries: 0)),
+            bounds: bounds, profiles: profiles, maxRetries: 0),
         throwsA(isA<NodeLimitError>()),
       );
 
@@ -398,7 +401,7 @@ void main() {
       });
 
       final nodes = await service.fetchNodes(
-          bounds: bounds, profiles: profiles, policy: const ResiliencePolicy(maxRetries: 2));
+          bounds: bounds, profiles: profiles, maxRetries: 2);
 
       expect(nodes, hasLength(1));
       // 1 primary (no retry on fallback disposition) + 1 fallback = 2
@@ -412,7 +415,7 @@ void main() {
 
       await expectLater(
         () => service.fetchNodes(
-            bounds: bounds, profiles: profiles, policy: const ResiliencePolicy(maxRetries: 0)),
+            bounds: bounds, profiles: profiles, maxRetries: 0),
         throwsA(isA<NetworkError>()),
       );
 
@@ -421,10 +424,12 @@ void main() {
           .called(2);
     });
 
-    test('does NOT fallback when using custom endpoint', () async {
+    test('single custom endpoint does not fallback', () async {
       final customService = OverpassService(
         client: mockClient,
-        endpoint: 'https://custom.example.com/api/interpreter',
+        endpoints: const [
+          ServiceEndpoint(id: 'custom', name: 'Custom', url: 'https://custom.example.com/api/interpreter'),
+        ],
       );
 
       when(() => mockClient.post(any(), body: any(named: 'body')))
@@ -433,7 +438,7 @@ void main() {
 
       await expectLater(
         () => customService.fetchNodes(
-            bounds: bounds, profiles: profiles, policy: const ResiliencePolicy(maxRetries: 0)),
+            bounds: bounds, profiles: profiles, maxRetries: 0),
         throwsA(isA<NetworkError>()),
       );
 
@@ -470,7 +475,7 @@ void main() {
       });
 
       final nodes = await service.fetchNodes(
-          bounds: bounds, profiles: profiles, policy: const ResiliencePolicy(maxRetries: 2));
+          bounds: bounds, profiles: profiles, maxRetries: 2);
 
       expect(nodes, hasLength(1));
       // 3 primary attempts (1 + 2 retries) + 1 fallback = 4
