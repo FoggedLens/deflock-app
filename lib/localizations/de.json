@@ -74,7 +74,12 @@
     "advancedSettings": "Erweiterte Einstellungen",
     "advancedSettingsSubtitle": "Leistungs-, Warnungs- und Kachelanbieter-Einstellungen",
     "proximityAlerts": "Näherungswarnungen",
+    "keepScreenAwake": "Bildschirm Aktiv Lassen",
     "networkStatusIndicator": "Netzwerkstatus-Anzeige"
+  },
+  "keepScreenAwake": {
+    "title": "Bildschirm während der App-Nutzung aktiv lassen",
+    "subtitle": "Verhindert, dass sich der Bildschirm während der Nutzung der App automatisch ausschaltet"
   },
   "proximityAlerts": {
     "getNotified": "Benachrichtigung erhalten beim Annähern an Überwachungsgeräte",
