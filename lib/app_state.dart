@@ -156,6 +156,7 @@ class AppState extends ChangeNotifier {
   int get maxNodes => _settingsState.maxNodes;
   UploadMode get uploadMode => _settingsState.uploadMode;
   FollowMeMode get followMeMode => _settingsState.followMeMode;
+  bool get keepScreenAwake => _settingsState.keepScreenAwake;
 
   bool get proximityAlertsEnabled => _settingsState.proximityAlertsEnabled;
   int get proximityAlertDistance => _settingsState.proximityAlertDistance;
@@ -172,7 +173,6 @@ class AppState extends ChangeNotifier {
   TileType? get selectedTileType => _settingsState.selectedTileType;
   TileProvider? get selectedTileProvider => _settingsState.selectedTileProvider;
   
-
   
   // Upload queue state
   int get pendingCount => _uploadQueueState.pendingCount;
@@ -676,6 +676,10 @@ class AppState extends ChangeNotifier {
       // Cancel any active area downloads
       await OfflineAreaService().cancelActiveDownloads();
     }
+  }
+
+  Future<void> setKeepScreenAwake(bool enabled) async {
+    await _settingsState.setKeepScreenAwake(enabled);
   }
 
   Future<void> setPauseQueueProcessing(bool enabled) async {

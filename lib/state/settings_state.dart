@@ -39,9 +39,11 @@ class SettingsState extends ChangeNotifier {
   static const String _pauseQueueProcessingPrefsKey = 'pause_queue_processing';
   static const String _navigationAvoidanceDistancePrefsKey = 'navigation_avoidance_distance';
   static const String _distanceUnitPrefsKey = 'distance_unit';
+  static const String _keepScreenAwakePrefsKey = 'keep_screen_awake';
 
   bool _offlineMode = false;
   bool _pauseQueueProcessing = false;
+  bool _keepScreenAwake = false;
   int _maxNodes = kDefaultMaxNodes;
   // Default must account for missing secrets (preview builds) even before init() runs
   UploadMode _uploadMode = (kEnableDevelopmentModes || !kHasOsmSecrets) ? UploadMode.simulate : UploadMode.production;
@@ -65,6 +67,7 @@ class SettingsState extends ChangeNotifier {
   int get proximityAlertDistance => _proximityAlertDistance;
   bool get networkStatusIndicatorEnabled => _networkStatusIndicatorEnabled;
   int get suspectedLocationMinDistance => _suspectedLocationMinDistance;
+  bool get keepScreenAwake => _keepScreenAwake;
   List<TileProvider> get tileProviders => List.unmodifiable(_tileProviders);
   String get selectedTileTypeId => _selectedTileTypeId;
   int get navigationAvoidanceDistance => _navigationAvoidanceDistance;
@@ -138,6 +141,9 @@ class SettingsState extends ChangeNotifier {
     
     // Load suspected location minimum distance
     _suspectedLocationMinDistance = prefs.getInt(_suspectedLocationMinDistancePrefsKey) ?? 100;
+
+    // Load keep screen awake setting
+    _keepScreenAwake = prefs.getBool(_keepScreenAwakePrefsKey) ?? false;
     
     // Load upload mode (including migration from old test_mode bool)
     if (prefs.containsKey(_uploadModePrefsKey)) {
@@ -397,7 +403,17 @@ class SettingsState extends ChangeNotifier {
     }
   }
 
-  // Set distance for avoidance of nodes during navigation
+  /// Set keep screen awake enabled/disabled
+    Future<void> setKeepScreenAwake(bool enabled) async {
+      if (_keepScreenAwake != enabled) {
+        _keepScreenAwake = enabled;
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setBool(_keepScreenAwakePrefsKey, enabled);
+        notifyListeners();
+      }
+    }
+
+  /// Set distance for avoidance of nodes during navigation
   Future<void> setNavigationAvoidanceDistance(int distance) async {
     if (_navigationAvoidanceDistance != distance) {
       _navigationAvoidanceDistance = distance;

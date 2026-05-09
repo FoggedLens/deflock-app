@@ -38,6 +38,7 @@ dependencies:
   package_info_plus: ^9.0.0
   csv: ^6.0.0
   collection: ^1.18.0
+  wakelock_plus: ^1.5.2
 
 dev_dependencies:
   flutter_test:
