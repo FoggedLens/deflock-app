@@ -293,7 +293,7 @@ class MapViewState extends State<MapView> {
     final session = appState.session;
     final editSession = appState.editSession;
 
-    // Call the safe tracker using appState instead
+    // Keep screen awake based on user setting
     _updateWakelock(appState.keepScreenAwake);
 
     // Check if enabled profiles changed and refresh nodes if needed

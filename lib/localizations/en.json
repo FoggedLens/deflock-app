@@ -111,7 +111,12 @@
     "advancedSettings": "Advanced Settings",
     "advancedSettingsSubtitle": "Performance, alerts, and tile provider settings",
     "proximityAlerts": "Proximity Alerts",
-    "networkStatusIndicator": "Network Status Indicator"
+    "networkStatusIndicator": "Network Status Indicator",
+    "keepScreenAwake": "Keep Screen Awake"
+  },
+  "keepScreenAwake": {
+    "title": "Keep screen awake while using app",
+    "subtitle": "Prevents the screen from turning off automatically while using the app"
   },
   "proximityAlerts": {
     "getNotified": "Get notified when approaching surveillance devices",
