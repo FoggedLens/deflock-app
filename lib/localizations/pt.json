@@ -111,7 +111,12 @@
     "advancedSettings": "Configurações Avançadas",
     "advancedSettingsSubtitle": "Configurações de desempenho, alertas e provedores de mapas",
     "proximityAlerts": "Alertas de Proximidade",
+    "keepScreenAwake": "Manter Ecrã Ativa",
     "networkStatusIndicator": "Indicador de Status de Rede"
+  },
+  "keepScreenAwake": {
+    "title": "Manter o ecrã ativo durante o uso do app",
+    "subtitle": "Impede que o ecrã se desligue automaticamente enquanto a app estiver em uso"
   },
   "proximityAlerts": {
     "getNotified": "Receba notificações ao se aproximar de dispositivos de vigilância",

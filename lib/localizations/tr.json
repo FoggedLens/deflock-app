@@ -111,7 +111,12 @@
     "advancedSettings": "Gelişmiş Ayarlar",
     "advancedSettingsSubtitle": "Performans, uyarılar ve döşeme sağlayıcı ayarları",
     "proximityAlerts": "Yakınlık Uyarıları",
+    "keepScreenAwake": "Ekranı Açık Tut",
     "networkStatusIndicator": "Ağ Durumu Göstergesi"
+  },
+  "keepScreenAwake": {
+    "title": "Uygulamayı kullanırken ekranı açık tut",
+    "subtitle": "Uygulamayı kullanırken ekranın otomatik olarak kapanmasını engeller"
   },
   "proximityAlerts": {
     "getNotified": "Gözetleme cihazlarına yaklaşırken bildirim al",

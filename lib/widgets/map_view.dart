@@ -3,6 +3,7 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_map_animations/flutter_map_animations.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:provider/provider.dart';
+import 'package:wakelock_plus/wakelock_plus.dart';
 
 import '../app_state.dart' show AppState, FollowMeMode;
 import '../services/offline_area_service.dart';
@@ -84,7 +85,20 @@ class MapViewState extends State<MapView> {
   // Track active pointers to suppress follow-me animations during touch
   int _activePointers = 0;
   
+  bool _isWakelockEnabled = false;
 
+  void _updateWakelock(bool shouldBeAwake) {
+    if (_isWakelockEnabled != shouldBeAwake) {
+      _isWakelockEnabled = shouldBeAwake;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (shouldBeAwake) {
+          WakelockPlus.enable();
+        } else {
+          WakelockPlus.disable();
+        }
+      });
+    }
+  }
 
   @override
   void initState() {
@@ -213,6 +227,7 @@ class MapViewState extends State<MapView> {
     _nodeController.dispose();
     _tileManager.dispose();
     _gpsController.dispose();
+    WakelockPlus.disable();
     // PrefetchAreaService no longer used - replaced with NodeDataManager
     super.dispose();
   }
@@ -277,6 +292,9 @@ class MapViewState extends State<MapView> {
     final appState = context.watch<AppState>();
     final session = appState.session;
     final editSession = appState.editSession;
+
+    // Keep screen awake based on user setting
+    _updateWakelock(appState.keepScreenAwake);
 
     // Check if enabled profiles changed and refresh nodes if needed
     _nodeController.checkAndHandleProfileChanges(

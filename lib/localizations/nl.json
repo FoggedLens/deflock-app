@@ -111,7 +111,12 @@
     "advancedSettings": "Geavanceerde Instellingen",
     "advancedSettingsSubtitle": "Prestaties, waarschuwingen en tile provider instellingen",
     "proximityAlerts": "Nabijheids Waarschuwingen",
+    "keepScreenAwake": "Scherm Actief Houden",
     "networkStatusIndicator": "Netwerk Status Indicator"
+  },
+  "keepScreenAwake": {
+    "title": "Houd het scherm actief tijdens het gebruik van de app",
+    "subtitle": "Voorkomt dat het scherm automatisch uitschakelt tijdens het gebruik van de app"
   },
   "proximityAlerts": {
     "getNotified": "Krijg meldingen wanneer u surveillance apparaten nadert",

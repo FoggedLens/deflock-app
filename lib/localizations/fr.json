@@ -111,7 +111,12 @@
     "advancedSettings": "Paramètres Avancés",
     "advancedSettingsSubtitle": "Paramètres de performance, alertes et fournisseurs de tuiles",
     "proximityAlerts": "Alertes de Proximité",
+    "keepScreenAwake": "Maintenir l'écran Allumé",
     "networkStatusIndicator": "Indicateur de Statut Réseau"
+  },
+  "keepScreenAwake": {
+    "title": "Maintenir l'écran allumé lors de l'utilisation de l'application",
+    "subtitle": "Empêche l'écran de s'éteindre automatiquement pendant l'utilisation de l'application"
   },
   "proximityAlerts": {
     "getNotified": "Recevoir des notifications en s'approchant de dispositifs de surveillance",

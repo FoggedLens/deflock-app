@@ -111,7 +111,12 @@
     "advancedSettings": "高级设置",
     "advancedSettingsSubtitle": "性能、警报和地图提供商设置",
     "proximityAlerts": "邻近警报",
+    "keepScreenAwake": "保持屏幕常亮",
     "networkStatusIndicator": "网络状态指示器"
+  },
+  "keepScreenAwake": {
+    "title": "使用应用时保持屏幕常亮",
+    "subtitle": "防止在使用应用期间屏幕自动熄灭"
   },
   "proximityAlerts": {
     "getNotified": "接近监控设备时接收通知",

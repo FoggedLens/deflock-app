@@ -111,7 +111,12 @@
     "advancedSettings": "Ustawienia Zaawansowane",
     "advancedSettingsSubtitle": "Wydajność, alerty i ustawienia dostawców kafelków",
     "proximityAlerts": "Alerty Bliskości",
+    "keepScreenAwake": "Nie Wygaszaj Ekranu",
     "networkStatusIndicator": "Wskaźnik Stanu Sieci"
+  },
+  "keepScreenAwake": {
+    "title": "Nie wygaszaj ekranu podczas korzystania z aplikacji",
+    "subtitle": "Zapobiega automatycznemu wygaszaniu ekranu podczas korzystania z aplikacji"
   },
   "proximityAlerts": {
     "getNotified": "Otrzymuj powiadomienia przy zbliżaniu się do urządzeń nadzoru",

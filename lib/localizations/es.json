@@ -111,7 +111,12 @@
     "advancedSettings": "Configuración Avanzada",
     "advancedSettingsSubtitle": "Configuración de rendimiento, alertas y proveedores de teselas",
     "proximityAlerts": "Alertas de Proximidad",
+    "keepScreenAwake": "Mantener la Pantalla Encendida",
     "networkStatusIndicator": "Indicador de Estado de Red"
+  },
+  "keepScreenAwake": {
+    "title": "Mantener la pantalla encendida mientras se usa la app",
+    "subtitle": "Evita que la pantalla se apague automáticamente mientras se usa la app"
   },
   "proximityAlerts": {
     "getNotified": "Recibe notificaciones al acercarte a dispositivos de vigilancia",
