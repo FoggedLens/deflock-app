@@ -19,6 +19,7 @@ import '../models/osm_node.dart';
 import '../models/suspected_location.dart';
 import '../models/search_result.dart';
 import '../services/changelog_service.dart';
+import '../services/deep_link_service.dart';
 import 'coordinators/sheet_coordinator.dart';
 import 'coordinators/navigation_coordinator.dart';
 import 'coordinators/map_interaction_handler.dart';
@@ -57,10 +58,12 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     _sheetCoordinator = SheetCoordinator();
     _navigationCoordinator = NavigationCoordinator();
     _mapInteractionHandler = MapInteractionHandler();
+    DeepLinkService().onNodeDeepLink = _handleNodeDeepLink;
   }
 
   @override
   void dispose() {
+    DeepLinkService().onNodeDeepLink = null;
     _mapController.dispose();
     super.dispose();
   }
@@ -284,6 +287,27 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       result: result,
       mapController: _mapController,
     );
+  }
+
+  void _handleNodeDeepLink(OsmNode node) {
+    // Fly to node at zoom 16
+    try {
+      _mapController.animateTo(
+        dest: node.coord,
+        zoom: 16.0,
+        duration: const Duration(milliseconds: 600),
+        curve: Curves.easeOut,
+      );
+    } catch (e) {
+      debugPrint('[HomeScreen] Could not animate to deep link node: $e');
+    }
+
+    // Open the node details sheet after map animation settles
+    Future.delayed(const Duration(milliseconds: 700), () {
+      if (mounted) {
+        openNodeTagSheet(node);
+      }
+    });
   }
 
   void openNodeTagSheet(OsmNode node) {
