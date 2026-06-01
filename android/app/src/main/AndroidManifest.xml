@@ -42,6 +42,7 @@
                 <category android:name="android.intent.category.DEFAULT"/>
                 <category android:name="android.intent.category.BROWSABLE"/>
                 <data android:scheme="deflockapp" android:host="profiles"/>
+                <data android:scheme="deflockapp" android:host="node"/>
             </intent-filter>
         </activity>
 
