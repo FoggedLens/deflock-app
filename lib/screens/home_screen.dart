@@ -290,7 +290,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   }
 
   void _handleNodeDeepLink(OsmNode node) {
-    // Fly to node at zoom 16
     try {
       _mapController.animateTo(
         dest: node.coord,
@@ -302,7 +301,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       debugPrint('[HomeScreen] Could not animate to deep link node: $e');
     }
 
-    // Open the node details sheet after map animation settles
     Future.delayed(const Duration(milliseconds: 700), () {
       if (mounted) {
         openNodeTagSheet(node);

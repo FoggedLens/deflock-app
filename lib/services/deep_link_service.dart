@@ -2,12 +2,12 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:app_links/app_links.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 import 'package:latlong2/latlong.dart';
 
 import '../models/node_profile.dart';
 import '../models/operator_profile.dart';
 import '../models/osm_node.dart';
+import 'http_client.dart';
 import 'profile_import_service.dart';
 import 'operator_profile_import_service.dart';
 import '../screens/profile_editor.dart';
@@ -107,7 +107,8 @@ class DeepLinkService {
   Future<OsmNode?> _fetchNodeById(int nodeId) async {
     try {
       final url = Uri.parse('https://api.openstreetmap.org/api/0.6/node/$nodeId.json');
-      final response = await http.get(url);
+      final client = UserAgentClient();
+      final response = await client.get(url);
       if (response.statusCode != 200) return null;
 
       final json = jsonDecode(response.body);
