@@ -1,4 +1,9 @@
 {
+  "2.10.2": {
+    "content": [
+      "• Fixed Flutter deprecation warnings for profile reordering"
+    ]
+  },
   "2.10.1": {
     "content": [
       "• Operator profiles are now reorderable",

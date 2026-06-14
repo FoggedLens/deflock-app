@@ -38,7 +38,7 @@ class NodeProfilesSection extends StatelessWidget {
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
               itemCount: appState.profiles.length,
-              onReorder: (oldIndex, newIndex) {
+              onReorderItem: (oldIndex, newIndex) {
                 appState.reorderProfiles(oldIndex, newIndex);
               },
               itemBuilder: (context, index) {

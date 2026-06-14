@@ -129,10 +129,7 @@ class ProfileState extends ChangeNotifier {
   void reorderProfiles(int oldIndex, int newIndex) {
     final orderedProfiles = _getOrderedProfiles();
     
-    // Standard Flutter reordering logic
-    if (oldIndex < newIndex) {
-      newIndex -= 1;
-    }
+    // With onReorderItem callback, newIndex is already adjusted
     final item = orderedProfiles.removeAt(oldIndex);
     orderedProfiles.insert(newIndex, item);
     

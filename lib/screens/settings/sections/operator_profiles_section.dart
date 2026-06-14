@@ -58,7 +58,7 @@ class OperatorProfilesSection extends StatelessWidget {
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
                 itemCount: appState.operatorProfiles.length,
-                onReorder: (oldIndex, newIndex) {
+                onReorderItem: (oldIndex, newIndex) {
                   appState.reorderOperatorProfiles(oldIndex, newIndex);
                 },
                 itemBuilder: (context, index) {
