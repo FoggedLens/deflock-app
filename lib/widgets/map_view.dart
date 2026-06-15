@@ -43,6 +43,7 @@ class MapView extends StatefulWidget {
     this.onSearchPressed,
     this.onNodeLimitChanged,
     this.onLocationStatusChanged,
+    this.onMapLongPress,
   });
 
   final FollowMeMode followMeMode;
@@ -54,6 +55,7 @@ class MapView extends StatefulWidget {
   final VoidCallback? onSearchPressed;
   final void Function(bool isLimited)? onNodeLimitChanged;
   final VoidCallback? onLocationStatusChanged;
+  final void Function(LatLng)? onMapLongPress;
 
   @override
   State<MapView> createState() => MapViewState();
@@ -513,6 +515,15 @@ class MapViewState extends State<MapView> {
                 // Show zoom warning if needed
                 _dataManager.showZoomWarningIfNeeded(context, pos.zoom, appState.uploadMode);
               }
+            },
+            onTap: (tapPosition, point) {
+              // Handle tap on empty map area - currently no action needed
+              debugPrint('[MapView] Tap at: $point');
+            },
+            onLongPress: (tapPosition, point) {
+              // Handle long press on empty map area - add node here
+              debugPrint('[MapView] Long press at: $point');
+              widget.onMapLongPress?.call(point);
             },
             ),
               children: [

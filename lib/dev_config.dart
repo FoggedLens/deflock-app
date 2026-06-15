@@ -96,6 +96,7 @@ const int kOsmApiMinZoomLevel = 13; // Minimum zoom for OSM API bbox queries (sa
 const int kMinZoomForNodeEditingSheets = 16; // Minimum zoom to open add/edit node sheets
 const int kMinZoomForOfflineDownload = 10; // Minimum zoom to download offline areas (prevents large area crashes)
 const Duration kMarkerTapTimeout = Duration(milliseconds: 250);
+const Duration kMapLongPressTimeout = Duration(milliseconds: 600); // Duration to trigger "add node here" on empty map area
 const Duration kDebounceCameraRefresh = Duration(milliseconds: 500);
 
 // Pre-fetch area configuration

@@ -1,7 +1,8 @@
 {
   "2.10.2": {
     "content": [
-      "• Fixed Flutter deprecation warnings for profile reordering"
+      "• Added tap and hold gesture on empty map area to add a node at that location",
+      "• Added ability to accept direct links to a specific node for callbacks from e.g. FlockHopper"
     ]
   },
   "2.10.1": {
@@ -13,7 +14,7 @@
   },
   "2.10.0": {
     "content": [
-      "• Simplified profile FOVs; there is now only a checkbox for '360'",
+      "• Simplified profile FOVs; there is now only a checkbox for '360'"
     ]
   },
   "2.9.2": {

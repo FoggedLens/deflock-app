@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map_animations/flutter_map_animations.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:latlong2/latlong.dart';
 import 'package:provider/provider.dart';
 
 import '../app_state.dart';
@@ -289,6 +290,21 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     );
   }
 
+  void _onMapLongPress(LatLng location) {
+    // Don't handle long press if tag sheet is open
+    if (_sheetCoordinator.tagSheetHeight > 0) {
+      debugPrint('[HomeScreen] Long press ignored - tag sheet is open');
+      return;
+    }
+    
+    _mapInteractionHandler.handleMapLongPress(
+      context: context,
+      tapLocation: location,
+      mapController: _mapController,
+      onAddNode: _openAddNodeSheet,
+    );
+  }
+
   void _handleNodeDeepLink(OsmNode node) {
     try {
       _mapController.animateTo(
@@ -520,6 +536,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 // Re-render when location status changes (for follow-me button state)
                 setState(() {});
               },
+              onMapLongPress: _onMapLongPress,
               onUserGesture: () {
                 // Only clear selected node if tag sheet is not open
                 // This prevents nodes from losing their grey-out when map is moved while viewing tags
