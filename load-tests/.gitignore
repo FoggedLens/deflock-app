@@ -1,0 +1,5 @@
+# Gradle build outputs (includes Gatling HTML reports in build/reports/gatling/)
+build/
+
+# Gradle cache
+.gradle/
