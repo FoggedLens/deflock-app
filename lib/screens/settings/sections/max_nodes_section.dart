@@ -34,7 +34,7 @@ class _MaxNodesSectionState extends State<MaxNodesSection> {
         final locService = LocalizationService.instance;
         final appState = context.watch<AppState>();
         final current = appState.maxNodes;
-        final showWarning = current > 1000;
+        final showWarning = current > 5000;
         
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,

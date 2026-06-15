@@ -92,12 +92,11 @@ A comprehensive Flutter app for mapping public surveillance infrastructure with 
 
 **Quick setup (macOS with Homebrew):**
 ```shell
-brew install --cask flutter        # Install Flutter SDK
-brew install cocoapods             # Required for iOS
-flutter pub get                    # Install dependencies
-./gen_icons_splashes.sh            # Generate icons & splash screens (required before first build)
-cp build_keys.conf.example build_keys.conf  # Add your OSM OAuth2 client IDs
-./do_builds.sh                     # Build both platforms
+brew tap leoafarias/fvm && brew install fvm  # Install Flutter version manager
+fvm install                                  # Install pinned Flutter version from .fvmrc
+brew install cocoapods                       # Required for iOS
+cp build_keys.conf.example build_keys.conf   # Add your OSM OAuth2 client IDs
+make all                                     # Installs deps, generates assets, builds APK + iOS
 ```
 See [DEVELOPER.md](DEVELOPER.md) for cross-platform instructions and Android SDK setup.
 

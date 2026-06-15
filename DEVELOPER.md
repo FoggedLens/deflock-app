@@ -806,7 +806,8 @@ The app uses a **clean, release-triggered workflow** that rebuilds from scratch 
 | Tool | Install | Notes |
 |------|---------|-------|
 | **Homebrew** | [brew.sh](https://brew.sh) | Package manager for macOS |
-| **Flutter SDK 3.35+** | `brew install --cask flutter` | Installs Flutter + Dart (3.35+ required for RadioGroup widget) |
+| **fvm** (recommended) | `brew tap leoafarias/fvm && brew install fvm` | Flutter version manager — pins the exact Flutter version from `.fvmrc` |
+| **Flutter SDK** | `fvm install` (or `brew install --cask flutter`) | fvm reads `.fvmrc` automatically; system Flutter works if version matches |
 | **Xcode** | Mac App Store | Required for iOS builds |
 | **CocoaPods** | `brew install cocoapods` | Required for iOS plugin resolution |
 | **Android SDK** | See below | Required for Android builds |
@@ -814,8 +815,10 @@ The app uses a **clean, release-triggered workflow** that rebuilds from scratch 
 
 After installing, verify with:
 ```bash
-flutter doctor    # All checks should be green
+fvm flutter doctor    # All checks should be green (or `flutter doctor` without fvm)
 ```
+
+> **Note:** fvm is optional — system Flutter works fine if your version matches what's in `.fvmrc`. The Makefile and `do_builds.sh` automatically detect fvm and fall back to system Flutter.
 
 ### Android SDK Setup (without Android Studio)
 
@@ -873,27 +876,51 @@ You can also pass keys directly via `--dart-define`:
 flutter run --dart-define=OSM_PROD_CLIENTID=your_id --dart-define=OSM_SANDBOX_CLIENTID=your_id
 ```
 
-### First Build
+### Docker (alternative to local setup)
+
+Contributors who prefer containers can build and test without installing Flutter locally:
 
 ```bash
-# 1. Install dependencies
-flutter pub get
+# Build the Docker image (or pull from GHCR if available)
+docker build -t deflock-builder .
 
-# 2. Generate icons and splash screens (gitignored, must be regenerated)
-./gen_icons_splashes.sh
+# Run analyze + test
+docker run --rm -v $(pwd):/app -w /app deflock-builder make ci
 
-# 3. Build Android
-flutter build apk --debug \
-  --dart-define=OSM_PROD_CLIENTID=your_id \
-  --dart-define=OSM_SANDBOX_CLIENTID=your_id
+# Build debug APK
+docker run --rm -v $(pwd):/app -w /app deflock-builder make build-apk-debug
 
-# 4. Build iOS (macOS only, no signing needed for testing)
-flutter build ios --no-codesign \
-  --dart-define=OSM_PROD_CLIENTID=your_id \
-  --dart-define=OSM_SANDBOX_CLIENTID=your_id
+# Or use the Makefile shortcuts
+make docker-ci
+make docker-build-apk-debug
 ```
 
-> **Important:** You must run `./gen_icons_splashes.sh` before the first build. The generated icons and splash screen assets are gitignored, so the build will fail without this step.
+> **Note:** Docker builds only support Android and validation (analyze/test). iOS builds require macOS.
+
+### First Build
+
+The project uses a [Makefile](Makefile) to orchestrate builds. Make automatically
+installs dependencies and generates icons/splash screens before building — you
+don't need to run those steps manually.
+
+```bash
+# Validate code (analyze + test) — this is the default target
+make
+
+# Build debug APK (generates assets automatically if needed)
+make build-apk-debug
+
+# Build iOS simulator app (macOS only)
+make build-ios-simulator
+
+# See all available targets
+make help
+```
+
+> **How Make works here:** `make` compares file timestamps to skip work that's
+> already done. The `.stamps/` directory tracks multi-file outputs like icon
+> generation. If you need a completely fresh build, run `make clean` first.
+> Tabs in the Makefile are significant (not spaces).
 
 ### Running
 
@@ -910,7 +937,7 @@ flutter run --dart-define=OSM_PROD_CLIENTID=your_id --dart-define=OSM_SANDBOX_CL
 ### Testing
 ```bash
 # Run all tests
-flutter test
+make test
 
 # Run with coverage
 flutter test --coverage

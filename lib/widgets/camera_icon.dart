@@ -13,8 +13,9 @@ enum CameraIconType {
 /// Simple camera icon with grey dot and colored ring
 class CameraIcon extends StatelessWidget {
   final CameraIconType type;
-  
-  const CameraIcon({super.key, required this.type});
+  final double diameter;
+
+  const CameraIcon({super.key, required this.type, this.diameter = kNodeIconDiameter});
 
   Color get _ringColor {
     switch (type) {
@@ -36,8 +37,8 @@ class CameraIcon extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: kNodeIconDiameter,
-      height: kNodeIconDiameter,
+      width: diameter,
+      height: diameter,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         color: _ringColor.withValues(alpha: kNodeDotOpacity),
