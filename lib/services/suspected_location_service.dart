@@ -35,13 +35,28 @@ class SuspectedLocationService {
     // Load cache data
     await _cache.loadFromStorage();
     
-    // Only auto-fetch if enabled, data is stale or missing, and we are not offline
-    if (_isEnabled && (await _shouldRefresh()) && !offlineMode) {
-      debugPrint('[SuspectedLocationService] Auto-refreshing CSV data on startup (older than $_maxAge or missing)');
-      await _fetchData();
-    } else if (_isEnabled && (await _shouldRefresh()) && offlineMode) {
+    // Note: Auto-refresh logic moved to initBackgroundRefresh() to avoid blocking app startup
+    if (_isEnabled && (await _shouldRefresh()) && offlineMode) {
       final lastFetch = await _cache.lastFetchTime;
       debugPrint('[SuspectedLocationService] Skipping auto-refresh due to offline mode - data is ${lastFetch != null ? 'outdated' : 'missing'}');
+    }
+  }
+
+  /// Check if background refresh should happen and start it (non-blocking)
+  Future<void> initBackgroundRefresh({bool offlineMode = false}) async {
+    // Only auto-fetch if enabled, data is stale or missing, and we are not offline
+    if (_isEnabled && (await _shouldRefresh()) && !offlineMode) {
+      debugPrint('[SuspectedLocationService] Starting background auto-refresh of CSV data (older than $_maxAge or missing)');
+      // Don't await - let it run in background
+      _fetchData().then((success) {
+        if (success) {
+          debugPrint('[SuspectedLocationService] Background auto-refresh completed successfully');
+        } else {
+          debugPrint('[SuspectedLocationService] Background auto-refresh failed');
+        }
+      }).catchError((error) {
+        debugPrint('[SuspectedLocationService] Background auto-refresh error: $error');
+      });
     }
   }
 

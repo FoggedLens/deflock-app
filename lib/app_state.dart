@@ -250,6 +250,9 @@ class AppState extends ChangeNotifier {
     
     _isInitialized = true;
     
+    // Start background refresh of suspected locations if needed (non-blocking)
+    _suspectedLocationState.initBackgroundRefresh(offlineMode: _settingsState.offlineMode);
+    
     // Check for initial deep link after a small delay to let navigation settle
     Future.delayed(const Duration(milliseconds: 500), () {
       DeepLinkService().checkInitialLink();

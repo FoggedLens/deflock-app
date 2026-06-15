@@ -2,7 +2,8 @@
   "2.10.2": {
     "content": [
       "• Added tap and hold gesture on empty map area to add a node at that location",
-      "• Added ability to accept direct links to a specific node for callbacks from e.g. FlockHopper"
+      "• Added ability to accept direct links to a specific node for callbacks from e.g. FlockHopper",
+      "• Fixed app hang during startup when suspected locations database needed updating - refresh now happens in background"
     ]
   },
   "2.10.1": {

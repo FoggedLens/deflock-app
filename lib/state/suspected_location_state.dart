@@ -61,6 +61,11 @@ class SuspectedLocationState extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Start background refresh if needed (non-blocking)
+  Future<void> initBackgroundRefresh({bool offlineMode = false}) async {
+    await _service.initBackgroundRefresh(offlineMode: offlineMode);
+  }
+
   /// Enable or disable suspected locations
   Future<void> setEnabled(bool enabled) async {
     await _service.setEnabled(enabled);
