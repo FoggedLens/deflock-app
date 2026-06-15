@@ -221,13 +221,13 @@ void main() {
         // Initial order should be A, B, C
         expect(profileState.profiles.map((p) => p.id), equals(['a', 'b', 'c']));
         
-        // Move profile at index 0 (A) to index 2 (should become B, A, C due to Flutter's reorder logic)
+        // Move profile at index 0 (A) to index 2 (with onReorderItem, newIndex is pre-adjusted)
         profileState.reorderProfiles(0, 2);
-        expect(profileState.profiles.map((p) => p.id), equals(['b', 'a', 'c']));
+        expect(profileState.profiles.map((p) => p.id), equals(['b', 'c', 'a']));
         
-        // Move profile at index 1 (A) to index 0 (should become A, B, C)
+        // Move profile at index 1 (C) to index 0 (should become C, B, A)
         profileState.reorderProfiles(1, 0);
-        expect(profileState.profiles.map((p) => p.id), equals(['a', 'b', 'c']));
+        expect(profileState.profiles.map((p) => p.id), equals(['c', 'b', 'a']));
       });
 
       test('should maintain enabled status after reordering', () {
