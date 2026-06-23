@@ -235,6 +235,7 @@ jobs:
 
       - name: Build iOS .ipa
         run: |
+          flutter config --no-enable-swift-package-manager
           flutter build ipa --release \
             --export-options-plist=ios/exportOptions.plist \
             --dart-define=OSM_PROD_CLIENTID='${{ secrets.OSM_PROD_CLIENTID }}' \
