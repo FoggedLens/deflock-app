@@ -95,7 +95,9 @@ jobs:
           dart run flutter_native_splash:create
 
       - name: Build iOS simulator app
-        run: flutter build ios --debug --simulator
+        run: |
+          flutter config --no-enable-swift-package-manager
+          flutter build ios --debug --simulator
 
       - name: Zip Runner.app
         run: cd build/ios/iphonesimulator && zip -r "$GITHUB_WORKSPACE/Runner.app.zip" Runner.app
