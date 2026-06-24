@@ -27,7 +27,7 @@ jobs:
         id: set-info
         run: |
           echo "is_prerelease=${{ github.event.release.prerelease }}" >> $GITHUB_OUTPUT
-          
+
           if [ "${{ github.event.release.prerelease }}" = "true" ]; then
             echo "should_upload_to_stores=false" >> $GITHUB_OUTPUT
             echo "✅ Pre-release - will build and attach assets, no store uploads"
@@ -187,7 +187,7 @@ jobs:
           # import certificate to keychain
           security import $CERTIFICATE_PATH -P "$P12_PASSWORD" -A -t cert -f pkcs12 -k $KEYCHAIN_PATH
           security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
-          
+
           # Set this keychain as the default
           security list-keychain -d user -s $KEYCHAIN_PATH
           security default-keychain -s $KEYCHAIN_PATH
@@ -195,7 +195,7 @@ jobs:
           # install provisioning profile
           mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
           cp $PP_PATH ~/Library/MobileDevice/Provisioning\ Profiles/61f9fdb9-bf2d-4d94-b249-63155ee71e74.mobileprovision
-          
+
           # Also install using the profile's internal UUID for better compatibility
           UUID=$(security cms -D -i $PP_PATH | plutil -extract UUID xml1 -o - - | xmllint --xpath "//string/text()" -)
           cp $PP_PATH ~/Library/MobileDevice/Provisioning\ Profiles/$UUID.mobileprovision
