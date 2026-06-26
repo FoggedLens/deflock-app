@@ -20,7 +20,7 @@ android {
     compileSdk = 36
 
     // NDK only needed if you build native plugins; keep your pinned version
-    ndkVersion = "27.0.12077973"
+    ndkVersion = "28.2.13676358"
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
