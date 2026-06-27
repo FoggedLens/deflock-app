@@ -38,12 +38,11 @@ ios/Flutter/Flutter.framework
 ios/Pods/
 ios/.generated/
 ios/.idea/
-ios/Runner.xcworkspace/
+ios/Runner.xcworkspace/xcuserdata/
+ios/Runner.xcworkspace/project.xcworkspace/xcuserdata/
 macos/Pods/
 macos/.generated/
 macos/Flutter/ephemeral/
-# CocoaPods – commit Podfile.lock if you need reproducible iOS builds
-Podfile.lock
 Pods/
 
 # Generated icons and splash screens  

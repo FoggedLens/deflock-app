@@ -86,12 +86,12 @@ class AuthService {
     }
     try {
       final token = await _helper.getToken();
-      if (token?.accessToken == null) {
+      if (token.accessToken == null) {
         log('OAuth error: token null or missing accessToken');
         return null;
       }
       final tokenMap = {
-        'accessToken': token!.accessToken,
+        'accessToken': token.accessToken,
         'refreshToken': token.refreshToken,
       };
       final tokenJson = jsonEncode(tokenMap);
