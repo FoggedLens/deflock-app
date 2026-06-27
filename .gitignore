@@ -44,6 +44,8 @@ macos/Pods/
 macos/.generated/
 macos/Flutter/ephemeral/
 Pods/
+Podfile
+Podfile.lock
 
 # Generated icons and splash screens  
 ios/Runner/Assets.xcassets/AppIcon.appiconset/*
