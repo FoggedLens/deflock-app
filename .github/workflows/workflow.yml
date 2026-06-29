@@ -329,7 +329,8 @@ jobs:
             --type ios \
             --file Runner.ipa \
             --apiKey $APP_STORE_CONNECT_API_KEY_ID \
-            --apiIssuer $APP_STORE_CONNECT_ISSUER_ID
+            --apiIssuer $APP_STORE_CONNECT_ISSUER_ID \
+            --apple-id 6752760780
           
           # Clean up sensitive files
           rm -rf ~/private_keys
