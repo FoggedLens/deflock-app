@@ -18,9 +18,9 @@ enum PinType { start, end }
 /// Simple location pin widget for route visualization
 class LocationPin extends StatelessWidget {
   final PinType type;
-  
+
   const LocationPin({super.key, required this.type});
-  
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -43,7 +43,6 @@ class LocationPin extends StatelessWidget {
 /// Builds all marker layers for the map including surveillance nodes, suspected locations,
 /// session markers, navigation pins, and route visualization.
 class MarkerLayerBuilder {
-  
   /// Build complete marker layers for the map
   static Widget buildMarkerLayers({
     required List<OsmNode> nodesToRender,
@@ -60,15 +59,16 @@ class MarkerLayerBuilder {
   }) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        
         // Determine if nodes should be dimmed and/or disabled
-        final shouldDimNodes = appState.selectedSuspectedLocation != null ||
-                               appState.isInSearchMode ||
-                               appState.showingOverview;
-        
+        final shouldDimNodes =
+            appState.selectedSuspectedLocation != null ||
+            appState.isInSearchMode ||
+            appState.showingOverview;
+
         // Disable node interactions when navigation is in conflicting state
-        final shouldDisableNodeTaps = appState.isInSearchMode || appState.showingOverview;
-        
+        final shouldDisableNodeTaps =
+            appState.isInSearchMode || appState.showingOverview;
+
         final markers = NodeMarkersBuilder.buildNodeMarkers(
           nodes: nodesToRender,
           mapController: mapController.mapController,
@@ -77,36 +77,46 @@ class MarkerLayerBuilder {
           onNodeTap: onNodeTap, // Keep the original callback
           shouldDim: shouldDimNodes,
           enabled: !shouldDisableNodeTaps, // Use enabled parameter instead
+          stalenessIndicatorEnabled: appState.stalenessIndicatorEnabled,
+          stalenessThresholdDays: appState.stalenessThresholdDays,
         );
 
         // Build suspected location markers (respect same zoom and count limits as nodes)
         final suspectedLocationMarkers = <Marker>[];
-        if (appState.suspectedLocationsEnabled && mapBounds != null && 
-            currentZoom >= (appState.uploadMode == UploadMode.sandbox ? kOsmApiMinZoomLevel : kNodeMinZoomLevel)) {
+        if (appState.suspectedLocationsEnabled &&
+            mapBounds != null &&
+            currentZoom >=
+                (appState.uploadMode == UploadMode.sandbox
+                    ? kOsmApiMinZoomLevel
+                    : kNodeMinZoomLevel)) {
           final suspectedLocations = appState.getSuspectedLocationsInBoundsSync(
             north: mapBounds.north,
             south: mapBounds.south,
             east: mapBounds.east,
             west: mapBounds.west,
           );
-          
+
           // Apply same node count limit as surveillance nodes
           final maxNodes = appState.maxNodes;
-          final limitedSuspectedLocations = suspectedLocations.take(maxNodes).toList();
-          
+          final limitedSuspectedLocations = suspectedLocations
+              .take(maxNodes)
+              .toList();
+
           // Filter out suspected locations that are too close to real nodes
-          final filteredSuspectedLocations = _filterSuspectedLocationsByProximity(
-            suspectedLocations: limitedSuspectedLocations,
-            realNodes: nodesToRender,
-            minDistance: appState.suspectedLocationMinDistance,
-          );
-          
+          final filteredSuspectedLocations =
+              _filterSuspectedLocationsByProximity(
+                suspectedLocations: limitedSuspectedLocations,
+                realNodes: nodesToRender,
+                minDistance: appState.suspectedLocationMinDistance,
+              );
+
           suspectedLocationMarkers.addAll(
             SuspectedLocationMarkersBuilder.buildSuspectedLocationMarkers(
               locations: filteredSuspectedLocations,
               mapController: mapController.mapController,
               selectedLocationId: appState.selectedSuspectedLocation?.ticketNo,
-              onLocationTap: onSuspectedLocationTap, // Keep the original callback
+              onLocationTap:
+                  onSuspectedLocationTap, // Keep the original callback
               shouldDimAll: shouldDisableNodeTaps,
               enabled: !shouldDisableNodeTaps, // Use enabled parameter instead
             ),
@@ -128,12 +138,12 @@ class MarkerLayerBuilder {
 
         return MarkerLayer(
           markers: [
-            ...suspectedLocationMarkers, 
-            ...markers, 
+            ...suspectedLocationMarkers,
+            ...markers,
             ...centerMarkers,
             ...navigationMarkers,
             ...routeMarkers,
-          ]
+          ],
         );
       },
     );
@@ -155,7 +165,9 @@ class MarkerLayerBuilder {
             width: kNodeIconDiameter,
             height: kNodeIconDiameter,
             child: CameraIcon(
-              type: editSession != null ? CameraIconType.editing : CameraIconType.mock,
+              type: editSession != null
+                  ? CameraIconType.editing
+                  : CameraIconType.mock,
             ),
           ),
         );
@@ -169,7 +181,8 @@ class MarkerLayerBuilder {
   /// Build provisional pin for navigation/search mode
   static List<Marker> _buildNavigationMarkers(AppState appState) {
     final markers = <Marker>[];
-    if (appState.showProvisionalPin && appState.provisionalPinLocation != null) {
+    if (appState.showProvisionalPin &&
+        appState.provisionalPinLocation != null) {
       markers.add(
         Marker(
           point: appState.provisionalPinLocation!,
@@ -185,7 +198,9 @@ class MarkerLayerBuilder {
   /// Build start/end pins for route visualization
   static List<Marker> _buildRouteMarkers(AppState appState) {
     final markers = <Marker>[];
-    if (appState.showingOverview || appState.isInRouteMode || appState.isSettingSecondPoint) {
+    if (appState.showingOverview ||
+        appState.isInRouteMode ||
+        appState.isSettingSecondPoint) {
       if (appState.routeStart != null) {
         markers.add(
           Marker(
@@ -217,31 +232,31 @@ class MarkerLayerBuilder {
     required int minDistance, // in meters
   }) {
     if (minDistance <= 0) return suspectedLocations;
-    
+
     const distance = Distance();
     final filteredLocations = <SuspectedLocation>[];
-    
+
     for (final suspected in suspectedLocations) {
       bool tooClose = false;
-      
+
       for (final realNode in realNodes) {
         final distanceMeters = distance.as(
           LengthUnit.Meter,
           suspected.centroid,
           realNode.coord,
         );
-        
+
         if (distanceMeters < minDistance) {
           tooClose = true;
           break;
         }
       }
-      
+
       if (!tooClose) {
         filteredLocations.add(suspected);
       }
     }
-    
+
     return filteredLocations;
   }
 }

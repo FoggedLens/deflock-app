@@ -14,12 +14,16 @@ class NodeMapMarker extends StatefulWidget {
   final MapController mapController;
   final void Function(OsmNode)? onNodeTap;
   final bool enabled;
-  
+  final bool stalenessIndicatorEnabled;
+  final int stalenessThresholdDays;
+
   const NodeMapMarker({
-    required this.node, 
-    required this.mapController, 
+    required this.node,
+    required this.mapController,
     this.onNodeTap,
     this.enabled = true,
+    this.stalenessIndicatorEnabled = false,
+    this.stalenessThresholdDays = 60,
     super.key,
   });
 
@@ -34,17 +38,19 @@ class _NodeMapMarkerState extends State<NodeMapMarker> {
 
   void _onTap() {
     if (!widget.enabled) return; // Don't respond to taps when disabled
-    
+
     _tapTimer = Timer(tapTimeout, () {
       // Don't center immediately - let the sheet opening handle the coordinated animation
-      
+
       // Use callback if provided, otherwise fallback to direct modal
       if (widget.onNodeTap != null) {
         widget.onNodeTap!(widget.node);
       } else {
         // Fallback: This should not happen if callbacks are properly provided,
         // but if it does, at least open the sheet (without map coordination)
-        debugPrint('[NodeMapMarker] Warning: onNodeTap callback not provided, using fallback');
+        debugPrint(
+          '[NodeMapMarker] Warning: onNodeTap callback not provided, using fallback',
+        );
         showModalBottomSheet(
           context: context,
           builder: (_) => NodeTagSheet(node: widget.node),
@@ -56,9 +62,12 @@ class _NodeMapMarkerState extends State<NodeMapMarker> {
 
   void _onDoubleTap() {
     if (!widget.enabled) return; // Don't respond to double taps when disabled
-    
+
     _tapTimer?.cancel();
-    widget.mapController.move(widget.node.coord, widget.mapController.camera.zoom + kNodeDoubleTapZoomDelta);
+    widget.mapController.move(
+      widget.node.coord,
+      widget.mapController.camera.zoom + kNodeDoubleTapZoomDelta,
+    );
   }
 
   @override
@@ -70,13 +79,16 @@ class _NodeMapMarkerState extends State<NodeMapMarker> {
   @override
   Widget build(BuildContext context) {
     // Check node state
-    final isPendingUpload = widget.node.tags.containsKey('_pending_upload') && 
-                           widget.node.tags['_pending_upload'] == 'true';
-    final isPendingEdit = widget.node.tags.containsKey('_pending_edit') && 
-                         widget.node.tags['_pending_edit'] == 'true';
-    final isPendingDeletion = widget.node.tags.containsKey('_pending_deletion') && 
-                             widget.node.tags['_pending_deletion'] == 'true';
-    
+    final isPendingUpload =
+        widget.node.tags.containsKey('_pending_upload') &&
+        widget.node.tags['_pending_upload'] == 'true';
+    final isPendingEdit =
+        widget.node.tags.containsKey('_pending_edit') &&
+        widget.node.tags['_pending_edit'] == 'true';
+    final isPendingDeletion =
+        widget.node.tags.containsKey('_pending_deletion') &&
+        widget.node.tags['_pending_deletion'] == 'true';
+
     CameraIconType iconType;
     if (isPendingDeletion) {
       iconType = CameraIconType.pendingDeletion;
@@ -84,10 +96,13 @@ class _NodeMapMarkerState extends State<NodeMapMarker> {
       iconType = CameraIconType.pending;
     } else if (isPendingEdit) {
       iconType = CameraIconType.pendingEdit;
+    } else if (widget.stalenessIndicatorEnabled &&
+        widget.node.isStale(widget.stalenessThresholdDays)) {
+      iconType = CameraIconType.stale;
     } else {
       iconType = CameraIconType.real;
     }
-    
+
     return GestureDetector(
       onTap: _onTap,
       onDoubleTap: _onDoubleTap,
@@ -106,32 +121,35 @@ class NodeMarkersBuilder {
     void Function(OsmNode)? onNodeTap,
     bool shouldDim = false,
     bool enabled = true,
+    bool stalenessIndicatorEnabled = false,
+    int stalenessThresholdDays = 60,
   }) {
     final markers = <Marker>[
       // Node markers
-      ...nodes
-        .where(_isValidNodeCoordinate)
-        .map((n) {
-          // Check if this node should be highlighted (selected) or dimmed
-          final isSelected = selectedNodeId == n.id;
-          final shouldDimNode = shouldDim || (selectedNodeId != null && !isSelected);
-          
-          return Marker(
-            point: n.coord,
-            width: kNodeIconDiameter,
-            height: kNodeIconDiameter,
-            child: Opacity(
-              opacity: shouldDimNode ? 0.5 : 1.0,
-              child: NodeMapMarker(
-                node: n, 
-                mapController: mapController,
-                onNodeTap: onNodeTap,
-                enabled: enabled,
-              ),
+      ...nodes.where(_isValidNodeCoordinate).map((n) {
+        // Check if this node should be highlighted (selected) or dimmed
+        final isSelected = selectedNodeId == n.id;
+        final shouldDimNode =
+            shouldDim || (selectedNodeId != null && !isSelected);
+
+        return Marker(
+          point: n.coord,
+          width: kNodeIconDiameter,
+          height: kNodeIconDiameter,
+          child: Opacity(
+            opacity: shouldDimNode ? 0.5 : 1.0,
+            child: NodeMapMarker(
+              node: n,
+              mapController: mapController,
+              onNodeTap: onNodeTap,
+              enabled: enabled,
+              stalenessIndicatorEnabled: stalenessIndicatorEnabled,
+              stalenessThresholdDays: stalenessThresholdDays,
             ),
-          );
-        }),
-      
+          ),
+        );
+      }),
+
       // User location marker
       if (userLocation != null)
         Marker(
@@ -147,7 +165,7 @@ class NodeMarkersBuilder {
 
   static bool _isValidNodeCoordinate(OsmNode node) {
     return (node.coord.latitude != 0 || node.coord.longitude != 0) &&
-           node.coord.latitude.abs() <= 90 && 
-           node.coord.longitude.abs() <= 180;
+        node.coord.latitude.abs() <= 90 &&
+        node.coord.longitude.abs() <= 180;
   }
 }

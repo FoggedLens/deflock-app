@@ -2,24 +2,27 @@ import 'package:flutter/material.dart';
 import '../dev_config.dart';
 
 enum CameraIconType {
-  real,           // Blue ring - real cameras from OSM
-  mock,           // White ring - add camera mock point
-  pending,        // Purple ring - submitted/pending cameras
-  editing,        // Orange ring - camera being edited
-  pendingEdit,    // Grey ring - original camera with pending edit
+  real, // Blue ring - real cameras from OSM
+  stale, // Brown ring - stale cameras from OSM
+  mock, // White ring - add camera mock point
+  pending, // Purple ring - submitted/pending cameras
+  editing, // Orange ring - camera being edited
+  pendingEdit, // Grey ring - original camera with pending edit
   pendingDeletion, // Red ring - camera pending deletion
 }
 
 /// Simple camera icon with grey dot and colored ring
 class CameraIcon extends StatelessWidget {
   final CameraIconType type;
-  
+
   const CameraIcon({super.key, required this.type});
 
   Color get _ringColor {
     switch (type) {
       case CameraIconType.real:
         return kNodeRingColorReal;
+      case CameraIconType.stale:
+        return kNodeRingColorStale;
       case CameraIconType.mock:
         return kNodeRingColorMock;
       case CameraIconType.pending:
