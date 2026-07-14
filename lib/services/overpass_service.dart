@@ -130,7 +130,7 @@ out body;
   way(bn);
   rel(bn);
 );
-out skel;
+out ids;
 ''';
   }
 
