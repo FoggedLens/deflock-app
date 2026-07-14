@@ -126,10 +126,7 @@ class OverpassService {
   $nodeClauses
 );
 out body;
-(
-  way(bn);
-  rel(bn);
-);
+<;
 out ids;
 ''';
   }
