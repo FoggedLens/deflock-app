@@ -57,7 +57,7 @@ void main() {
   }
 
   group('query building', () {
-    test('uses out skel for way/relation pass, out body for node pass',
+    test('uses out ids for way/relation pass, out body for node pass',
         () async {
       stubOverpassResponse([]);
 
@@ -69,7 +69,7 @@ void main() {
 
       final query = (captured.last as Map<String, String>)['data']!;
       expect(query, contains('out body;'));
-      expect(query, contains('out skel;'));
+      expect(query, contains('out ids;'));
       expect(query, isNot(contains('out meta;')));
     });
 
