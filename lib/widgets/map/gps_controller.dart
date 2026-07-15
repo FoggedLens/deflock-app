@@ -145,7 +145,7 @@ class GpsController {
   /// Start the GPS position stream
   void _startPositionStream() {
     final followMeMode = _getCurrentFollowMeMode?.call() ?? FollowMeMode.off;
-    final distanceFilter = followMeMode == FollowMeMode.off ? 5 : 1; // 5m normal, 1m follow-me
+    final distanceFilter = followMeMode == FollowMeMode.off ? 1 : 0; // 1m normal, 0m follow-me
 
     debugPrint('[GpsController] Starting GPS position stream (${distanceFilter}m filter)');
 
