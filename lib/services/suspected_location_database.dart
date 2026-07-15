@@ -58,13 +58,18 @@ class SuspectedLocationDatabase {
   }
 
   /// Create database tables
-  Future<void> _createTables(Database db, int version) async {
+  ///
+  /// Takes a [DatabaseExecutor] (rather than [Database]) so this can be
+  /// called either directly on the database (e.g. from [onCreate]) or inside
+  /// a transaction (see [insertBatch]).
+  Future<void> _createTables(DatabaseExecutor db, int version) async {
     debugPrint('[SuspectedLocationDatabase] Creating tables...');
 
     // Main suspected locations table
     await db.execute('''
       CREATE TABLE $_tableName (
         $_columnTicketNo TEXT PRIMARY KEY,
+
         $_columnCentroidLat REAL NOT NULL,
         $_columnCentroidLng REAL NOT NULL,
         $_columnBounds TEXT,
