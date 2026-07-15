@@ -99,13 +99,10 @@ const Duration kMarkerTapTimeout = Duration(milliseconds: 250);
 const Duration kMapLongPressTimeout = Duration(milliseconds: 600); // Duration to trigger "add node here" on empty map area
 const Duration kDebounceCameraRefresh = Duration(milliseconds: 500);
 
-// Pre-fetch area configuration
-const double kPreFetchAreaExpansionMultiplier = 3.0; // Expand visible bounds by this factor for pre-fetching
 const double kNodeRenderingBoundsExpansion = 1.3; // Expand visible bounds by this factor for node rendering to prevent edge blinking
 const double kRouteProximityThresholdMeters = 500.0; // Distance threshold for determining if user is near route when resuming navigation
 const double kResumeNavigationZoomLevel = 16.0; // Zoom level when resuming navigation
-const int kPreFetchZoomLevel = 10; // Always pre-fetch at this zoom level for consistent area sizes
-const int kMaxPreFetchSplitDepth = 3; // Maximum recursive splits when hitting Overpass node limit
+
 
 // Data refresh configuration
 const int kDataRefreshIntervalSeconds = 60; // Refresh cached data after this many seconds

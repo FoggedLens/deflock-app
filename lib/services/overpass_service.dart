@@ -32,7 +32,20 @@ class OverpassService {
   String get _primaryEndpoint => _endpointOverride ?? defaultEndpoint;
 
   /// Fetch surveillance nodes from Overpass API with retry and fallback.
-  /// Throws NetworkError for retryable failures, NodeLimitError for area splitting.
+  ///
+  /// Throws:
+  /// - [NodeLimitError] when the query would exceed Overpass's hard 50k node
+  ///   limit. This is the *only* case where the caller should split the
+  ///   query area into smaller regions, since it's a deterministic function
+  ///   of how much data lives in the requested bounds.
+  /// - [RateLimitError] when rate limited (HTTP 429 or equivalent). Callers
+  ///   should back off, not split/retry — splitting would only amplify load
+  ///   on a server that just told us to slow down.
+  /// - [NetworkError] for timeouts and other retryable HTTP/network failures.
+  ///   Timeouts are usually a sign of server load or an expensive query, not
+  ///   "too much area" — retrying with a hail of smaller sub-requests makes
+  ///   the problem worse, so timeouts are treated like any other transient
+  ///   network failure (handled by the existing retry/backoff/fallback logic).
   Future<List<OsmNode>> fetchNodes({
     required LatLngBounds bounds,
     required List<NodeProfile> profiles,
@@ -70,27 +83,32 @@ class OverpassService {
 
       final errorBody = response.body;
 
-      // Node limit error - caller should split area
+      // Node limit error - a deterministic result-set size limit. This is
+      // the one case where splitting the query area into smaller regions is
+      // the correct fix, since it directly reduces nodes-per-request.
       if (response.statusCode == 400 &&
           (errorBody.contains('too many nodes') && errorBody.contains('50000'))) {
-        debugPrint('[OverpassService] Node limit exceeded, area should be split');
+        debugPrint('[OverpassService] Node limit exceeded (50k), area should be split');
         throw NodeLimitError('Query exceeded 50k node limit');
       }
 
-      // Timeout error - also try splitting (complex query)
-      if (errorBody.contains('timeout') ||
-          errorBody.contains('runtime limit exceeded') ||
-          errorBody.contains('Query timed out')) {
-        debugPrint('[OverpassService] Query timeout, area should be split');
-        throw NodeLimitError('Query timed out - area too complex');
-      }
-
-      // Rate limit
+      // Rate limit - back off, don't split or hammer the server with more requests.
       if (response.statusCode == 429 ||
           errorBody.contains('rate limited') ||
           errorBody.contains('too many requests')) {
         debugPrint('[OverpassService] Rate limited by Overpass');
         throw RateLimitError('Rate limited by Overpass API');
+      }
+
+      // Timeout / runtime limit exceeded - treat as a plain retryable network
+      // error. This is usually server load or query cost, not "area too
+      // big" — splitting into up to 64 sub-requests would only make load
+      // on the server worse.
+      if (errorBody.contains('timeout') ||
+          errorBody.contains('runtime limit exceeded') ||
+          errorBody.contains('Query timed out')) {
+        debugPrint('[OverpassService] Query timed out');
+        throw NetworkError('Query timed out');
       }
 
       throw NetworkError('HTTP ${response.statusCode}: $errorBody');
@@ -173,7 +191,9 @@ out ids;
   }
 }
 
-/// Error thrown when query exceeds node limits or is too complex - area should be split
+/// Error thrown when a query would exceed Overpass's 50k node limit.
+/// The caller should split the query area into smaller regions to resolve this
+/// — it's a deterministic function of how much data lives within the bounds.
 class NodeLimitError extends Error {
   final String message;
   NodeLimitError(this.message);
@@ -189,7 +209,7 @@ class RateLimitError extends Error {
   String toString() => 'RateLimitError: $message';
 }
 
-/// Error thrown for network/HTTP issues - retryable
+/// Error thrown for network/HTTP issues (including timeouts) - retryable
 class NetworkError extends Error {
   final String message;
   NetworkError(this.message);

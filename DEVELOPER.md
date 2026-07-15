@@ -297,10 +297,11 @@ These are internal app tags, not OSM tags. The underscore prefix makes this expl
 - **Sandbox (OSM API)**: Zoom ≥ 13 (stricter due to bbox limits)
 
 **Smart error handling & splitting:**
-- **50k node limit**: Automatically splits query into 4 quadrants, recursively up to 3 levels deep
-- **Timeout errors**: Also triggers splitting (dense areas with many profiles)  
-- **Rate limiting**: Extended backoff (30s), no splitting (would make it worse)
-- **Surgical detection**: Only splits on actual limit errors, not network issues
+- **50k node limit**: Automatically splits query into 4 quadrants, recursively up to 3 levels deep. This is a deterministic result-set size limit, so shrinking the queried area is the correct fix.
+- **Timeout errors**: Treated as a plain retryable network error — no splitting. Timeouts usually indicate server load or an expensive query, not "too much area", so firing off more sub-requests would only add load to an already-struggling server.
+- **Rate limiting (HTTP 429)**: Extended backoff (30s), no splitting (would make it worse). Still surfaces the same "slow" status indicator as the node-limit-splitting case, so the user sees consistent feedback either way.
+- **Surgical detection**: Only splits on the actual 50k node limit, not timeouts or other network issues.
+
 
 **Query optimization & deduplication:**
 - **Pre-fetch limit**: 4x user's display limit (e.g., 1000 nodes for 250 display limit)

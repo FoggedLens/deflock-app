@@ -255,26 +255,27 @@ void main() {
       );
     });
 
-    test('response with "timeout" throws NodeLimitError', () async {
+    test('response with "timeout" throws NetworkError (not split)', () async {
       stubErrorResponse(400, 'runtime error: timeout in query execution');
 
       await expectLater(
         () => service.fetchNodes(
             bounds: bounds, profiles: profiles, policy: const ResiliencePolicy(maxRetries: 0)),
-        throwsA(isA<NodeLimitError>()),
+        throwsA(isA<NetworkError>()),
       );
     });
 
-    test('response with "runtime limit exceeded" throws NodeLimitError',
+    test('response with "runtime limit exceeded" throws NetworkError (not split)',
         () async {
       stubErrorResponse(400, 'runtime limit exceeded');
 
       await expectLater(
         () => service.fetchNodes(
             bounds: bounds, profiles: profiles, policy: const ResiliencePolicy(maxRetries: 0)),
-        throwsA(isA<NodeLimitError>()),
+        throwsA(isA<NetworkError>()),
       );
     });
+
 
     test('HTTP 429 throws RateLimitError', () async {
       stubErrorResponse(429, 'Too Many Requests');
