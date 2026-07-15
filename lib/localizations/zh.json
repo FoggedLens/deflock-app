@@ -47,6 +47,7 @@
     "download": "下载",
     "settings": "设置",
     "edit": "编辑",
+    "verify": "验证",
     "delete": "删除",
     "cancel": "取消",
     "ok": "确定",
@@ -112,6 +113,7 @@
     "advancedSettingsSubtitle": "性能、警报和地图提供商设置",
     "proximityAlerts": "邻近警报",
     "keepScreenAwake": "保持屏幕常亮",
+    "dataFreshness": "数据新鲜度",
     "networkStatusIndicator": "网络状态指示器"
   },
   "keepScreenAwake": {
@@ -129,6 +131,13 @@
     "checkingPermissions": "检查权限中...",
     "alertDistance": "警报距离：",
     "rangeInfo": "范围：{}-{} {}（默认：{}）"
+  },
+  "staleness": {
+    "showIndicator": "显示过期节点指示器",
+    "showIndicatorExplanation": "高亮显示最近未检查的节点",
+    "threshold": "视为过期的天数",
+    "daysCount": "{} 天",
+    "explanation": "没有 check_date 的节点永远不会被标记为过期。"
   },
   "node": {
     "title": "节点 #{}",

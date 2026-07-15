@@ -47,6 +47,7 @@
     "download": "İndir",
     "settings": "Ayarlar",
     "edit": "Düzenle",
+    "verify": "Doğrula",
     "delete": "Sil",
     "cancel": "İptal",
     "ok": "Tamam",
@@ -112,6 +113,7 @@
     "advancedSettingsSubtitle": "Performans, uyarılar ve döşeme sağlayıcı ayarları",
     "proximityAlerts": "Yakınlık Uyarıları",
     "keepScreenAwake": "Ekranı Açık Tut",
+    "dataFreshness": "Veri Tazeliği",
     "networkStatusIndicator": "Ağ Durumu Göstergesi"
   },
   "keepScreenAwake": {
@@ -129,6 +131,13 @@
     "checkingPermissions": "İzinler kontrol ediliyor...",
     "alertDistance": "Uyarı mesafesi: ",
     "rangeInfo": "Aralık: {}-{} {} (varsayılan: {})"
+  },
+  "staleness": {
+    "showIndicator": "Eski düğüm göstergesini göster",
+    "showIndicatorExplanation": "Son zamanlarda kontrol edilmemiş düğümleri vurgula",
+    "threshold": "Şu süreden sonra eski say",
+    "daysCount": "{} gün",
+    "explanation": "check_date değeri olmayan düğümler asla eski olarak işaretlenmez."
   },
   "node": {
     "title": "Düğüm #{}",

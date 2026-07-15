@@ -413,10 +413,12 @@ class SettingsState extends ChangeNotifier {
 
   /// Set proximity alert distance in meters
   Future<void> setProximityAlertDistance(int distance) async {
-    if (distance < kProximityAlertMinDistance)
+    if (distance < kProximityAlertMinDistance) {
       distance = kProximityAlertMinDistance;
-    if (distance > kProximityAlertMaxDistance)
+    }
+    if (distance > kProximityAlertMaxDistance) {
       distance = kProximityAlertMaxDistance;
+    }
     if (_proximityAlertDistance != distance) {
       _proximityAlertDistance = distance;
       final prefs = await SharedPreferences.getInstance();

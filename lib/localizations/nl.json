@@ -47,6 +47,7 @@
     "download": "Download",
     "settings": "Instellingen",
     "edit": "Bewerken",
+    "verify": "Verifiëren",
     "delete": "Verwijderen",
     "cancel": "Annuleren",
     "ok": "OK",
@@ -112,6 +113,7 @@
     "advancedSettingsSubtitle": "Prestaties, waarschuwingen en tile provider instellingen",
     "proximityAlerts": "Nabijheids Waarschuwingen",
     "keepScreenAwake": "Scherm Actief Houden",
+    "dataFreshness": "Gegevensversheid",
     "networkStatusIndicator": "Netwerk Status Indicator"
   },
   "keepScreenAwake": {
@@ -129,6 +131,13 @@
     "checkingPermissions": "Toestemmingen controleren...",
     "alertDistance": "Waarschuwingsafstand: ",
     "rangeInfo": "Bereik: {}-{} {} (standaard: {})"
+  },
+  "staleness": {
+    "showIndicator": "Verouderde knooppuntindicator tonen",
+    "showIndicatorExplanation": "Knooppunten markeren die niet recent zijn gecontroleerd",
+    "threshold": "Als verouderd beschouwen na",
+    "daysCount": "{} dagen",
+    "explanation": "Knooppunten zonder check_date worden nooit als verouderd gemarkeerd."
   },
   "node": {
     "title": "Node #{}",

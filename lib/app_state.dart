@@ -549,8 +549,9 @@ class AppState extends ChangeNotifier {
   }
 
   void _checkTutorialCompletion(LatLng newPosition) {
-    if (_tutorialCompletionCallback == null || _tutorialStartPosition == null)
+    if (_tutorialCompletionCallback == null || _tutorialStartPosition == null) {
       return;
+    }
 
     // Calculate distance moved
     final distance = Distance();

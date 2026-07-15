@@ -10,6 +10,7 @@
     "download": "Herunterladen",
     "settings": "Einstellungen",
     "edit": "Bearbeiten",
+    "verify": "Überprüfen",
     "delete": "Löschen",
     "cancel": "Abbrechen",
     "ok": "OK",
@@ -75,6 +76,7 @@
     "advancedSettingsSubtitle": "Leistungs-, Warnungs- und Kachelanbieter-Einstellungen",
     "proximityAlerts": "Näherungswarnungen",
     "keepScreenAwake": "Bildschirm Aktiv Lassen",
+    "dataFreshness": "Datenaktualität",
     "networkStatusIndicator": "Netzwerkstatus-Anzeige"
   },
   "keepScreenAwake": {
@@ -92,6 +94,13 @@
     "checkingPermissions": "Berechtigungen prüfen...",
     "alertDistance": "Warnentfernung: ",
     "rangeInfo": "Bereich: {}-{} {} (Standard: {})"
+  },
+  "staleness": {
+    "showIndicator": "Veraltete Knoten anzeigen",
+    "showIndicatorExplanation": "Knoten hervorheben, die nicht kürzlich überprüft wurden",
+    "threshold": "Als veraltet betrachten nach",
+    "daysCount": "{} Tage",
+    "explanation": "Knoten ohne check_date werden nie als veraltet markiert."
   },
   "node": {
     "title": "Knoten #{}",

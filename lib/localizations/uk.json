@@ -47,6 +47,7 @@
     "download": "Завантажити",
     "settings": "Налаштування",
     "edit": "Редагувати",
+    "verify": "Перевірити",
     "delete": "Видалити",
     "cancel": "Скасувати",
     "ok": "ОК",
@@ -112,6 +113,7 @@
     "advancedSettingsSubtitle": "Продуктивність, сповіщення та налаштування постачальників плиток",
     "proximityAlerts": "Сповіщення Про Близькість",
     "keepScreenAwake": "Тримати екран активним",
+    "dataFreshness": "Актуальність даних",
     "networkStatusIndicator": "Індикатор Стану Мережі"
   },
   "keepScreenAwake": {
@@ -129,6 +131,13 @@
     "checkingPermissions": "Перевірка дозволів...",
     "alertDistance": "Відстань сповіщення: ",
     "rangeInfo": "Діапазон: {}-{} {} (за замовчуванням: {})"
+  },
+  "staleness": {
+    "showIndicator": "Показувати індикатор застарілих вузлів",
+    "showIndicatorExplanation": "Виділяти вузли, які давно не перевірялися",
+    "threshold": "Вважати застарілим після",
+    "daysCount": "{} днів",
+    "explanation": "Вузли без check_date ніколи не позначаються як застарілі."
   },
   "node": {
     "title": "Вузол #{}",

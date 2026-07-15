@@ -47,6 +47,7 @@
     "download": "Pobierz",
     "settings": "Ustawienia",
     "edit": "Edytuj",
+    "verify": "Zweryfikuj",
     "delete": "Usuń",
     "cancel": "Anuluj",
     "ok": "OK",
@@ -112,6 +113,7 @@
     "advancedSettingsSubtitle": "Wydajność, alerty i ustawienia dostawców kafelków",
     "proximityAlerts": "Alerty Bliskości",
     "keepScreenAwake": "Nie Wygaszaj Ekranu",
+    "dataFreshness": "Aktualność danych",
     "networkStatusIndicator": "Wskaźnik Stanu Sieci"
   },
   "keepScreenAwake": {
@@ -129,6 +131,13 @@
     "checkingPermissions": "Sprawdzanie uprawnień...",
     "alertDistance": "Odległość alertu: ",
     "rangeInfo": "Zakres: {}-{} {} (domyślnie: {})"
+  },
+  "staleness": {
+    "showIndicator": "Pokaż wskaźnik nieaktualnych węzłów",
+    "showIndicatorExplanation": "Wyróżnij węzły, które nie były ostatnio sprawdzane",
+    "threshold": "Uznaj za nieaktualne po",
+    "daysCount": "{} dni",
+    "explanation": "Węzły bez check_date nigdy nie są oznaczane jako nieaktualne."
   },
   "node": {
     "title": "Węzeł #{}",

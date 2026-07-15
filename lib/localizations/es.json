@@ -47,6 +47,7 @@
     "download": "Descargar",
     "settings": "Configuración",
     "edit": "Editar",
+    "verify": "Verificar",
     "delete": "Eliminar",
     "cancel": "Cancelar",
     "ok": "Aceptar",
@@ -112,6 +113,7 @@
     "advancedSettingsSubtitle": "Configuración de rendimiento, alertas y proveedores de teselas",
     "proximityAlerts": "Alertas de Proximidad",
     "keepScreenAwake": "Mantener la Pantalla Encendida",
+    "dataFreshness": "Actualidad de los datos",
     "networkStatusIndicator": "Indicador de Estado de Red"
   },
   "keepScreenAwake": {
@@ -129,6 +131,13 @@
     "checkingPermissions": "Verificando permisos...",
     "alertDistance": "Distancia de alerta: ",
     "rangeInfo": "Rango: {}-{} {} (predeterminado: {})"
+  },
+  "staleness": {
+    "showIndicator": "Mostrar indicador de nodos obsoletos",
+    "showIndicatorExplanation": "Resaltar nodos que no se han verificado recientemente",
+    "threshold": "Considerar obsoleto después de",
+    "daysCount": "{} días",
+    "explanation": "Los nodos sin check_date nunca se marcan como obsoletos."
   },
   "node": {
     "title": "Nodo #{}",
