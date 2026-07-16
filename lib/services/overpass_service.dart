@@ -32,7 +32,20 @@ class OverpassService {
   String get _primaryEndpoint => _endpointOverride ?? defaultEndpoint;
 
   /// Fetch surveillance nodes from Overpass API with retry and fallback.
-  /// Throws NetworkError for retryable failures, NodeLimitError for area splitting.
+  ///
+  /// Throws:
+  /// - [NodeLimitError] when the query would exceed Overpass's hard 50k node
+  ///   limit. This is the *only* case where the caller should split the
+  ///   query area into smaller regions, since it's a deterministic function
+  ///   of how much data lives in the requested bounds.
+  /// - [RateLimitError] when rate limited (HTTP 429 or equivalent). Callers
+  ///   should back off, not split/retry — splitting would only amplify load
+  ///   on a server that just told us to slow down.
+  /// - [NetworkError] for timeouts and other retryable HTTP/network failures.
+  ///   Timeouts are usually a sign of server load or an expensive query, not
+  ///   "too much area" — retrying with a hail of smaller sub-requests makes
+  ///   the problem worse, so timeouts are treated like any other transient
+  ///   network failure (handled by the existing retry/backoff/fallback logic).
   Future<List<OsmNode>> fetchNodes({
     required LatLngBounds bounds,
     required List<NodeProfile> profiles,
@@ -70,27 +83,32 @@ class OverpassService {
 
       final errorBody = response.body;
 
-      // Node limit error - caller should split area
+      // Node limit error - a deterministic result-set size limit. This is
+      // the one case where splitting the query area into smaller regions is
+      // the correct fix, since it directly reduces nodes-per-request.
       if (response.statusCode == 400 &&
           (errorBody.contains('too many nodes') && errorBody.contains('50000'))) {
-        debugPrint('[OverpassService] Node limit exceeded, area should be split');
+        debugPrint('[OverpassService] Node limit exceeded (50k), area should be split');
         throw NodeLimitError('Query exceeded 50k node limit');
       }
 
-      // Timeout error - also try splitting (complex query)
-      if (errorBody.contains('timeout') ||
-          errorBody.contains('runtime limit exceeded') ||
-          errorBody.contains('Query timed out')) {
-        debugPrint('[OverpassService] Query timeout, area should be split');
-        throw NodeLimitError('Query timed out - area too complex');
-      }
-
-      // Rate limit
+      // Rate limit - back off, don't split or hammer the server with more requests.
       if (response.statusCode == 429 ||
           errorBody.contains('rate limited') ||
           errorBody.contains('too many requests')) {
         debugPrint('[OverpassService] Rate limited by Overpass');
         throw RateLimitError('Rate limited by Overpass API');
+      }
+
+      // Timeout / runtime limit exceeded - treat as a plain retryable network
+      // error. This is usually server load or query cost, not "area too
+      // big" — splitting into up to 64 sub-requests would only make load
+      // on the server worse.
+      if (errorBody.contains('timeout') ||
+          errorBody.contains('runtime limit exceeded') ||
+          errorBody.contains('Query timed out')) {
+        debugPrint('[OverpassService] Query timed out');
+        throw NetworkError('Query timed out');
       }
 
       throw NetworkError('HTTP ${response.statusCode}: $errorBody');
@@ -108,9 +126,24 @@ class OverpassService {
     return ErrorDisposition.retry;
   }
 
-  /// Build Overpass QL query for given bounds and profiles
+  /// Build Overpass QL query for given bounds and profiles.
+  ///
+  /// Profiles are deduplicated first: if one profile's non-empty tags are a
+  /// subset of another's (with identical values), the broader profile's query
+  /// clause already returns every node the narrower one would, so the
+  /// narrower clause is redundant and can be dropped. This directly reduces
+  /// query size/complexity without changing the result set — client-side
+  /// filtering (matching returned nodes against the full profile list) still
+  /// happens independently, so nothing is lost.
   String _buildQuery(LatLngBounds bounds, List<NodeProfile> profiles) {
-    final nodeClauses = profiles.map((profile) {
+    final profilesToQuery = _deduplicateProfilesForQuery(profiles);
+
+    if (profilesToQuery.length < profiles.length) {
+      debugPrint(
+          '[OverpassService] Deduplicated ${profiles.length} profiles to ${profilesToQuery.length} for query efficiency');
+    }
+
+    final nodeClauses = profilesToQuery.map((profile) {
       // Convert profile tags to Overpass filter format, excluding empty values
       final tagFilters = profile.tags.entries
           .where((entry) => entry.value.trim().isNotEmpty)
@@ -130,6 +163,74 @@ out body;
 out ids;
 ''';
   }
+
+  /// Deduplicate profiles for Overpass queries by removing profiles that are
+  /// subsumed by others. A profile A subsumes profile B if all of A's
+  /// non-empty tags exist in B with identical values — meaning every node
+  /// matching B's filter also matches A's filter, so B's clause is redundant.
+  List<NodeProfile> _deduplicateProfilesForQuery(List<NodeProfile> profiles) {
+    if (profiles.length <= 1) return profiles;
+
+    final result = <NodeProfile>[];
+
+    for (final candidate in profiles) {
+      // Skip profiles that only have empty tags - they would match
+      // everything and shouldn't be treated as subsuming or subsumable.
+      final candidateNonEmptyTags = candidate.tags.entries
+          .where((entry) => entry.value.trim().isNotEmpty)
+          .toList();
+
+      if (candidateNonEmptyTags.isEmpty) continue;
+
+      // Check if any existing profile in our result subsumes this candidate
+      bool isSubsumed = false;
+      for (final existing in result) {
+        if (_profileSubsumes(existing, candidate)) {
+          isSubsumed = true;
+          break;
+        }
+      }
+
+      if (!isSubsumed) {
+        // This candidate is not subsumed, so add it. But first, remove any
+        // existing profiles that this candidate subsumes (candidate is
+        // broader, so those clauses are now redundant).
+        result.removeWhere((existing) => _profileSubsumes(candidate, existing));
+        result.add(candidate);
+      }
+    }
+
+    // Safety check: if dedup removed everything (e.g. all-empty-tag
+    // profiles), fall back to the original list rather than sending an
+    // empty query.
+    return result.isNotEmpty ? result : profiles;
+  }
+
+  /// Check if [broaderProfile] subsumes [specificProfile]: true if all
+  /// non-empty tags in [broaderProfile] exist in [specificProfile] with
+  /// identical values.
+  bool _profileSubsumes(NodeProfile broaderProfile, NodeProfile specificProfile) {
+    final broaderTags = Map.fromEntries(
+      broaderProfile.tags.entries.where((entry) => entry.value.trim().isNotEmpty),
+    );
+    final specificTags = Map.fromEntries(
+      specificProfile.tags.entries.where((entry) => entry.value.trim().isNotEmpty),
+    );
+
+    // If broader has no non-empty tags, it doesn't subsume anything (it
+    // would match everything, which isn't a meaningful "broader filter").
+    if (broaderTags.isEmpty) return false;
+
+    // If broader has more non-empty tags than specific, it can't subsume it.
+    if (broaderTags.length > specificTags.length) return false;
+
+    for (final entry in broaderTags.entries) {
+      if (specificTags[entry.key] != entry.value) return false;
+    }
+
+    return true;
+  }
+
 
   /// Parse Overpass JSON response into OsmNode objects
   List<OsmNode> _parseResponse(String responseBody) {
@@ -173,7 +274,9 @@ out ids;
   }
 }
 
-/// Error thrown when query exceeds node limits or is too complex - area should be split
+/// Error thrown when a query would exceed Overpass's 50k node limit.
+/// The caller should split the query area into smaller regions to resolve this
+/// — it's a deterministic function of how much data lives within the bounds.
 class NodeLimitError extends Error {
   final String message;
   NodeLimitError(this.message);
@@ -189,7 +292,7 @@ class RateLimitError extends Error {
   String toString() => 'RateLimitError: $message';
 }
 
-/// Error thrown for network/HTTP issues - retryable
+/// Error thrown for network/HTTP issues (including timeouts) - retryable
 class NetworkError extends Error {
   final String message;
   NetworkError(this.message);
