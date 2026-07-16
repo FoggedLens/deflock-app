@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Logging configuration for Gatling simulations.
+
+  Set to WARN by default so only errors and the Gatling summary output
+  are shown. Change the root level to DEBUG if you need to see individual
+  HTTP request/response details for troubleshooting.
+
+  To debug specific request failures, you can also enable just the
+  HTTP response logger:
+    <logger name="io.gatling.http.engine.response" level="DEBUG" />
+-->
+<configuration>
+  <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+    <encoder>
+      <pattern>%d{HH:mm:ss.SSS} [%-5level] %logger{36} - %msg%n</pattern>
+    </encoder>
+  </appender>
+
+  <root level="WARN">
+    <appender-ref ref="CONSOLE" />
+  </root>
+</configuration>
