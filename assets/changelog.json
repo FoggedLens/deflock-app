@@ -1,4 +1,10 @@
 {
+  "2.10.3": {
+    "content": [
+      "• Data loading performance improvements",
+      "• Node marker when submitting now green for visibility"
+    ]
+  },
   "2.10.2": {
     "content": [
       "• Added tap and hold gesture on empty map area to add a node at that location",
