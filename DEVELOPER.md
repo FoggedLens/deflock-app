@@ -303,21 +303,17 @@ These are internal app tags, not OSM tags. The underscore prefix makes this expl
 - **Surgical detection**: Only splits on the actual 50k node limit, not timeouts or other network issues.
 
 
-**Query optimization & deduplication:**
-- **Pre-fetch limit**: 4x user's display limit (e.g., 1000 nodes for 250 display limit)
-- **Profile deduplication**: Automatically removes redundant profiles from queries using subsumption analysis
-- **User-initiated detection**: Only reports loading status for user-facing operations  
-- **Background operations**: Pre-fetch runs silently, doesn't trigger loading states
-
-**Profile subsumption optimization (v2.1.1+):**
-To reduce Overpass query complexity, profiles are deduplicated before query generation:
+**Query optimization & deduplication (in `OverpassService._buildQuery`):**
+Profiles are deduplicated before query generation via subsumption analysis:
 - **Subsumption rule**: Profile A subsumes profile B if all of A's non-empty tags exist in B with identical values
 - **Example**: `Generic ALPR` (tags: `man_made=surveillance, surveillance:type=ALPR`) subsumes `Flock` (same tags + `manufacturer=Flock Safety`)
 - **Result**: Default profile set reduces from ~11 to ~2 query clauses (Generic ALPR + Generic Gunshot)
-- **UI unchanged**: All enabled profiles still used for post-query filtering and display matching
+- **UI unchanged**: All enabled profiles still used for post-query filtering and display matching (see `NodeProviderWithCache._matchesAnyProfile`), independent of which clauses were sent to Overpass
+- **Safety fallback**: if dedup would remove every profile (e.g. all profiles have only empty tags), the original full list is used instead of sending an empty query
 
 **Why this approach:**
-Dense urban areas (SF, NYC) with many profiles enabled can easily exceed both 50k node limits and 25s timeouts. Profile deduplication reduces query complexity by ~80% for default setups, while automatic splitting handles remaining edge cases. Surgical error detection avoids unnecessary API load from network issues.
+Dense urban areas (SF, NYC) with many profiles enabled can easily exceed both 50k node limits and 45s timeouts. Profile deduplication reduces query complexity by ~80% for default setups. Surgical error detection avoids unnecessary API load from network issues.
+
 
 ### 6. Uploader Service Architecture (Refactored v1.5.3)
 

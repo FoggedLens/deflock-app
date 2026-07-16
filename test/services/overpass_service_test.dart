@@ -99,6 +99,129 @@ void main() {
     });
   });
 
+  group('profile deduplication (subsumption)', () {
+    test('a specific profile subsumed by a generic one is dropped', () async {
+      final generic = NodeProfile(
+        id: 'generic-alpr',
+        name: 'Generic ALPR',
+        tags: const {
+          'man_made': 'surveillance',
+          'surveillance:type': 'ALPR',
+        },
+      );
+      final specific = NodeProfile(
+        id: 'flock',
+        name: 'Flock',
+        tags: const {
+          'man_made': 'surveillance',
+          'surveillance': 'public',
+          'surveillance:type': 'ALPR',
+          'surveillance:zone': 'traffic',
+          'camera:type': 'fixed',
+          'manufacturer': 'Flock Safety',
+          'manufacturer:wikidata': 'Q108485435',
+        },
+      );
+
+      stubOverpassResponse([]);
+
+      await service.fetchNodes(bounds: bounds, profiles: [generic, specific]);
+
+      final captured = verify(
+        () => mockClient.post(any(), body: captureAny(named: 'body')),
+      ).captured;
+      final query = (captured.last as Map<String, String>)['data']!;
+
+      // Only the generic clause should remain.
+      expect(query, contains('["man_made"="surveillance"]["surveillance:type"="ALPR"]'));
+      expect(query, isNot(contains('manufacturer')));
+      expect(query, isNot(contains('Flock Safety')));
+
+      // Only one node clause total.
+      final nodeClauseCount = RegExp(r'node\[').allMatches(query).length;
+      expect(nodeClauseCount, equals(1));
+    });
+
+
+    test('unrelated profiles are all kept', () async {
+      final alprGeneric = NodeProfile(
+        id: 'generic-alpr',
+        name: 'Generic ALPR',
+        tags: const {
+          'man_made': 'surveillance',
+          'surveillance:type': 'ALPR',
+        },
+      );
+      final gunshotGeneric = NodeProfile(
+        id: 'generic-gunshot',
+        name: 'Generic Gunshot Detector',
+        tags: const {
+          'man_made': 'surveillance',
+          'surveillance:type': 'gunshot_detector',
+        },
+      );
+
+      stubOverpassResponse([]);
+
+      await service.fetchNodes(bounds: bounds, profiles: [alprGeneric, gunshotGeneric]);
+
+      final captured = verify(
+        () => mockClient.post(any(), body: captureAny(named: 'body')),
+      ).captured;
+      final query = (captured.last as Map<String, String>)['data']!;
+
+      expect(query, contains('["surveillance:type"="ALPR"]'));
+      expect(query, contains('["surveillance:type"="gunshot_detector"]'));
+    });
+
+    test('full default profile set reduces to the two generic clauses', () async {
+      final profiles = NodeProfile.getDefaults();
+
+      stubOverpassResponse([]);
+
+      await service.fetchNodes(bounds: bounds, profiles: profiles);
+
+      final captured = verify(
+        () => mockClient.post(any(), body: captureAny(named: 'body')),
+      ).captured;
+      final query = (captured.last as Map<String, String>)['data']!;
+
+      final nodeClauseCount = RegExp(r'node\[').allMatches(query).length;
+      expect(nodeClauseCount, equals(2));
+
+      expect(query, contains('["man_made"="surveillance"]["surveillance:type"="ALPR"]'));
+      expect(query, contains('["man_made"="surveillance"]["surveillance:type"="gunshot_detector"]'));
+      // Brand-specific tags should not appear anywhere in the reduced query.
+      expect(query, isNot(contains('manufacturer')));
+      expect(query, isNot(contains('ShotSpotter')));
+    });
+
+    test('profiles with only empty tags do not subsume or break the query', () async {
+      final emptyTagsProfile = NodeProfile(
+        id: 'empty',
+        name: 'Empty',
+        tags: const {'camera:mount': ''},
+      );
+      final normalProfile = NodeProfile(
+        id: 'normal',
+        name: 'Normal',
+        tags: const {'man_made': 'surveillance'},
+      );
+
+      stubOverpassResponse([]);
+
+      await service.fetchNodes(bounds: bounds, profiles: [emptyTagsProfile, normalProfile]);
+
+      final captured = verify(
+        () => mockClient.post(any(), body: captureAny(named: 'body')),
+      ).captured;
+      final query = (captured.last as Map<String, String>)['data']!;
+
+      expect(query, contains('["man_made"="surveillance"]'));
+    });
+  });
+
+
   group('response parsing — constraint detection', () {
     test('nodes referenced by a way are constrained', () async {
       stubOverpassResponse([
