@@ -104,7 +104,7 @@ class Uploader {
           // Create new node
           final mergedTags = p.getCombinedTags();
           final tagsXml = mergedTags.entries.map((e) =>
-            '<tag k="${e.key}" v="${e.value}"/>').join('\n            ');
+            '<tag k="${_sanitizeXmlText(e.key)}" v="${_sanitizeXmlText(e.value)}"/>').join('\n            ');
           final nodeXml = '''
         <osm>
           <node changeset="$changesetId" lat="${p.coord.latitude}" lon="${p.coord.longitude}">
@@ -141,7 +141,7 @@ class Uploader {
           // Update existing node with version
           final mergedTags = p.getCombinedTags();
           final tagsXml = mergedTags.entries.map((e) =>
-            '<tag k="${e.key}" v="${e.value}"/>').join('\n            ');
+            '<tag k="${_sanitizeXmlText(e.key)}" v="${_sanitizeXmlText(e.value)}"/>').join('\n            ');
           final nodeXml = '''
         <osm>
           <node changeset="$changesetId" id="${p.originalNodeId}" version="$currentVersion" lat="${p.coord.latitude}" lon="${p.coord.longitude}">
@@ -190,7 +190,7 @@ class Uploader {
           // Extract creates a new node with tags from the original node
           final mergedTags = p.getCombinedTags();
           final tagsXml = mergedTags.entries.map((e) =>
-            '<tag k="${e.key}" v="${e.value}"/>').join('\n            ');
+            '<tag k="${_sanitizeXmlText(e.key)}" v="${_sanitizeXmlText(e.value)}"/>').join('\n            ');
           final nodeXml = '''
         <osm>
           <node changeset="$changesetId" lat="${p.coord.latitude}" lon="${p.coord.longitude}">
