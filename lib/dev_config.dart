@@ -223,6 +223,7 @@ const double kNodeIconDiameter = 17.0;
 const double _kNodeRingThicknessBase = 2.6;
 const double kNodeDotOpacity = 0.28; // Opacity for the grey dot interior
 const Color kNodeRingColorReal = Color(0xFF3036F0); // Real nodes from OSM - blue
+const Color kNodeRingColorStale = Color(0xFF6F4E37); // Real but stale OSM nodes - brown
 const Color kNodeRingColorMock = Color(0xE044BB55); // Add node mock point - white
 const Color kNodeRingColorPending = Color(0xD09C27B0); // Submitted/pending nodes - purple
 const Color kNodeRingColorEditing = Color(0xD0FF9800); // Node being edited - orange
