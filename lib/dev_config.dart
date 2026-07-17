@@ -133,18 +133,12 @@ const Duration kMapLongPressTimeout = Duration(
 const Duration kDebounceCameraRefresh = Duration(milliseconds: 500);
 
 // Pre-fetch area configuration
-const double kPreFetchAreaExpansionMultiplier =
-    3.0; // Expand visible bounds by this factor for pre-fetching
-const double kNodeRenderingBoundsExpansion =
-    1.3; // Expand visible bounds by this factor for node rendering to prevent edge blinking
-const double kRouteProximityThresholdMeters =
-    500.0; // Distance threshold for determining if user is near route when resuming navigation
-const double kResumeNavigationZoomLevel =
-    16.0; // Zoom level when resuming navigation
-const int kPreFetchZoomLevel =
-    10; // Always pre-fetch at this zoom level for consistent area sizes
-const int kMaxPreFetchSplitDepth =
-    3; // Maximum recursive splits when hitting Overpass node limit
+const double kPreFetchAreaExpansionMultiplier = 3.0; // Expand visible bounds by this factor for pre-fetching
+const double kNodeRenderingBoundsExpansion = 1.3; // Expand visible bounds by this factor for node rendering to prevent edge blinking
+const double kRouteProximityThresholdMeters = 500.0; // Distance threshold for determining if user is near route when resuming navigation
+const double kResumeNavigationZoomLevel = 16.0; // Zoom level when resuming navigation
+const int kPreFetchZoomLevel = 10; // Always pre-fetch at this zoom level for consistent area sizes
+const int kMaxPreFetchSplitDepth = 3; // Maximum recursive splits when hitting Overpass node limit
 
 // Data refresh configuration
 const int kDataRefreshIntervalSeconds =
@@ -225,32 +219,17 @@ const int kAbsoluteMaxTileCount = 50000;
 const int kAbsoluteMaxZoom = 23;
 
 // Node icon configuration
-const double kNodeIconDiameter = 18.0;
-const double _kNodeRingThicknessBase = 2.5;
-const double kNodeDotOpacity = 0.3; // Opacity for the grey dot interior
-const Color kNodeRingColorReal = Color(
-  0xFF3036F0,
-); // Real nodes from OSM - blue
-const Color kNodeRingColorStale = Color(
-  0xFF6F4E37,
-); // Real but stale OSM nodes - brown
-const Color kNodeRingColorMock = Color(
-  0xD0FFFFFF,
-); // Add node mock point - white
-const Color kNodeRingColorPending = Color(
-  0xD09C27B0,
-); // Submitted/pending nodes - purple
-const Color kNodeRingColorEditing = Color(
-  0xD0FF9800,
-); // Node being edited - orange
-const Color kNodeRingColorPendingEdit = Color(
-  0xD0757575,
-); // Original node with pending edit - grey
-const Color kNodeRingColorPendingDeletion = Color(
-  0xC0F44336,
-); // Node pending deletion - red, slightly transparent
+const double kNodeIconDiameter = 17.0;
+const double _kNodeRingThicknessBase = 2.6;
+const double kNodeDotOpacity = 0.28; // Opacity for the grey dot interior
+const Color kNodeRingColorReal = Color(0xFF3036F0); // Real nodes from OSM - blue
+const Color kNodeRingColorMock = Color(0xE044BB55); // Add node mock point - white
+const Color kNodeRingColorPending = Color(0xD09C27B0); // Submitted/pending nodes - purple
+const Color kNodeRingColorEditing = Color(0xD0FF9800); // Node being edited - orange
+const Color kNodeRingColorPendingEdit = Color(0xD0757575); // Original node with pending edit - grey
+const Color kNodeRingColorPendingDeletion = Color(0xC0F44336); // Node pending deletion - red, slightly transparent
 
-// Direction slider control buttons configuration
+// Direction slider control buttons configuration  
 const double kDirectionButtonMinWidth = 22.0;
 const double kDirectionButtonMinHeight = 32.0;
 

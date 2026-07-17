@@ -215,7 +215,18 @@ class NodeDataManager extends ChangeNotifier {
     }
   }
 
-  /// Fetch nodes with automatic area splitting if needed
+  /// Fetch nodes, splitting the query area into quadrants only when Overpass
+  /// reports the query would exceed its hard 50k node limit ([NodeLimitError]).
+  ///
+  /// Splitting is deliberately NOT used for other failure modes:
+  /// - [RateLimitError] (HTTP 429): the server explicitly asked us to slow
+  ///   down, so firing off up to 4x more requests would be counterproductive.
+  ///   We back off instead, while still surfacing the "slow" status
+  ///   indicator to the user (same UI feedback as the splitting case).
+  /// - Timeouts / other transient failures now surface as [NetworkError]
+  ///   (see [OverpassService]) and are not caught here at all — they're
+  ///   handled by the normal retry/backoff/fallback logic and reported as a
+  ///   plain timeout/error status by the caller.
   Future<List<OsmNode>> fetchWithSplitting(
     LatLngBounds bounds, 
     List<NodeProfile> profiles, {
@@ -238,7 +249,7 @@ class NodeDataManager extends ChangeNotifier {
       return nodes;
       
     } on NodeLimitError {
-      // Hit node limit or timeout - split area if not too deep
+      // Hit the deterministic 50k node limit - split area if not too deep
       if (splitDepth >= maxSplitDepth) {
         debugPrint('[NodeDataManager] Max split depth reached, giving up');
         return [];
@@ -254,12 +265,19 @@ class NodeDataManager extends ChangeNotifier {
       return _fetchSplitAreas(bounds, profiles, splitDepth + 1, isUserInitiated: isUserInitiated);
       
     } on RateLimitError {
-      // Rate limited - wait and return empty
-      debugPrint('[NodeDataManager] Rate limited, backing off');
+      // Rate limited - back off without splitting the area. Splitting here
+      // would multiply request volume against a server that just told us to
+      // slow down. We still show the same "slow" status indicator so the
+      // user gets feedback, but there is no recursive quadrant fetching.
+      debugPrint('[NodeDataManager] Rate limited, backing off (no area splitting)');
+      if (isUserInitiated) {
+        NetworkStatus.instance.setSplitting();
+      }
       await Future.delayed(const Duration(seconds: 30));
       return [];
     }
   }
+
 
   /// Fetch data by splitting area into quadrants
   Future<List<OsmNode>> _fetchSplitAreas(

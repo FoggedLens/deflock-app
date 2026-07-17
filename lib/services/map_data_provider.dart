@@ -54,8 +54,8 @@ class MapDataProvider {
     required List<NodeProfile> profiles,
     UploadMode uploadMode = UploadMode.production,
     int maxResults = 0, // 0 = no limit for offline downloads
-    int maxTries = 3,
   }) async {
+
     if (AppState.instance.offlineMode) {
       throw OfflineModeException("Cannot fetch remote nodes for offline area download in offline mode.");
     }
