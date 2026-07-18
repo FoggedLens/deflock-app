@@ -37,9 +37,13 @@ class MapPositionManager {
         debugPrint('[MapPositionManager] Loaded last map position: ${_initialLocation!.latitude}, ${_initialLocation!.longitude}, zoom: $_initialZoom');
       } else {
         debugPrint('[MapPositionManager] Invalid saved coordinates, using defaults');
+        _initialLocation = const LatLng(37.7749, -122.4194);
+        _initialZoom = 15.0;
       }
     } catch (e) {
       debugPrint('[MapPositionManager] Failed to load last map position: $e');
+      _initialLocation = const LatLng(37.7749, -122.4194);
+      _initialZoom = 15.0;
     }
   }
 
