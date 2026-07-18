@@ -14,8 +14,8 @@ class NodeTagSheet extends StatelessWidget {
   final bool isNodeLimitActive;
 
   const NodeTagSheet({
-    super.key, 
-    required this.node, 
+    super.key,
+    required this.node,
     this.onEditPressed,
     this.isNodeLimitActive = false,
   });
@@ -27,26 +27,28 @@ class NodeTagSheet extends StatelessWidget {
       builder: (context, child) {
         final appState = context.watch<AppState>();
         final locService = LocalizationService.instance;
-        
+
         // Check if this device is editable (not a pending upload, pending edit, or pending deletion)
-        final isEditable = (!node.tags.containsKey('_pending_upload') || 
-                           node.tags['_pending_upload'] != 'true') &&
-                          (!node.tags.containsKey('_pending_edit') || 
-                           node.tags['_pending_edit'] != 'true') &&
-                          (!node.tags.containsKey('_pending_deletion') || 
-                           node.tags['_pending_deletion'] != 'true');
-        
+        final isEditable =
+            (!node.tags.containsKey('_pending_upload') ||
+                node.tags['_pending_upload'] != 'true') &&
+            (!node.tags.containsKey('_pending_edit') ||
+                node.tags['_pending_edit'] != 'true') &&
+            (!node.tags.containsKey('_pending_deletion') ||
+                node.tags['_pending_deletion'] != 'true');
+
         // Check if this is a real OSM node (not pending) - for "View on OSM" button
-        final isRealOSMNode = !node.tags.containsKey('_pending_upload') &&
-                              node.id > 0; // Real OSM nodes have positive IDs
-        
+        final isRealOSMNode =
+            !node.tags.containsKey('_pending_upload') &&
+            node.id > 0; // Real OSM nodes have positive IDs
+
         void openEditSheet() {
           // Check if node limit is active and warn user
           if (isNodeLimitActive) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text(
-                  locService.t('nodeLimitIndicator.editingDisabledMessage')
+                  locService.t('nodeLimitIndicator.editingDisabledMessage'),
                 ),
                 duration: const Duration(seconds: 4),
                 behavior: SnackBarBehavior.floating,
@@ -54,14 +56,24 @@ class NodeTagSheet extends StatelessWidget {
             );
             return;
           }
-          
+
           if (onEditPressed != null) {
             onEditPressed!(); // Use callback if provided
           } else {
             // Fallback behavior
             Navigator.pop(context); // Close this sheet first
-            appState.startEditSession(node); // HomeScreen will auto-show the edit sheet
+            appState.startEditSession(
+              node,
+            ); // HomeScreen will auto-show the edit sheet
           }
+        }
+
+        void verifyNode() {
+          Navigator.pop(context); // Close this sheet first
+          appState.verifyNode(node);
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(locService.t('node.verifyQueuedForUpload'))),
+          );
         }
 
         void deleteNode() async {
@@ -77,7 +89,9 @@ class NodeTagSheet extends StatelessWidget {
             Navigator.pop(context); // Close this sheet first
             appState.deleteNode(node, changesetComment: result!.comment);
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(locService.t('node.deleteQueuedForUpload'))),
+              SnackBar(
+                content: Text(locService.t('node.deleteQueuedForUpload')),
+              ),
             );
           }
         }
@@ -91,14 +105,22 @@ class NodeTagSheet extends StatelessWidget {
             } else {
               if (context.mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text(locService.t('advancedEdit.couldNotOpenOSMWebsite'))),
+                  SnackBar(
+                    content: Text(
+                      locService.t('advancedEdit.couldNotOpenOSMWebsite'),
+                    ),
+                  ),
                 );
               }
             }
           } catch (e) {
             if (context.mounted) {
               ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text(locService.t('advancedEdit.couldNotOpenOSMWebsite'))),
+                SnackBar(
+                  content: Text(
+                    locService.t('advancedEdit.couldNotOpenOSMWebsite'),
+                  ),
+                ),
               );
             }
           }
@@ -116,132 +138,179 @@ class NodeTagSheet extends StatelessWidget {
           builder: (context, constraints) {
             return SafeArea(
               child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
-                child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  locService.t('node.title').replaceAll('{}', node.id.toString()),
-                  style: Theme.of(context).textTheme.titleLarge,
+                padding: const EdgeInsets.symmetric(
+                  vertical: 16,
+                  horizontal: 20,
                 ),
-                const SizedBox(height: 12),
-                
-                // Tag list with flexible height constraint
-                ConstrainedBox(
-                  constraints: BoxConstraints(
-                    maxHeight: MediaQuery.of(context).size.height * getTagListHeightRatio(context),
-                  ),
-                  child: SingleChildScrollView(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      locService
+                          .t('node.title')
+                          .replaceAll('{}', node.id.toString()),
+                      style: Theme.of(context).textTheme.titleLarge,
+                    ),
+                    const SizedBox(height: 12),
+
+                    // Tag list with flexible height constraint
+                    ConstrainedBox(
+                      constraints: BoxConstraints(
+                        maxHeight:
+                            MediaQuery.of(context).size.height *
+                            getTagListHeightRatio(context),
+                      ),
+                      child: SingleChildScrollView(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            ...node.tags.entries.map(
+                              (e) => Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 2,
+                                ),
+                                child: Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      e.key,
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.w500,
+                                        color: Theme.of(
+                                          context,
+                                        ).colorScheme.onSurface,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Expanded(
+                                      child: Linkify(
+                                        onOpen: (link) async {
+                                          final uri = Uri.parse(link.url);
+                                          if (await canLaunchUrl(uri)) {
+                                            await launchUrl(
+                                              uri,
+                                              mode: LaunchMode
+                                                  .externalApplication,
+                                            );
+                                          } else if (context.mounted) {
+                                            ScaffoldMessenger.of(
+                                              context,
+                                            ).showSnackBar(
+                                              SnackBar(
+                                                content: Text(
+                                                  '${LocalizationService.instance.t('advancedEdit.couldNotOpenURL')}: ${link.url}',
+                                                ),
+                                              ),
+                                            );
+                                          }
+                                        },
+                                        text: e.value,
+                                        style: TextStyle(
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .onSurface
+                                              .withValues(alpha: 0.7),
+                                        ),
+                                        linkStyle: TextStyle(
+                                          color: Theme.of(
+                                            context,
+                                          ).colorScheme.primary,
+                                          decoration: TextDecoration.underline,
+                                        ),
+                                        options: const LinkifyOptions(
+                                          humanize: false,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    // First row: View and Advanced buttons
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
                       children: [
-                        ...node.tags.entries.map(
-                          (e) => Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 2),
-                            child: Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  e.key,
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.w500,
-                                    color: Theme.of(context).colorScheme.onSurface,
-                                  ),
-                                ),
-                                const SizedBox(width: 8),
-                                Expanded(
-                                  child: Linkify(
-                                    onOpen: (link) async {
-                                      final uri = Uri.parse(link.url);
-                                      if (await canLaunchUrl(uri)) {
-                                        await launchUrl(uri, mode: LaunchMode.externalApplication);
-                                      } else if (context.mounted) {
-                                        ScaffoldMessenger.of(context).showSnackBar(
-                                          SnackBar(content: Text('${LocalizationService.instance.t('advancedEdit.couldNotOpenURL')}: ${link.url}')),
-                                        );
-                                      }
-                                    },
-                                    text: e.value,
-                                    style: TextStyle(
-                                      color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
-                                    ),
-                                    linkStyle: TextStyle(
-                                      color: Theme.of(context).colorScheme.primary,
-                                      decoration: TextDecoration.underline,
-                                    ),
-                                    options: const LinkifyOptions(humanize: false),
-                                  ),
-                                ),
-                              ],
+                        if (isRealOSMNode) ...[
+                          TextButton.icon(
+                            onPressed: () => viewOnOSM(),
+                            icon: const Icon(Icons.open_in_new, size: 16),
+                            label: Text(locService.t('actions.viewOnOSM')),
+                          ),
+                          const SizedBox(width: 8),
+                        ],
+                        if (isEditable) ...[
+                          OutlinedButton.icon(
+                            onPressed: openAdvancedEdit,
+                            icon: const Icon(Icons.open_in_new, size: 18),
+                            label: Text(locService.t('actions.advanced')),
+                            style: OutlinedButton.styleFrom(
+                              minimumSize: const Size(0, 36),
                             ),
                           ),
-                        ),
+                        ],
                       ],
                     ),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                // First row: View and Advanced buttons
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    if (isRealOSMNode) ...[
-                      TextButton.icon(
-                        onPressed: () => viewOnOSM(),
-                        icon: const Icon(Icons.open_in_new, size: 16),
-                        label: Text(locService.t('actions.viewOnOSM')),
+                    const SizedBox(height: 8),
+                    // Second row: Edit, Delete, and Close buttons
+                    FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: Alignment.centerRight,
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          if (isEditable) ...[
+                            ElevatedButton.icon(
+                              onPressed: openEditSheet,
+                              icon: const Icon(Icons.edit, size: 18),
+                              label: Text(locService.edit),
+                              style: ElevatedButton.styleFrom(
+                                minimumSize: const Size(0, 36),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            ElevatedButton.icon(
+                              onPressed: verifyNode,
+                              icon: const Icon(
+                                Icons.check_circle_outline,
+                                size: 18,
+                              ),
+                              label: Text(locService.t('actions.verify')),
+                              style: ElevatedButton.styleFrom(
+                                minimumSize: const Size(0, 36),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            ElevatedButton.icon(
+                              onPressed: node.isConstrained ? null : deleteNode,
+                              icon: const Icon(Icons.delete, size: 18),
+                              label: Text(locService.t('actions.delete')),
+                              style: ElevatedButton.styleFrom(
+                                minimumSize: const Size(0, 36),
+                                foregroundColor: node.isConstrained
+                                    ? null
+                                    : Colors.red,
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                          ],
+                          TextButton(
+                            onPressed: () => Navigator.pop(context),
+                            child: Text(locService.t('actions.close')),
+                          ),
+                        ],
                       ),
-                      const SizedBox(width: 8),
-                    ],
-                    if (isEditable) ...[
-                      OutlinedButton.icon(
-                        onPressed: openAdvancedEdit,
-                        icon: const Icon(Icons.open_in_new, size: 18),
-                        label: Text(locService.t('actions.advanced')),
-                        style: OutlinedButton.styleFrom(
-                          minimumSize: const Size(0, 36),
-                        ),
-                      ),
-                    ],
-                  ],
-                ),
-                const SizedBox(height: 8),
-                // Second row: Edit, Delete, and Close buttons
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    if (isEditable) ...[
-                      ElevatedButton.icon(
-                        onPressed: openEditSheet,
-                        icon: const Icon(Icons.edit, size: 18),
-                        label: Text(locService.edit),
-                        style: ElevatedButton.styleFrom(
-                          minimumSize: const Size(0, 36),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      ElevatedButton.icon(
-                        onPressed: node.isConstrained ? null : deleteNode,
-                        icon: const Icon(Icons.delete, size: 18),
-                        label: Text(locService.t('actions.delete')),
-                        style: ElevatedButton.styleFrom(
-                          minimumSize: const Size(0, 36),
-                          foregroundColor: node.isConstrained ? null : Colors.red,
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                    ],
-                    TextButton(
-                      onPressed: () => Navigator.pop(context),
-                      child: Text(locService.t('actions.close')),
                     ),
                   ],
                 ),
-              ],
-            ),
-          ),
-        );
+              ),
+            );
           },
         );
       },
@@ -253,10 +322,7 @@ class _DeleteNodeDialog extends StatefulWidget {
   final String nodeId;
   final LocalizationService locService;
 
-  const _DeleteNodeDialog({
-    required this.nodeId,
-    required this.locService,
-  });
+  const _DeleteNodeDialog({required this.nodeId, required this.locService});
 
   @override
   State<_DeleteNodeDialog> createState() => _DeleteNodeDialogState();
@@ -285,7 +351,12 @@ class _DeleteNodeDialogState extends State<_DeleteNodeDialog> {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(widget.locService.t('node.confirmDeleteMessage', params: [widget.nodeId])),
+          Text(
+            widget.locService.t(
+              'node.confirmDeleteMessage',
+              params: [widget.nodeId],
+            ),
+          ),
           const SizedBox(height: 16),
           Text(
             widget.locService.t('node.deleteReasonLabel'),
@@ -306,13 +377,14 @@ class _DeleteNodeDialogState extends State<_DeleteNodeDialog> {
       ),
       actions: [
         TextButton(
-          onPressed: () => Navigator.of(context).pop((confirmed: false, comment: '')),
+          onPressed: () =>
+              Navigator.of(context).pop((confirmed: false, comment: '')),
           child: Text(widget.locService.cancel),
         ),
         TextButton(
           onPressed: () {
             final comment = _commentController.text.trim();
-            final finalComment = comment.isEmpty 
+            final finalComment = comment.isEmpty
                 ? 'Delete a surveillance node'
                 : 'Delete a surveillance node: $comment';
             Navigator.of(context).pop((confirmed: true, comment: finalComment));

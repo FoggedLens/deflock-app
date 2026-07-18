@@ -12,7 +12,8 @@ class OsmNode {
     required this.id,
     required this.coord,
     required this.tags,
-    this.isConstrained = false, // Default to unconstrained for backward compatibility
+    this.isConstrained =
+        false, // Default to unconstrained for backward compatibility
   });
 
   Map<String, dynamic> toJson() => {
@@ -31,11 +32,30 @@ class OsmNode {
       });
     }
     return OsmNode(
-      id: json['id'] is int ? json['id'] as int : int.tryParse(json['id'].toString()) ?? 0,
-      coord: LatLng((json['lat'] as num).toDouble(), (json['lon'] as num).toDouble()),
+      id: json['id'] is int
+          ? json['id'] as int
+          : int.tryParse(json['id'].toString()) ?? 0,
+      coord: LatLng(
+        (json['lat'] as num).toDouble(),
+        (json['lon'] as num).toDouble(),
+      ),
       tags: tags,
-      isConstrained: json['isConstrained'] as bool? ?? false, // Default to false for backward compatibility
+      isConstrained:
+          json['isConstrained'] as bool? ??
+          false, // Default to false for backward compatibility
     );
+  }
+
+  /// Parsed check_date tag, if present and valid. Null for nodes with no
+  /// check_date (treated as "unknown age", never stale).
+  DateTime? get checkDate => DateTime.tryParse(tags['check_date'] ?? '');
+
+  /// Whether this node's check_date is older than [staleDays].
+  /// Nodes without a check_date are never considered stale.
+  bool isStale(int staleDays) {
+    final date = checkDate;
+    if (date == null) return false;
+    return DateTime.now().difference(date).inDays > staleDays;
   }
 
   bool get hasDirection => directionFovPairs.isNotEmpty;
@@ -47,26 +67,39 @@ class OsmNode {
 
     // Compass direction to degree mapping
     const compassDirections = {
-      'N': 0.0, 'NNE': 22.5, 'NE': 45.0, 'ENE': 67.5,
-      'E': 90.0, 'ESE': 112.5, 'SE': 135.0, 'SSE': 157.5,
-      'S': 180.0, 'SSW': 202.5, 'SW': 225.0, 'WSW': 247.5,
-      'W': 270.0, 'WNW': 292.5, 'NW': 315.0, 'NNW': 337.5,
+      'N': 0.0,
+      'NNE': 22.5,
+      'NE': 45.0,
+      'ENE': 67.5,
+      'E': 90.0,
+      'ESE': 112.5,
+      'SE': 135.0,
+      'SSE': 157.5,
+      'S': 180.0,
+      'SSW': 202.5,
+      'SW': 225.0,
+      'WSW': 247.5,
+      'W': 270.0,
+      'WNW': 292.5,
+      'NW': 315.0,
+      'NNW': 337.5,
     };
 
     final directionFovList = <DirectionFov>[];
     final parts = raw.split(';');
-    
+
     for (final part in parts) {
       final trimmed = part.trim();
       if (trimmed.isEmpty) continue;
-      
+
       // Check if this part contains a range (e.g., "90-270")
-      if (trimmed.contains('-') && RegExp(r'^\d+\.?\d*-\d+\.?\d*$').hasMatch(trimmed)) {
+      if (trimmed.contains('-') &&
+          RegExp(r'^\d+\.?\d*-\d+\.?\d*$').hasMatch(trimmed)) {
         final rangeParts = trimmed.split('-');
         if (rangeParts.length == 2) {
           final start = double.tryParse(rangeParts[0]);
           final end = double.tryParse(rangeParts[1]);
-          
+
           if (start != null && end != null) {
             final normalized = _calculateRangeCenter(start, end);
             directionFovList.add(normalized);
@@ -74,17 +107,19 @@ class OsmNode {
           }
         }
       }
-      
+
       // Not a range, handle as single direction
       final trimmedUpper = trimmed.toUpperCase();
-      
+
       // First try compass direction lookup
       if (compassDirections.containsKey(trimmedUpper)) {
         final degrees = compassDirections[trimmedUpper]!;
-        directionFovList.add(DirectionFov(degrees, kDirectionConeHalfAngle * 2));
+        directionFovList.add(
+          DirectionFov(degrees, kDirectionConeHalfAngle * 2),
+        );
         continue;
       }
-      
+
       // Then try numeric parsing
       final match = RegExp(r'[-+]?\d*\.?\d+').firstMatch(trimmed);
       if (match == null) continue;
@@ -95,9 +130,11 @@ class OsmNode {
 
       // Normalize: wrap negative or >360 into 0‑359 range
       final normalized = ((val % 360) + 360) % 360;
-      directionFovList.add(DirectionFov(normalized, kDirectionConeHalfAngle * 2));
+      directionFovList.add(
+        DirectionFov(normalized, kDirectionConeHalfAngle * 2),
+      );
     }
-    
+
     return directionFovList;
   }
 
@@ -106,24 +143,24 @@ class OsmNode {
     // Normalize start and end to 0-359 range
     start = ((start % 360) + 360) % 360;
     end = ((end % 360) + 360) % 360;
-    
+
     // Special case: if start equals end, this represents 360° FOV
     if (start == end) {
       return DirectionFov(start, 360.0);
     }
-    
+
     double width, center;
-    
+
     if (start > end) {
       // Wrapping case: 270-90
       width = (end + 360) - start;
       center = ((start + end + 360) / 2) % 360;
     } else {
-      // Normal case: 90-270  
+      // Normal case: 90-270
       width = end - start;
       center = (start + end) / 2;
     }
-    
+
     return DirectionFov(center, width);
   }
 

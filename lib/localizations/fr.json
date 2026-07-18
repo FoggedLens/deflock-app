@@ -47,6 +47,7 @@
     "download": "Télécharger",
     "settings": "Paramètres",
     "edit": "Modifier",
+    "verify": "Vérifier",
     "delete": "Supprimer",
     "cancel": "Annuler",
     "ok": "OK",
@@ -112,6 +113,7 @@
     "advancedSettingsSubtitle": "Paramètres de performance, alertes et fournisseurs de tuiles",
     "proximityAlerts": "Alertes de Proximité",
     "keepScreenAwake": "Maintenir l'écran Allumé",
+    "dataFreshness": "Fraîcheur des données",
     "networkStatusIndicator": "Indicateur de Statut Réseau"
   },
   "keepScreenAwake": {
@@ -129,6 +131,13 @@
     "checkingPermissions": "Vérification des autorisations...",
     "alertDistance": "Distance d'alerte : ",
     "rangeInfo": "Plage : {}-{} {} (par défaut : {})"
+  },
+  "staleness": {
+    "showIndicator": "Afficher l'indicateur de nœuds obsolètes",
+    "showIndicatorExplanation": "Mettre en évidence les nœuds qui n'ont pas été vérifiés récemment",
+    "threshold": "Considérer comme obsolète après",
+    "daysCount": "{} jours",
+    "explanation": "Les nœuds sans check_date ne sont jamais marqués comme obsolètes."
   },
   "node": {
     "title": "Nœud #{}",

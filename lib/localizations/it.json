@@ -47,6 +47,7 @@
     "download": "Scarica",
     "settings": "Impostazioni",
     "edit": "Modifica",
+    "verify": "Verifica",
     "delete": "Elimina",
     "cancel": "Annulla",
     "ok": "OK",
@@ -112,6 +113,7 @@
     "advancedSettingsSubtitle": "Impostazioni di prestazioni, avvisi e fornitori di tessere",
     "proximityAlerts": "Avvisi di Prossimità",
     "keepScreenAwake": "Mantieni lo Schermo Attivo",
+    "dataFreshness": "Aggiornamento dei dati",
     "networkStatusIndicator": "Indicatore di Stato di Rete"
   },
   "keepScreenAwake": {
@@ -129,6 +131,13 @@
     "checkingPermissions": "Controllo autorizzazioni...",
     "alertDistance": "Distanza di avviso: ",
     "rangeInfo": "Intervallo: {}-{} {} (predefinito: {})"
+  },
+  "staleness": {
+    "showIndicator": "Mostra indicatore nodi obsoleti",
+    "showIndicatorExplanation": "Evidenzia i nodi non controllati di recente",
+    "threshold": "Considera obsoleto dopo",
+    "daysCount": "{} giorni",
+    "explanation": "I nodi senza check_date non vengono mai contrassegnati come obsoleti."
   },
   "node": {
     "title": "Nodo #{}",

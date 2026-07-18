@@ -47,6 +47,7 @@
     "download": "Download",
     "settings": "Settings",
     "edit": "Edit",
+    "verify": "Verify",
     "delete": "Delete",
     "cancel": "Cancel",
     "ok": "OK",
@@ -112,7 +113,8 @@
     "advancedSettingsSubtitle": "Performance, alerts, and tile provider settings",
     "proximityAlerts": "Proximity Alerts",
     "networkStatusIndicator": "Network Status Indicator",
-    "keepScreenAwake": "Keep Screen Awake"
+    "keepScreenAwake": "Keep Screen Awake",
+    "dataFreshness": "Data Freshness"
   },
   "keepScreenAwake": {
     "title": "Keep screen awake while using app",
@@ -129,6 +131,13 @@
     "checkingPermissions": "Checking permissions...",
     "alertDistance": "Alert distance: ",
     "rangeInfo": "Range: {}-{} {} (default: {})"
+  },
+  "staleness": {
+    "showIndicator": "Show stale node indicator",
+    "showIndicatorExplanation": "Highlight nodes that haven't been checked recently",
+    "threshold": "Consider stale after",
+    "daysCount": "{} days",
+    "explanation": "Nodes without a check_date are never marked stale."
   },
   "node": {
     "title": "Node #{}",

@@ -13,14 +13,14 @@ enum UploadMode { production, sandbox, simulate }
 
 // Enum for follow-me mode (moved from HomeScreen to centralized state)
 enum FollowMeMode {
-  off,      // No following
-  follow,   // Follow position, preserve current rotation
+  off, // No following
+  follow, // Follow position, preserve current rotation
   rotating, // Follow position and rotation based on heading
 }
 
 // Enum for distance units
 enum DistanceUnit {
-  metric,   // kilometers, meters
+  metric, // kilometers, meters
   imperial, // miles, feet
 }
 
@@ -32,12 +32,21 @@ class SettingsState extends ChangeNotifier {
   static const String _selectedTileTypePrefsKey = 'selected_tile_type';
   static const String _legacyTestModePrefsKey = 'test_mode';
   static const String _followMeModePrefsKey = 'follow_me_mode';
-  static const String _proximityAlertsEnabledPrefsKey = 'proximity_alerts_enabled';
-  static const String _proximityAlertDistancePrefsKey = 'proximity_alert_distance';
-  static const String _networkStatusIndicatorEnabledPrefsKey = 'network_status_indicator_enabled';
-  static const String _suspectedLocationMinDistancePrefsKey = 'suspected_location_min_distance';
+  static const String _proximityAlertsEnabledPrefsKey =
+      'proximity_alerts_enabled';
+  static const String _proximityAlertDistancePrefsKey =
+      'proximity_alert_distance';
+  static const String _stalenessIndicatorEnabledPrefsKey =
+      'staleness_indicator_enabled';
+  static const String _stalenessThresholdDaysPrefsKey =
+      'staleness_threshold_days';
+  static const String _networkStatusIndicatorEnabledPrefsKey =
+      'network_status_indicator_enabled';
+  static const String _suspectedLocationMinDistancePrefsKey =
+      'suspected_location_min_distance';
   static const String _pauseQueueProcessingPrefsKey = 'pause_queue_processing';
-  static const String _navigationAvoidanceDistancePrefsKey = 'navigation_avoidance_distance';
+  static const String _navigationAvoidanceDistancePrefsKey =
+      'navigation_avoidance_distance';
   static const String _distanceUnitPrefsKey = 'distance_unit';
   static const String _keepScreenAwakePrefsKey = 'keep_screen_awake';
 
@@ -46,10 +55,14 @@ class SettingsState extends ChangeNotifier {
   bool _keepScreenAwake = false;
   int _maxNodes = kDefaultMaxNodes;
   // Default must account for missing secrets (preview builds) even before init() runs
-  UploadMode _uploadMode = (kEnableDevelopmentModes || !kHasOsmSecrets) ? UploadMode.simulate : UploadMode.production;
+  UploadMode _uploadMode = (kEnableDevelopmentModes || !kHasOsmSecrets)
+      ? UploadMode.simulate
+      : UploadMode.production;
   FollowMeMode _followMeMode = FollowMeMode.follow;
   bool _proximityAlertsEnabled = false;
   int _proximityAlertDistance = kProximityAlertDefaultDistance;
+  bool _stalenessIndicatorEnabled = false;
+  int _stalenessThresholdDays = 60; // days
   bool _networkStatusIndicatorEnabled = true;
   int _suspectedLocationMinDistance = 100; // meters
   List<TileProvider> _tileProviders = [];
@@ -65,6 +78,8 @@ class SettingsState extends ChangeNotifier {
   FollowMeMode get followMeMode => _followMeMode;
   bool get proximityAlertsEnabled => _proximityAlertsEnabled;
   int get proximityAlertDistance => _proximityAlertDistance;
+  bool get stalenessIndicatorEnabled => _stalenessIndicatorEnabled;
+  int get stalenessThresholdDays => _stalenessThresholdDays;
   bool get networkStatusIndicatorEnabled => _networkStatusIndicatorEnabled;
   int get suspectedLocationMinDistance => _suspectedLocationMinDistance;
   bool get keepScreenAwake => _keepScreenAwake;
@@ -72,7 +87,7 @@ class SettingsState extends ChangeNotifier {
   String get selectedTileTypeId => _selectedTileTypeId;
   int get navigationAvoidanceDistance => _navigationAvoidanceDistance;
   DistanceUnit get distanceUnit => _distanceUnit;
-  
+
   /// Get the currently selected tile type
   TileType? get selectedTileType {
     for (final provider in _tileProviders) {
@@ -84,7 +99,7 @@ class SettingsState extends ChangeNotifier {
     }
     return null;
   }
-  
+
   /// Get the provider that contains the selected tile type
   TileProvider? get selectedTileProvider {
     for (final provider in _tileProviders) {
@@ -94,7 +109,7 @@ class SettingsState extends ChangeNotifier {
     }
     return null;
   }
-  
+
   /// Get all available tile types from all providers
   List<TileType> get allAvailableTileTypes {
     final types = <TileType>[];
@@ -104,26 +119,26 @@ class SettingsState extends ChangeNotifier {
     return types;
   }
 
-
-
   // Initialize settings from preferences
   Future<void> init() async {
     final prefs = await SharedPreferences.getInstance();
-    
+
     // Load offline mode
     _offlineMode = prefs.getBool(_offlineModePrefsKey) ?? false;
-    
+
     // Load queue processing setting
-    _pauseQueueProcessing = prefs.getBool(_pauseQueueProcessingPrefsKey) ?? false;
-    
+    _pauseQueueProcessing =
+        prefs.getBool(_pauseQueueProcessingPrefsKey) ?? false;
+
     // Load max nodes
     _maxNodes = prefs.getInt(_maxNodesPrefsKey) ?? kDefaultMaxNodes;
 
     // Load navigation avoidance distance
     if (prefs.containsKey(_navigationAvoidanceDistancePrefsKey)) {
-      _navigationAvoidanceDistance = prefs.getInt(_navigationAvoidanceDistancePrefsKey) ?? 250;
+      _navigationAvoidanceDistance =
+          prefs.getInt(_navigationAvoidanceDistancePrefsKey) ?? 250;
     }
-    
+
     // Load distance unit
     if (prefs.containsKey(_distanceUnitPrefsKey)) {
       final unitIndex = prefs.getInt(_distanceUnitPrefsKey) ?? 0;
@@ -131,20 +146,31 @@ class SettingsState extends ChangeNotifier {
         _distanceUnit = DistanceUnit.values[unitIndex];
       }
     }
-    
+
     // Load proximity alerts settings
-    _proximityAlertsEnabled = prefs.getBool(_proximityAlertsEnabledPrefsKey) ?? false;
-    _proximityAlertDistance = prefs.getInt(_proximityAlertDistancePrefsKey) ?? kProximityAlertDefaultDistance;
-    
+    _proximityAlertsEnabled =
+        prefs.getBool(_proximityAlertsEnabledPrefsKey) ?? false;
+    _proximityAlertDistance =
+        prefs.getInt(_proximityAlertDistancePrefsKey) ??
+        kProximityAlertDefaultDistance;
+
+    // Load staleness indicator settings
+    _stalenessIndicatorEnabled =
+        prefs.getBool(_stalenessIndicatorEnabledPrefsKey) ?? false;
+    _stalenessThresholdDays =
+        prefs.getInt(_stalenessThresholdDaysPrefsKey) ?? 60;
+
     // Load network status indicator setting
-    _networkStatusIndicatorEnabled = prefs.getBool(_networkStatusIndicatorEnabledPrefsKey) ?? true;
-    
+    _networkStatusIndicatorEnabled =
+        prefs.getBool(_networkStatusIndicatorEnabledPrefsKey) ?? true;
+
     // Load suspected location minimum distance
-    _suspectedLocationMinDistance = prefs.getInt(_suspectedLocationMinDistancePrefsKey) ?? 100;
+    _suspectedLocationMinDistance =
+        prefs.getInt(_suspectedLocationMinDistancePrefsKey) ?? 100;
 
     // Load keep screen awake setting
     _keepScreenAwake = prefs.getBool(_keepScreenAwakePrefsKey) ?? false;
-    
+
     // Load upload mode (including migration from old test_mode bool)
     if (prefs.containsKey(_uploadModePrefsKey)) {
       final idx = prefs.getInt(_uploadModePrefsKey) ?? 0;
@@ -158,25 +184,31 @@ class SettingsState extends ChangeNotifier {
       await prefs.remove(_legacyTestModePrefsKey);
       await prefs.setInt(_uploadModePrefsKey, _uploadMode.index);
     }
-    
+
     // Override persisted upload mode when the current build configuration
     // doesn't support it. This handles two cases:
     // 1. Preview/PR builds without OAuth secrets — force simulate to avoid crashes
     // 2. Production builds — force production (prefs may have sandbox/simulate
     //    from a previous dev build on the same device)
     if (!kHasOsmSecrets && _uploadMode != UploadMode.simulate) {
-      debugPrint('SettingsState: No OSM secrets available, forcing simulate mode');
+      debugPrint(
+        'SettingsState: No OSM secrets available, forcing simulate mode',
+      );
       _uploadMode = UploadMode.simulate;
       await prefs.setInt(_uploadModePrefsKey, _uploadMode.index);
-    } else if (kHasOsmSecrets && !kEnableDevelopmentModes && _uploadMode != UploadMode.production) {
-      debugPrint('SettingsState: Development modes disabled, forcing production mode');
+    } else if (kHasOsmSecrets &&
+        !kEnableDevelopmentModes &&
+        _uploadMode != UploadMode.production) {
+      debugPrint(
+        'SettingsState: Development modes disabled, forcing production mode',
+      );
       _uploadMode = UploadMode.production;
       await prefs.setInt(_uploadModePrefsKey, _uploadMode.index);
     }
-    
+
     // Load tile providers (default to built-in providers if none saved)
     await _loadTileProviders(prefs);
-    
+
     // Load follow-me mode
     if (prefs.containsKey(_followMeModePrefsKey)) {
       final modeIndex = prefs.getInt(_followMeModePrefsKey) ?? 0;
@@ -184,7 +216,7 @@ class SettingsState extends ChangeNotifier {
         _followMeMode = FollowMeMode.values[modeIndex];
       }
     }
-    
+
     // Load selected tile type (default to first available)
     _selectedTileTypeId = prefs.getString(_selectedTileTypePrefsKey) ?? '';
     if (_selectedTileTypeId.isEmpty || selectedTileType == null) {
@@ -205,7 +237,7 @@ class SettingsState extends ChangeNotifier {
           _tileProviders = providersList
               .map((json) => TileProvider.fromJson(json))
               .toList();
-          
+
           // Migration: Add any missing built-in providers
           await _addMissingBuiltinProviders(prefs);
         }
@@ -226,15 +258,17 @@ class SettingsState extends ChangeNotifier {
     final defaultProviders = DefaultTileProviders.createDefaults();
     final existingProviderIds = _tileProviders.map((p) => p.id).toSet();
     bool hasUpdates = false;
-    
+
     for (final defaultProvider in defaultProviders) {
       if (!existingProviderIds.contains(defaultProvider.id)) {
         _tileProviders.add(defaultProvider);
         hasUpdates = true;
-        debugPrint('SettingsState: Added missing built-in provider: ${defaultProvider.name}');
+        debugPrint(
+          'SettingsState: Added missing built-in provider: ${defaultProvider.name}',
+        );
       }
     }
-    
+
     if (hasUpdates) {
       await _saveTileProviders(prefs);
     }
@@ -279,7 +313,7 @@ class SettingsState extends ChangeNotifier {
     // true (gated in osm_account_screen.dart), so no secrets/dev-mode guards
     // are needed here. The init() method handles forcing the correct mode on
     // startup for production builds and builds without OAuth secrets.
-    
+
     _uploadMode = mode;
     final prefs = await SharedPreferences.getInstance();
     await prefs.setInt(_uploadModePrefsKey, mode.index);
@@ -304,7 +338,7 @@ class SettingsState extends ChangeNotifier {
     } else {
       _tileProviders.add(provider);
     }
-    
+
     final prefs = await SharedPreferences.getInstance();
     await _saveTileProviders(prefs);
     notifyListeners();
@@ -314,25 +348,31 @@ class SettingsState extends ChangeNotifier {
   Future<void> deleteTileProvider(String providerId) async {
     // Don't allow deleting all providers
     if (_tileProviders.length <= 1) return;
-    
-    final providerToDelete = _tileProviders.firstWhereOrNull((p) => p.id == providerId);
+
+    final providerToDelete = _tileProviders.firstWhereOrNull(
+      (p) => p.id == providerId,
+    );
     if (providerToDelete == null) return;
-    
+
     // If selected tile type belongs to this provider, switch to another
-    if (providerToDelete.tileTypes.any((type) => type.id == _selectedTileTypeId)) {
+    if (providerToDelete.tileTypes.any(
+      (type) => type.id == _selectedTileTypeId,
+    )) {
       // Find first available tile type from remaining providers
-      final remainingProviders = _tileProviders.where((p) => p.id != providerId).toList();
+      final remainingProviders = _tileProviders
+          .where((p) => p.id != providerId)
+          .toList();
       final firstAvailable = remainingProviders
           .expand((p) => p.availableTileTypes)
           .firstOrNull;
-      
+
       if (firstAvailable != null) {
         _selectedTileTypeId = firstAvailable.id;
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString(_selectedTileTypePrefsKey, _selectedTileTypeId);
       }
     }
-    
+
     _tileProviders.removeWhere((p) => p.id == providerId);
     final prefs = await SharedPreferences.getInstance();
     await _saveTileProviders(prefs);
@@ -343,7 +383,7 @@ class SettingsState extends ChangeNotifier {
   Future<void> clearTileProviderCaches(String providerId) async {
     final provider = _tileProviders.firstWhereOrNull((p) => p.id == providerId);
     if (provider == null) return;
-    
+
     // Clear cache for each tile type in this provider
     for (final tileType in provider.tileTypes) {
       await ProviderTileCacheManager.deleteCache(providerId, tileType.id);
@@ -354,13 +394,13 @@ class SettingsState extends ChangeNotifier {
   Future<void> setFollowMeMode(FollowMeMode mode) async {
     if (_followMeMode != mode) {
       _followMeMode = mode;
-      
+
       final prefs = await SharedPreferences.getInstance();
       await prefs.setInt(_followMeModePrefsKey, mode.index);
       notifyListeners();
     }
   }
-  
+
   /// Set proximity alerts enabled/disabled
   Future<void> setProximityAlertsEnabled(bool enabled) async {
     if (_proximityAlertsEnabled != enabled) {
@@ -373,12 +413,36 @@ class SettingsState extends ChangeNotifier {
 
   /// Set proximity alert distance in meters
   Future<void> setProximityAlertDistance(int distance) async {
-    if (distance < kProximityAlertMinDistance) distance = kProximityAlertMinDistance;
-    if (distance > kProximityAlertMaxDistance) distance = kProximityAlertMaxDistance;
+    if (distance < kProximityAlertMinDistance) {
+      distance = kProximityAlertMinDistance;
+    }
+    if (distance > kProximityAlertMaxDistance) {
+      distance = kProximityAlertMaxDistance;
+    }
     if (_proximityAlertDistance != distance) {
       _proximityAlertDistance = distance;
       final prefs = await SharedPreferences.getInstance();
       await prefs.setInt(_proximityAlertDistancePrefsKey, distance);
+      notifyListeners();
+    }
+  }
+
+  /// Set staleness indicator enabled/disabled
+  Future<void> setStalenessIndicatorEnabled(bool enabled) async {
+    if (_stalenessIndicatorEnabled != enabled) {
+      _stalenessIndicatorEnabled = enabled;
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool(_stalenessIndicatorEnabledPrefsKey, enabled);
+      notifyListeners();
+    }
+  }
+
+  /// Set staleness threshold in days
+  Future<void> setStalenessThresholdDays(int days) async {
+    if (_stalenessThresholdDays != days) {
+      _stalenessThresholdDays = days;
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setInt(_stalenessThresholdDaysPrefsKey, days);
       notifyListeners();
     }
   }
@@ -404,14 +468,14 @@ class SettingsState extends ChangeNotifier {
   }
 
   /// Set keep screen awake enabled/disabled
-    Future<void> setKeepScreenAwake(bool enabled) async {
-      if (_keepScreenAwake != enabled) {
-        _keepScreenAwake = enabled;
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.setBool(_keepScreenAwakePrefsKey, enabled);
-        notifyListeners();
-      }
+  Future<void> setKeepScreenAwake(bool enabled) async {
+    if (_keepScreenAwake != enabled) {
+      _keepScreenAwake = enabled;
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool(_keepScreenAwakePrefsKey, enabled);
+      notifyListeners();
     }
+  }
 
   /// Set distance for avoidance of nodes during navigation
   Future<void> setNavigationAvoidanceDistance(int distance) async {
@@ -432,5 +496,4 @@ class SettingsState extends ChangeNotifier {
       notifyListeners();
     }
   }
-
 }

@@ -11,7 +11,8 @@ import '../app_state.dart';
 /// Provides surveillance nodes for a map view, using an in-memory cache and optionally
 /// merging in new results from Overpass via MapDataProvider when not offline.
 class NodeProviderWithCache extends ChangeNotifier {
-  static final NodeProviderWithCache instance = NodeProviderWithCache._internal();
+  static final NodeProviderWithCache instance =
+      NodeProviderWithCache._internal();
   factory NodeProviderWithCache() => instance;
   NodeProviderWithCache._internal();
 
@@ -23,10 +24,10 @@ class NodeProviderWithCache extends ChangeNotifier {
     // Use the same cache instance as NodeDataManager
     final allNodes = NodeSpatialCache().getNodesFor(bounds);
     final enabledProfiles = AppState.instance.enabledProfiles;
-    
+
     // If no profiles are enabled, show no nodes
     if (enabledProfiles.isEmpty) return [];
-    
+
     // Filter nodes to only show those matching enabled profiles
     return allNodes.where((node) {
       return _matchesAnyProfile(node, enabledProfiles);
@@ -41,7 +42,7 @@ class NodeProviderWithCache extends ChangeNotifier {
   }) {
     // Serve cached immediately
     notifyListeners();
-    
+
     // Debounce rapid panning/zooming
     _debounceTimer?.cancel();
     _debounceTimer = Timer(const Duration(milliseconds: 400), () async {
@@ -52,10 +53,9 @@ class NodeProviderWithCache extends ChangeNotifier {
           uploadMode: uploadMode,
           isUserInitiated: true,
         );
-        
+
         // Notify UI of new data
         notifyListeners();
-        
       } catch (e) {
         debugPrint('[NodeProviderWithCache] Node fetch failed: $e');
         // Cache already holds whatever is available for the view
@@ -100,11 +100,29 @@ class NodeProviderWithCache extends ChangeNotifier {
 
   /// Check if a node matches a specific profile (all non-empty profile tags must match)
   bool _nodeMatchesProfile(OsmNode node, NodeProfile profile) {
+    const lifecyclePrefixes = [
+      'active',
+      'removed',
+      'destroyed',
+      'construction',
+      'proposed',
+      'was',
+    ];
+
     for (final entry in profile.tags.entries) {
       // Skip empty values - they are used for refinement UI, not matching
       if (entry.value.trim().isEmpty) continue;
-      
-      if (node.tags[entry.key] != entry.value) return false;
+
+      final key = entry.key;
+      final expectedValue = entry.value;
+
+      // Match either the bare key or any lifecycle-prefixed variant
+      final directMatch = node.tags[key] == expectedValue;
+      final prefixedMatch = lifecyclePrefixes.any(
+        (prefix) => node.tags['$prefix:$key'] == expectedValue,
+      );
+
+      if (!directMatch && !prefixedMatch) return false;
     }
     return true;
   }
