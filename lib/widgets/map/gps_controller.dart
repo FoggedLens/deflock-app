@@ -8,8 +8,10 @@ import 'package:flutter/foundation.dart' show defaultTargetPlatform, TargetPlatf
 import '../../dev_config.dart';
 import '../../app_state.dart' show FollowMeMode;
 import '../../services/proximity_alert_service.dart';
+import '../../services/coordinate_validation.dart';
 import '../../models/osm_node.dart';
 import '../../models/node_profile.dart';
+
 
 /// Simple GPS controller that handles precise location permissions only.
 /// Key principles: 
@@ -187,6 +189,21 @@ class GpsController {
 
   /// Handle incoming GPS position
   void _onPositionReceived(Position position) {
+    // Guard against malformed fixes from the platform location stack (some
+    // OEM/fused location providers occasionally emit NaN/Infinite lat/lng,
+    // especially while a fix is still being acquired). An unvalidated bad
+    // value here can crash the app at launch (via initialCenter) or corrupt
+    // the live map camera (via follow-me animateTo), so treat it like any
+    // other transient location error rather than trusting it.
+    if (!isValidCoordinate(position.latitude) || !isValidCoordinate(position.longitude)) {
+      debugPrint(
+        '[GpsController] Ignoring invalid GPS position: '
+        'lat=${position.latitude}, lng=${position.longitude}',
+      );
+      return;
+    }
+
+
     final newLocation = LatLng(position.latitude, position.longitude);
     _currentLocation = newLocation;
     
@@ -209,6 +226,7 @@ class GpsController {
   }
 
   /// Handle GPS stream errors
+
   void _onPositionError(dynamic error) {
     debugPrint('[GpsController] Position stream error: $error');
     if (_hasLocation) {
