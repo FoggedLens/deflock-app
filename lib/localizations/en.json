@@ -139,7 +139,8 @@
     "confirmDeleteTitle": "Delete Node",
     "confirmDeleteMessage": "Are you sure you want to delete node #{}? This action cannot be undone.",
     "deleteReasonLabel": "Reason for Deletion (Optional)",
-    "deleteReasonHint": "e.g., device removed, incorrect location, duplicate..."
+    "deleteReasonHint": "e.g., device removed, incorrect location, duplicate...",
+    "mustBeLoggedInToDelete": "You must be logged in with an OpenStreetMap account to contribute map data."
   },
   "addNode": {
     "profile": "Profile",

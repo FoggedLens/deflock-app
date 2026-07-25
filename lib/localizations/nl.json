@@ -139,7 +139,8 @@
     "confirmDeleteTitle": "Verwijder Node", 
     "confirmDeleteMessage": "Weet u zeker dat u node #{} wilt verwijderen? Deze actie kan niet ongedaan worden gemaakt.",
     "deleteReasonLabel": "Reden voor Verwijdering (Optioneel)",
-    "deleteReasonHint": "bijv. apparaat verwijderd, onjuiste locatie, duplicaat..."
+    "deleteReasonHint": "bijv. apparaat verwijderd, onjuiste locatie, duplicaat...",
+    "mustBeLoggedInToDelete": "U moet ingelogd zijn met een OpenStreetMap-account om kaartgegevens bij te dragen."
   },
   "addNode": {
     "profile": "Profiel",

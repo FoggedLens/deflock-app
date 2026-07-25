@@ -139,7 +139,8 @@
     "confirmDeleteTitle": "Supprimer le Nœud",
     "confirmDeleteMessage": "Êtes-vous sûr de vouloir supprimer le nœud #{} ? Cette action ne peut pas être annulée.",
     "deleteReasonLabel": "Raison de Suppression (Optionnel)",
-    "deleteReasonHint": "ex. appareil retiré, emplacement incorrect, doublon..."
+    "deleteReasonHint": "ex. appareil retiré, emplacement incorrect, doublon...",
+    "mustBeLoggedInToDelete": "Vous devez être connecté avec un compte OpenStreetMap pour contribuer aux données cartographiques."
   },
   "addNode": {
     "profile": "Profil",

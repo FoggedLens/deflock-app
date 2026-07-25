@@ -65,6 +65,31 @@ class NodeTagSheet extends StatelessWidget {
         }
 
         void deleteNode() async {
+          if (!appState.isLoggedIn) {
+            final shouldLogIn = await showDialog<bool>(
+              context: context,
+              builder: (BuildContext context) => AlertDialog(
+                title: Text(locService.t('node.confirmDeleteTitle')),
+                content: Text(locService.t('node.mustBeLoggedInToDelete')),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(false),
+                    child: Text(locService.cancel),
+                  ),
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(true),
+                    child: Text(locService.t('actions.logIn')),
+                  ),
+                ],
+              ),
+            );
+
+            if ((shouldLogIn ?? false) && context.mounted) {
+              Navigator.pushNamed(context, '/settings/osm-account');
+            }
+            return;
+          }
+
           final result = await showDialog<({bool confirmed, String comment})>(
             context: context,
             builder: (BuildContext context) => _DeleteNodeDialog(

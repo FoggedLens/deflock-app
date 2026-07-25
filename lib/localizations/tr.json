@@ -139,7 +139,8 @@
     "confirmDeleteTitle": "Düğümü Sil",
     "confirmDeleteMessage": "#{} düğümünü silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.",
     "deleteReasonLabel": "Silme Nedeni (İsteğe Bağlı)",
-    "deleteReasonHint": "örn. cihaz kaldırıldı, yanlış konum, duplikat..."
+    "deleteReasonHint": "örn. cihaz kaldırıldı, yanlış konum, duplikat...",
+    "mustBeLoggedInToDelete": "Harita verilerine katkıda bulunmak için bir OpenStreetMap hesabıyla oturum açmış olmanız gerekir."
   },
   "addNode": {
     "profile": "Profil",

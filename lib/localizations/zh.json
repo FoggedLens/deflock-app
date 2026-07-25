@@ -139,7 +139,8 @@
     "confirmDeleteTitle": "删除节点",
     "confirmDeleteMessage": "您确定要删除节点 #{} 吗？此操作无法撤销。",
     "deleteReasonLabel": "删除原因（可选）",
-    "deleteReasonHint": "例如：设备已移除、位置错误、重复..."
+    "deleteReasonHint": "例如：设备已移除、位置错误、重复...",
+    "mustBeLoggedInToDelete": "您必须使用 OpenStreetMap 账户登录才能贡献地图数据。"
   },
   "addNode": {
     "profile": "配置文件",

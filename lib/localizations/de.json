@@ -102,7 +102,8 @@
     "confirmDeleteTitle": "Knoten löschen",
     "confirmDeleteMessage": "Sind Sie sicher, dass Sie Knoten #{} löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden.",
     "deleteReasonLabel": "Grund für Löschung (Optional)",
-    "deleteReasonHint": "z.B. Gerät entfernt, falsche Position, Duplikat..."
+    "deleteReasonHint": "z.B. Gerät entfernt, falsche Position, Duplikat...",
+    "mustBeLoggedInToDelete": "Sie müssen mit einem OpenStreetMap-Konto angemeldet sein, um Kartendaten beizutragen."
   },
   "addNode": {
     "profile": "Profil",

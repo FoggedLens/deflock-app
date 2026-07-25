@@ -139,7 +139,8 @@
     "confirmDeleteTitle": "Usuń Węzeł",
     "confirmDeleteMessage": "Czy na pewno chcesz usunąć węzeł #{}? Tej akcji nie można cofnąć.",
     "deleteReasonLabel": "Powód Usunięcia (Opcjonalny)",
-    "deleteReasonHint": "np. urządzenie usunięte, nieprawidłowa lokalizacja, duplikat..."
+    "deleteReasonHint": "np. urządzenie usunięte, nieprawidłowa lokalizacja, duplikat...",
+    "mustBeLoggedInToDelete": "Musisz być zalogowany na konto OpenStreetMap, aby dodawać dane do mapy."
   },
   "addNode": {
     "profile": "Profil",

@@ -1,7 +1,8 @@
 {
   "2.10.4": {
     "content": [
-      "• Catch and correct a couple rare map bounds issues"
+      "• Catch and correct a couple rare map bounds issues",
+      "• Prevent queueing a deletion without being logged in"
     ]
   },
   "2.10.3": {

@@ -139,7 +139,8 @@
     "confirmDeleteTitle": "Eliminar Nodo",
     "confirmDeleteMessage": "¿Estás seguro de que quieres eliminar el nodo #{}? Esta acción no se puede deshacer.",
     "deleteReasonLabel": "Razón para Eliminación (Opcional)",
-    "deleteReasonHint": "ej. dispositivo removido, ubicación incorrecta, duplicado..."
+    "deleteReasonHint": "ej. dispositivo removido, ubicación incorrecta, duplicado...",
+    "mustBeLoggedInToDelete": "Debes iniciar sesión con una cuenta de OpenStreetMap para contribuir con datos del mapa."
   },
   "addNode": {
     "profile": "Perfil",
