@@ -274,6 +274,48 @@ class NodeTagSheet extends StatelessWidget {
   }
 }
 
+enum _DeleteReason {
+  deviceRemoved,
+  duplicateNode,
+  misidentifiedInfra,
+  spamVandalism,
+  custom,
+}
+
+extension _DeleteReasonLabel on _DeleteReason {
+  String label(LocalizationService locService) {
+    switch (this) {
+      case _DeleteReason.deviceRemoved:
+        return locService.t('node.deleteReasonDeviceRemoved');
+      case _DeleteReason.duplicateNode:
+        return locService.t('node.deleteReasonDuplicateNode');
+      case _DeleteReason.misidentifiedInfra:
+        return locService.t('node.deleteReasonMisidentifiedInfra');
+      case _DeleteReason.spamVandalism:
+        return locService.t('node.deleteReasonSpamVandalism');
+      case _DeleteReason.custom:
+        return locService.t('node.deleteReasonCustom');
+    }
+  }
+
+  /// The text used to build the changeset comment (kept in English/consistent
+  /// regardless of UI language, matching prior app behavior for uploads).
+  String get commentText {
+    switch (this) {
+      case _DeleteReason.deviceRemoved:
+        return 'device removed';
+      case _DeleteReason.duplicateNode:
+        return 'duplicate node';
+      case _DeleteReason.misidentifiedInfra:
+        return 'misidentified infra';
+      case _DeleteReason.spamVandalism:
+        return 'spam/vandalism';
+      case _DeleteReason.custom:
+        return '';
+    }
+  }
+}
+
 class _DeleteNodeDialog extends StatefulWidget {
   final String nodeId;
   final LocalizationService locService;
@@ -289,6 +331,7 @@ class _DeleteNodeDialog extends StatefulWidget {
 
 class _DeleteNodeDialogState extends State<_DeleteNodeDialog> {
   late final TextEditingController _commentController;
+  _DeleteReason? _selectedReason;
 
   @override
   void initState() {
@@ -300,6 +343,14 @@ class _DeleteNodeDialogState extends State<_DeleteNodeDialog> {
   void dispose() {
     _commentController.dispose();
     super.dispose();
+  }
+
+  bool get _canConfirm {
+    if (_selectedReason == null) return false;
+    if (_selectedReason == _DeleteReason.custom) {
+      return _commentController.text.trim().isNotEmpty;
+    }
+    return true;
   }
 
   @override
@@ -317,16 +368,39 @@ class _DeleteNodeDialogState extends State<_DeleteNodeDialog> {
             style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 8),
-          TextField(
-            controller: _commentController,
-            decoration: InputDecoration(
-              hintText: widget.locService.t('node.deleteReasonHint'),
-              border: const OutlineInputBorder(),
+          DropdownButtonFormField<_DeleteReason>(
+            initialValue: _selectedReason,
+            hint: Text(widget.locService.t('node.deleteReasonSelectHint')),
+            decoration: const InputDecoration(
+              border: OutlineInputBorder(),
               isDense: true,
             ),
-            maxLines: 2,
-            textCapitalization: TextCapitalization.sentences,
+            items: _DeleteReason.values
+                .map((reason) => DropdownMenuItem(
+                      value: reason,
+                      child: Text(reason.label(widget.locService)),
+                    ))
+                .toList(),
+            onChanged: (reason) {
+              setState(() {
+                _selectedReason = reason;
+              });
+            },
           ),
+          if (_selectedReason == _DeleteReason.custom) ...[
+            const SizedBox(height: 8),
+            TextField(
+              controller: _commentController,
+              decoration: InputDecoration(
+                hintText: widget.locService.t('node.deleteReasonHint'),
+                border: const OutlineInputBorder(),
+                isDense: true,
+              ),
+              maxLines: 2,
+              textCapitalization: TextCapitalization.sentences,
+              onChanged: (_) => setState(() {}),
+            ),
+          ],
         ],
       ),
       actions: [
@@ -335,13 +409,17 @@ class _DeleteNodeDialogState extends State<_DeleteNodeDialog> {
           child: Text(widget.locService.cancel),
         ),
         TextButton(
-          onPressed: () {
-            final comment = _commentController.text.trim();
-            final finalComment = comment.isEmpty 
-                ? 'Delete a surveillance node'
-                : 'Delete a surveillance node: $comment';
-            Navigator.of(context).pop((confirmed: true, comment: finalComment));
-          },
+          onPressed: _canConfirm
+              ? () {
+                  final reasonText = _selectedReason == _DeleteReason.custom
+                      ? _commentController.text.trim()
+                      : _selectedReason!.commentText;
+                  final finalComment = reasonText.isEmpty
+                      ? 'Delete a surveillance node'
+                      : 'Delete a surveillance node: $reasonText';
+                  Navigator.of(context).pop((confirmed: true, comment: finalComment));
+                }
+              : null,
           style: TextButton.styleFrom(foregroundColor: Colors.red),
           child: Text(widget.locService.t('actions.delete')),
         ),
@@ -349,3 +427,4 @@ class _DeleteNodeDialogState extends State<_DeleteNodeDialog> {
     );
   }
 }
+

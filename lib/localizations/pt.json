@@ -138,8 +138,15 @@
     "deleteQueuedForUpload": "Exclusão de nó na fila para envio",
     "confirmDeleteTitle": "Excluir Nó",
     "confirmDeleteMessage": "Tem certeza de que deseja excluir o nó #{}? Esta ação não pode ser desfeita.",
-    "deleteReasonLabel": "Motivo para Exclusão (Opcional)",
-    "deleteReasonHint": "ex. dispositivo removido, localização incorreta, duplicado...",
+    "deleteReasonLabel": "Motivo para Exclusão",
+    "deleteReasonSelectHint": "Selecionar...",
+    "deleteReasonDeviceRemoved": "Dispositivo removido",
+    "deleteReasonDuplicateNode": "Nó duplicado",
+    "deleteReasonMisidentifiedInfra": "Infraestrutura mal identificada",
+    "deleteReasonSpamVandalism": "Spam/vandalismo",
+    "deleteReasonCustom": "Personalizado..",
+    "deleteReasonHint": "Descreva o motivo...",
+
     "mustBeLoggedInToDelete": "Você precisa estar conectado com uma conta do OpenStreetMap para contribuir com dados do mapa."
   },
   "addNode": {

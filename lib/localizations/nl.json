@@ -138,8 +138,15 @@
     "deleteQueuedForUpload": "Node verwijdering in wachtrij geplaatst voor upload",
     "confirmDeleteTitle": "Verwijder Node", 
     "confirmDeleteMessage": "Weet u zeker dat u node #{} wilt verwijderen? Deze actie kan niet ongedaan worden gemaakt.",
-    "deleteReasonLabel": "Reden voor Verwijdering (Optioneel)",
-    "deleteReasonHint": "bijv. apparaat verwijderd, onjuiste locatie, duplicaat...",
+    "deleteReasonLabel": "Reden voor Verwijdering",
+    "deleteReasonSelectHint": "Selecteer...",
+    "deleteReasonDeviceRemoved": "Apparaat verwijderd",
+    "deleteReasonDuplicateNode": "Dubbele node",
+    "deleteReasonMisidentifiedInfra": "Verkeerd geïdentificeerde infrastructuur",
+    "deleteReasonSpamVandalism": "Spam/vandalisme",
+    "deleteReasonCustom": "Aangepast..",
+    "deleteReasonHint": "Beschrijf de reden...",
+
     "mustBeLoggedInToDelete": "U moet ingelogd zijn met een OpenStreetMap-account om kaartgegevens bij te dragen."
   },
   "addNode": {

@@ -101,10 +101,17 @@
     "deleteQueuedForUpload": "Knoten-Löschung zum Upload eingereiht",
     "confirmDeleteTitle": "Knoten löschen",
     "confirmDeleteMessage": "Sind Sie sicher, dass Sie Knoten #{} löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden.",
-    "deleteReasonLabel": "Grund für Löschung (Optional)",
-    "deleteReasonHint": "z.B. Gerät entfernt, falsche Position, Duplikat...",
+    "deleteReasonLabel": "Grund für Löschung",
+    "deleteReasonSelectHint": "Auswählen...",
+    "deleteReasonDeviceRemoved": "Gerät entfernt",
+    "deleteReasonDuplicateNode": "Doppelter Knoten",
+    "deleteReasonMisidentifiedInfra": "Falsch identifizierte Infrastruktur",
+    "deleteReasonSpamVandalism": "Spam/Vandalismus",
+    "deleteReasonCustom": "Benutzerdefiniert..",
+    "deleteReasonHint": "Bitte Grund beschreiben...",
     "mustBeLoggedInToDelete": "Sie müssen mit einem OpenStreetMap-Konto angemeldet sein, um Kartendaten beizutragen."
   },
+
   "addNode": {
     "profile": "Profil",
     "selectProfile": "Profil auswählen...",

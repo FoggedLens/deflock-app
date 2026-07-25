@@ -138,8 +138,15 @@
     "deleteQueuedForUpload": "Usuwanie węzła umieszczone w kolejce do przesłania",
     "confirmDeleteTitle": "Usuń Węzeł",
     "confirmDeleteMessage": "Czy na pewno chcesz usunąć węzeł #{}? Tej akcji nie można cofnąć.",
-    "deleteReasonLabel": "Powód Usunięcia (Opcjonalny)",
-    "deleteReasonHint": "np. urządzenie usunięte, nieprawidłowa lokalizacja, duplikat...",
+    "deleteReasonLabel": "Powód Usunięcia",
+    "deleteReasonSelectHint": "Wybierz...",
+    "deleteReasonDeviceRemoved": "Urządzenie usunięte",
+    "deleteReasonDuplicateNode": "Zduplikowany węzeł",
+    "deleteReasonMisidentifiedInfra": "Błędnie zidentyfikowana infrastruktura",
+    "deleteReasonSpamVandalism": "Spam/wandalizm",
+    "deleteReasonCustom": "Niestandardowy..",
+    "deleteReasonHint": "Opisz powód...",
+
     "mustBeLoggedInToDelete": "Musisz być zalogowany na konto OpenStreetMap, aby dodawać dane do mapy."
   },
   "addNode": {

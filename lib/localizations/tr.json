@@ -138,8 +138,15 @@
     "deleteQueuedForUpload": "Düğüm silme işlemi yükleme için sıraya alındı",
     "confirmDeleteTitle": "Düğümü Sil",
     "confirmDeleteMessage": "#{} düğümünü silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.",
-    "deleteReasonLabel": "Silme Nedeni (İsteğe Bağlı)",
-    "deleteReasonHint": "örn. cihaz kaldırıldı, yanlış konum, duplikat...",
+    "deleteReasonLabel": "Silme Nedeni",
+    "deleteReasonSelectHint": "Seçin...",
+    "deleteReasonDeviceRemoved": "Cihaz kaldırıldı",
+    "deleteReasonDuplicateNode": "Yinelenen düğüm",
+    "deleteReasonMisidentifiedInfra": "Yanlış tanımlanmış altyapı",
+    "deleteReasonSpamVandalism": "Spam/vandalizm",
+    "deleteReasonCustom": "Özel..",
+    "deleteReasonHint": "Lütfen nedeni açıklayın...",
+
     "mustBeLoggedInToDelete": "Harita verilerine katkıda bulunmak için bir OpenStreetMap hesabıyla oturum açmış olmanız gerekir."
   },
   "addNode": {

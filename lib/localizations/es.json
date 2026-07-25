@@ -138,8 +138,15 @@
     "deleteQueuedForUpload": "Eliminación de nodo en cola para subir",
     "confirmDeleteTitle": "Eliminar Nodo",
     "confirmDeleteMessage": "¿Estás seguro de que quieres eliminar el nodo #{}? Esta acción no se puede deshacer.",
-    "deleteReasonLabel": "Razón para Eliminación (Opcional)",
-    "deleteReasonHint": "ej. dispositivo removido, ubicación incorrecta, duplicado...",
+    "deleteReasonLabel": "Razón para Eliminación",
+    "deleteReasonSelectHint": "Seleccionar...",
+    "deleteReasonDeviceRemoved": "Dispositivo removido",
+    "deleteReasonDuplicateNode": "Nodo duplicado",
+    "deleteReasonMisidentifiedInfra": "Infraestructura mal identificada",
+    "deleteReasonSpamVandalism": "Spam/vandalismo",
+    "deleteReasonCustom": "Personalizado..",
+    "deleteReasonHint": "Por favor describa la razón...",
+
     "mustBeLoggedInToDelete": "Debes iniciar sesión con una cuenta de OpenStreetMap para contribuir con datos del mapa."
   },
   "addNode": {

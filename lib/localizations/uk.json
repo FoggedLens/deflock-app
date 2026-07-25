@@ -138,8 +138,15 @@
     "deleteQueuedForUpload": "Видалення вузла поставлено в чергу для завантаження",
     "confirmDeleteTitle": "Видалити Вузол",
     "confirmDeleteMessage": "Ви впевнені, що хочете видалити вузол #{}? Цю дію не можна скасувати.",
-    "deleteReasonLabel": "Причина Видалення (Опціонально)",
-    "deleteReasonHint": "наприклад пристрій видалено, неправильне розташування, дублікат...",
+    "deleteReasonLabel": "Причина Видалення",
+    "deleteReasonSelectHint": "Вибрати...",
+    "deleteReasonDeviceRemoved": "Пристрій видалено",
+    "deleteReasonDuplicateNode": "Дубльований вузол",
+    "deleteReasonMisidentifiedInfra": "Неправильно ідентифікована інфраструктура",
+    "deleteReasonSpamVandalism": "Спам/вандалізм",
+    "deleteReasonCustom": "Власний..",
+    "deleteReasonHint": "Опишіть причину...",
+
     "mustBeLoggedInToDelete": "Ви повинні увійти в обліковий запис OpenStreetMap, щоб надавати дані карти."
   },
   "addNode": {

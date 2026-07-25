@@ -138,9 +138,16 @@
     "deleteQueuedForUpload": "Node deletion queued for upload",
     "confirmDeleteTitle": "Delete Node",
     "confirmDeleteMessage": "Are you sure you want to delete node #{}? This action cannot be undone.",
-    "deleteReasonLabel": "Reason for Deletion (Optional)",
-    "deleteReasonHint": "e.g., device removed, incorrect location, duplicate...",
+    "deleteReasonLabel": "Reason for Deletion",
+    "deleteReasonSelectHint": "Select...",
+    "deleteReasonDeviceRemoved": "Device removed",
+    "deleteReasonDuplicateNode": "Duplicate node",
+    "deleteReasonMisidentifiedInfra": "Misidentified infra",
+    "deleteReasonSpamVandalism": "Spam/vandalism",
+    "deleteReasonCustom": "Custom..",
+    "deleteReasonHint": "Please describe the reason...",
     "mustBeLoggedInToDelete": "You must be logged in with an OpenStreetMap account to contribute map data."
+
   },
   "addNode": {
     "profile": "Profile",

@@ -138,8 +138,15 @@
     "deleteQueuedForUpload": "节点删除已排队上传",
     "confirmDeleteTitle": "删除节点",
     "confirmDeleteMessage": "您确定要删除节点 #{} 吗？此操作无法撤销。",
-    "deleteReasonLabel": "删除原因（可选）",
-    "deleteReasonHint": "例如：设备已移除、位置错误、重复...",
+    "deleteReasonLabel": "删除原因",
+    "deleteReasonSelectHint": "请选择...",
+    "deleteReasonDeviceRemoved": "设备已移除",
+    "deleteReasonDuplicateNode": "重复节点",
+    "deleteReasonMisidentifiedInfra": "识别错误的基础设施",
+    "deleteReasonSpamVandalism": "垃圾信息/破坏",
+    "deleteReasonCustom": "自定义..",
+    "deleteReasonHint": "请描述原因...",
+
     "mustBeLoggedInToDelete": "您必须使用 OpenStreetMap 账户登录才能贡献地图数据。"
   },
   "addNode": {
