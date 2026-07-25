@@ -112,12 +112,18 @@
     "advancedSettingsSubtitle": "Performans, uyarılar ve döşeme sağlayıcı ayarları",
     "proximityAlerts": "Yakınlık Uyarıları",
     "keepScreenAwake": "Ekranı Açık Tut",
-    "networkStatusIndicator": "Ağ Durumu Göstergesi"
+    "networkStatusIndicator": "Ağ Durumu Göstergesi",
+    "hideZoomControls": "Yakınlaştırma Kontrollerini Gizle"
   },
   "keepScreenAwake": {
     "title": "Uygulamayı kullanırken ekranı açık tut",
     "subtitle": "Uygulamayı kullanırken ekranın otomatik olarak kapanmasını engeller"
   },
+  "hideZoomControls": {
+    "title": "Yakınlaştırma kontrollerini gizle",
+    "subtitle": "+/- yakınlaştırma düğmelerini ve yakınlaştırma seviyesi göstergesini gizler. Yine de kıstırma hareketleriyle yakınlaştırabilirsiniz."
+  },
+
   "proximityAlerts": {
     "getNotified": "Gözetleme cihazlarına yaklaşırken bildirim al",
     "batteryUsage": "Sürekli konum izleme için ekstra batarya kullanır",

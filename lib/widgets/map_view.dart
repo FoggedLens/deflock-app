@@ -596,17 +596,24 @@ class MapViewState extends State<MapView> {
                 Builder(
                   builder: (context) {
                     final safeArea = MediaQuery.of(context).padding;
+                    // When zoom controls (and the zoom level indicator) are hidden,
+                    // shift the scale bar down into the indicator's old slot so we
+                    // don't leave a weird empty gap above the attribution text.
+                    final scaleBarSpacing = appState.hideZoomControls
+                        ? kZoomIndicatorSpacingAboveButtonBar
+                        : kScaleBarSpacingAboveButtonBar;
                     return CustomScaleBar(
                       alignment: Alignment.bottomLeft,
                       padding: EdgeInsets.only(
                         left: leftPositionWithSafeArea(8, safeArea),
-                        bottom: bottomPositionFromButtonBar(kScaleBarSpacingAboveButtonBar, safeArea.bottom),
+                        bottom: bottomPositionFromButtonBar(scaleBarSpacing, safeArea.bottom),
                       ),
                       maxWidthPx: 120,
                       barHeight: 8,
                     );
                   },
                 ),
+
               ],
             ),
           ),
@@ -620,7 +627,9 @@ class MapViewState extends State<MapView> {
           editSession: editSession,
           attribution: appState.selectedTileType?.attribution,
           onSearchPressed: widget.onSearchPressed,
+          hideZoomControls: appState.hideZoomControls,
         ),
+
 
         // Node limit indicator (top-left) - shown when limit is active
         Builder(

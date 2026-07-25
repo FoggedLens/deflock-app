@@ -112,12 +112,18 @@
     "advancedSettingsSubtitle": "性能、警报和地图提供商设置",
     "proximityAlerts": "邻近警报",
     "keepScreenAwake": "保持屏幕常亮",
-    "networkStatusIndicator": "网络状态指示器"
+    "networkStatusIndicator": "网络状态指示器",
+    "hideZoomControls": "隐藏缩放控件"
   },
   "keepScreenAwake": {
     "title": "使用应用时保持屏幕常亮",
     "subtitle": "防止在使用应用期间屏幕自动熄灭"
   },
+  "hideZoomControls": {
+    "title": "隐藏缩放控件",
+    "subtitle": "隐藏 +/- 缩放按钮和缩放级别指示器。您仍然可以使用捏合手势进行缩放。"
+  },
+
   "proximityAlerts": {
     "getNotified": "接近监控设备时接收通知",
     "batteryUsage": "使用额外电量进行连续位置监控",

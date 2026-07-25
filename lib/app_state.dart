@@ -157,6 +157,8 @@ class AppState extends ChangeNotifier {
   UploadMode get uploadMode => _settingsState.uploadMode;
   FollowMeMode get followMeMode => _settingsState.followMeMode;
   bool get keepScreenAwake => _settingsState.keepScreenAwake;
+  bool get hideZoomControls => _settingsState.hideZoomControls;
+
 
   bool get proximityAlertsEnabled => _settingsState.proximityAlertsEnabled;
   int get proximityAlertDistance => _settingsState.proximityAlertDistance;
@@ -684,6 +686,11 @@ class AppState extends ChangeNotifier {
   Future<void> setKeepScreenAwake(bool enabled) async {
     await _settingsState.setKeepScreenAwake(enabled);
   }
+
+  Future<void> setHideZoomControls(bool enabled) async {
+    await _settingsState.setHideZoomControls(enabled);
+  }
+
 
   Future<void> setPauseQueueProcessing(bool enabled) async {
     await _settingsState.setPauseQueueProcessing(enabled);

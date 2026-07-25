@@ -75,12 +75,18 @@
     "advancedSettingsSubtitle": "Leistungs-, Warnungs- und Kachelanbieter-Einstellungen",
     "proximityAlerts": "Näherungswarnungen",
     "keepScreenAwake": "Bildschirm Aktiv Lassen",
-    "networkStatusIndicator": "Netzwerkstatus-Anzeige"
+    "networkStatusIndicator": "Netzwerkstatus-Anzeige",
+    "hideZoomControls": "Zoom-Steuerung Ausblenden"
   },
   "keepScreenAwake": {
     "title": "Bildschirm während der App-Nutzung aktiv lassen",
     "subtitle": "Verhindert, dass sich der Bildschirm während der Nutzung der App automatisch ausschaltet"
   },
+  "hideZoomControls": {
+    "title": "Zoom-Steuerung ausblenden",
+    "subtitle": "Blendet die +/- Zoom-Schaltflächen und die Zoomstufen-Anzeige aus. Sie können weiterhin mit Fingergesten zoomen."
+  },
+
   "proximityAlerts": {
     "getNotified": "Benachrichtigung erhalten beim Annähern an Überwachungsgeräte",
     "batteryUsage": "Verbraucht zusätzlich Batterie für kontinuierliche Standortüberwachung",

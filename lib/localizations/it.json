@@ -112,12 +112,18 @@
     "advancedSettingsSubtitle": "Impostazioni di prestazioni, avvisi e fornitori di tessere",
     "proximityAlerts": "Avvisi di Prossimità",
     "keepScreenAwake": "Mantieni lo Schermo Attivo",
-    "networkStatusIndicator": "Indicatore di Stato di Rete"
+    "networkStatusIndicator": "Indicatore di Stato di Rete",
+    "hideZoomControls": "Nascondi Controlli Zoom"
   },
   "keepScreenAwake": {
     "title": "Mantieni lo schermo attivo durante l'utilizzo dell'app",
     "subtitle": "Impedisce allo schermo di spegnersi automaticamente durante l'utilizzo dell'app"
   },
+  "hideZoomControls": {
+    "title": "Nascondi i controlli dello zoom",
+    "subtitle": "Nasconde i pulsanti di zoom +/- e l'indicatore del livello di zoom. Puoi ancora usare i gesti di pizzico per lo zoom."
+  },
+
   "proximityAlerts": {
     "getNotified": "Ricevi notifiche quando ti avvicini a dispositivi di sorveglianza",
     "batteryUsage": "Utilizza batteria extra per il monitoraggio continuo della posizione",

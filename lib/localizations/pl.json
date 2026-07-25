@@ -112,12 +112,18 @@
     "advancedSettingsSubtitle": "Wydajność, alerty i ustawienia dostawców kafelków",
     "proximityAlerts": "Alerty Bliskości",
     "keepScreenAwake": "Nie Wygaszaj Ekranu",
-    "networkStatusIndicator": "Wskaźnik Stanu Sieci"
+    "networkStatusIndicator": "Wskaźnik Stanu Sieci",
+    "hideZoomControls": "Ukryj Kontrolki Zoomu"
   },
   "keepScreenAwake": {
     "title": "Nie wygaszaj ekranu podczas korzystania z aplikacji",
     "subtitle": "Zapobiega automatycznemu wygaszaniu ekranu podczas korzystania z aplikacji"
   },
+  "hideZoomControls": {
+    "title": "Ukryj kontrolki zoomu",
+    "subtitle": "Ukrywa przyciski zoomu +/- oraz wskaźnik poziomu powiększenia. Nadal możesz powiększać za pomocą gestów szczypania."
+  },
+
   "proximityAlerts": {
     "getNotified": "Otrzymuj powiadomienia przy zbliżaniu się do urządzeń nadzoru",
     "batteryUsage": "Używa dodatkowej baterii do ciągłego monitorowania lokalizacji",

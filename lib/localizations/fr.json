@@ -112,12 +112,18 @@
     "advancedSettingsSubtitle": "Paramètres de performance, alertes et fournisseurs de tuiles",
     "proximityAlerts": "Alertes de Proximité",
     "keepScreenAwake": "Maintenir l'écran Allumé",
-    "networkStatusIndicator": "Indicateur de Statut Réseau"
+    "networkStatusIndicator": "Indicateur de Statut Réseau",
+    "hideZoomControls": "Masquer les Contrôles de Zoom"
   },
   "keepScreenAwake": {
     "title": "Maintenir l'écran allumé lors de l'utilisation de l'application",
     "subtitle": "Empêche l'écran de s'éteindre automatiquement pendant l'utilisation de l'application"
   },
+  "hideZoomControls": {
+    "title": "Masquer les contrôles de zoom",
+    "subtitle": "Masque les boutons de zoom +/- et l'indicateur de niveau de zoom. Vous pouvez toujours zoomer avec des gestes de pincement."
+  },
+
   "proximityAlerts": {
     "getNotified": "Recevoir des notifications en s'approchant de dispositifs de surveillance",
     "batteryUsage": "Utilise de la batterie supplémentaire pour la surveillance continue de la localisation",

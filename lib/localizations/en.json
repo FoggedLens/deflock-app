@@ -112,12 +112,18 @@
     "advancedSettingsSubtitle": "Performance, alerts, and tile provider settings",
     "proximityAlerts": "Proximity Alerts",
     "networkStatusIndicator": "Network Status Indicator",
-    "keepScreenAwake": "Keep Screen Awake"
+    "keepScreenAwake": "Keep Screen Awake",
+    "hideZoomControls": "Hide Zoom Controls"
   },
   "keepScreenAwake": {
     "title": "Keep screen awake while using app",
     "subtitle": "Prevents the screen from turning off automatically while using the app"
   },
+  "hideZoomControls": {
+    "title": "Hide zoom controls",
+    "subtitle": "Hide the +/- zoom buttons and zoom level indicator. You can still zoom with pinch gestures."
+  },
+
   "proximityAlerts": {
     "getNotified": "Get notified when approaching surveillance devices",
     "batteryUsage": "Uses extra battery for continuous location monitoring",

@@ -3,7 +3,8 @@
     "content": [
       "• Catch and correct a couple rare map bounds issues",
       "• Prevent queueing a deletion without being logged in",
-      "• Require a reason for deletion, provide options in a dropdown"
+      "• Require a reason for deletion, provide options in a dropdown",
+      "• Add option to hide zoom controls in advanced settings"
     ]
   },
   "2.10.3": {
