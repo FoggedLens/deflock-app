@@ -189,13 +189,10 @@ class GpsController {
 
   /// Handle incoming GPS position
   void _onPositionReceived(Position position) {
-    // Guard against malformed fixes from the platform location stack (some
-    // OEM/fused location providers occasionally emit NaN/Infinite lat/lng,
-    // especially while a fix is still being acquired). An unvalidated bad
-    // value here can crash the app at launch (via initialCenter) or corrupt
-    // the live map camera (via follow-me animateTo), so treat it like any
-    // other transient location error rather than trusting it.
-    if (!isValidCoordinate(position.latitude) || !isValidCoordinate(position.longitude)) {
+    // Reject malformed fixes (occasionally NaN/Infinite from the platform
+    // location stack) before they reach map state.
+    if (!isValidLatitude(position.latitude) || !isValidLongitude(position.longitude)) {
+
       debugPrint(
         '[GpsController] Ignoring invalid GPS position: '
         'lat=${position.latitude}, lng=${position.longitude}',

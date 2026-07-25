@@ -3,9 +3,7 @@ import 'package:flutter_map_animations/flutter_map_animations.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../../services/coordinate_validation.dart' as coord_validation;
-
-
+import '../../services/coordinate_validation.dart';
 
 /// Manages map position persistence and initial positioning.
 /// Handles saving/loading last map position and moving to initial locations.
@@ -32,10 +30,9 @@ class MapPositionManager {
       final lng = prefs.getDouble('last_map_longitude');
       final zoom = prefs.getDouble('last_map_zoom');
       
-      if (lat != null && lng != null && 
-          coord_validation.isValidCoordinate(lat) && coord_validation.isValidCoordinate(lng)) {
-
-        final validZoom = zoom != null && _isValidZoom(zoom) ? zoom : 15.0;
+      if (lat != null && lng != null &&
+          isValidLatitude(lat) && isValidLongitude(lng)) {
+        final validZoom = zoom != null && isValidZoom(zoom) ? zoom : 15.0;
         _initialLocation = LatLng(lat, lng);
         _initialZoom = validZoom;
         debugPrint('[MapPositionManager] Loaded last map position: ${_initialLocation!.latitude}, ${_initialLocation!.longitude}, zoom: $_initialZoom');
@@ -54,10 +51,9 @@ class MapPositionManager {
       try {
         final zoom = _initialZoom ?? 15.0;
         // Double-check coordinates are valid before moving
-        if (coord_validation.isValidCoordinate(_initialLocation!.latitude) &&
-            coord_validation.isValidCoordinate(_initialLocation!.longitude) &&
-            _isValidZoom(zoom)) {
-
+        if (isValidLatitude(_initialLocation!.latitude) &&
+            isValidLongitude(_initialLocation!.longitude) &&
+            isValidZoom(zoom)) {
           controller.mapController.move(_initialLocation!, zoom);
           _hasMovedToInitialLocation = true;
           debugPrint('[MapPositionManager] Moved to initial location: ${_initialLocation!.latitude}, ${_initialLocation!.longitude}');
@@ -75,10 +71,9 @@ class MapPositionManager {
   Future<void> saveMapPosition(LatLng location, double zoom) async {
     try {
       // Validate coordinates and zoom before saving
-      if (!coord_validation.isValidCoordinate(location.latitude) ||
-          !coord_validation.isValidCoordinate(location.longitude) ||
-          !_isValidZoom(zoom)) {
-
+      if (!isValidLatitude(location.latitude) ||
+          !isValidLongitude(location.longitude) ||
+          !isValidZoom(zoom)) {
         debugPrint('[MapPositionManager] Invalid map position, not saving: lat=${location.latitude}, lng=${location.longitude}, zoom=$zoom');
         return;
       }
@@ -93,8 +88,6 @@ class MapPositionManager {
     }
   }
 
-
-
   /// Clear any stored map position (useful for recovery from invalid data)
   static Future<void> clearStoredMapPosition() async {
     try {
@@ -106,14 +99,5 @@ class MapPositionManager {
     } catch (e) {
       debugPrint('[MapPositionManager] Failed to clear stored map position: $e');
     }
-  }
-
-  /// Validate that a zoom level is valid
-
-  bool _isValidZoom(double zoom) {
-    return !zoom.isNaN && 
-           !zoom.isInfinite && 
-           zoom >= 1.0 && 
-           zoom <= 25.0;
   }
 }

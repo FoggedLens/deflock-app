@@ -1,23 +1,27 @@
 /// Shared validation helpers for geographic coordinates and zoom levels.
 ///
-/// Used anywhere a [LatLng]-like value or zoom level comes from an external
-/// or platform source (GPS fixes, persisted preferences, live map camera
-/// state) that isn't guaranteed to be finite/in-range. Centralizing this
-/// avoids subtly inconsistent validation logic being duplicated across the
-/// GPS controller, map position persistence, and live camera guards.
+/// Used wherever a coordinate or zoom level comes from an external source
+/// (GPS fixes, persisted preferences, live map camera state) that isn't
+/// guaranteed to be finite/in-range.
 library;
 
-/// Validate that a latitude or longitude value is finite and within the
-/// valid range for geographic coordinates (-180 to 180).
-///
-/// Note: this intentionally uses the wider +/-180 range (rather than +/-90
-/// for latitude) so a single helper can validate both latitude and
-/// longitude values without the caller needing to track which is which.
-bool isValidCoordinate(double value) {
+import '../dev_config.dart' show kAbsoluteMaxZoom;
+
+/// Validate that a latitude value is finite and within -90 to 90.
+bool isValidLatitude(double value) {
+  return !value.isNaN && !value.isInfinite && value >= -90.0 && value <= 90.0;
+}
+
+/// Validate that a longitude value is finite and within -180 to 180.
+bool isValidLongitude(double value) {
   return !value.isNaN && !value.isInfinite && value >= -180.0 && value <= 180.0;
 }
 
 /// Validate that a zoom level is finite and within a sane range.
-bool isValidZoom(double zoom, {double min = 0.0, double max = 25.0}) {
+///
+/// Defaults to 1.0 to [kAbsoluteMaxZoom]. `num` is used (rather than
+/// `double`) so the `int` constant [kAbsoluteMaxZoom] can be used directly
+/// as a default parameter value.
+bool isValidZoom(double zoom, {num min = 1.0, num max = kAbsoluteMaxZoom}) {
   return !zoom.isNaN && !zoom.isInfinite && zoom >= min && zoom <= max;
 }

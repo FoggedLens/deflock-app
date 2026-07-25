@@ -84,13 +84,11 @@ class MapViewState extends State<MapView> {
   // Track map center to clear queue on significant panning
   LatLng? _lastCenter;
 
-  // Track the last known-good (finite, in-range) camera center/zoom so we
-  // can self-heal if the camera ever gets pushed into a degenerate state
-  // (e.g. by an edge case in flutter_map's internal gesture-to-camera
-  // pipeline). This mirrors the validation used for persisted map position
-  // in MapPositionManager, applied to the *live* camera as well.
+  // Last known-good camera center/zoom, used to self-heal if the camera
+  // ever gets pushed into an invalid state.
   LatLng? _lastValidCenter;
   double? _lastValidZoom;
+
 
   
   // State for proximity alert banner
@@ -287,26 +285,24 @@ class MapViewState extends State<MapView> {
     return (!appState.offlineMode && appState.isInSearchMode) ? 60.0 : 0.0;
   }
 
-  /// Get a known-good fallback location for [initialCenter], preferring a
-  /// validated GPS location, then a validated persisted position, then a
-  /// hardcoded default. GpsController already validates incoming fixes, but
-  /// this extra check keeps launch resilient even if that guard is ever
-  /// bypassed (e.g. future refactor).
+  /// Known-good fallback location for [initialCenter]: validated GPS
+  /// location, then validated persisted position, then a hardcoded default.
   LatLng get _safeInitialCenter {
     final gpsLocation = _gpsController.currentLocation;
     if (gpsLocation != null &&
-        isValidCoordinate(gpsLocation.latitude) &&
-        isValidCoordinate(gpsLocation.longitude)) {
+        isValidLatitude(gpsLocation.latitude) &&
+        isValidLongitude(gpsLocation.longitude)) {
       return gpsLocation;
     }
     final persisted = _positionManager.initialLocation;
     if (persisted != null &&
-        isValidCoordinate(persisted.latitude) &&
-        isValidCoordinate(persisted.longitude)) {
+        isValidLatitude(persisted.latitude) &&
+        isValidLongitude(persisted.longitude)) {
       return persisted;
     }
     return LatLng(37.7749, -122.4194);
   }
+
 
 
 
@@ -456,23 +452,15 @@ class MapViewState extends State<MapView> {
             maxZoom: (appState.selectedTileType?.maxZoom ?? 18).toDouble(),
             interactionOptions: _interactionManager.getInteractionOptions(editSession),
             onPositionChanged: (pos, gesture) {
-              // Self-heal if the camera has been pushed into a degenerate
-              // state (non-finite or wildly out-of-range center/zoom). This
-              // has been observed to occur silently during ordinary panning
-              // (no crash, no console output) — likely an edge case in
-              // flutter_map's internal gesture-to-camera math — leaving the
-              // map showing a blank grey view with no tiles or markers,
-              // since every subsequent gesture computes its new position as
-              // a delta from the already-broken center. Snap back to the
-              // last known-good position the moment this is detected rather
-              // than requiring the user to discover the GPS button "fixes"
-              // it (which works only because it supplies a fresh valid
-              // destination).
-              if (!isValidCoordinate(pos.center.latitude) ||
-                  !isValidCoordinate(pos.center.longitude) ||
+              // Self-heal if the camera center/zoom ever becomes invalid
+              // (observed to happen silently during ordinary panning,
+              // leaving a blank grey map with no tiles/markers). Snap back
+              // to the last known-good position immediately.
+              if (!isValidLatitude(pos.center.latitude) ||
+                  !isValidLongitude(pos.center.longitude) ||
                   !isValidZoom(pos.zoom)) {
-
                 debugPrint(
+
                   '[MapView] Detected invalid camera position '
                   '(lat=${pos.center.latitude}, lng=${pos.center.longitude}, zoom=${pos.zoom}) '
                   '- snapping back to last known-good position',
