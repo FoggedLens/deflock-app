@@ -1,4 +1,9 @@
 {
+  "2.10.4": {
+    "content": [
+      "• Catch and correct a couple rare map bounds issues"
+    ]
+  },
   "2.10.3": {
     "content": [
       "• Data loading performance improvements",
