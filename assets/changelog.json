@@ -3,10 +3,10 @@
     "content": [
       "• Make node tags selectable / copyable",
       "• Add status indicator to details sheet for pending nodes",
-      "• Global toggle for offline features"
+      "• Global toggle for offline features",
+      "• Auto-open details sheet for new add/edit/deletes"
     ]
   },
-
   "2.10.4": {
     "content": [
       "• Catch and correct a couple rare map bounds issues",

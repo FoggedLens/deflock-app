@@ -64,6 +64,12 @@ class AppState extends ChangeNotifier {
   VoidCallback? _tutorialCompletionCallback; // Callback when tutorial is completed
   Timer? _messageCheckTimer;
 
+  // Node ID to auto-focus (open the details sheet for) after a submit/edit/delete
+  // completes, when kAutoOpenNodeSheetAfterSubmit is enabled. Consumed (read once
+  // and cleared) by HomeScreen after picking it up.
+  int? _pendingFocusNodeId;
+
+
   AppState() {
     instance = this;
     _authState = AuthState();
@@ -584,23 +590,43 @@ class AppState extends ChangeNotifier {
   void commitSession() {
     final session = _sessionState.commitSession();
     if (session != null) {
-      _uploadQueueState.addFromSession(session, uploadMode: uploadMode);
+      final upload = _uploadQueueState.addFromSession(session, uploadMode: uploadMode);
       _startUploader();
+      if (kAutoOpenNodeSheetAfterSubmit && upload.tempNodeId != null) {
+        _pendingFocusNodeId = upload.tempNodeId;
+      }
     }
   }
 
   void commitEditSession() {
     final session = _sessionState.commitEditSession();
     if (session != null) {
-      _uploadQueueState.addFromEditSession(session, uploadMode: uploadMode);
+      final upload = _uploadQueueState.addFromEditSession(session, uploadMode: uploadMode);
       _startUploader();
+      if (kAutoOpenNodeSheetAfterSubmit && upload.tempNodeId != null) {
+        _pendingFocusNodeId = upload.tempNodeId;
+      }
     }
   }
 
   void deleteNode(OsmNode node, {String? changesetComment}) {
     _uploadQueueState.addFromNodeDeletion(node, uploadMode: uploadMode, changesetComment: changesetComment);
     _startUploader();
+    if (kAutoOpenNodeSheetAfterSubmit) {
+      _pendingFocusNodeId = node.id;
+    }
   }
+
+  /// Consume (read once and clear) the node ID pending auto-focus, if any.
+  /// Used by HomeScreen to reopen the node details sheet right after a
+  /// submit/edit/delete completes, when [kAutoOpenNodeSheetAfterSubmit] is
+  /// enabled. Returns null if no focus is pending.
+  int? consumePendingFocusNodeId() {
+    final id = _pendingFocusNodeId;
+    _pendingFocusNodeId = null;
+    return id;
+  }
+
 
   // ---------- Search Methods ----------
   Future<void> search(String query) async {

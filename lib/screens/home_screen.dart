@@ -8,6 +8,8 @@ import '../app_state.dart';
 import '../dev_config.dart';
 import '../widgets/map_view.dart';
 import '../services/localization_service.dart';
+import '../services/map_data_provider.dart';
+
 
 import '../widgets/node_tag_sheet.dart';
 import '../widgets/download_area_dialog.dart';
@@ -454,6 +456,22 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         appState.checkAndPromptReauthForMessages(context);
       });
     }
+
+    // Auto-focus a node's details sheet right after it was submitted/edited/deleted,
+    // behind kAutoOpenNodeSheetAfterSubmit (pending A/B testing/team feedback).
+    if (kAutoOpenNodeSheetAfterSubmit) {
+      final focusNodeId = appState.consumePendingFocusNodeId();
+      if (focusNodeId != null && !_sheetCoordinator.hasActiveNodeSheet) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (!mounted) return;
+          final node = MapDataProvider().getNodeById(focusNodeId);
+          if (node != null) {
+            openNodeTagSheet(node);
+          }
+        });
+      }
+    }
+
 
     // Pass the active sheet height directly to the map
     final activeSheetHeight = _sheetCoordinator.activeSheetHeight;

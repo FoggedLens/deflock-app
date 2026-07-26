@@ -121,7 +121,7 @@ class UploadQueueState extends ChangeNotifier {
   }
 
   // Add a completed session to the upload queue
-  void addFromSession(AddNodeSession session, {required UploadMode uploadMode}) {
+  PendingUpload addFromSession(AddNodeSession session, {required UploadMode uploadMode}) {
     final upload = PendingUpload(
       coord: session.target!,
       direction: _formatDirectionsForSubmission(session.directions, session.profile),
@@ -159,10 +159,11 @@ class UploadQueueState extends ChangeNotifier {
     NodeProviderWithCache.instance.notifyListeners();
     
     notifyListeners();
+    return upload;
   }
 
   // Add a completed edit session to the upload queue
-  void addFromEditSession(EditNodeSession session, {required UploadMode uploadMode}) {
+  PendingUpload addFromEditSession(EditNodeSession session, {required UploadMode uploadMode}) {
     // Determine operation type and coordinates
     final UploadOperation operation;
     final LatLng coordToUse;
@@ -250,10 +251,11 @@ class UploadQueueState extends ChangeNotifier {
     NodeProviderWithCache.instance.notifyListeners();
     
     notifyListeners();
+    return upload;
   }
 
   // Add a node deletion to the upload queue
-  void addFromNodeDeletion(OsmNode node, {required UploadMode uploadMode, String? changesetComment}) {
+  PendingUpload addFromNodeDeletion(OsmNode node, {required UploadMode uploadMode, String? changesetComment}) {
     final upload = PendingUpload(
       coord: node.coord,
       direction: node.directionDeg.isNotEmpty ? node.directionDeg.first : 0, // Direction not used for deletions but required for API
@@ -282,6 +284,7 @@ class UploadQueueState extends ChangeNotifier {
     NodeProviderWithCache.instance.notifyListeners();
     
     notifyListeners();
+    return upload;
   }
 
   void clearQueue() {
