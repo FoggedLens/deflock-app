@@ -1,4 +1,10 @@
 {
+  "2.10.5": {
+    "content": [
+      "• Make node tags selectable / copyable",
+      "• Add status indicator to details sheet for pending nodes"
+    ]
+  },
   "2.10.4": {
     "content": [
       "• Catch and correct a couple rare map bounds issues",
