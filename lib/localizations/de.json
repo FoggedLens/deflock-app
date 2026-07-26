@@ -270,8 +270,13 @@
     "closingChangeset": " (Changeset schließen...)",
     "processingPaused": "Warteschlangenverarbeitung pausiert",
     "pausedDueToOffline": "Upload-Verarbeitung ist pausiert, da der Offline-Modus aktiviert ist.",
-    "pausedByUser": "Upload-Verarbeitung ist manuell pausiert."
+    "pausedByUser": "Upload-Verarbeitung ist manuell pausiert.",
+    "inFlightWaitTitle": "Übermittlung wird abgeschlossen",
+    "inFlightWaitMessage": "Eine Übermittlung läuft gerade und muss abgeschlossen werden, bevor diese Einstellung angewendet werden kann. Dies sollte nur einen Moment dauern.",
+    "inFlightCompleteTitle": "Übermittlung Abgeschlossen",
+    "inFlightCompleteMessage": "Ihre Übermittlung wurde erfolgreich abgeschlossen. Ihre Einstellung wird jetzt angewendet."
   },
+
   "tileProviders": {
     "title": "Kachel-Anbieter",
     "noProvidersConfigured": "Keine Kachel-Anbieter konfiguriert",

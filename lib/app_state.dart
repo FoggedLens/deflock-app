@@ -188,6 +188,13 @@ class AppState extends ChangeNotifier {
   int get pendingCount => _uploadQueueState.pendingCount;
   List<PendingUpload> get pendingUploads => _uploadQueueState.pendingUploads;
 
+  /// True if any queue item currently has an open changeset that hasn't
+  /// been closed yet (creating changeset, uploading node, or closing
+  /// changeset). Used to gate enabling offline mode / pausing the upload
+  /// queue so in-flight submissions can finish first.
+  bool get hasInFlightUploads => pendingUploads.any((u) => u.isActivelyProcessing);
+
+
   // Suspected location state
   SuspectedLocation? get selectedSuspectedLocation => _suspectedLocationState.selectedLocation;
   bool get suspectedLocationsEnabled => _suspectedLocationState.isEnabled;

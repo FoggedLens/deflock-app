@@ -306,8 +306,13 @@
     "closingChangeset": " (Closing changeset...)",
     "processingPaused": "Queue Processing Paused",
     "pausedDueToOffline": "Upload processing is paused because offline mode is enabled.",
-    "pausedByUser": "Upload processing is manually paused."
+    "pausedByUser": "Upload processing is manually paused.",
+    "inFlightWaitTitle": "Finishing Submission",
+    "inFlightWaitMessage": "A submission is currently in progress and needs to finish before this setting can be applied. This should only take a moment.",
+    "inFlightCompleteTitle": "Submission Complete",
+    "inFlightCompleteMessage": "Your submission finished successfully. Applying your setting now."
   },
+
   "tileProviders": {
     "title": "Tile Providers",
     "noProvidersConfigured": "No tile providers configured",

@@ -307,8 +307,13 @@
     "closingChangeset": " (Fermeture du changeset...)",
     "processingPaused": "Traitement de la File d'Attente Interrompu",
     "pausedDueToOffline": "Le traitement des téléversements est interrompu car le mode hors ligne est activé.",
-    "pausedByUser": "Le traitement des téléversements est interrompu manuellement."
+    "pausedByUser": "Le traitement des téléversements est interrompu manuellement.",
+    "inFlightWaitTitle": "Finalisation de la Soumission",
+    "inFlightWaitMessage": "Une soumission est actuellement en cours et doit se terminer avant que ce paramètre puisse être appliqué. Cela ne devrait prendre qu'un instant.",
+    "inFlightCompleteTitle": "Soumission Terminée",
+    "inFlightCompleteMessage": "Votre soumission s'est terminée avec succès. Application de votre paramètre maintenant."
   },
+
   "tileProviders": {
     "title": "Fournisseurs de Tuiles",
     "noProvidersConfigured": "Aucun fournisseur de tuiles configuré",

@@ -307,8 +307,13 @@
     "closingChangeset": " (关闭变更集...)",
     "processingPaused": "队列处理已暂停",
     "pausedDueToOffline": "因为离线模式已启用，上传处理已暂停。",
-    "pausedByUser": "上传处理已手动暂停。"
+    "pausedByUser": "上传处理已手动暂停。",
+    "inFlightWaitTitle": "正在完成提交",
+    "inFlightWaitMessage": "当前有一个提交正在进行中，需要先完成才能应用此设置。这应该只需要一点时间。",
+    "inFlightCompleteTitle": "提交完成",
+    "inFlightCompleteMessage": "您的提交已成功完成。正在应用您的设置。"
   },
+
   "tileProviders": {
     "title": "瓦片提供商",
     "noProvidersConfigured": "未配置瓦片提供商",

@@ -307,8 +307,13 @@
     "closingChangeset": " (Cerrando changeset...)",
     "processingPaused": "Procesamiento de Cola Pausado",
     "pausedDueToOffline": "El procesamiento de subida está pausado porque el modo sin conexión está habilitado.",
-    "pausedByUser": "El procesamiento de subida está pausado manualmente."
+    "pausedByUser": "El procesamiento de subida está pausado manualmente.",
+    "inFlightWaitTitle": "Finalizando Envío",
+    "inFlightWaitMessage": "Actualmente hay un envío en curso que debe finalizar antes de que se pueda aplicar esta configuración. Esto solo debería tomar un momento.",
+    "inFlightCompleteTitle": "Envío Completado",
+    "inFlightCompleteMessage": "Su envío finalizó exitosamente. Aplicando su configuración ahora."
   },
+
   "tileProviders": {
     "title": "Proveedores de Tiles",
     "noProvidersConfigured": "No hay proveedores de tiles configurados",

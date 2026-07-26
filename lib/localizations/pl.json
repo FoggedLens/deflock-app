@@ -307,8 +307,13 @@
     "closingChangeset": " (Zamykanie zestawu zmian...)",
     "processingPaused": "Przetwarzanie Kolejki Wstrzymane",
     "pausedDueToOffline": "Przetwarzanie przesyłania jest wstrzymane, ponieważ tryb offline jest włączony.",
-    "pausedByUser": "Przetwarzanie przesyłania jest ręcznie wstrzymane."
+    "pausedByUser": "Przetwarzanie przesyłania jest ręcznie wstrzymane.",
+    "inFlightWaitTitle": "Kończenie Przesyłania",
+    "inFlightWaitMessage": "Przesyłanie jest obecnie w toku i musi zostać zakończone, zanim to ustawienie będzie mogło zostać zastosowane. To powinno zająć tylko chwilę.",
+    "inFlightCompleteTitle": "Przesyłanie Zakończone",
+    "inFlightCompleteMessage": "Twoje przesyłanie zakończyło się pomyślnie. Stosowanie ustawienia teraz."
   },
+
   "tileProviders": {
     "title": "Dostawcy Kafelków",
     "noProvidersConfigured": "Brak skonfigurowanych dostawców kafelków",

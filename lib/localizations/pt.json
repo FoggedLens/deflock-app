@@ -307,8 +307,13 @@
     "closingChangeset": " (Fechando changeset...)",
     "processingPaused": "Processamento da Fila Pausado",
     "pausedDueToOffline": "O processamento de upload está pausado porque o modo offline está habilitado.",
-    "pausedByUser": "O processamento de upload está pausado manualmente."
+    "pausedByUser": "O processamento de upload está pausado manualmente.",
+    "inFlightWaitTitle": "Finalizando Envio",
+    "inFlightWaitMessage": "Atualmente há um envio em andamento que precisa terminar antes que esta configuração possa ser aplicada. Isso deve levar apenas um momento.",
+    "inFlightCompleteTitle": "Envio Concluído",
+    "inFlightCompleteMessage": "Seu envio foi concluído com sucesso. Aplicando sua configuração agora."
   },
+
   "tileProviders": {
     "title": "Provedores de Tiles",
     "noProvidersConfigured": "Nenhum provedor de tiles configurado",

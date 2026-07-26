@@ -307,8 +307,13 @@
     "closingChangeset": " (Changeset sluiten...)",
     "processingPaused": "Wachtrij Verwerking Gepauzeerd",
     "pausedDueToOffline": "Upload verwerking is gepauzeerd omdat offline modus is ingeschakeld.",
-    "pausedByUser": "Upload verwerking is handmatig gepauzeerd."
+    "pausedByUser": "Upload verwerking is handmatig gepauzeerd.",
+    "inFlightWaitTitle": "Indiening Wordt Afgerond",
+    "inFlightWaitMessage": "Er is momenteel een indiening bezig die moet worden afgerond voordat deze instelling kan worden toegepast. Dit zou maar een moment moeten duren.",
+    "inFlightCompleteTitle": "Indiening Voltooid",
+    "inFlightCompleteMessage": "Uw indiening is succesvol afgerond. Uw instelling wordt nu toegepast."
   },
+
   "tileProviders": {
     "title": "Tile Providers",
     "noProvidersConfigured": "Geen tile providers geconfigureerd",

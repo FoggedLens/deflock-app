@@ -307,8 +307,13 @@
     "closingChangeset": " (Chiusura changeset...)",
     "processingPaused": "Elaborazione Coda Sospesa",
     "pausedDueToOffline": "L'elaborazione dei caricamenti è sospesa perché la modalità offline è abilitata.",
-    "pausedByUser": "L'elaborazione dei caricamenti è sospesa manualmente."
+    "pausedByUser": "L'elaborazione dei caricamenti è sospesa manualmente.",
+    "inFlightWaitTitle": "Completamento Invio",
+    "inFlightWaitMessage": "Un invio è attualmente in corso e deve terminare prima che questa impostazione possa essere applicata. Questo dovrebbe richiedere solo un momento.",
+    "inFlightCompleteTitle": "Invio Completato",
+    "inFlightCompleteMessage": "Il tuo invio è terminato con successo. Applicazione della tua impostazione in corso."
   },
+
   "tileProviders": {
     "title": "Fornitori di Tile",
     "noProvidersConfigured": "Nessun fornitore di tile configurato",

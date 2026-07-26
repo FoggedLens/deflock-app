@@ -3,6 +3,8 @@ import 'package:provider/provider.dart';
 import '../../../app_state.dart';
 import '../../../services/offline_area_service.dart';
 import '../../../services/localization_service.dart';
+import '../../../widgets/in_flight_upload_wait_dialog.dart';
+
 
 class OfflineModeSection extends StatelessWidget {
   const OfflineModeSection({super.key});
@@ -49,9 +51,16 @@ class OfflineModeSection extends StatelessWidget {
       }
     }
     
-    // Proceed with the change
-    await appState.setOfflineMode(value);
+    // Proceed with the change, respecting any in-flight submission that
+    // needs to finish before offline mode actually takes effect.
+    if (!context.mounted) return;
+    await applyQueueSettingChangeRespectingInFlightUploads(
+      context: context,
+      appState: appState,
+      applyChange: () => appState.setOfflineMode(value),
+    );
   }
+
 
   @override
   Widget build(BuildContext context) {

@@ -64,6 +64,13 @@ const Duration kChangesetCloseMaxRetryDelay = Duration(minutes: 5);  // Cap at 5
 const Duration kChangesetAutoCloseTimeout = Duration(minutes: 59); // Give up and trust OSM auto-close
 const double kChangesetCloseBackoffMultiplier = 2.0;
 
+// How long to keep the "Submission Complete" confirmation visible in the
+// in-flight upload wait dialog (shown when the user enables offline mode or
+// pauses the upload queue while a submission is actively in progress) before
+// automatically dismissing and applying the requested setting change.
+const Duration kInFlightUploadCompleteDisplayDuration = Duration(seconds: 2);
+
+
 // Overpass API configuration
 const Duration kOverpassQueryTimeout = Duration(seconds: 45); // Timeout for Overpass API queries (was 25s hardcoded)
 

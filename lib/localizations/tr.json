@@ -307,8 +307,13 @@
     "closingChangeset": " (Değişiklik seti kapatılıyor...)",
     "processingPaused": "Kuyruk İşleme Duraklatıldı",
     "pausedDueToOffline": "Çevrimdışı mod etkin olduğu için yükleme işleme duraklatıldı.",
-    "pausedByUser": "Yükleme işleme manuel olarak duraklatıldı."
+    "pausedByUser": "Yükleme işleme manuel olarak duraklatıldı.",
+    "inFlightWaitTitle": "Gönderim Tamamlanıyor",
+    "inFlightWaitMessage": "Şu anda devam eden bir gönderim var ve bu ayar uygulanmadan önce tamamlanması gerekiyor. Bu sadece bir an sürmelidir.",
+    "inFlightCompleteTitle": "Gönderim Tamamlandı",
+    "inFlightCompleteMessage": "Gönderiminiz başarıyla tamamlandı. Ayarınız şimdi uygulanıyor."
   },
+
   "tileProviders": {
     "title": "Döşeme Sağlayıcıları",
     "noProvidersConfigured": "Döşeme sağlayıcısı yapılandırılmamış",

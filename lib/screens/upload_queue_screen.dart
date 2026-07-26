@@ -3,6 +3,8 @@ import 'package:provider/provider.dart';
 import '../app_state.dart';
 import '../models/pending_upload.dart';
 import '../services/localization_service.dart';
+import '../widgets/in_flight_upload_wait_dialog.dart';
+
 
 class UploadQueueScreen extends StatelessWidget {
   const UploadQueueScreen({super.key});
@@ -83,6 +85,22 @@ class UploadQueueScreen extends StatelessWidget {
         return Colors.grey; // Grey for simulate (fake)
     }
   }
+
+  Future<void> _handlePauseQueueChange(BuildContext context, AppState appState, bool value) async {
+    // Only need to wait for in-flight uploads when turning pause ON.
+    // Resuming (turning it off) can happen immediately.
+    if (!value) {
+      await appState.setPauseQueueProcessing(value);
+      return;
+    }
+
+    await applyQueueSettingChangeRespectingInFlightUploads(
+      context: context,
+      appState: appState,
+      applyChange: () => appState.setPauseQueueProcessing(value),
+    );
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -166,9 +184,10 @@ class UploadQueueScreen extends StatelessWidget {
                   value: appState.pauseQueueProcessing,
                   onChanged: appState.offlineMode 
                       ? null // Disable when offline mode is on
-                      : (value) => appState.setPauseQueueProcessing(value),
+                      : (value) => _handlePauseQueueChange(context, appState, value),
                 ),
               ),
+
               
               const SizedBox(height: 16),
               
