@@ -164,8 +164,10 @@
     "uploadClosingChangeset": "Chiusura changeset...",
     "uploadError": "Caricamento fallito",
     "uploadComplete": "Caricamento completato",
-    "viewInQueue": "Visualizza in Coda"
+    "viewInQueue": "Visualizza in Coda",
+    "deletedSuccessfully": "Questo nodo è stato eliminato con successo da OpenStreetMap."
   },
+
 
   "addNode": {
     "profile": "Profilo",

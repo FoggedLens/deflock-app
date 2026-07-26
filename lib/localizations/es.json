@@ -164,8 +164,10 @@
     "uploadClosingChangeset": "Cerrando changeset...",
     "uploadError": "Error al subir",
     "uploadComplete": "Subida completada",
-    "viewInQueue": "Ver en la Cola"
+    "viewInQueue": "Ver en la Cola",
+    "deletedSuccessfully": "Este nodo fue eliminado con éxito de OpenStreetMap."
   },
+
 
   "addNode": {
     "profile": "Perfil",

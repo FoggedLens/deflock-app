@@ -126,8 +126,10 @@
     "uploadClosingChangeset": "Changeset wird geschlossen...",
     "uploadError": "Upload fehlgeschlagen",
     "uploadComplete": "Upload abgeschlossen",
-    "viewInQueue": "In Warteschlange anzeigen"
+    "viewInQueue": "In Warteschlange anzeigen",
+    "deletedSuccessfully": "Dieser Knoten wurde erfolgreich von OpenStreetMap gelöscht."
   },
+
 
 
   "addNode": {

@@ -164,8 +164,10 @@
     "uploadClosingChangeset": "Закриття набору змін...",
     "uploadError": "Помилка завантаження",
     "uploadComplete": "Завантаження завершено",
-    "viewInQueue": "Переглянути в Черзі"
+    "viewInQueue": "Переглянути в Черзі",
+    "deletedSuccessfully": "Цей вузол було успішно видалено з OpenStreetMap."
   },
+
 
   "addNode": {
     "profile": "Профіль",

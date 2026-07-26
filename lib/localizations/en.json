@@ -163,9 +163,10 @@
     "uploadClosingChangeset": "Closing changeset...",
     "uploadError": "Upload failed",
     "uploadComplete": "Upload complete",
-    "viewInQueue": "View in Queue"
-
+    "viewInQueue": "View in Queue",
+    "deletedSuccessfully": "This node was successfully deleted from OpenStreetMap."
   },
+
 
   "addNode": {
     "profile": "Profile",

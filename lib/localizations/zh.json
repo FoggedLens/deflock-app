@@ -164,8 +164,10 @@
     "uploadClosingChangeset": "正在关闭变更集...",
     "uploadError": "上传失败",
     "uploadComplete": "上传完成",
-    "viewInQueue": "在队列中查看"
+    "viewInQueue": "在队列中查看",
+    "deletedSuccessfully": "此节点已成功从 OpenStreetMap 删除。"
   },
+
 
   "addNode": {
     "profile": "配置文件",

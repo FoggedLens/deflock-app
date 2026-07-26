@@ -164,8 +164,10 @@
     "uploadClosingChangeset": "Fermeture du changeset...",
     "uploadError": "Échec du téléchargement",
     "uploadComplete": "Téléchargement terminé",
-    "viewInQueue": "Voir dans la File d'Attente"
+    "viewInQueue": "Voir dans la File d'Attente",
+    "deletedSuccessfully": "Ce nœud a été supprimé avec succès d'OpenStreetMap."
   },
+
 
   "addNode": {
     "profile": "Profil",

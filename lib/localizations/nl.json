@@ -164,8 +164,10 @@
     "uploadClosingChangeset": "Changeset sluiten...",
     "uploadError": "Upload mislukt",
     "uploadComplete": "Upload voltooid",
-    "viewInQueue": "Bekijk in Wachtrij"
+    "viewInQueue": "Bekijk in Wachtrij",
+    "deletedSuccessfully": "Deze node is succesvol verwijderd van OpenStreetMap."
   },
+
 
   "addNode": {
     "profile": "Profiel",

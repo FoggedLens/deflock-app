@@ -164,8 +164,10 @@
     "uploadClosingChangeset": "Değişiklik seti kapatılıyor...",
     "uploadError": "Yükleme başarısız oldu",
     "uploadComplete": "Yükleme tamamlandı",
-    "viewInQueue": "Sırada Görüntüle"
+    "viewInQueue": "Sırada Görüntüle",
+    "deletedSuccessfully": "Bu düğüm OpenStreetMap'ten başarıyla silindi."
   },
+
 
   "addNode": {
     "profile": "Profil",

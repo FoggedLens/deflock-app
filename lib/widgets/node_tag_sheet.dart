@@ -5,13 +5,14 @@ import 'package:flutter_linkify/flutter_linkify.dart';
 import 'package:collection/collection.dart';
 import '../models/osm_node.dart';
 import '../models/pending_upload.dart';
+import '../services/map_data_provider.dart';
 import '../app_state.dart';
 import '../services/localization_service.dart';
 import '../dev_config.dart';
 import 'advanced_edit_options_sheet.dart';
 
 
-class NodeTagSheet extends StatelessWidget {
+class NodeTagSheet extends StatefulWidget {
   final OsmNode node;
   final VoidCallback? onEditPressed;
   final bool isNodeLimitActive;
@@ -24,28 +25,118 @@ class NodeTagSheet extends StatelessWidget {
   });
 
   @override
+  State<NodeTagSheet> createState() => _NodeTagSheetState();
+}
+
+class _NodeTagSheetState extends State<NodeTagSheet> {
+  // The PendingUpload backing this node (if it was in a pending state when the
+  // sheet was opened). We resolve this once and hold onto the object reference
+  // itself (not just its id) so we can keep observing its live status via its
+  // mutable fields even after it's eventually removed from the queue list
+  // (which happens ~1s after completion). Without this, once the item left
+  // the queue we'd have no way to tell "finished successfully" apart from
+  // "still pending" and would show stale/misleading status forever.
+  PendingUpload? _upload;
+  bool _uploadResolved = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _resolveTrackedUpload();
+  }
+
+  void _resolveTrackedUpload() {
+    if (_uploadResolved) return;
+    _uploadResolved = true;
+
+    final appState = context.read<AppState>();
+    if (widget.node.tags['_pending_upload'] == 'true') {
+      _upload = appState.pendingUploads
+          .firstWhereOrNull((u) => u.tempNodeId == widget.node.id);
+    } else if (widget.node.tags['_pending_edit'] == 'true' ||
+        widget.node.tags['_pending_deletion'] == 'true') {
+      _upload = appState.pendingUploads
+          .firstWhereOrNull((u) => u.originalNodeId == widget.node.id);
+    }
+  }
+
+  /// Resolve the node data that should currently be displayed.
+  ///
+  /// While an upload/edit/deletion is still in progress (or has failed), this
+  /// is just the snapshot that was passed in when the sheet was opened -
+  /// nothing has changed in the cache yet. Once the tracked upload completes,
+  /// we switch to the live node from the cache using the *real* submitted ID
+  /// (which can differ from the temporary negative "-epoch" ID for creates
+  /// and extracts, but matches the original ID for edits) so that tags, id,
+  /// and editability reflect reality instead of the stale pre-submission
+  /// snapshot. Returns null if the node has been deleted.
+  OsmNode? _resolveDisplayNode() {
+    final upload = _upload;
+    if (upload == null) {
+      // No tracked upload - either this node was never pending, or we
+      // couldn't find a matching queue entry (shouldn't normally happen).
+      // Try a live cache lookup so we still pick up any external updates,
+      // but fall back to the passed-in node if it's not (or no longer) cached.
+      return MapDataProvider().getNodeById(widget.node.id) ?? widget.node;
+    }
+
+    if (!upload.isComplete) {
+      // Still pending/in-progress/failed - nothing has changed yet.
+      return widget.node;
+    }
+
+    if (upload.isDeletion) {
+      return null; // Node has been deleted
+    }
+
+    // Upload completed successfully (create/modify/extract). Look up the
+    // live node using the real submitted ID (same as originalNodeId for
+    // modify operations, a brand-new positive ID for create/extract).
+    final realId = upload.submittedNodeId ?? widget.node.id;
+    final cached = MapDataProvider().getNodeById(realId);
+    if (cached != null) return cached;
+
+    // Fallback: cache might have already been cleared/replaced; reconstruct
+    // from the upload data directly so we don't fall back to stale pending
+    // tags/id.
+    return OsmNode(
+      id: realId,
+      coord: upload.coord,
+      tags: upload.getCombinedTags(),
+    );
+  }
+
+  @override
   Widget build(BuildContext context) {
     return AnimatedBuilder(
       animation: LocalizationService.instance,
       builder: (context, child) {
         final appState = context.watch<AppState>();
         final locService = LocalizationService.instance;
-        
+
+        final upload = _upload;
+        final isDeleted = upload != null && upload.isComplete && upload.isDeletion;
+        final displayNode = isDeleted ? null : _resolveDisplayNode();
+
+        if (displayNode == null) {
+          return _buildDeletedSheet(context, locService);
+        }
+
         // Check if this device is editable (not a pending upload, pending edit, or pending deletion)
-        final isEditable = (!node.tags.containsKey('_pending_upload') || 
-                           node.tags['_pending_upload'] != 'true') &&
-                          (!node.tags.containsKey('_pending_edit') || 
-                           node.tags['_pending_edit'] != 'true') &&
-                          (!node.tags.containsKey('_pending_deletion') || 
-                           node.tags['_pending_deletion'] != 'true');
+        final isEditable = (!displayNode.tags.containsKey('_pending_upload') || 
+                           displayNode.tags['_pending_upload'] != 'true') &&
+                          (!displayNode.tags.containsKey('_pending_edit') || 
+                           displayNode.tags['_pending_edit'] != 'true') &&
+                          (!displayNode.tags.containsKey('_pending_deletion') || 
+                           displayNode.tags['_pending_deletion'] != 'true');
         
         // Check if this is a real OSM node (not pending) - for "View on OSM" button
-        final isRealOSMNode = !node.tags.containsKey('_pending_upload') &&
-                              node.id > 0; // Real OSM nodes have positive IDs
+        final isRealOSMNode = !displayNode.tags.containsKey('_pending_upload') &&
+                              displayNode.id > 0; // Real OSM nodes have positive IDs
         
         void openEditSheet() {
           // Check if node limit is active and warn user
-          if (isNodeLimitActive) {
+          if (widget.isNodeLimitActive) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text(
@@ -58,12 +149,12 @@ class NodeTagSheet extends StatelessWidget {
             return;
           }
           
-          if (onEditPressed != null) {
-            onEditPressed!(); // Use callback if provided
+          if (widget.onEditPressed != null) {
+            widget.onEditPressed!(); // Use callback if provided
           } else {
             // Fallback behavior
             Navigator.pop(context); // Close this sheet first
-            appState.startEditSession(node); // HomeScreen will auto-show the edit sheet
+            appState.startEditSession(displayNode); // HomeScreen will auto-show the edit sheet
           }
         }
 
@@ -96,14 +187,14 @@ class NodeTagSheet extends StatelessWidget {
           final result = await showDialog<({bool confirmed, String comment})>(
             context: context,
             builder: (BuildContext context) => _DeleteNodeDialog(
-              nodeId: node.id.toString(),
+              nodeId: displayNode.id.toString(),
               locService: locService,
             ),
           );
 
           if ((result?.confirmed ?? false) && context.mounted) {
             Navigator.pop(context); // Close this sheet first
-            appState.deleteNode(node, changesetComment: result!.comment);
+            appState.deleteNode(displayNode, changesetComment: result!.comment);
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text(locService.t('node.deleteQueuedForUpload'))),
             );
@@ -111,7 +202,7 @@ class NodeTagSheet extends StatelessWidget {
         }
 
         void viewOnOSM() async {
-          final url = 'https://www.openstreetmap.org/node/${node.id}';
+          final url = 'https://www.openstreetmap.org/node/${displayNode.id}';
           try {
             final uri = Uri.parse(url);
             if (await canLaunchUrl(uri)) {
@@ -136,20 +227,8 @@ class NodeTagSheet extends StatelessWidget {
           showModalBottomSheet(
             context: context,
             isScrollControlled: true,
-            builder: (context) => AdvancedEditOptionsSheet(node: node),
+            builder: (context) => AdvancedEditOptionsSheet(node: displayNode),
           );
-        }
-
-        // Find the PendingUpload (if any) backing this node, so we can show
-        // live upload status for pending/edited/deleted nodes.
-        PendingUpload? pendingUpload;
-        if (node.tags['_pending_upload'] == 'true') {
-          pendingUpload = appState.pendingUploads
-              .firstWhereOrNull((u) => u.tempNodeId == node.id);
-        } else if (node.tags['_pending_edit'] == 'true' ||
-            node.tags['_pending_deletion'] == 'true') {
-          pendingUpload = appState.pendingUploads
-              .firstWhereOrNull((u) => u.originalNodeId == node.id);
         }
 
         void viewInQueue() {
@@ -165,7 +244,7 @@ class NodeTagSheet extends StatelessWidget {
           final bool showSpinner;
           final bool showQueueButton;
 
-          final state = pendingUpload?.uploadState;
+          final state = upload?.uploadState;
 
           if (state == null) {
             // Fallback: tag says pending but we couldn't find a matching
@@ -259,10 +338,10 @@ class NodeTagSheet extends StatelessWidget {
                   ],
                 ),
                 if (state == UploadState.error &&
-                    (pendingUpload?.errorMessage?.isNotEmpty ?? false)) ...[
+                    (upload?.errorMessage?.isNotEmpty ?? false)) ...[
                   const SizedBox(height: 4),
                   SelectableText(
-                    pendingUpload!.errorMessage!,
+                    upload!.errorMessage!,
                     style: TextStyle(
                       color: statusColor.withValues(alpha: 0.9),
                       fontSize: 12,
@@ -300,12 +379,12 @@ class NodeTagSheet extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  locService.t('node.title').replaceAll('{}', node.id.toString()),
+                  locService.t('node.title').replaceAll('{}', displayNode.id.toString()),
                   style: Theme.of(context).textTheme.titleLarge,
                 ),
                 const SizedBox(height: 12),
 
-                if (uploadStatusBanner != null) uploadStatusBanner,
+                ?uploadStatusBanner,
 
                 // Tag list with flexible height constraint
 
@@ -318,7 +397,7 @@ class NodeTagSheet extends StatelessWidget {
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          ...node.tags.entries
+                          ...displayNode.tags.entries
                               .where((e) => !e.key.startsWith('_')) // Hide internal bookkeeping tags
                               .map(
                             (e) => Padding(
@@ -414,12 +493,12 @@ class NodeTagSheet extends StatelessWidget {
                       ),
                       const SizedBox(width: 8),
                       ElevatedButton.icon(
-                        onPressed: node.isConstrained ? null : deleteNode,
+                        onPressed: displayNode.isConstrained ? null : deleteNode,
                         icon: const Icon(Icons.delete, size: 18),
                         label: Text(locService.t('actions.delete')),
                         style: ElevatedButton.styleFrom(
                           minimumSize: const Size(0, 36),
-                          foregroundColor: node.isConstrained ? null : Colors.red,
+                          foregroundColor: displayNode.isConstrained ? null : Colors.red,
                         ),
                       ),
                       const SizedBox(width: 12),
@@ -437,6 +516,61 @@ class NodeTagSheet extends StatelessWidget {
           },
         );
       },
+    );
+  }
+
+  /// Shown when the tracked upload was a deletion that has now completed -
+  /// the underlying node no longer exists, so we can't show tags or offer
+  /// edit/delete actions on it anymore.
+  Widget _buildDeletedSheet(BuildContext context, LocalizationService locService) {
+    return SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              locService.t('node.title').replaceAll('{}', widget.node.id.toString()),
+              style: Theme.of(context).textTheme.titleLarge,
+            ),
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                color: Colors.green.withValues(alpha: 0.1),
+                border: Border.all(color: Colors.green.withValues(alpha: 0.4)),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.check_circle_outline, color: Colors.green, size: 18),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      locService.t('node.deletedSuccessfully'),
+                      style: const TextStyle(
+                        color: Colors.green,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: Text(locService.t('actions.close')),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -594,4 +728,3 @@ class _DeleteNodeDialogState extends State<_DeleteNodeDialog> {
     );
   }
 }
-

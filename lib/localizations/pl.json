@@ -164,8 +164,10 @@
     "uploadClosingChangeset": "Zamykanie zestawu zmian...",
     "uploadError": "Przesyłanie nie powiodło się",
     "uploadComplete": "Przesyłanie zakończone",
-    "viewInQueue": "Zobacz w Kolejce"
+    "viewInQueue": "Zobacz w Kolejce",
+    "deletedSuccessfully": "Ten węzeł został pomyślnie usunięty z OpenStreetMap."
   },
+
 
   "addNode": {
     "profile": "Profil",

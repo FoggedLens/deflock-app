@@ -3,7 +3,7 @@
     "content": [
       "• Make node tags selectable / copyable",
       "• Add status indicator to details sheet for pending nodes",
-      "• Offline areas now live behind a new 'Enable Offline Features' toggle in Offline Settings (auto-enabled for existing users with downloaded areas)"
+      "• Global toggle for offline features"
     ]
   },
 
