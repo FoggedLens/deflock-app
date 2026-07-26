@@ -153,8 +153,16 @@
     "deleteReasonCustom": "Aangepast..",
     "deleteReasonHint": "Beschrijf de reden...",
 
-    "mustBeLoggedInToDelete": "U moet ingelogd zijn met een OpenStreetMap-account om kaartgegevens bij te dragen."
+    "mustBeLoggedInToDelete": "U moet ingelogd zijn met een OpenStreetMap-account om kaartgegevens bij te dragen.",
+    "uploadPending": "Upload in behandeling",
+    "uploadCreatingChangeset": "Changeset maken...",
+    "uploadUploading": "Uploaden...",
+    "uploadClosingChangeset": "Changeset sluiten...",
+    "uploadError": "Upload mislukt",
+    "uploadComplete": "Upload voltooid",
+    "viewInQueue": "Bekijk in Wachtrij"
   },
+
   "addNode": {
     "profile": "Profiel",
     "selectProfile": "Selecteer een profiel...",

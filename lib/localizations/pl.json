@@ -153,8 +153,16 @@
     "deleteReasonCustom": "Niestandardowy..",
     "deleteReasonHint": "Opisz powód...",
 
-    "mustBeLoggedInToDelete": "Musisz być zalogowany na konto OpenStreetMap, aby dodawać dane do mapy."
+    "mustBeLoggedInToDelete": "Musisz być zalogowany na konto OpenStreetMap, aby dodawać dane do mapy.",
+    "uploadPending": "Przesyłanie oczekujące",
+    "uploadCreatingChangeset": "Tworzenie zestawu zmian...",
+    "uploadUploading": "Przesyłanie...",
+    "uploadClosingChangeset": "Zamykanie zestawu zmian...",
+    "uploadError": "Przesyłanie nie powiodło się",
+    "uploadComplete": "Przesyłanie zakończone",
+    "viewInQueue": "Zobacz w Kolejce"
   },
+
   "addNode": {
     "profile": "Profil",
     "selectProfile": "Wybierz profil...",

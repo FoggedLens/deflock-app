@@ -153,8 +153,16 @@
     "deleteReasonCustom": "自定义..",
     "deleteReasonHint": "请描述原因...",
 
-    "mustBeLoggedInToDelete": "您必须使用 OpenStreetMap 账户登录才能贡献地图数据。"
+    "mustBeLoggedInToDelete": "您必须使用 OpenStreetMap 账户登录才能贡献地图数据。",
+    "uploadPending": "上传待处理",
+    "uploadCreatingChangeset": "正在创建变更集...",
+    "uploadUploading": "正在上传...",
+    "uploadClosingChangeset": "正在关闭变更集...",
+    "uploadError": "上传失败",
+    "uploadComplete": "上传完成",
+    "viewInQueue": "在队列中查看"
   },
+
   "addNode": {
     "profile": "配置文件",
     "selectProfile": "选择配置文件...",

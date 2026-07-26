@@ -152,9 +152,17 @@
     "deleteReasonSpamVandalism": "Spam/vandalism",
     "deleteReasonCustom": "Custom..",
     "deleteReasonHint": "Please describe the reason...",
-    "mustBeLoggedInToDelete": "You must be logged in with an OpenStreetMap account to contribute map data."
+    "mustBeLoggedInToDelete": "You must be logged in with an OpenStreetMap account to contribute map data.",
+    "uploadPending": "Pending upload",
+    "uploadCreatingChangeset": "Creating changeset...",
+    "uploadUploading": "Uploading...",
+    "uploadClosingChangeset": "Closing changeset...",
+    "uploadError": "Upload failed",
+    "uploadComplete": "Upload complete",
+    "viewInQueue": "View in Queue"
 
   },
+
   "addNode": {
     "profile": "Profile",
     "selectProfile": "Select a profile...",

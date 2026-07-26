@@ -115,8 +115,16 @@
     "deleteReasonSpamVandalism": "Spam/Vandalismus",
     "deleteReasonCustom": "Benutzerdefiniert..",
     "deleteReasonHint": "Bitte Grund beschreiben...",
-    "mustBeLoggedInToDelete": "Sie müssen mit einem OpenStreetMap-Konto angemeldet sein, um Kartendaten beizutragen."
+    "mustBeLoggedInToDelete": "Sie müssen mit einem OpenStreetMap-Konto angemeldet sein, um Kartendaten beizutragen.",
+    "uploadPending": "Ausstehender Upload",
+    "uploadCreatingChangeset": "Changeset wird erstellt...",
+    "uploadUploading": "Wird hochgeladen...",
+    "uploadClosingChangeset": "Changeset wird geschlossen...",
+    "uploadError": "Upload fehlgeschlagen",
+    "uploadComplete": "Upload abgeschlossen",
+    "viewInQueue": "In Warteschlange anzeigen"
   },
+
 
   "addNode": {
     "profile": "Profil",

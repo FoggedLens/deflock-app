@@ -153,8 +153,16 @@
     "deleteReasonCustom": "Personnalisé..",
     "deleteReasonHint": "Veuillez décrire la raison...",
 
-    "mustBeLoggedInToDelete": "Vous devez être connecté avec un compte OpenStreetMap pour contribuer aux données cartographiques."
+    "mustBeLoggedInToDelete": "Vous devez être connecté avec un compte OpenStreetMap pour contribuer aux données cartographiques.",
+    "uploadPending": "Téléchargement en attente",
+    "uploadCreatingChangeset": "Création du changeset...",
+    "uploadUploading": "Téléchargement en cours...",
+    "uploadClosingChangeset": "Fermeture du changeset...",
+    "uploadError": "Échec du téléchargement",
+    "uploadComplete": "Téléchargement terminé",
+    "viewInQueue": "Voir dans la File d'Attente"
   },
+
   "addNode": {
     "profile": "Profil",
     "selectProfile": "Sélectionner un profil...",

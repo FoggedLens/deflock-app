@@ -153,8 +153,16 @@
     "deleteReasonCustom": "Власний..",
     "deleteReasonHint": "Опишіть причину...",
 
-    "mustBeLoggedInToDelete": "Ви повинні увійти в обліковий запис OpenStreetMap, щоб надавати дані карти."
+    "mustBeLoggedInToDelete": "Ви повинні увійти в обліковий запис OpenStreetMap, щоб надавати дані карти.",
+    "uploadPending": "Завантаження очікує",
+    "uploadCreatingChangeset": "Створення набору змін...",
+    "uploadUploading": "Завантаження...",
+    "uploadClosingChangeset": "Закриття набору змін...",
+    "uploadError": "Помилка завантаження",
+    "uploadComplete": "Завантаження завершено",
+    "viewInQueue": "Переглянути в Черзі"
   },
+
   "addNode": {
     "profile": "Профіль",
     "selectProfile": "Оберіть профіль...",

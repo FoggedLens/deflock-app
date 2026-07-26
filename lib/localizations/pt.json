@@ -153,8 +153,16 @@
     "deleteReasonCustom": "Personalizado..",
     "deleteReasonHint": "Descreva o motivo...",
 
-    "mustBeLoggedInToDelete": "Você precisa estar conectado com uma conta do OpenStreetMap para contribuir com dados do mapa."
+    "mustBeLoggedInToDelete": "Você precisa estar conectado com uma conta do OpenStreetMap para contribuir com dados do mapa.",
+    "uploadPending": "Envio pendente",
+    "uploadCreatingChangeset": "Criando changeset...",
+    "uploadUploading": "Enviando...",
+    "uploadClosingChangeset": "Fechando changeset...",
+    "uploadError": "Falha no envio",
+    "uploadComplete": "Envio concluído",
+    "viewInQueue": "Ver na Fila"
   },
+
   "addNode": {
     "profile": "Perfil",
     "selectProfile": "Selecionar um perfil...",

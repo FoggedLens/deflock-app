@@ -153,8 +153,16 @@
     "deleteReasonCustom": "Özel..",
     "deleteReasonHint": "Lütfen nedeni açıklayın...",
 
-    "mustBeLoggedInToDelete": "Harita verilerine katkıda bulunmak için bir OpenStreetMap hesabıyla oturum açmış olmanız gerekir."
+    "mustBeLoggedInToDelete": "Harita verilerine katkıda bulunmak için bir OpenStreetMap hesabıyla oturum açmış olmanız gerekir.",
+    "uploadPending": "Yükleme bekliyor",
+    "uploadCreatingChangeset": "Değişiklik seti oluşturuluyor...",
+    "uploadUploading": "Yükleniyor...",
+    "uploadClosingChangeset": "Değişiklik seti kapatılıyor...",
+    "uploadError": "Yükleme başarısız oldu",
+    "uploadComplete": "Yükleme tamamlandı",
+    "viewInQueue": "Sırada Görüntüle"
   },
+
   "addNode": {
     "profile": "Profil",
     "selectProfile": "Bir profil seçin...",

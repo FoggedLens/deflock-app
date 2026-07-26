@@ -2,11 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter_linkify/flutter_linkify.dart';
+import 'package:collection/collection.dart';
 import '../models/osm_node.dart';
+import '../models/pending_upload.dart';
 import '../app_state.dart';
 import '../services/localization_service.dart';
 import '../dev_config.dart';
 import 'advanced_edit_options_sheet.dart';
+
 
 class NodeTagSheet extends StatelessWidget {
   final OsmNode node;
@@ -137,6 +140,156 @@ class NodeTagSheet extends StatelessWidget {
           );
         }
 
+        // Find the PendingUpload (if any) backing this node, so we can show
+        // live upload status for pending/edited/deleted nodes.
+        PendingUpload? pendingUpload;
+        if (node.tags['_pending_upload'] == 'true') {
+          pendingUpload = appState.pendingUploads
+              .firstWhereOrNull((u) => u.tempNodeId == node.id);
+        } else if (node.tags['_pending_edit'] == 'true' ||
+            node.tags['_pending_deletion'] == 'true') {
+          pendingUpload = appState.pendingUploads
+              .firstWhereOrNull((u) => u.originalNodeId == node.id);
+        }
+
+        void viewInQueue() {
+          Navigator.pop(context); // Close this sheet first
+          Navigator.pushNamed(context, '/settings/queue');
+        }
+
+        Widget? uploadStatusBanner;
+        if (!isEditable) {
+          final IconData statusIcon;
+          final Color statusColor;
+          final String statusLabel;
+          final bool showSpinner;
+          final bool showQueueButton;
+
+          final state = pendingUpload?.uploadState;
+
+          if (state == null) {
+            // Fallback: tag says pending but we couldn't find a matching
+            // queue entry (shouldn't normally happen).
+            statusIcon = Icons.hourglass_empty;
+            statusColor = Colors.orange;
+            statusLabel = locService.t('node.uploadPending');
+            showSpinner = false;
+            showQueueButton = true;
+          } else {
+            switch (state) {
+              case UploadState.pending:
+                statusIcon = Icons.hourglass_empty;
+                statusColor = Colors.orange;
+                statusLabel = locService.t('node.uploadPending');
+                showSpinner = false;
+                showQueueButton = true;
+                break;
+              case UploadState.creatingChangeset:
+                statusIcon = Icons.cloud_upload_outlined;
+                statusColor = Colors.orange;
+                statusLabel = locService.t('node.uploadCreatingChangeset');
+                showSpinner = true;
+                showQueueButton = true;
+                break;
+              case UploadState.uploading:
+                statusIcon = Icons.cloud_upload_outlined;
+                statusColor = Colors.orange;
+                statusLabel = locService.t('node.uploadUploading');
+                showSpinner = true;
+                showQueueButton = true;
+                break;
+              case UploadState.closingChangeset:
+                statusIcon = Icons.cloud_upload_outlined;
+                statusColor = Colors.orange;
+                statusLabel = locService.t('node.uploadClosingChangeset');
+                showSpinner = true;
+                showQueueButton = true;
+                break;
+              case UploadState.error:
+                statusIcon = Icons.error_outline;
+                statusColor = Colors.red;
+                statusLabel = locService.t('node.uploadError');
+                showSpinner = false;
+                showQueueButton = true;
+                break;
+              case UploadState.complete:
+                statusIcon = Icons.check_circle_outline;
+                statusColor = Colors.green;
+                statusLabel = locService.t('node.uploadComplete');
+                showSpinner = false;
+                showQueueButton = false;
+                break;
+            }
+          }
+
+          uploadStatusBanner = Container(
+            margin: const EdgeInsets.only(bottom: 12),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            decoration: BoxDecoration(
+              color: statusColor.withValues(alpha: 0.1),
+              border: Border.all(color: statusColor.withValues(alpha: 0.4)),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    if (showSpinner)
+                      SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: statusColor,
+                        ),
+                      )
+                    else
+                      Icon(statusIcon, color: statusColor, size: 18),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        statusLabel,
+                        style: TextStyle(
+                          color: statusColor,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                if (state == UploadState.error &&
+                    (pendingUpload?.errorMessage?.isNotEmpty ?? false)) ...[
+                  const SizedBox(height: 4),
+                  SelectableText(
+                    pendingUpload!.errorMessage!,
+                    style: TextStyle(
+                      color: statusColor.withValues(alpha: 0.9),
+                      fontSize: 12,
+                    ),
+                  ),
+                ],
+                if (showQueueButton) ...[
+                  const SizedBox(height: 4),
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: TextButton(
+                      onPressed: viewInQueue,
+                      style: TextButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        minimumSize: const Size(0, 28),
+                        foregroundColor: statusColor,
+                      ),
+                      child: Text(locService.t('node.viewInQueue')),
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          );
+        }
+
+
         return LayoutBuilder(
           builder: (context, constraints) {
             return SafeArea(
@@ -151,74 +304,88 @@ class NodeTagSheet extends StatelessWidget {
                   style: Theme.of(context).textTheme.titleLarge,
                 ),
                 const SizedBox(height: 12),
-                
+
+                if (uploadStatusBanner != null) uploadStatusBanner,
+
                 // Tag list with flexible height constraint
+
                 ConstrainedBox(
                   constraints: BoxConstraints(
                     maxHeight: MediaQuery.of(context).size.height * getTagListHeightRatio(context),
                   ),
-                  child: SingleChildScrollView(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        ...node.tags.entries.map(
-                          (e) => Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 2),
-                            child: Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  e.key,
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.w500,
-                                    color: Theme.of(context).colorScheme.onSurface,
-                                  ),
-                                ),
-                                const SizedBox(width: 8),
-                                Expanded(
-                                  child: Linkify(
-                                    onOpen: (link) async {
-                                      final uri = Uri.parse(link.url);
-                                      if (await canLaunchUrl(uri)) {
-                                        await launchUrl(uri, mode: LaunchMode.externalApplication);
-                                      } else if (context.mounted) {
-                                        ScaffoldMessenger.of(context).showSnackBar(
-                                          SnackBar(content: Text('${LocalizationService.instance.t('advancedEdit.couldNotOpenURL')}: ${link.url}')),
-                                        );
-                                      }
-                                    },
-                                    text: e.value,
+                  child: SelectionArea(
+                    child: SingleChildScrollView(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          ...node.tags.entries
+                              .where((e) => !e.key.startsWith('_')) // Hide internal bookkeeping tags
+                              .map(
+                            (e) => Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 2),
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    e.key,
                                     style: TextStyle(
-                                      color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
+                                      fontWeight: FontWeight.w500,
+                                      color: Theme.of(context).colorScheme.onSurface,
                                     ),
-                                    linkStyle: TextStyle(
-                                      color: Theme.of(context).colorScheme.primary,
-                                      decoration: TextDecoration.underline,
-                                    ),
-                                    options: const LinkifyOptions(humanize: false),
                                   ),
-                                ),
-                              ],
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: Linkify(
+                                      onOpen: (link) async {
+                                        final uri = Uri.parse(link.url);
+                                        if (await canLaunchUrl(uri)) {
+                                          await launchUrl(uri, mode: LaunchMode.externalApplication);
+                                        } else if (context.mounted) {
+                                          ScaffoldMessenger.of(context).showSnackBar(
+                                            SnackBar(content: Text('${LocalizationService.instance.t('advancedEdit.couldNotOpenURL')}: ${link.url}')),
+                                          );
+                                        }
+                                      },
+                                      text: e.value,
+                                      style: TextStyle(
+                                        color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
+                                      ),
+                                      linkStyle: TextStyle(
+                                        color: Theme.of(context).colorScheme.primary,
+                                        decoration: TextDecoration.underline,
+                                      ),
+                                      options: const LinkifyOptions(humanize: false),
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
-                        ),
-                      ],
+
+                        ],
+                      ),
                     ),
                   ),
                 ),
+
+
                 const SizedBox(height: 16),
                 // First row: View and Advanced buttons
                 Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
                     if (isRealOSMNode) ...[
-                      TextButton.icon(
+                      OutlinedButton.icon(
                         onPressed: () => viewOnOSM(),
-                        icon: const Icon(Icons.open_in_new, size: 16),
+                        icon: const Icon(Icons.open_in_new, size: 18),
                         label: Text(locService.t('actions.viewOnOSM')),
+                        style: OutlinedButton.styleFrom(
+                          minimumSize: const Size(0, 36),
+                        ),
                       ),
                       const SizedBox(width: 8),
                     ],
+
                     if (isEditable) ...[
                       OutlinedButton.icon(
                         onPressed: openAdvancedEdit,
