@@ -25,6 +25,7 @@ class EnableOfflineFeaturesSection extends StatelessWidget {
     // no "cancel" path once this dialog is shown.
     final offlineService = OfflineAreaService();
     await offlineService.ensureInitialized();
+    if (!context.mounted) return;
     final hasExistingAreas = offlineService.offlineAreas.isNotEmpty;
 
     if (!hasExistingAreas) {
