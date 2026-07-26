@@ -113,8 +113,12 @@
     "proximityAlerts": "邻近警报",
     "keepScreenAwake": "保持屏幕常亮",
     "networkStatusIndicator": "网络状态指示器",
-    "hideZoomControls": "隐藏缩放控件"
+    "hideZoomControls": "隐藏缩放控件",
+    "enableOfflineFeatures": "启用离线功能",
+    "enableOfflineFeaturesTitle": "启用离线功能",
+    "enableOfflineFeaturesSubtitle": "允许下载和使用离线地图区域。禁用后，离线模式和已下载的区域将不可用。"
   },
+
   "keepScreenAwake": {
     "title": "使用应用时保持屏幕常亮",
     "subtitle": "防止在使用应用期间屏幕自动熄灭"
@@ -448,8 +452,13 @@
     "refreshNodesSubtitle": "重新获取此区域的节点数据",
     "startRefresh": "开始刷新",
     "refreshStarted": "刷新已开始！",
-    "refreshFailed": "刷新失败：{}"
+    "refreshFailed": "刷新失败：{}",
+    "disableConfirmTitle": "删除现有的离线区域数据？",
+    "disableConfirmMessage": "您已有现有的离线区域数据。禁用离线功能将阻止应用使用这些数据。您是想将这些数据保留在设备上，以便日后重新启用离线功能时使用，还是现在删除以释放存储空间？",
+    "keepData": "保留数据",
+    "deleteData": "删除数据"
   },
+
   "refineTagsSheet": {
     "title": "细化标签",
     "operatorProfile": "运营商配置文件",

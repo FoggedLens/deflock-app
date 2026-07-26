@@ -76,8 +76,12 @@
     "proximityAlerts": "Näherungswarnungen",
     "keepScreenAwake": "Bildschirm Aktiv Lassen",
     "networkStatusIndicator": "Netzwerkstatus-Anzeige",
-    "hideZoomControls": "Zoom-Steuerung Ausblenden"
+    "hideZoomControls": "Zoom-Steuerung Ausblenden",
+    "enableOfflineFeatures": "Offline-Funktionen Aktivieren",
+    "enableOfflineFeaturesTitle": "Offline-Funktionen aktivieren",
+    "enableOfflineFeaturesSubtitle": "Herunterladen und Nutzen von Offline-Kartenbereichen erlauben. Wenn deaktiviert, sind Offline-Modus und heruntergeladene Bereiche nicht verfügbar."
   },
+
   "keepScreenAwake": {
     "title": "Bildschirm während der App-Nutzung aktiv lassen",
     "subtitle": "Verhindert, dass sich der Bildschirm während der Nutzung der App automatisch ausschaltet"
@@ -411,8 +415,13 @@
     "refreshNodesSubtitle": "Knotendaten für diesen Bereich erneut abrufen",
     "startRefresh": "Aktualisierung starten",
     "refreshStarted": "Aktualisierung gestartet!",
-    "refreshFailed": "Aktualisierung fehlgeschlagen: {}"
+    "refreshFailed": "Aktualisierung fehlgeschlagen: {}",
+    "disableConfirmTitle": "Vorhandene Offline-Bereichsdaten löschen?",
+    "disableConfirmMessage": "Sie haben bereits Offline-Bereichsdaten. Das Deaktivieren der Offline-Funktionen verhindert, dass die App diese verwendet. Möchten Sie diese Daten für den Fall behalten, dass Sie die Offline-Funktionen später wieder aktivieren, oder sie jetzt löschen, um Speicherplatz freizugeben?",
+    "keepData": "Daten Behalten",
+    "deleteData": "Daten Löschen"
   },
+
   "refineTagsSheet": {
     "title": "Tags Verfeinern",
     "operatorProfile": "Betreiber-Profil",

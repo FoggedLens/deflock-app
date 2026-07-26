@@ -113,8 +113,12 @@
     "proximityAlerts": "Yakınlık Uyarıları",
     "keepScreenAwake": "Ekranı Açık Tut",
     "networkStatusIndicator": "Ağ Durumu Göstergesi",
-    "hideZoomControls": "Yakınlaştırma Kontrollerini Gizle"
+    "hideZoomControls": "Yakınlaştırma Kontrollerini Gizle",
+    "enableOfflineFeatures": "Çevrimdışı Özellikleri Etkinleştir",
+    "enableOfflineFeaturesTitle": "Çevrimdışı özellikleri etkinleştir",
+    "enableOfflineFeaturesSubtitle": "Çevrimdışı harita alanlarını indirmeye ve kullanmaya izin ver. Devre dışı bırakılırsa, çevrimdışı mod ve indirilen alanlar kullanılamaz."
   },
+
   "keepScreenAwake": {
     "title": "Uygulamayı kullanırken ekranı açık tut",
     "subtitle": "Uygulamayı kullanırken ekranın otomatik olarak kapanmasını engeller"
@@ -448,8 +452,13 @@
     "refreshNodesSubtitle": "Bu alan için düğüm verisini yeniden getir",
     "startRefresh": "Yenilemeyi Başlat",
     "refreshStarted": "Yenileme başladı!",
-    "refreshFailed": "Yenileme başarısız: {}"
+    "refreshFailed": "Yenileme başarısız: {}",
+    "disableConfirmTitle": "Mevcut Çevrimdışı Alan Verileri Silinsin mi?",
+    "disableConfirmMessage": "Zaten mevcut çevrimdışı alan verileriniz var. Çevrimdışı özellikleri devre dışı bırakmak, uygulamanın bunları kullanmasını engelleyecektir. Daha sonra çevrimdışı özellikleri tekrar etkinleştirme ihtimaline karşı bu verileri cihazda saklamak mı istersiniz, yoksa depolama alanını boşaltmak için şimdi silmek mi istersiniz?",
+    "keepData": "Verileri Sakla",
+    "deleteData": "Verileri Sil"
   },
+
   "refineTagsSheet": {
     "title": "Etiketleri Düzenle",
     "operatorProfile": "Operatör Profili",

@@ -595,67 +595,70 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                         ),
                         margin: EdgeInsets.only(bottom: kBottomButtonBarOffset),
                         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              flex: 7, // 70% for primary action
-                              child: AnimatedBuilder(
-                                animation: LocalizationService.instance,
-                                builder: (context, child) => ElevatedButton.icon(
-                                  icon: Icon(Icons.add_location_alt),
-                                  label: Text(LocalizationService.instance.tagNode),
-                                  onPressed: _openAddNodeSheet,
-                                  style: ElevatedButton.styleFrom(
-                                    minimumSize: Size(0, 48),
-                                    textStyle: TextStyle(fontSize: 16),
+                        child: AnimatedBuilder(
+                          animation: LocalizationService.instance,
+                          builder: (context, child) {
+                            final appState = context.watch<AppState>();
+                            final showDownloadButton = appState.offlineFeaturesEnabled;
+                            final canDownload = appState.selectedTileType?.allowsOfflineDownload ?? false;
+
+                            return Row(
+                              children: [
+                                Expanded(
+                                  // Take full width when the download button is hidden
+                                  flex: showDownloadButton ? 7 : 10,
+                                  child: ElevatedButton.icon(
+                                    icon: Icon(Icons.add_location_alt),
+                                    label: Text(LocalizationService.instance.tagNode),
+                                    onPressed: _openAddNodeSheet,
+                                    style: ElevatedButton.styleFrom(
+                                      minimumSize: Size(0, 48),
+                                      textStyle: TextStyle(fontSize: 16),
+                                    ),
                                   ),
                                 ),
-                              ),
-                            ),
-                            SizedBox(width: 12),
-                            Expanded(
-                              flex: 3, // 30% for secondary action
-                              child: AnimatedBuilder(
-                                animation: LocalizationService.instance,
-                                builder: (context, child) {
-                                  final appState = context.watch<AppState>();
-                                  final canDownload = appState.selectedTileType?.allowsOfflineDownload ?? false;
-                                  return FittedBox(
-                                    fit: BoxFit.scaleDown,
-                                    child: ElevatedButton.icon(
-                                      icon: Icon(Icons.download_for_offline),
-                                      label: Text(LocalizationService.instance.download),
-                                      onPressed: canDownload ? () {
-                                        // Check minimum zoom level before opening download dialog
-                                        final currentZoom = _mapController.mapController.camera.zoom;
-                                        if (currentZoom < kMinZoomForOfflineDownload) {
-                                          ScaffoldMessenger.of(context).showSnackBar(
-                                            SnackBar(
-                                              content: Text(
-                                                LocalizationService.instance.t('download.areaTooBigMessage',
-                                                  params: [kMinZoomForOfflineDownload.toString()])
+                                if (showDownloadButton) ...[
+                                  SizedBox(width: 12),
+                                  Expanded(
+                                    flex: 3, // 30% for secondary action
+                                    child: FittedBox(
+                                      fit: BoxFit.scaleDown,
+                                      child: ElevatedButton.icon(
+                                        icon: Icon(Icons.download_for_offline),
+                                        label: Text(LocalizationService.instance.download),
+                                        onPressed: canDownload ? () {
+                                          // Check minimum zoom level before opening download dialog
+                                          final currentZoom = _mapController.mapController.camera.zoom;
+                                          if (currentZoom < kMinZoomForOfflineDownload) {
+                                            ScaffoldMessenger.of(context).showSnackBar(
+                                              SnackBar(
+                                                content: Text(
+                                                  LocalizationService.instance.t('download.areaTooBigMessage',
+                                                    params: [kMinZoomForOfflineDownload.toString()])
+                                                ),
                                               ),
-                                            ),
-                                          );
-                                          return;
-                                        }
+                                            );
+                                            return;
+                                          }
 
-                                        showDialog(
-                                          context: context,
-                                          builder: (ctx) => DownloadAreaDialog(controller: _mapController.mapController),
-                                        );
-                                      } : null,
-                                      style: ElevatedButton.styleFrom(
-                                        minimumSize: Size(0, 48),
-                                        textStyle: TextStyle(fontSize: 16),
+                                          showDialog(
+                                            context: context,
+                                            builder: (ctx) => DownloadAreaDialog(controller: _mapController.mapController),
+                                          );
+                                        } : null,
+                                        style: ElevatedButton.styleFrom(
+                                          minimumSize: Size(0, 48),
+                                          textStyle: TextStyle(fontSize: 16),
+                                        ),
                                       ),
                                     ),
-                                  );
-                                },
-                              ),
-                            ),
-                          ],
+                                  ),
+                                ],
+                              ],
+                            );
+                          },
                         ),
+
                       ),
                     ),
                   );

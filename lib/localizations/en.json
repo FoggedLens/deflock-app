@@ -113,8 +113,12 @@
     "proximityAlerts": "Proximity Alerts",
     "networkStatusIndicator": "Network Status Indicator",
     "keepScreenAwake": "Keep Screen Awake",
-    "hideZoomControls": "Hide Zoom Controls"
+    "hideZoomControls": "Hide Zoom Controls",
+    "enableOfflineFeatures": "Enable Offline Features",
+    "enableOfflineFeaturesTitle": "Enable offline features",
+    "enableOfflineFeaturesSubtitle": "Allow downloading and using offline map areas. When disabled, offline mode and downloaded areas are unavailable."
   },
+
   "keepScreenAwake": {
     "title": "Keep screen awake while using app",
     "subtitle": "Prevents the screen from turning off automatically while using the app"
@@ -448,8 +452,13 @@
     "refreshNodesSubtitle": "Re-fetch node data for this area",
     "startRefresh": "Start Refresh",
     "refreshStarted": "Refresh started!",
-    "refreshFailed": "Refresh failed: {}"
+    "refreshFailed": "Refresh failed: {}",
+    "disableConfirmTitle": "Delete Existing Offline Area Data?",
+    "disableConfirmMessage": "You have existing offline area data. Disabling offline features will stop the app from using it. Would you like to keep this data on disk in case you re-enable offline features later, or delete it now to free up storage space?",
+    "keepData": "Keep Data",
+    "deleteData": "Delete Data"
   },
+
   "refineTagsSheet": {
     "title": "Refine Tags",
     "operatorProfile": "Operator Profile",

@@ -113,8 +113,12 @@
     "proximityAlerts": "Alerty Bliskości",
     "keepScreenAwake": "Nie Wygaszaj Ekranu",
     "networkStatusIndicator": "Wskaźnik Stanu Sieci",
-    "hideZoomControls": "Ukryj Kontrolki Zoomu"
+    "hideZoomControls": "Ukryj Kontrolki Zoomu",
+    "enableOfflineFeatures": "Włącz Funkcje Offline",
+    "enableOfflineFeaturesTitle": "Włącz funkcje offline",
+    "enableOfflineFeaturesSubtitle": "Zezwól na pobieranie i korzystanie z map offline. Jeśli wyłączone, tryb offline i pobrane obszary będą niedostępne."
   },
+
   "keepScreenAwake": {
     "title": "Nie wygaszaj ekranu podczas korzystania z aplikacji",
     "subtitle": "Zapobiega automatycznemu wygaszaniu ekranu podczas korzystania z aplikacji"
@@ -448,8 +452,13 @@
     "refreshNodesSubtitle": "Pobierz ponownie dane węzłów dla tego obszaru",
     "startRefresh": "Rozpocznij Odświeżanie",
     "refreshStarted": "Odświeżanie rozpoczęte!",
-    "refreshFailed": "Odświeżanie nie powiodło się: {}"
+    "refreshFailed": "Odświeżanie nie powiodło się: {}",
+    "disableConfirmTitle": "Usunąć Istniejące Dane Obszarów Offline?",
+    "disableConfirmMessage": "Masz już istniejące dane obszarów offline. Wyłączenie funkcji offline uniemożliwi aplikacji ich używanie. Czy chcesz zachować te dane na urządzeniu na wypadek ponownego włączenia funkcji offline później, czy usunąć je teraz, aby zwolnić miejsce na dysku?",
+    "keepData": "Zachowaj Dane",
+    "deleteData": "Usuń Dane"
   },
+
   "refineTagsSheet": {
     "title": "Doprecyzuj Tagi",
     "operatorProfile": "Profil Operatora",

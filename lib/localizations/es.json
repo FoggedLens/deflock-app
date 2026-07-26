@@ -113,8 +113,12 @@
     "proximityAlerts": "Alertas de Proximidad",
     "keepScreenAwake": "Mantener la Pantalla Encendida",
     "networkStatusIndicator": "Indicador de Estado de Red",
-    "hideZoomControls": "Ocultar Controles de Zoom"
+    "hideZoomControls": "Ocultar Controles de Zoom",
+    "enableOfflineFeatures": "Activar Funciones sin Conexión",
+    "enableOfflineFeaturesTitle": "Activar funciones sin conexión",
+    "enableOfflineFeaturesSubtitle": "Permitir descargar y usar áreas de mapa sin conexión. Si se desactiva, el modo sin conexión y las áreas descargadas no estarán disponibles."
   },
+
   "keepScreenAwake": {
     "title": "Mantener la pantalla encendida mientras se usa la app",
     "subtitle": "Evita que la pantalla se apague automáticamente mientras se usa la app"
@@ -448,8 +452,13 @@
     "refreshNodesSubtitle": "Volver a obtener datos de nodos para esta área",
     "startRefresh": "Iniciar Actualización",
     "refreshStarted": "¡Actualización iniciada!",
-    "refreshFailed": "Actualización falló: {}"
+    "refreshFailed": "Actualización falló: {}",
+    "disableConfirmTitle": "¿Eliminar Datos de Áreas sin Conexión Existentes?",
+    "disableConfirmMessage": "Ya tiene datos de áreas sin conexión existentes. Desactivar las funciones sin conexión evitará que la app los use. ¿Desea conservar estos datos en el dispositivo por si reactiva las funciones sin conexión más tarde, o eliminarlos ahora para liberar espacio de almacenamiento?",
+    "keepData": "Conservar Datos",
+    "deleteData": "Eliminar Datos"
   },
+
   "refineTagsSheet": {
     "title": "Refinar Etiquetas",
     "operatorProfile": "Perfil de Operador",

@@ -113,9 +113,13 @@
     "proximityAlerts": "Alertes de Proximité",
     "keepScreenAwake": "Maintenir l'écran Allumé",
     "networkStatusIndicator": "Indicateur de Statut Réseau",
-    "hideZoomControls": "Masquer les Contrôles de Zoom"
+    "hideZoomControls": "Masquer les Contrôles de Zoom",
+    "enableOfflineFeatures": "Activer les Fonctionnalités Hors Ligne",
+    "enableOfflineFeaturesTitle": "Activer les fonctionnalités hors ligne",
+    "enableOfflineFeaturesSubtitle": "Autoriser le téléchargement et l'utilisation de zones de carte hors ligne. Si désactivé, le mode hors ligne et les zones téléchargées ne seront pas disponibles."
   },
   "keepScreenAwake": {
+
     "title": "Maintenir l'écran allumé lors de l'utilisation de l'application",
     "subtitle": "Empêche l'écran de s'éteindre automatiquement pendant l'utilisation de l'application"
   },
@@ -448,8 +452,13 @@
     "refreshNodesSubtitle": "Récupérer à nouveau les données de nœuds pour cette zone",
     "startRefresh": "Démarrer l'Actualisation",
     "refreshStarted": "Actualisation démarrée !",
-    "refreshFailed": "Actualisation échouée : {}"
+    "refreshFailed": "Actualisation échouée : {}",
+    "disableConfirmTitle": "Supprimer les Données de Zones Hors Ligne Existantes ?",
+    "disableConfirmMessage": "Vous avez déjà des données de zones hors ligne. Désactiver les fonctionnalités hors ligne empêchera l'application de les utiliser. Souhaitez-vous conserver ces données sur l'appareil au cas où vous réactiveriez les fonctionnalités hors ligne plus tard, ou les supprimer maintenant pour libérer de l'espace de stockage ?",
+    "keepData": "Conserver les Données",
+    "deleteData": "Supprimer les Données"
   },
+
   "refineTagsSheet": {
     "title": "Affiner les Étiquettes",
     "operatorProfile": "Profil d'Opérateur",

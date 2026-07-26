@@ -158,6 +158,8 @@ class AppState extends ChangeNotifier {
   FollowMeMode get followMeMode => _settingsState.followMeMode;
   bool get keepScreenAwake => _settingsState.keepScreenAwake;
   bool get hideZoomControls => _settingsState.hideZoomControls;
+  bool get offlineFeaturesEnabled => _settingsState.offlineFeaturesEnabled;
+
 
 
   bool get proximityAlertsEnabled => _settingsState.proximityAlertsEnabled;
@@ -690,6 +692,22 @@ class AppState extends ChangeNotifier {
   Future<void> setHideZoomControls(bool enabled) async {
     await _settingsState.setHideZoomControls(enabled);
   }
+
+  /// Set the master "offline features enabled" toggle. When disabling,
+  /// also forces offlineMode off (if it was on) and cancels any active
+  /// area downloads, so we never end up "in offline mode" with the
+  /// feature disabled. Does NOT delete existing offline area data — that
+  /// is a separate, explicit user choice handled by the UI.
+  Future<void> setOfflineFeaturesEnabled(bool enabled) async {
+    await _settingsState.setOfflineFeaturesEnabled(enabled);
+    if (!enabled) {
+      if (offlineMode) {
+        await setOfflineMode(false);
+      }
+      await OfflineAreaService().cancelActiveDownloads();
+    }
+  }
+
 
 
   Future<void> setPauseQueueProcessing(bool enabled) async {

@@ -113,8 +113,12 @@
     "proximityAlerts": "Nabijheids Waarschuwingen",
     "keepScreenAwake": "Scherm Actief Houden",
     "networkStatusIndicator": "Netwerk Status Indicator",
-    "hideZoomControls": "Zoomknoppen Verbergen"
+    "hideZoomControls": "Zoomknoppen Verbergen",
+    "enableOfflineFeatures": "Offline Functies Inschakelen",
+    "enableOfflineFeaturesTitle": "Offline functies inschakelen",
+    "enableOfflineFeaturesSubtitle": "Sta het downloaden en gebruiken van offline kaartgebieden toe. Indien uitgeschakeld, zijn offline modus en gedownloade gebieden niet beschikbaar."
   },
+
   "keepScreenAwake": {
     "title": "Houd het scherm actief tijdens het gebruik van de app",
     "subtitle": "Voorkomt dat het scherm automatisch uitschakelt tijdens het gebruik van de app"
@@ -448,8 +452,13 @@
     "refreshNodesSubtitle": "Haal node gegevens opnieuw op voor dit gebied",
     "startRefresh": "Start Verversen",
     "refreshStarted": "Verversen gestart!",
-    "refreshFailed": "Verversen mislukt: {}"
+    "refreshFailed": "Verversen mislukt: {}",
+    "disableConfirmTitle": "Bestaande Offline Gebiedsgegevens Verwijderen?",
+    "disableConfirmMessage": "U heeft al bestaande offline gebiedsgegevens. Het uitschakelen van offline functies zal voorkomen dat de app deze gebruikt. Wilt u deze gegevens op het apparaat bewaren voor het geval u offline functies later weer inschakelt, of ze nu verwijderen om opslagruimte vrij te maken?",
+    "keepData": "Gegevens Behouden",
+    "deleteData": "Gegevens Verwijderen"
   },
+
   "refineTagsSheet": {
     "title": "Verfijn Tags",
     "operatorProfile": "Operator Profiel",

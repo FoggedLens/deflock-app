@@ -113,9 +113,13 @@
     "proximityAlerts": "Avvisi di Prossimità",
     "keepScreenAwake": "Mantieni lo Schermo Attivo",
     "networkStatusIndicator": "Indicatore di Stato di Rete",
-    "hideZoomControls": "Nascondi Controlli Zoom"
+    "hideZoomControls": "Nascondi Controlli Zoom",
+    "enableOfflineFeatures": "Abilita Funzionalità Offline",
+    "enableOfflineFeaturesTitle": "Abilita funzionalità offline",
+    "enableOfflineFeaturesSubtitle": "Consenti il download e l'uso di aree mappa offline. Se disabilitato, la modalità offline e le aree scaricate non saranno disponibili."
   },
   "keepScreenAwake": {
+
     "title": "Mantieni lo schermo attivo durante l'utilizzo dell'app",
     "subtitle": "Impedisce allo schermo di spegnersi automaticamente durante l'utilizzo dell'app"
   },
@@ -448,8 +452,13 @@
     "refreshNodesSubtitle": "Ricarica i dati dei nodi per quest'area",
     "startRefresh": "Avvia Aggiornamento",
     "refreshStarted": "Aggiornamento avviato!",
-    "refreshFailed": "Aggiornamento fallito: {}"
+    "refreshFailed": "Aggiornamento fallito: {}",
+    "disableConfirmTitle": "Eliminare i Dati delle Aree Offline Esistenti?",
+    "disableConfirmMessage": "Hai già dati di aree offline esistenti. Disabilitare le funzionalità offline impedirà all'app di usarli. Vuoi conservare questi dati sul dispositivo nel caso in cui riattivi le funzionalità offline in seguito, oppure eliminarli ora per liberare spazio di archiviazione?",
+    "keepData": "Conserva Dati",
+    "deleteData": "Elimina Dati"
   },
+
   "refineTagsSheet": {
     "title": "Affina Tag",
     "operatorProfile": "Profilo Operatore",

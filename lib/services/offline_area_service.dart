@@ -29,7 +29,13 @@ class OfflineAreaService {
   /// Fast check: do we have any completed offline areas for a specific provider/type?
   /// This allows smart cache routing without expensive filesystem searches.
   /// Safe to call before initialization - returns false if not yet initialized.
+  ///
+  /// Returns false immediately if the user has disabled offline features via
+  /// the master "Enable Offline Features" toggle, regardless of whether area
+  /// data still exists on disk — this fully gates the offline-first tile
+  /// pipeline without needing to touch fetchLocalTile/fetchLocalNodes.
   bool hasOfflineAreasForProvider(String providerId, String tileTypeId) {
+    if (!AppState.instance.offlineFeaturesEnabled) return false;
     if (!_initialized) {
       return false; // No offline areas loaded yet
     }
@@ -44,7 +50,11 @@ class OfflineAreaService {
   /// Like [hasOfflineAreasForProvider] but also checks that at least one area
   /// covers the given [zoom] level.  Used by [DeflockTileProvider] to skip the
   /// offline-first path for tiles that will never be found locally.
+  ///
+  /// Also returns false immediately when offline features are disabled (see
+  /// [hasOfflineAreasForProvider] for rationale).
   bool hasOfflineAreasForProviderAtZoom(String providerId, String tileTypeId, int zoom) {
+    if (!AppState.instance.offlineFeaturesEnabled) return false;
     if (!_initialized) return false;
     return _areas.any((area) =>
       area.status == OfflineAreaStatus.complete &&
@@ -54,6 +64,7 @@ class OfflineAreaService {
       zoom <= area.maxZoom
     );
   }
+
   
   /// Reset service state and inject areas for unit tests.
   @visibleForTesting
