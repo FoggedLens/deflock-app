@@ -26,8 +26,11 @@ import 'node_limit_indicator.dart';
 import 'proximity_alert_banner.dart';
 import '../dev_config.dart';
 import '../services/proximity_alert_service.dart';
+import '../services/coordinate_validation.dart';
 import 'sheet_aware_map.dart';
+
 import 'custom_scale_bar.dart';
+
 
 class MapView extends StatefulWidget {
   final AnimatedMapController controller;
@@ -80,6 +83,13 @@ class MapViewState extends State<MapView> {
   
   // Track map center to clear queue on significant panning
   LatLng? _lastCenter;
+
+  // Last known-good camera center/zoom, used to self-heal if the camera
+  // ever gets pushed into an invalid state.
+  LatLng? _lastValidCenter;
+  double? _lastValidZoom;
+
+
   
   // State for proximity alert banner
   bool _showProximityBanner = false;
@@ -275,6 +285,27 @@ class MapViewState extends State<MapView> {
     return (!appState.offlineMode && appState.isInSearchMode) ? 60.0 : 0.0;
   }
 
+  /// Known-good fallback location for [initialCenter]: validated GPS
+  /// location, then validated persisted position, then a hardcoded default.
+  LatLng get _safeInitialCenter {
+    final gpsLocation = _gpsController.currentLocation;
+    if (gpsLocation != null &&
+        isValidLatitude(gpsLocation.latitude) &&
+        isValidLongitude(gpsLocation.longitude)) {
+      return gpsLocation;
+    }
+    final persisted = _positionManager.initialLocation;
+    if (persisted != null &&
+        isValidLatitude(persisted.latitude) &&
+        isValidLongitude(persisted.longitude)) {
+      return persisted;
+    }
+    return LatLng(37.7749, -122.4194);
+  }
+
+
+
+
 
   @override
   void didUpdateWidget(covariant MapView oldWidget) {
@@ -414,18 +445,47 @@ class MapViewState extends State<MapView> {
               key: ValueKey('map_${appState.selectedTileProvider?.id ?? 'none'}_${appState.selectedTileType?.id ?? 'none'}_${appState.offlineMode}_${_tileManager.mapRebuildKey}'),
               mapController: _controller.mapController,
               options: MapOptions(
-              initialCenter: _gpsController.currentLocation ?? _positionManager.initialLocation ?? LatLng(37.7749, -122.4194),
+              initialCenter: _safeInitialCenter,
             initialZoom: _positionManager.initialZoom ?? 15,
+
             minZoom: 1.0,
             maxZoom: (appState.selectedTileType?.maxZoom ?? 18).toDouble(),
             interactionOptions: _interactionManager.getInteractionOptions(editSession),
             onPositionChanged: (pos, gesture) {
+              // Self-heal if the camera center/zoom ever becomes invalid
+              // (observed to happen silently during ordinary panning,
+              // leaving a blank grey map with no tiles/markers). Snap back
+              // to the last known-good position immediately.
+              if (!isValidLatitude(pos.center.latitude) ||
+                  !isValidLongitude(pos.center.longitude) ||
+                  !isValidZoom(pos.zoom)) {
+                debugPrint(
+
+                  '[MapView] Detected invalid camera position '
+                  '(lat=${pos.center.latitude}, lng=${pos.center.longitude}, zoom=${pos.zoom}) '
+                  '- snapping back to last known-good position',
+                );
+                final recoveryCenter = _lastValidCenter ?? _safeInitialCenter;
+                final recoveryZoom = _lastValidZoom ?? (_positionManager.initialZoom ?? 15.0);
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  try {
+                    _controller.mapController.move(recoveryCenter, recoveryZoom);
+                  } catch (e) {
+                    debugPrint('[MapView] Failed to recover camera position: $e');
+                  }
+                });
+                return; // Don't process this invalid position further
+              }
+              _lastValidCenter = pos.center;
+              _lastValidZoom = pos.zoom;
+
               setState(() {}); // Instant UI update for zoom, etc.
               if (gesture) {
                 widget.onUserGesture();
               }
               
               // Enforce minimum zoom level for add/edit node sheets (but not tag sheet)
+
               if ((session != null || editSession != null) && pos.zoom < kMinZoomForNodeEditingSheets) {
                 // User tried to zoom out below minimum - snap back to minimum zoom
                 _controller.animateTo(
@@ -536,17 +596,24 @@ class MapViewState extends State<MapView> {
                 Builder(
                   builder: (context) {
                     final safeArea = MediaQuery.of(context).padding;
+                    // When zoom controls (and the zoom level indicator) are hidden,
+                    // shift the scale bar down into the indicator's old slot so we
+                    // don't leave a weird empty gap above the attribution text.
+                    final scaleBarSpacing = appState.hideZoomControls
+                        ? kZoomIndicatorSpacingAboveButtonBar
+                        : kScaleBarSpacingAboveButtonBar;
                     return CustomScaleBar(
                       alignment: Alignment.bottomLeft,
                       padding: EdgeInsets.only(
                         left: leftPositionWithSafeArea(8, safeArea),
-                        bottom: bottomPositionFromButtonBar(kScaleBarSpacingAboveButtonBar, safeArea.bottom),
+                        bottom: bottomPositionFromButtonBar(scaleBarSpacing, safeArea.bottom),
                       ),
                       maxWidthPx: 120,
                       barHeight: 8,
                     );
                   },
                 ),
+
               ],
             ),
           ),
@@ -560,7 +627,9 @@ class MapViewState extends State<MapView> {
           editSession: editSession,
           attribution: appState.selectedTileType?.attribution,
           onSearchPressed: widget.onSearchPressed,
+          hideZoomControls: appState.hideZoomControls,
         ),
+
 
         // Node limit indicator (top-left) - shown when limit is active
         Builder(

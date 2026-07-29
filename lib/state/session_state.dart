@@ -62,7 +62,6 @@ class EditNodeSession {
   refinedTags; // User-selected values for empty profile tags
   Map<String, String>
   additionalExistingTags; // Tags that exist on node but not in profile
-  String lifecycleStatus; // Lifecycle prefix status: 'active', 'removed', etc.
   String changesetComment; // User-editable changeset comment
 
   EditNodeSession({
@@ -75,13 +74,11 @@ class EditNodeSession {
     this.extractFromWay = false,
     Map<String, String>? refinedTags,
     Map<String, String>? additionalExistingTags,
-    String? lifecycleStatus,
     String? changesetComment,
   }) : directions = [initialDirection],
        currentDirectionIndex = 0,
        refinedTags = refinedTags ?? {},
        additionalExistingTags = additionalExistingTags ?? {},
-       lifecycleStatus = lifecycleStatus ?? 'active',
        changesetComment = changesetComment ?? '';
 
   // Slider always shows the current direction being edited
@@ -148,8 +145,6 @@ class SessionState extends ChangeNotifier {
     // Auto-populate refined tags (empty profile means no refined tags initially)
     final initialRefinedTags = _calculateRefinedTags(existingTagsProfile, node);
 
-    final initialLifecycleStatus = _detectLifecycleStatus(node);
-
     _editSession = EditNodeSession(
       originalNode: node,
       originalHadDirections: originalHadDirections,
@@ -159,7 +154,6 @@ class SessionState extends ChangeNotifier {
       target: node.coord,
       additionalExistingTags: initialAdditionalTags,
       refinedTags: initialRefinedTags,
-      lifecycleStatus: initialLifecycleStatus,
       changesetComment:
           'Update a surveillance node', // Default comment for existing tags profile
     );
@@ -232,22 +226,6 @@ class SessionState extends ChangeNotifier {
     return refinedTags;
   }
 
-  String _detectLifecycleStatus(OsmNode node) {
-    const identityKeys = ['man_made', 'surveillance:type'];
-    for (final tagKey in node.tags.keys) {
-      for (final identityKey in identityKeys) {
-        if (tagKey.endsWith(':$identityKey') && tagKey != identityKey) {
-          final prefix = tagKey.substring(
-            0,
-            tagKey.length - identityKey.length - 1,
-          );
-          return prefix;
-        }
-      }
-    }
-    return 'active';
-  }
-
   /// Check if a tag should be skipped from additional existing tags
   bool _shouldSkipTag(String key) {
     // Skip direction tags (handled separately)
@@ -258,12 +236,6 @@ class SessionState extends ChangeNotifier {
 
     // Skip internal cache tags
     if (key.startsWith('_')) return true;
-
-    // Skip lifecycle-prefixed identity tags — handled via lifecycleStatus
-    const identityKeys = ['man_made', 'surveillance:type'];
-    for (final identityKey in identityKeys) {
-      if (key.endsWith(':$identityKey') && key != identityKey) return true;
-    }
 
     return false;
   }
@@ -326,7 +298,6 @@ class SessionState extends ChangeNotifier {
     OperatorProfile? operatorProfile,
     LatLng? target,
     bool? extractFromWay,
-    String? lifecycleStatus,
     Map<String, String>? refinedTags,
     Map<String, String>? additionalExistingTags,
     String? changesetComment,
@@ -404,12 +375,6 @@ class SessionState extends ChangeNotifier {
         snapBackRequired = true;
         snapBackTarget = _editSession!.originalNode.coord;
       }
-      dirty = true;
-    }
-
-    if (lifecycleStatus != null &&
-        lifecycleStatus != _editSession!.lifecycleStatus) {
-      _editSession!.lifecycleStatus = lifecycleStatus;
       dirty = true;
     }
 

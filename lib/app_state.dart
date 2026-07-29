@@ -65,6 +65,12 @@ class AppState extends ChangeNotifier {
   _tutorialCompletionCallback; // Callback when tutorial is completed
   Timer? _messageCheckTimer;
 
+  // Node ID to auto-focus (open the details sheet for) after a submit/edit/delete
+  // completes, when kAutoOpenNodeSheetAfterSubmit is enabled. Consumed (read once
+  // and cleared) by HomeScreen after picking it up.
+  int? _pendingFocusNodeId;
+
+
   AppState() {
     instance = this;
     _authState = AuthState();
@@ -161,6 +167,10 @@ class AppState extends ChangeNotifier {
   UploadMode get uploadMode => _settingsState.uploadMode;
   FollowMeMode get followMeMode => _settingsState.followMeMode;
   bool get keepScreenAwake => _settingsState.keepScreenAwake;
+  bool get hideZoomControls => _settingsState.hideZoomControls;
+  bool get offlineFeaturesEnabled => _settingsState.offlineFeaturesEnabled;
+
+
 
   bool get proximityAlertsEnabled => _settingsState.proximityAlertsEnabled;
   int get proximityAlertDistance => _settingsState.proximityAlertDistance;
@@ -185,6 +195,13 @@ class AppState extends ChangeNotifier {
   // Upload queue state
   int get pendingCount => _uploadQueueState.pendingCount;
   List<PendingUpload> get pendingUploads => _uploadQueueState.pendingUploads;
+
+  /// True if any queue item currently has an open changeset that hasn't
+  /// been closed yet (creating changeset, uploading node, or closing
+  /// changeset). Used to gate enabling offline mode / pausing the upload
+  /// queue so in-flight submissions can finish first.
+  bool get hasInFlightUploads => pendingUploads.any((u) => u.isActivelyProcessing);
+
 
   // Suspected location state
   SuspectedLocation? get selectedSuspectedLocation =>
@@ -502,7 +519,6 @@ class AppState extends ChangeNotifier {
     OperatorProfile? operatorProfile,
     LatLng? target,
     bool? extractFromWay,
-    String? lifecycleStatus,
     Map<String, String>? refinedTags,
     Map<String, String>? additionalExistingTags,
     String? changesetComment,
@@ -514,7 +530,6 @@ class AppState extends ChangeNotifier {
       operatorProfile: operatorProfile,
       target: target,
       extractFromWay: extractFromWay,
-      lifecycleStatus: lifecycleStatus,
       refinedTags: refinedTags,
       additionalExistingTags: additionalExistingTags,
       changesetComment: changesetComment,
@@ -597,16 +612,22 @@ class AppState extends ChangeNotifier {
   void commitSession() {
     final session = _sessionState.commitSession();
     if (session != null) {
-      _uploadQueueState.addFromSession(session, uploadMode: uploadMode);
+      final upload = _uploadQueueState.addFromSession(session, uploadMode: uploadMode);
       _startUploader();
+      if (kAutoOpenNodeSheetAfterSubmit && upload.tempNodeId != null) {
+        _pendingFocusNodeId = upload.tempNodeId;
+      }
     }
   }
 
   void commitEditSession() {
     final session = _sessionState.commitEditSession();
     if (session != null) {
-      _uploadQueueState.addFromEditSession(session, uploadMode: uploadMode);
+      final upload = _uploadQueueState.addFromEditSession(session, uploadMode: uploadMode);
       _startUploader();
+      if (kAutoOpenNodeSheetAfterSubmit && upload.tempNodeId != null) {
+        _pendingFocusNodeId = upload.tempNodeId;
+      }
     }
   }
 
@@ -622,7 +643,21 @@ class AppState extends ChangeNotifier {
       changesetComment: changesetComment,
     );
     _startUploader();
+    if (kAutoOpenNodeSheetAfterSubmit) {
+      _pendingFocusNodeId = node.id;
+    }
   }
+
+  /// Consume (read once and clear) the node ID pending auto-focus, if any.
+  /// Used by HomeScreen to reopen the node details sheet right after a
+  /// submit/edit/delete completes, when [kAutoOpenNodeSheetAfterSubmit] is
+  /// enabled. Returns null if no focus is pending.
+  int? consumePendingFocusNodeId() {
+    final id = _pendingFocusNodeId;
+    _pendingFocusNodeId = null;
+    return id;
+  }
+
 
   // ---------- Search Methods ----------
   Future<void> search(String query) async {
@@ -712,6 +747,27 @@ class AppState extends ChangeNotifier {
   Future<void> setKeepScreenAwake(bool enabled) async {
     await _settingsState.setKeepScreenAwake(enabled);
   }
+
+  Future<void> setHideZoomControls(bool enabled) async {
+    await _settingsState.setHideZoomControls(enabled);
+  }
+
+  /// Set the master "offline features enabled" toggle. When disabling,
+  /// also forces offlineMode off (if it was on) and cancels any active
+  /// area downloads, so we never end up "in offline mode" with the
+  /// feature disabled. Does NOT delete existing offline area data — that
+  /// is a separate, explicit user choice handled by the UI.
+  Future<void> setOfflineFeaturesEnabled(bool enabled) async {
+    await _settingsState.setOfflineFeaturesEnabled(enabled);
+    if (!enabled) {
+      if (offlineMode) {
+        await setOfflineMode(false);
+      }
+      await OfflineAreaService().cancelActiveDownloads();
+    }
+  }
+
+
 
   Future<void> setPauseQueueProcessing(bool enabled) async {
     await _settingsState.setPauseQueueProcessing(enabled);

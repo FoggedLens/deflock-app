@@ -131,7 +131,7 @@ class UploadQueueState extends ChangeNotifier {
   }
 
   // Add a completed session to the upload queue
-  void addFromSession(
+  PendingUpload addFromSession(
     AddNodeSession session, {
     required UploadMode uploadMode,
   }) {
@@ -174,11 +174,12 @@ class UploadQueueState extends ChangeNotifier {
     NodeProviderWithCache.instance.notifyListeners();
 
     notifyListeners();
+    return upload;
   }
 
   // Add a "verify" upload: resubmits a node with all existing tags unchanged,
   // only bumping check_date:surveillance to confirm it's still present.
-  void addFromVerification(OsmNode node, {required UploadMode uploadMode}) {
+  PendingUpload addFromVerification(OsmNode node, {required UploadMode uploadMode}) {
     // Passthrough profile carrying no identity tags of its own - everything
     // comes from additionalExistingTags, so nothing is altered or reformatted
     final passthroughProfile = NodeProfile.createExistingTagsProfile(
@@ -227,10 +228,11 @@ class UploadQueueState extends ChangeNotifier {
     NodeProviderWithCache.instance.notifyListeners();
 
     notifyListeners();
+    return upload;
   }
 
   // Add a completed edit session to the upload queue
-  void addFromEditSession(
+  PendingUpload addFromEditSession(
     EditNodeSession session, {
     required UploadMode uploadMode,
   }) {
@@ -263,7 +265,6 @@ class UploadQueueState extends ChangeNotifier {
       operatorProfile: session.operatorProfile,
       refinedTags: session.refinedTags,
       additionalExistingTags: session.additionalExistingTags,
-      lifecycleStatus: session.lifecycleStatus,
       changesetComment: session.changesetComment,
       uploadMode: uploadMode,
       operation: operation,
@@ -331,10 +332,11 @@ class UploadQueueState extends ChangeNotifier {
     NodeProviderWithCache.instance.notifyListeners();
 
     notifyListeners();
+    return upload;
   }
 
   // Add a node deletion to the upload queue
-  void addFromNodeDeletion(
+  PendingUpload addFromNodeDeletion(
     OsmNode node, {
     required UploadMode uploadMode,
     String? changesetComment,
@@ -371,6 +373,7 @@ class UploadQueueState extends ChangeNotifier {
     NodeProviderWithCache.instance.notifyListeners();
 
     notifyListeners();
+    return upload;
   }
 
   void clearQueue() {

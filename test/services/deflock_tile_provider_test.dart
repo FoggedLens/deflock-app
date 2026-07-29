@@ -41,8 +41,11 @@ void main() {
     mockAppState = MockAppState();
     AppState.instance = mockAppState;
 
-    // Default stubs: online, no offline areas
+    // Default stubs: online, no offline areas, offline features enabled
+    // (so tests exercise the same behavior as before this setting existed)
     when(() => mockAppState.offlineMode).thenReturn(false);
+    when(() => mockAppState.offlineFeaturesEnabled).thenReturn(true);
+
 
     provider = DeflockTileProvider(
       providerId: 'openstreetmap',

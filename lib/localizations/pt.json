@@ -114,12 +114,22 @@
     "proximityAlerts": "Alertas de Proximidade",
     "keepScreenAwake": "Manter Ecrã Ativa",
     "dataFreshness": "Atualidade dos dados",
-    "networkStatusIndicator": "Indicador de Status de Rede"
+    "networkStatusIndicator": "Indicador de Status de Rede",
+    "hideZoomControls": "Ocultar Controlos de Zoom",
+    "enableOfflineFeatures": "Ativar Funcionalidades Offline",
+    "enableOfflineFeaturesTitle": "Ativar funcionalidades offline",
+    "enableOfflineFeaturesSubtitle": "Permitir descarregar e usar áreas de mapa offline. Se desativado, o modo offline e as áreas descarregadas não estarão disponíveis."
   },
   "keepScreenAwake": {
+
     "title": "Manter o ecrã ativo durante o uso do app",
     "subtitle": "Impede que o ecrã se desligue automaticamente enquanto a app estiver em uso"
   },
+  "hideZoomControls": {
+    "title": "Ocultar controlos de zoom",
+    "subtitle": "Oculta os botões de zoom +/- e o indicador de nível de zoom. Ainda pode ampliar com gestos de pinça."
+  },
+
   "proximityAlerts": {
     "getNotified": "Receba notificações ao se aproximar de dispositivos de vigilância",
     "batteryUsage": "Usa bateria extra para monitoramento contínuo de localização",
@@ -147,9 +157,27 @@
     "deleteQueuedForUpload": "Exclusão de nó na fila para envio",
     "confirmDeleteTitle": "Excluir Nó",
     "confirmDeleteMessage": "Tem certeza de que deseja excluir o nó #{}? Esta ação não pode ser desfeita.",
-    "deleteReasonLabel": "Motivo para Exclusão (Opcional)",
-    "deleteReasonHint": "ex. dispositivo removido, localização incorreta, duplicado..."
+    "deleteReasonLabel": "Motivo para Exclusão",
+    "deleteReasonSelectHint": "Selecionar...",
+    "deleteReasonDeviceRemoved": "Dispositivo removido",
+    "deleteReasonDuplicateNode": "Nó duplicado",
+    "deleteReasonMisidentifiedInfra": "Infraestrutura mal identificada",
+    "deleteReasonSpamVandalism": "Spam/vandalismo",
+    "deleteReasonCustom": "Personalizado..",
+    "deleteReasonHint": "Descreva o motivo...",
+
+    "mustBeLoggedInToDelete": "Você precisa estar conectado com uma conta do OpenStreetMap para contribuir com dados do mapa.",
+    "uploadPending": "Envio pendente",
+    "uploadCreatingChangeset": "Criando changeset...",
+    "uploadUploading": "Enviando...",
+    "uploadClosingChangeset": "Fechando changeset...",
+    "uploadError": "Falha no envio",
+    "uploadComplete": "Envio concluído",
+    "viewInQueue": "Ver na Fila",
+    "deletedSuccessfully": "Este nó foi excluído com sucesso do OpenStreetMap."
   },
+
+
   "addNode": {
     "profile": "Perfil",
     "selectProfile": "Selecionar um perfil...",
@@ -288,8 +316,13 @@
     "closingChangeset": " (Fechando changeset...)",
     "processingPaused": "Processamento da Fila Pausado",
     "pausedDueToOffline": "O processamento de upload está pausado porque o modo offline está habilitado.",
-    "pausedByUser": "O processamento de upload está pausado manualmente."
+    "pausedByUser": "O processamento de upload está pausado manualmente.",
+    "inFlightWaitTitle": "Finalizando Envio",
+    "inFlightWaitMessage": "Atualmente há um envio em andamento que precisa terminar antes que esta configuração possa ser aplicada. Isso deve levar apenas um momento.",
+    "inFlightCompleteTitle": "Envio Concluído",
+    "inFlightCompleteMessage": "Seu envio foi concluído com sucesso. Aplicando sua configuração agora."
   },
+
   "tileProviders": {
     "title": "Provedores de Tiles",
     "noProvidersConfigured": "Nenhum provedor de tiles configurado",
@@ -435,8 +468,13 @@
     "refreshNodesSubtitle": "Buscar novamente os dados dos nós para esta área",
     "startRefresh": "Iniciar Atualização",
     "refreshStarted": "Atualização iniciada!",
-    "refreshFailed": "Atualização falhou: {}"
+    "refreshFailed": "Atualização falhou: {}",
+    "disableConfirmTitle": "Eliminar Dados de Áreas Offline Existentes?",
+    "disableConfirmMessage": "Já tem dados de áreas offline existentes. Desativar as funcionalidades offline impedirá que a app os utilize. Deseja manter estes dados no dispositivo caso reative as funcionalidades offline mais tarde, ou eliminá-los agora para libertar espaço de armazenamento?",
+    "keepData": "Manter Dados",
+    "deleteData": "Eliminar Dados"
   },
+
   "refineTagsSheet": {
     "title": "Refinar Tags",
     "operatorProfile": "Perfil de Operador",

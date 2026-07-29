@@ -5,6 +5,8 @@ import 'settings/sections/staleness_indicator_section.dart';
 import 'settings/sections/suspected_locations_section.dart';
 import 'settings/sections/tile_provider_section.dart';
 import 'settings/sections/keep_screen_awake_section.dart';
+import 'settings/sections/hide_zoom_controls_section.dart';
+
 import '../services/localization_service.dart';
 
 class AdvancedSettingsScreen extends StatelessWidget {
@@ -36,6 +38,9 @@ class AdvancedSettingsScreen extends StatelessWidget {
             Divider(),
             KeepScreenAwakeSection(),
             Divider(),
+            HideZoomControlsSection(),
+            Divider(),
+
             // NetworkStatusSection(), // Commented out - network status indicator now defaults to enabled
             // Divider(),
             TileProviderSection(),

@@ -49,10 +49,15 @@ class SettingsState extends ChangeNotifier {
       'navigation_avoidance_distance';
   static const String _distanceUnitPrefsKey = 'distance_unit';
   static const String _keepScreenAwakePrefsKey = 'keep_screen_awake';
+  static const String _hideZoomControlsPrefsKey = 'hide_zoom_controls';
+  static const String _offlineFeaturesEnabledPrefsKey = 'offline_features_enabled';
 
   bool _offlineMode = false;
   bool _pauseQueueProcessing = false;
   bool _keepScreenAwake = false;
+  bool _hideZoomControls = false;
+  bool _offlineFeaturesEnabled = false;
+
   int _maxNodes = kDefaultMaxNodes;
   // Default must account for missing secrets (preview builds) even before init() runs
   UploadMode _uploadMode = (kEnableDevelopmentModes || !kHasOsmSecrets)
@@ -83,7 +88,11 @@ class SettingsState extends ChangeNotifier {
   bool get networkStatusIndicatorEnabled => _networkStatusIndicatorEnabled;
   int get suspectedLocationMinDistance => _suspectedLocationMinDistance;
   bool get keepScreenAwake => _keepScreenAwake;
+  bool get hideZoomControls => _hideZoomControls;
+  bool get offlineFeaturesEnabled => _offlineFeaturesEnabled;
   List<TileProvider> get tileProviders => List.unmodifiable(_tileProviders);
+
+
   String get selectedTileTypeId => _selectedTileTypeId;
   int get navigationAvoidanceDistance => _navigationAvoidanceDistance;
   DistanceUnit get distanceUnit => _distanceUnit;
@@ -170,6 +179,16 @@ class SettingsState extends ChangeNotifier {
 
     // Load keep screen awake setting
     _keepScreenAwake = prefs.getBool(_keepScreenAwakePrefsKey) ?? false;
+
+    // Load hide zoom controls setting
+    _hideZoomControls = prefs.getBool(_hideZoomControlsPrefsKey) ?? false;
+
+    // Load offline features enabled setting (defaults to false; migration
+    // for existing users with pre-existing offline area data lives in
+    // migrations.dart / migrate_2_10_5)
+    _offlineFeaturesEnabled = prefs.getBool(_offlineFeaturesEnabledPrefsKey) ?? false;
+    
+
 
     // Load upload mode (including migration from old test_mode bool)
     if (prefs.containsKey(_uploadModePrefsKey)) {
@@ -476,6 +495,33 @@ class SettingsState extends ChangeNotifier {
       notifyListeners();
     }
   }
+
+  /// Set hide zoom controls enabled/disabled
+  Future<void> setHideZoomControls(bool enabled) async {
+    if (_hideZoomControls != enabled) {
+      _hideZoomControls = enabled;
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool(_hideZoomControlsPrefsKey, enabled);
+      notifyListeners();
+    }
+  }
+
+  /// Set the master "offline features enabled" toggle. When this is off,
+  /// offline areas (downloading, browsing, and using cached tiles/nodes) are
+  /// disabled entirely. Note: any cascading side effects (forcing offline
+  /// mode off, cancelling active downloads, prompting to delete existing
+  /// area data) are handled by the caller (see AppState.setOfflineFeaturesEnabled)
+  /// since those require access to services not owned by SettingsState.
+  Future<void> setOfflineFeaturesEnabled(bool enabled) async {
+    if (_offlineFeaturesEnabled != enabled) {
+      _offlineFeaturesEnabled = enabled;
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool(_offlineFeaturesEnabledPrefsKey, enabled);
+      notifyListeners();
+    }
+  }
+
+
 
   /// Set distance for avoidance of nodes during navigation
   Future<void> setNavigationAvoidanceDistance(int distance) async {

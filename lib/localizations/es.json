@@ -114,12 +114,22 @@
     "proximityAlerts": "Alertas de Proximidad",
     "keepScreenAwake": "Mantener la Pantalla Encendida",
     "dataFreshness": "Actualidad de los datos",
-    "networkStatusIndicator": "Indicador de Estado de Red"
+    "networkStatusIndicator": "Indicador de Estado de Red",
+    "hideZoomControls": "Ocultar Controles de Zoom",
+    "enableOfflineFeatures": "Activar Funciones sin Conexión",
+    "enableOfflineFeaturesTitle": "Activar funciones sin conexión",
+    "enableOfflineFeaturesSubtitle": "Permitir descargar y usar áreas de mapa sin conexión. Si se desactiva, el modo sin conexión y las áreas descargadas no estarán disponibles."
   },
+
   "keepScreenAwake": {
     "title": "Mantener la pantalla encendida mientras se usa la app",
     "subtitle": "Evita que la pantalla se apague automáticamente mientras se usa la app"
   },
+  "hideZoomControls": {
+    "title": "Ocultar controles de zoom",
+    "subtitle": "Oculta los botones de zoom +/- y el indicador de nivel de zoom. Aún puedes hacer zoom con gestos de pellizco."
+  },
+
   "proximityAlerts": {
     "getNotified": "Recibe notificaciones al acercarte a dispositivos de vigilancia",
     "batteryUsage": "Usa batería extra para monitoreo continuo de ubicación",
@@ -147,9 +157,27 @@
     "deleteQueuedForUpload": "Eliminación de nodo en cola para subir",
     "confirmDeleteTitle": "Eliminar Nodo",
     "confirmDeleteMessage": "¿Estás seguro de que quieres eliminar el nodo #{}? Esta acción no se puede deshacer.",
-    "deleteReasonLabel": "Razón para Eliminación (Opcional)",
-    "deleteReasonHint": "ej. dispositivo removido, ubicación incorrecta, duplicado..."
+    "deleteReasonLabel": "Razón para Eliminación",
+    "deleteReasonSelectHint": "Seleccionar...",
+    "deleteReasonDeviceRemoved": "Dispositivo removido",
+    "deleteReasonDuplicateNode": "Nodo duplicado",
+    "deleteReasonMisidentifiedInfra": "Infraestructura mal identificada",
+    "deleteReasonSpamVandalism": "Spam/vandalismo",
+    "deleteReasonCustom": "Personalizado..",
+    "deleteReasonHint": "Por favor describa la razón...",
+
+    "mustBeLoggedInToDelete": "Debes iniciar sesión con una cuenta de OpenStreetMap para contribuir con datos del mapa.",
+    "uploadPending": "Subida pendiente",
+    "uploadCreatingChangeset": "Creando changeset...",
+    "uploadUploading": "Subiendo...",
+    "uploadClosingChangeset": "Cerrando changeset...",
+    "uploadError": "Error al subir",
+    "uploadComplete": "Subida completada",
+    "viewInQueue": "Ver en la Cola",
+    "deletedSuccessfully": "Este nodo fue eliminado con éxito de OpenStreetMap."
   },
+
+
   "addNode": {
     "profile": "Perfil",
     "selectProfile": "Seleccionar un perfil...",
@@ -288,8 +316,13 @@
     "closingChangeset": " (Cerrando changeset...)",
     "processingPaused": "Procesamiento de Cola Pausado",
     "pausedDueToOffline": "El procesamiento de subida está pausado porque el modo sin conexión está habilitado.",
-    "pausedByUser": "El procesamiento de subida está pausado manualmente."
+    "pausedByUser": "El procesamiento de subida está pausado manualmente.",
+    "inFlightWaitTitle": "Finalizando Envío",
+    "inFlightWaitMessage": "Actualmente hay un envío en curso que debe finalizar antes de que se pueda aplicar esta configuración. Esto solo debería tomar un momento.",
+    "inFlightCompleteTitle": "Envío Completado",
+    "inFlightCompleteMessage": "Su envío finalizó exitosamente. Aplicando su configuración ahora."
   },
+
   "tileProviders": {
     "title": "Proveedores de Tiles",
     "noProvidersConfigured": "No hay proveedores de tiles configurados",
@@ -435,8 +468,13 @@
     "refreshNodesSubtitle": "Volver a obtener datos de nodos para esta área",
     "startRefresh": "Iniciar Actualización",
     "refreshStarted": "¡Actualización iniciada!",
-    "refreshFailed": "Actualización falló: {}"
+    "refreshFailed": "Actualización falló: {}",
+    "disableConfirmTitle": "¿Eliminar Datos de Áreas sin Conexión Existentes?",
+    "disableConfirmMessage": "Ya tiene datos de áreas sin conexión existentes. Desactivar las funciones sin conexión evitará que la app los use. ¿Desea conservar estos datos en el dispositivo por si reactiva las funciones sin conexión más tarde, o eliminarlos ahora para liberar espacio de almacenamiento?",
+    "keepData": "Conservar Datos",
+    "deleteData": "Eliminar Datos"
   },
+
   "refineTagsSheet": {
     "title": "Refinar Etiquetas",
     "operatorProfile": "Perfil de Operador",

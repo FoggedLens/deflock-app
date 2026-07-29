@@ -114,12 +114,22 @@
     "proximityAlerts": "邻近警报",
     "keepScreenAwake": "保持屏幕常亮",
     "dataFreshness": "数据新鲜度",
-    "networkStatusIndicator": "网络状态指示器"
+    "networkStatusIndicator": "网络状态指示器",
+    "hideZoomControls": "隐藏缩放控件",
+    "enableOfflineFeatures": "启用离线功能",
+    "enableOfflineFeaturesTitle": "启用离线功能",
+    "enableOfflineFeaturesSubtitle": "允许下载和使用离线地图区域。禁用后，离线模式和已下载的区域将不可用。"
   },
+
   "keepScreenAwake": {
     "title": "使用应用时保持屏幕常亮",
     "subtitle": "防止在使用应用期间屏幕自动熄灭"
   },
+  "hideZoomControls": {
+    "title": "隐藏缩放控件",
+    "subtitle": "隐藏 +/- 缩放按钮和缩放级别指示器。您仍然可以使用捏合手势进行缩放。"
+  },
+
   "proximityAlerts": {
     "getNotified": "接近监控设备时接收通知",
     "batteryUsage": "使用额外电量进行连续位置监控",
@@ -147,9 +157,27 @@
     "deleteQueuedForUpload": "节点删除已排队上传",
     "confirmDeleteTitle": "删除节点",
     "confirmDeleteMessage": "您确定要删除节点 #{} 吗？此操作无法撤销。",
-    "deleteReasonLabel": "删除原因（可选）",
-    "deleteReasonHint": "例如：设备已移除、位置错误、重复..."
+    "deleteReasonLabel": "删除原因",
+    "deleteReasonSelectHint": "请选择...",
+    "deleteReasonDeviceRemoved": "设备已移除",
+    "deleteReasonDuplicateNode": "重复节点",
+    "deleteReasonMisidentifiedInfra": "识别错误的基础设施",
+    "deleteReasonSpamVandalism": "垃圾信息/破坏",
+    "deleteReasonCustom": "自定义..",
+    "deleteReasonHint": "请描述原因...",
+
+    "mustBeLoggedInToDelete": "您必须使用 OpenStreetMap 账户登录才能贡献地图数据。",
+    "uploadPending": "上传待处理",
+    "uploadCreatingChangeset": "正在创建变更集...",
+    "uploadUploading": "正在上传...",
+    "uploadClosingChangeset": "正在关闭变更集...",
+    "uploadError": "上传失败",
+    "uploadComplete": "上传完成",
+    "viewInQueue": "在队列中查看",
+    "deletedSuccessfully": "此节点已成功从 OpenStreetMap 删除。"
   },
+
+
   "addNode": {
     "profile": "配置文件",
     "selectProfile": "选择配置文件...",
@@ -288,8 +316,13 @@
     "closingChangeset": " (关闭变更集...)",
     "processingPaused": "队列处理已暂停",
     "pausedDueToOffline": "因为离线模式已启用，上传处理已暂停。",
-    "pausedByUser": "上传处理已手动暂停。"
+    "pausedByUser": "上传处理已手动暂停。",
+    "inFlightWaitTitle": "正在完成提交",
+    "inFlightWaitMessage": "当前有一个提交正在进行中，需要先完成才能应用此设置。这应该只需要一点时间。",
+    "inFlightCompleteTitle": "提交完成",
+    "inFlightCompleteMessage": "您的提交已成功完成。正在应用您的设置。"
   },
+
   "tileProviders": {
     "title": "瓦片提供商",
     "noProvidersConfigured": "未配置瓦片提供商",
@@ -435,8 +468,13 @@
     "refreshNodesSubtitle": "重新获取此区域的节点数据",
     "startRefresh": "开始刷新",
     "refreshStarted": "刷新已开始！",
-    "refreshFailed": "刷新失败：{}"
+    "refreshFailed": "刷新失败：{}",
+    "disableConfirmTitle": "删除现有的离线区域数据？",
+    "disableConfirmMessage": "您已有现有的离线区域数据。禁用离线功能将阻止应用使用这些数据。您是想将这些数据保留在设备上，以便日后重新启用离线功能时使用，还是现在删除以释放存储空间？",
+    "keepData": "保留数据",
+    "deleteData": "删除数据"
   },
+
   "refineTagsSheet": {
     "title": "细化标签",
     "operatorProfile": "运营商配置文件",

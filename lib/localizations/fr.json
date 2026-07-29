@@ -114,12 +114,22 @@
     "proximityAlerts": "Alertes de Proximité",
     "keepScreenAwake": "Maintenir l'écran Allumé",
     "dataFreshness": "Fraîcheur des données",
-    "networkStatusIndicator": "Indicateur de Statut Réseau"
+    "networkStatusIndicator": "Indicateur de Statut Réseau",
+    "hideZoomControls": "Masquer les Contrôles de Zoom",
+    "enableOfflineFeatures": "Activer les Fonctionnalités Hors Ligne",
+    "enableOfflineFeaturesTitle": "Activer les fonctionnalités hors ligne",
+    "enableOfflineFeaturesSubtitle": "Autoriser le téléchargement et l'utilisation de zones de carte hors ligne. Si désactivé, le mode hors ligne et les zones téléchargées ne seront pas disponibles."
   },
   "keepScreenAwake": {
+
     "title": "Maintenir l'écran allumé lors de l'utilisation de l'application",
     "subtitle": "Empêche l'écran de s'éteindre automatiquement pendant l'utilisation de l'application"
   },
+  "hideZoomControls": {
+    "title": "Masquer les contrôles de zoom",
+    "subtitle": "Masque les boutons de zoom +/- et l'indicateur de niveau de zoom. Vous pouvez toujours zoomer avec des gestes de pincement."
+  },
+
   "proximityAlerts": {
     "getNotified": "Recevoir des notifications en s'approchant de dispositifs de surveillance",
     "batteryUsage": "Utilise de la batterie supplémentaire pour la surveillance continue de la localisation",
@@ -147,9 +157,27 @@
     "deleteQueuedForUpload": "Suppression de nœud mise en file pour envoi",
     "confirmDeleteTitle": "Supprimer le Nœud",
     "confirmDeleteMessage": "Êtes-vous sûr de vouloir supprimer le nœud #{} ? Cette action ne peut pas être annulée.",
-    "deleteReasonLabel": "Raison de Suppression (Optionnel)",
-    "deleteReasonHint": "ex. appareil retiré, emplacement incorrect, doublon..."
+    "deleteReasonLabel": "Raison de Suppression",
+    "deleteReasonSelectHint": "Sélectionner...",
+    "deleteReasonDeviceRemoved": "Appareil retiré",
+    "deleteReasonDuplicateNode": "Nœud dupliqué",
+    "deleteReasonMisidentifiedInfra": "Infrastructure mal identifiée",
+    "deleteReasonSpamVandalism": "Spam/vandalisme",
+    "deleteReasonCustom": "Personnalisé..",
+    "deleteReasonHint": "Veuillez décrire la raison...",
+
+    "mustBeLoggedInToDelete": "Vous devez être connecté avec un compte OpenStreetMap pour contribuer aux données cartographiques.",
+    "uploadPending": "Téléchargement en attente",
+    "uploadCreatingChangeset": "Création du changeset...",
+    "uploadUploading": "Téléchargement en cours...",
+    "uploadClosingChangeset": "Fermeture du changeset...",
+    "uploadError": "Échec du téléchargement",
+    "uploadComplete": "Téléchargement terminé",
+    "viewInQueue": "Voir dans la File d'Attente",
+    "deletedSuccessfully": "Ce nœud a été supprimé avec succès d'OpenStreetMap."
   },
+
+
   "addNode": {
     "profile": "Profil",
     "selectProfile": "Sélectionner un profil...",
@@ -288,8 +316,13 @@
     "closingChangeset": " (Fermeture du changeset...)",
     "processingPaused": "Traitement de la File d'Attente Interrompu",
     "pausedDueToOffline": "Le traitement des téléversements est interrompu car le mode hors ligne est activé.",
-    "pausedByUser": "Le traitement des téléversements est interrompu manuellement."
+    "pausedByUser": "Le traitement des téléversements est interrompu manuellement.",
+    "inFlightWaitTitle": "Finalisation de la Soumission",
+    "inFlightWaitMessage": "Une soumission est actuellement en cours et doit se terminer avant que ce paramètre puisse être appliqué. Cela ne devrait prendre qu'un instant.",
+    "inFlightCompleteTitle": "Soumission Terminée",
+    "inFlightCompleteMessage": "Votre soumission s'est terminée avec succès. Application de votre paramètre maintenant."
   },
+
   "tileProviders": {
     "title": "Fournisseurs de Tuiles",
     "noProvidersConfigured": "Aucun fournisseur de tuiles configuré",
@@ -435,8 +468,13 @@
     "refreshNodesSubtitle": "Récupérer à nouveau les données de nœuds pour cette zone",
     "startRefresh": "Démarrer l'Actualisation",
     "refreshStarted": "Actualisation démarrée !",
-    "refreshFailed": "Actualisation échouée : {}"
+    "refreshFailed": "Actualisation échouée : {}",
+    "disableConfirmTitle": "Supprimer les Données de Zones Hors Ligne Existantes ?",
+    "disableConfirmMessage": "Vous avez déjà des données de zones hors ligne. Désactiver les fonctionnalités hors ligne empêchera l'application de les utiliser. Souhaitez-vous conserver ces données sur l'appareil au cas où vous réactiveriez les fonctionnalités hors ligne plus tard, ou les supprimer maintenant pour libérer de l'espace de stockage ?",
+    "keepData": "Conserver les Données",
+    "deleteData": "Supprimer les Données"
   },
+
   "refineTagsSheet": {
     "title": "Affiner les Étiquettes",
     "operatorProfile": "Profil d'Opérateur",

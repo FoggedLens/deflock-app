@@ -21,37 +21,25 @@ class PendingUpload {
   final dynamic direction; // Can be double or String for multiple directions
   final NodeProfile? profile;
   final OperatorProfile? operatorProfile;
-  final Map<String, String>
-  refinedTags; // User-selected values for empty profile tags
-  final Map<String, String>
-  additionalExistingTags; // Tags that exist on node but not in profile
-  final String
-  lifecycleStatus; // User-editable lifecycle status (e.g., 'active', 'removed', etc.)
+  final Map<String, String> refinedTags; // User-selected values for empty profile tags
+  final Map<String, String> additionalExistingTags; // Tags that exist on node but not in profile
   final String changesetComment; // User-editable changeset comment
   final UploadMode uploadMode; // Capture upload destination when queued
-  final UploadOperation
-  operation; // Type of operation: create, modify, or delete
-  final int?
-  originalNodeId; // If this is modify/delete, the ID of the original OSM node
-  int?
-  submittedNodeId; // The actual node ID returned by OSM after successful submission
-  int?
-  tempNodeId; // ID of temporary node created in cache (for specific cleanup)
+  final UploadOperation operation; // Type of operation: create, modify, or delete
+  final int? originalNodeId; // If this is modify/delete, the ID of the original OSM node
+  int? submittedNodeId; // The actual node ID returned by OSM after successful submission
+  int? tempNodeId; // ID of temporary node created in cache (for specific cleanup)
   int attempts;
   bool error; // DEPRECATED: Use uploadState instead
   String? errorMessage; // Detailed error message for debugging
   bool completing; // DEPRECATED: Use uploadState instead
   UploadState uploadState; // Current state in the upload pipeline
   String? changesetId; // ID of changeset that needs closing
-  DateTime?
-  nodeOperationCompletedAt; // When node operation completed (start of 59-minute countdown)
+  DateTime? nodeOperationCompletedAt; // When node operation completed (start of 59-minute countdown)
   int changesetCloseAttempts; // Number of changeset close attempts
-  DateTime?
-  lastChangesetCloseAttemptAt; // When we last tried to close changeset (for retry timing)
-  int
-  nodeSubmissionAttempts; // Number of node submission attempts (separate from overall attempts)
-  DateTime?
-  lastNodeSubmissionAttemptAt; // When we last tried to submit node (for retry timing)
+  DateTime? lastChangesetCloseAttemptAt; // When we last tried to close changeset (for retry timing)
+  int nodeSubmissionAttempts; // Number of node submission attempts (separate from overall attempts)
+  DateTime? lastNodeSubmissionAttemptAt; // When we last tried to submit node (for retry timing)
 
   PendingUpload({
     required this.coord,
@@ -60,7 +48,6 @@ class PendingUpload {
     this.operatorProfile,
     Map<String, String>? refinedTags,
     Map<String, String>? additionalExistingTags,
-    this.lifecycleStatus = 'active',
     required this.changesetComment,
     required this.uploadMode,
     required this.operation,
@@ -308,18 +295,6 @@ class PendingUpload {
           .first;
     }
 
-    // Apply lifecycle prefix (e.g. 'destroyed:') to identity tags if status is not active
-    // Applied to all identity tags in accordance with OSM guidelines for lifecycle tagging
-    if (lifecycleStatus != 'active') {
-      const identityKeys = ['man_made', 'surveillance:type'];
-      for (final key in identityKeys) {
-        if (tags.containsKey(key)) {
-          final value = tags.remove(key)!;
-          tags['$lifecycleStatus:$key'] = value;
-        }
-      }
-    }
-
     // Filter out any tags that are still empty after refinement
     // Empty tags in profiles are fine for refinement UI, but shouldn't be submitted to OSM
     tags.removeWhere((key, value) => value.trim().isEmpty);
@@ -335,7 +310,6 @@ class PendingUpload {
     'operatorProfile': operatorProfile?.toJson(),
     'refinedTags': refinedTags,
     'additionalExistingTags': additionalExistingTags,
-    'lifecycleStatus': lifecycleStatus,
     'changesetComment': changesetComment,
     'uploadMode': uploadMode.index,
     'operation': operation.index,
@@ -373,8 +347,6 @@ class PendingUpload {
     additionalExistingTags: j['additionalExistingTags'] != null
         ? Map<String, String>.from(j['additionalExistingTags'])
         : {}, // Default empty map for legacy entries
-    lifecycleStatus:
-        j['lifecycleStatus'] ?? 'active', // Default for legacy entries
     changesetComment:
         j['changesetComment'] ??
         _generateLegacyComment(j), // Default for legacy entries

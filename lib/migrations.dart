@@ -3,10 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'app_state.dart';
+import 'services/offline_area_service.dart';
 import 'services/profile_service.dart';
 import 'services/suspected_location_cache.dart';
 import 'widgets/nuclear_reset_dialog.dart';
 import 'dev_config.dart';
+
 
 /// One-time migrations that run when users upgrade to specific versions.
 /// Each migration function is named after the version where it should run.
@@ -189,6 +191,30 @@ class OneTimeMigrations {
     }
   }
 
+  /// Enable offline features for existing users who already have offline
+  /// area data (v2.10.5). New installs and existing users who never used
+  /// offline areas will keep the new "offline features enabled" setting at
+  /// its default of false.
+  static Future<void> migrate_2_10_5(AppState appState) async {
+    try {
+      final offlineAreaService = OfflineAreaService();
+      await offlineAreaService.ensureInitialized();
+
+      if (offlineAreaService.offlineAreas.isNotEmpty) {
+        await appState.setOfflineFeaturesEnabled(true);
+        debugPrint('[Migration] 2.10.5: Existing offline area data found - enabled offline features');
+      } else {
+        debugPrint('[Migration] 2.10.5: No existing offline area data - leaving offline features disabled');
+      }
+
+      debugPrint('[Migration] 2.10.5 completed: offline features migration done');
+    } catch (e) {
+      debugPrint('[Migration] 2.10.5 ERROR: Failed to migrate offline features setting: $e');
+      // Don't rethrow - this is non-critical, worst case is the user needs
+      // to manually re-enable the toggle to see their existing offline areas.
+    }
+  }
+
   /// Get the migration function for a specific version
   static Future<void> Function(AppState)? getMigrationForVersion(String version) {
     switch (version) {
@@ -206,10 +232,13 @@ class OneTimeMigrations {
         return migrate_2_7_3;
       case '2.10.0':
         return migrate_2_10_0;
+      case '2.10.5':
+        return migrate_2_10_5;
       default:
         return null;
     }
   }
+
 
   /// Run migration for a specific version with nuclear reset on failure
   static Future<void> runMigration(String version, AppState appState, BuildContext? context) async {

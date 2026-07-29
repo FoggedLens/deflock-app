@@ -114,12 +114,22 @@
     "proximityAlerts": "Alerty Bliskości",
     "keepScreenAwake": "Nie Wygaszaj Ekranu",
     "dataFreshness": "Aktualność danych",
-    "networkStatusIndicator": "Wskaźnik Stanu Sieci"
+    "networkStatusIndicator": "Wskaźnik Stanu Sieci",
+    "hideZoomControls": "Ukryj Kontrolki Zoomu",
+    "enableOfflineFeatures": "Włącz Funkcje Offline",
+    "enableOfflineFeaturesTitle": "Włącz funkcje offline",
+    "enableOfflineFeaturesSubtitle": "Zezwól na pobieranie i korzystanie z map offline. Jeśli wyłączone, tryb offline i pobrane obszary będą niedostępne."
   },
+
   "keepScreenAwake": {
     "title": "Nie wygaszaj ekranu podczas korzystania z aplikacji",
     "subtitle": "Zapobiega automatycznemu wygaszaniu ekranu podczas korzystania z aplikacji"
   },
+  "hideZoomControls": {
+    "title": "Ukryj kontrolki zoomu",
+    "subtitle": "Ukrywa przyciski zoomu +/- oraz wskaźnik poziomu powiększenia. Nadal możesz powiększać za pomocą gestów szczypania."
+  },
+
   "proximityAlerts": {
     "getNotified": "Otrzymuj powiadomienia przy zbliżaniu się do urządzeń nadzoru",
     "batteryUsage": "Używa dodatkowej baterii do ciągłego monitorowania lokalizacji",
@@ -147,9 +157,27 @@
     "deleteQueuedForUpload": "Usuwanie węzła umieszczone w kolejce do przesłania",
     "confirmDeleteTitle": "Usuń Węzeł",
     "confirmDeleteMessage": "Czy na pewno chcesz usunąć węzeł #{}? Tej akcji nie można cofnąć.",
-    "deleteReasonLabel": "Powód Usunięcia (Opcjonalny)",
-    "deleteReasonHint": "np. urządzenie usunięte, nieprawidłowa lokalizacja, duplikat..."
+    "deleteReasonLabel": "Powód Usunięcia",
+    "deleteReasonSelectHint": "Wybierz...",
+    "deleteReasonDeviceRemoved": "Urządzenie usunięte",
+    "deleteReasonDuplicateNode": "Zduplikowany węzeł",
+    "deleteReasonMisidentifiedInfra": "Błędnie zidentyfikowana infrastruktura",
+    "deleteReasonSpamVandalism": "Spam/wandalizm",
+    "deleteReasonCustom": "Niestandardowy..",
+    "deleteReasonHint": "Opisz powód...",
+
+    "mustBeLoggedInToDelete": "Musisz być zalogowany na konto OpenStreetMap, aby dodawać dane do mapy.",
+    "uploadPending": "Przesyłanie oczekujące",
+    "uploadCreatingChangeset": "Tworzenie zestawu zmian...",
+    "uploadUploading": "Przesyłanie...",
+    "uploadClosingChangeset": "Zamykanie zestawu zmian...",
+    "uploadError": "Przesyłanie nie powiodło się",
+    "uploadComplete": "Przesyłanie zakończone",
+    "viewInQueue": "Zobacz w Kolejce",
+    "deletedSuccessfully": "Ten węzeł został pomyślnie usunięty z OpenStreetMap."
   },
+
+
   "addNode": {
     "profile": "Profil",
     "selectProfile": "Wybierz profil...",
@@ -288,8 +316,13 @@
     "closingChangeset": " (Zamykanie zestawu zmian...)",
     "processingPaused": "Przetwarzanie Kolejki Wstrzymane",
     "pausedDueToOffline": "Przetwarzanie przesyłania jest wstrzymane, ponieważ tryb offline jest włączony.",
-    "pausedByUser": "Przetwarzanie przesyłania jest ręcznie wstrzymane."
+    "pausedByUser": "Przetwarzanie przesyłania jest ręcznie wstrzymane.",
+    "inFlightWaitTitle": "Kończenie Przesyłania",
+    "inFlightWaitMessage": "Przesyłanie jest obecnie w toku i musi zostać zakończone, zanim to ustawienie będzie mogło zostać zastosowane. To powinno zająć tylko chwilę.",
+    "inFlightCompleteTitle": "Przesyłanie Zakończone",
+    "inFlightCompleteMessage": "Twoje przesyłanie zakończyło się pomyślnie. Stosowanie ustawienia teraz."
   },
+
   "tileProviders": {
     "title": "Dostawcy Kafelków",
     "noProvidersConfigured": "Brak skonfigurowanych dostawców kafelków",
@@ -435,8 +468,13 @@
     "refreshNodesSubtitle": "Pobierz ponownie dane węzłów dla tego obszaru",
     "startRefresh": "Rozpocznij Odświeżanie",
     "refreshStarted": "Odświeżanie rozpoczęte!",
-    "refreshFailed": "Odświeżanie nie powiodło się: {}"
+    "refreshFailed": "Odświeżanie nie powiodło się: {}",
+    "disableConfirmTitle": "Usunąć Istniejące Dane Obszarów Offline?",
+    "disableConfirmMessage": "Masz już istniejące dane obszarów offline. Wyłączenie funkcji offline uniemożliwi aplikacji ich używanie. Czy chcesz zachować te dane na urządzeniu na wypadek ponownego włączenia funkcji offline później, czy usunąć je teraz, aby zwolnić miejsce na dysku?",
+    "keepData": "Zachowaj Dane",
+    "deleteData": "Usuń Dane"
   },
+
   "refineTagsSheet": {
     "title": "Doprecyzuj Tagi",
     "operatorProfile": "Profil Operatora",

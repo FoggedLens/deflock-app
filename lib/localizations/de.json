@@ -77,12 +77,22 @@
     "proximityAlerts": "Näherungswarnungen",
     "keepScreenAwake": "Bildschirm Aktiv Lassen",
     "dataFreshness": "Datenaktualität",
-    "networkStatusIndicator": "Netzwerkstatus-Anzeige"
+    "networkStatusIndicator": "Netzwerkstatus-Anzeige",
+    "hideZoomControls": "Zoom-Steuerung Ausblenden",
+    "enableOfflineFeatures": "Offline-Funktionen Aktivieren",
+    "enableOfflineFeaturesTitle": "Offline-Funktionen aktivieren",
+    "enableOfflineFeaturesSubtitle": "Herunterladen und Nutzen von Offline-Kartenbereichen erlauben. Wenn deaktiviert, sind Offline-Modus und heruntergeladene Bereiche nicht verfügbar."
   },
+
   "keepScreenAwake": {
     "title": "Bildschirm während der App-Nutzung aktiv lassen",
     "subtitle": "Verhindert, dass sich der Bildschirm während der Nutzung der App automatisch ausschaltet"
   },
+  "hideZoomControls": {
+    "title": "Zoom-Steuerung ausblenden",
+    "subtitle": "Blendet die +/- Zoom-Schaltflächen und die Zoomstufen-Anzeige aus. Sie können weiterhin mit Fingergesten zoomen."
+  },
+
   "proximityAlerts": {
     "getNotified": "Benachrichtigung erhalten beim Annähern an Überwachungsgeräte",
     "batteryUsage": "Verbraucht zusätzlich Batterie für kontinuierliche Standortüberwachung",
@@ -110,9 +120,27 @@
     "deleteQueuedForUpload": "Knoten-Löschung zum Upload eingereiht",
     "confirmDeleteTitle": "Knoten löschen",
     "confirmDeleteMessage": "Sind Sie sicher, dass Sie Knoten #{} löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden.",
-    "deleteReasonLabel": "Grund für Löschung (Optional)",
-    "deleteReasonHint": "z.B. Gerät entfernt, falsche Position, Duplikat..."
+    "deleteReasonLabel": "Grund für Löschung",
+    "deleteReasonSelectHint": "Auswählen...",
+    "deleteReasonDeviceRemoved": "Gerät entfernt",
+    "deleteReasonDuplicateNode": "Doppelter Knoten",
+    "deleteReasonMisidentifiedInfra": "Falsch identifizierte Infrastruktur",
+    "deleteReasonSpamVandalism": "Spam/Vandalismus",
+    "deleteReasonCustom": "Benutzerdefiniert..",
+    "deleteReasonHint": "Bitte Grund beschreiben...",
+    "mustBeLoggedInToDelete": "Sie müssen mit einem OpenStreetMap-Konto angemeldet sein, um Kartendaten beizutragen.",
+    "uploadPending": "Ausstehender Upload",
+    "uploadCreatingChangeset": "Changeset wird erstellt...",
+    "uploadUploading": "Wird hochgeladen...",
+    "uploadClosingChangeset": "Changeset wird geschlossen...",
+    "uploadError": "Upload fehlgeschlagen",
+    "uploadComplete": "Upload abgeschlossen",
+    "viewInQueue": "In Warteschlange anzeigen",
+    "deletedSuccessfully": "Dieser Knoten wurde erfolgreich von OpenStreetMap gelöscht."
   },
+
+
+
   "addNode": {
     "profile": "Profil",
     "selectProfile": "Profil auswählen...",
@@ -251,8 +279,13 @@
     "closingChangeset": " (Changeset schließen...)",
     "processingPaused": "Warteschlangenverarbeitung pausiert",
     "pausedDueToOffline": "Upload-Verarbeitung ist pausiert, da der Offline-Modus aktiviert ist.",
-    "pausedByUser": "Upload-Verarbeitung ist manuell pausiert."
+    "pausedByUser": "Upload-Verarbeitung ist manuell pausiert.",
+    "inFlightWaitTitle": "Übermittlung wird abgeschlossen",
+    "inFlightWaitMessage": "Eine Übermittlung läuft gerade und muss abgeschlossen werden, bevor diese Einstellung angewendet werden kann. Dies sollte nur einen Moment dauern.",
+    "inFlightCompleteTitle": "Übermittlung Abgeschlossen",
+    "inFlightCompleteMessage": "Ihre Übermittlung wurde erfolgreich abgeschlossen. Ihre Einstellung wird jetzt angewendet."
   },
+
   "tileProviders": {
     "title": "Kachel-Anbieter",
     "noProvidersConfigured": "Keine Kachel-Anbieter konfiguriert",
@@ -398,8 +431,13 @@
     "refreshNodesSubtitle": "Knotendaten für diesen Bereich erneut abrufen",
     "startRefresh": "Aktualisierung starten",
     "refreshStarted": "Aktualisierung gestartet!",
-    "refreshFailed": "Aktualisierung fehlgeschlagen: {}"
+    "refreshFailed": "Aktualisierung fehlgeschlagen: {}",
+    "disableConfirmTitle": "Vorhandene Offline-Bereichsdaten löschen?",
+    "disableConfirmMessage": "Sie haben bereits Offline-Bereichsdaten. Das Deaktivieren der Offline-Funktionen verhindert, dass die App diese verwendet. Möchten Sie diese Daten für den Fall behalten, dass Sie die Offline-Funktionen später wieder aktivieren, oder sie jetzt löschen, um Speicherplatz freizugeben?",
+    "keepData": "Daten Behalten",
+    "deleteData": "Daten Löschen"
   },
+
   "refineTagsSheet": {
     "title": "Tags Verfeinern",
     "operatorProfile": "Betreiber-Profil",

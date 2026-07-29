@@ -1,4 +1,20 @@
 {
+  "2.10.5": {
+    "content": [
+      "• Make node tags selectable / copyable",
+      "• Add status indicator to details sheet for pending nodes",
+      "• Global toggle for offline features",
+      "• Auto-open details sheet for new add/edit/deletes"
+    ]
+  },
+  "2.10.4": {
+    "content": [
+      "• Catch and correct a couple rare map bounds issues",
+      "• Prevent queueing a deletion without being logged in",
+      "• Require a reason for deletion, provide options in a dropdown",
+      "• Add option to hide zoom controls in advanced settings"
+    ]
+  },
   "2.10.3": {
     "content": [
       "• Data loading performance improvements",

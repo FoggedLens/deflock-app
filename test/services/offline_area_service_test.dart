@@ -1,9 +1,14 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:flutter_map/flutter_map.dart' show LatLngBounds;
+import 'package:mocktail/mocktail.dart';
 
+import 'package:deflockapp/app_state.dart';
 import 'package:deflockapp/services/offline_area_service.dart';
 import 'package:deflockapp/services/offline_areas/offline_area_models.dart';
+
+class MockAppState extends Mock implements AppState {}
+
 
 OfflineArea _makeArea({
   String providerId = 'osm',
@@ -26,10 +31,18 @@ OfflineArea _makeArea({
 
 void main() {
   final service = OfflineAreaService();
+  late MockAppState mockAppState;
 
   setUp(() {
     service.setAreasForTesting([]);
+    mockAppState = MockAppState();
+    AppState.instance = mockAppState;
+    // These tests exercise the underlying zoom/provider matching logic, so
+    // offline features are enabled by default here — the "disabled" gating
+    // itself is covered separately below.
+    when(() => mockAppState.offlineFeaturesEnabled).thenReturn(true);
   });
+
 
   group('hasOfflineAreasForProviderAtZoom', () {
     test('returns true for zoom within range', () {
@@ -90,4 +103,30 @@ void main() {
       expect(service.hasOfflineAreasForProviderAtZoom('osm', 'standard', 15), isFalse);
     });
   });
+
+  group('offlineFeaturesEnabled gating', () {
+    test('hasOfflineAreasForProvider returns false when feature disabled, even with matching areas', () {
+      service.setAreasForTesting([_makeArea(providerId: 'osm', tileTypeId: 'standard')]);
+      when(() => mockAppState.offlineFeaturesEnabled).thenReturn(false);
+
+      expect(service.hasOfflineAreasForProvider('osm', 'standard'), isFalse);
+    });
+
+    test('hasOfflineAreasForProviderAtZoom returns false when feature disabled, even within zoom range', () {
+      service.setAreasForTesting([_makeArea(minZoom: 5, maxZoom: 12)]);
+      when(() => mockAppState.offlineFeaturesEnabled).thenReturn(false);
+
+      expect(service.hasOfflineAreasForProviderAtZoom('osm', 'standard', 8), isFalse);
+    });
+
+    test('re-enabling offlineFeaturesEnabled restores normal matching', () {
+      service.setAreasForTesting([_makeArea(minZoom: 5, maxZoom: 12)]);
+      when(() => mockAppState.offlineFeaturesEnabled).thenReturn(false);
+      expect(service.hasOfflineAreasForProviderAtZoom('osm', 'standard', 8), isFalse);
+
+      when(() => mockAppState.offlineFeaturesEnabled).thenReturn(true);
+      expect(service.hasOfflineAreasForProviderAtZoom('osm', 'standard', 8), isTrue);
+    });
+  });
 }
+

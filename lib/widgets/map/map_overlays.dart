@@ -17,6 +17,7 @@ class MapOverlays extends StatelessWidget {
   final EditNodeSession? editSession;
   final String? attribution; // Attribution for current tile provider
   final VoidCallback? onSearchPressed; // Callback for search button
+  final bool hideZoomControls; // Hide zoom indicator + zoom in/out buttons
   const MapOverlays({
     super.key,
     required this.mapController,
@@ -25,7 +26,9 @@ class MapOverlays extends StatelessWidget {
     this.editSession,
     this.attribution,
     this.onSearchPressed,
+    this.hideZoomControls = false,
   });
+
 
   /// Show full attribution text in a dialog with license link.
   void _showAttributionDialog(BuildContext context, String attribution) {
@@ -138,35 +141,37 @@ class MapOverlays extends StatelessWidget {
         ),
 
         // Zoom indicator, positioned relative to button bar with left safe area
-        Positioned(
-          left: leftPositionWithSafeArea(10, safeArea),
-          bottom: bottomPositionFromButtonBar(kZoomIndicatorSpacingAboveButtonBar, safeArea.bottom),
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
-            decoration: BoxDecoration(
-              color: Colors.black.withValues(alpha: 0.52),
-              borderRadius: BorderRadius.circular(7),
-            ),
-            child: Builder(
-              builder: (context) {
-                double zoom = 15.0; // fallback
-                try {
-                  zoom = mapController.mapController.camera.zoom;
-                } catch (_) {
-                  // Map controller not ready yet
-                }
-                return Text(
-                  'Zoom: ${zoom.toStringAsFixed(2)}',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                  ),
-                );
-              },
+        if (!hideZoomControls)
+          Positioned(
+            left: leftPositionWithSafeArea(10, safeArea),
+            bottom: bottomPositionFromButtonBar(kZoomIndicatorSpacingAboveButtonBar, safeArea.bottom),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+              decoration: BoxDecoration(
+                color: Colors.black.withValues(alpha: 0.52),
+                borderRadius: BorderRadius.circular(7),
+              ),
+              child: Builder(
+                builder: (context) {
+                  double zoom = 15.0; // fallback
+                  try {
+                    zoom = mapController.mapController.camera.zoom;
+                  } catch (_) {
+                    // Map controller not ready yet
+                  }
+                  return Text(
+                    'Zoom: ${zoom.toStringAsFixed(2)}',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  );
+                },
+              ),
             ),
           ),
-        ),
+
 
         // Attribution overlay, positioned relative to button bar with left safe area
         if (attribution != null)
@@ -228,37 +233,40 @@ class MapOverlays extends StatelessWidget {
                   
                   // Layer selector button
                   const LayerSelectorButton(),
-                  const SizedBox(height: 8),
-                  // Zoom in button
-                  FloatingActionButton(
-                    mini: true,
-                    heroTag: "zoom_in",
-                    onPressed: () {
-                      try {
-                        final zoom = mapController.mapController.camera.zoom;
-                        mapController.mapController.move(mapController.mapController.camera.center, zoom + 1);
-                      } catch (_) {
-                        // Map controller not ready yet
-                      }
-                    },
-                    child: const Icon(Icons.add),
-                  ),
-                  const SizedBox(height: 8),
-                  // Zoom out button  
-                  FloatingActionButton(
-                    mini: true,
-                    heroTag: "zoom_out",
-                    onPressed: () {
-                      try {
-                        final zoom = mapController.mapController.camera.zoom;
-                        mapController.mapController.move(mapController.mapController.camera.center, zoom - 1);
-                      } catch (_) {
-                        // Map controller not ready yet
-                      }
-                    },
-                    child: const Icon(Icons.remove),
-                  ),
+                  if (!hideZoomControls) ...[
+                    const SizedBox(height: 8),
+                    // Zoom in button
+                    FloatingActionButton(
+                      mini: true,
+                      heroTag: "zoom_in",
+                      onPressed: () {
+                        try {
+                          final zoom = mapController.mapController.camera.zoom;
+                          mapController.mapController.move(mapController.mapController.camera.center, zoom + 1);
+                        } catch (_) {
+                          // Map controller not ready yet
+                        }
+                      },
+                      child: const Icon(Icons.add),
+                    ),
+                    const SizedBox(height: 8),
+                    // Zoom out button  
+                    FloatingActionButton(
+                      mini: true,
+                      heroTag: "zoom_out",
+                      onPressed: () {
+                        try {
+                          final zoom = mapController.mapController.camera.zoom;
+                          mapController.mapController.move(mapController.mapController.camera.center, zoom - 1);
+                        } catch (_) {
+                          // Map controller not ready yet
+                        }
+                      },
+                      child: const Icon(Icons.remove),
+                    ),
+                  ],
                 ],
+
               );
             },
           ),

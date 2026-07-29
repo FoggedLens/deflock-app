@@ -84,6 +84,13 @@ const Duration kChangesetAutoCloseTimeout = Duration(
 ); // Give up and trust OSM auto-close
 const double kChangesetCloseBackoffMultiplier = 2.0;
 
+// How long to keep the "Submission Complete" confirmation visible in the
+// in-flight upload wait dialog (shown when the user enables offline mode or
+// pauses the upload queue while a submission is actively in progress) before
+// automatically dismissing and applying the requested setting change.
+const Duration kInFlightUploadCompleteDisplayDuration = Duration(seconds: 2);
+
+
 // Overpass API configuration
 const Duration kOverpassQueryTimeout = Duration(
   seconds: 45,
@@ -108,6 +115,9 @@ const bool kEnableNodeEdits =
 // Node extraction features - set to false to hide extract functionality for constrained nodes
 const bool kEnableNodeExtraction =
     false; // Set to true to enable extract from way/relation feature (WIP)
+
+// Auto-open tags sheet after add/edit/delete, so the user can watch upload status update live.
+const bool kAutoOpenNodeSheetAfterSubmit = true; // Set to true to enable auto-focus behavior
 
 // Profile FOV features - set to false to restrict profiles to 360° FOV only
 const bool kEnableNon360FOVs =

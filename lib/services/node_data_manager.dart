@@ -390,8 +390,13 @@ class NodeDataManager extends ChangeNotifier {
 
   /// Load all offline nodes into cache (call at app startup)
   Future<void> preloadOfflineNodes() async {
+    // Skip entirely when the user has disabled offline features — this call
+    // isn't gated by OfflineAreaService.hasOfflineAreasForProvider*() since
+    // it fetches directly via fetchLocalNodes, so we guard it explicitly.
+    if (!AppState.instance.offlineFeaturesEnabled) return;
     try {
       final offlineAreaService = OfflineAreaService();
+
       
       for (final area in offlineAreaService.offlineAreas) {
         if (area.status != OfflineAreaStatus.complete) continue;

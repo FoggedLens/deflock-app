@@ -262,7 +262,6 @@ class _EditNodeSheetState extends State<EditNodeSheet> {
       refinedTags: session.refinedTags,
       additionalExistingTags:
           session.additionalExistingTags, // Include additional existing tags!
-      lifecycleStatus: session.lifecycleStatus,
       changesetComment: session.changesetComment, // Required parameter
       uploadMode:
           UploadMode.production, // Mode doesn't matter for tag combination
@@ -630,16 +629,6 @@ class _EditNodeSheetState extends State<EditNodeSheet> {
                     locService,
                   ),
                 ),
-                ListTile(
-                  title: const Text(
-                    'Status',
-                  ), //switch to locservice to fit standard streamline
-                  trailing: _buildLifecycleStatusDropdown(
-                    context,
-                    appState,
-                    session,
-                  ),
-                ),
                 // Direction controls
                 _buildDirectionControls(context, appState, session, locService),
 
@@ -984,66 +973,6 @@ class _EditNodeSheetState extends State<EditNodeSheet> {
           );
           appState.updateEditSession(profile: profile);
         }
-      },
-    );
-  }
-
-  Widget _buildLifecycleStatusDropdown(
-    BuildContext context,
-    AppState appState,
-    EditNodeSession session,
-  ) {
-    //return to add more lifecycle toggle options per OSM
-    String getDisplayName(String status) {
-      switch (status) {
-        case 'removed':
-          return 'Removed';
-        case 'destroyed':
-          return 'Destroyed';
-        case 'construction':
-          return 'Construction';
-        case 'proposed':
-          return 'Proposed';
-        case 'was':
-          return 'Was';
-        case 'active':
-        default:
-          return 'Active';
-      }
-    }
-
-    return PopupMenuButton<String>(
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-        decoration: BoxDecoration(
-          border: Border.all(color: Colors.grey.shade400),
-          borderRadius: BorderRadius.circular(4),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              getDisplayName(session.lifecycleStatus),
-              style: const TextStyle(fontSize: 16),
-            ),
-            const SizedBox(width: 4),
-            const Icon(Icons.arrow_drop_down, size: 20),
-          ],
-        ),
-      ),
-      itemBuilder: (context) => const [
-        PopupMenuItem<String>(value: 'active', child: Text('Active')),
-        PopupMenuItem<String>(value: 'proposed', child: Text('Proposed')),
-        PopupMenuItem<String>(
-          value: 'construction',
-          child: Text('Construction'),
-        ),
-        PopupMenuItem<String>(value: 'destroyed', child: Text('Destroyed')),
-        PopupMenuItem<String>(value: 'removed', child: Text('Removed')),
-        PopupMenuItem<String>(value: 'was', child: Text('Was')),
-      ],
-      onSelected: (value) {
-        appState.updateEditSession(lifecycleStatus: value);
       },
     );
   }

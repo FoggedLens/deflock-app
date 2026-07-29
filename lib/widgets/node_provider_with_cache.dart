@@ -100,14 +100,6 @@ class NodeProviderWithCache extends ChangeNotifier {
 
   /// Check if a node matches a specific profile (all non-empty profile tags must match)
   bool _nodeMatchesProfile(OsmNode node, NodeProfile profile) {
-    const lifecyclePrefixes = [
-      'active',
-      'removed',
-      'destroyed',
-      'construction',
-      'proposed',
-      'was',
-    ];
 
     for (final entry in profile.tags.entries) {
       // Skip empty values - they are used for refinement UI, not matching
@@ -116,13 +108,10 @@ class NodeProviderWithCache extends ChangeNotifier {
       final key = entry.key;
       final expectedValue = entry.value;
 
-      // Match either the bare key or any lifecycle-prefixed variant
+      // Match bare key
       final directMatch = node.tags[key] == expectedValue;
-      final prefixedMatch = lifecyclePrefixes.any(
-        (prefix) => node.tags['$prefix:$key'] == expectedValue,
-      );
 
-      if (!directMatch && !prefixedMatch) return false;
+      if (!directMatch) return false;
     }
     return true;
   }
