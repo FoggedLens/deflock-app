@@ -2,8 +2,19 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<!-- Disable Flutter's implicit deep-link routing so that
+	     app_links/DeepLinkService is the sole handler of incoming
+	     deflockapp:// URIs. Without this, Flutter's engine also tries
+	     to auto-convert the URI into a Navigator route (e.g.
+	     "/add?p=...") which conflicts with the navigation
+	     DeepLinkService performs, causing screens pushed by
+	     DeepLinkService to be immediately buried by a duplicate
+	     HomeScreen route. -->
+	<key>FlutterDeepLinkingEnabled</key>
+	<false/>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
+
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>

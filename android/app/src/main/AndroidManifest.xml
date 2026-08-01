@@ -30,6 +30,19 @@
                 android:name="io.flutter.embedding.android.NormalTheme"
                 android:resource="@style/NormalTheme" />
 
+            <!-- Disable Flutter's implicit deep-link routing so that
+                 app_links/DeepLinkService is the sole handler of incoming
+                 deflockapp:// URIs. Without this, Flutter's engine also
+                 tries to auto-convert the URI into a Navigator route
+                 (e.g. "/add?p=...") which conflicts with the navigation
+                 DeepLinkService performs, causing screens pushed by
+                 DeepLinkService to be immediately buried by a duplicate
+                 HomeScreen route. -->
+            <meta-data
+                android:name="flutter_deeplinking_enabled"
+                android:value="false" />
+
+
             <!-- Launcher intent -->
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
