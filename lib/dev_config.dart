@@ -143,7 +143,7 @@ const Duration kMapLongPressTimeout = Duration(
 const Duration kDebounceCameraRefresh = Duration(milliseconds: 500);
 
 //Release date for stale node detection feature (used as default check_date for nodes without a check_date)
-final kFeatureReleaseDate = DateTime.utc(2025, 11, 14); // adjust to actual release date
+final kFeatureReleaseDate = DateTime.utc(2026, 8, 1); // adjust to actual release date
 //Node staleness thresholds (in days) for visual indicator
 const int kAgingNodeThresholdDays = 60; // Threshold for stale node to begin fading -- "aging" node
 const int kStaleNodeThresholdDays = 360; // Threshold node to be fully stale
