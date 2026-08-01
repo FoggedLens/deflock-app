@@ -5,6 +5,7 @@ import 'package:latlong2/latlong.dart';
 import 'package:flutter_map/flutter_map.dart' show LatLngBounds;
 import '../../models/osm_node.dart';
 import '../../models/node_profile.dart';
+import '../../dev_config.dart';
 import '../offline_area_service.dart';
 import '../offline_areas/offline_area_models.dart';
 
@@ -58,7 +59,13 @@ Future<List<OsmNode>> _loadAreaNodes(OfflineArea area) async {
     try {
       final str = await fileToLoad.readAsString();
       final jsonList = jsonDecode(str) as List;
-      return jsonList.map((e) => OsmNode.fromJson(e)).toList();
+      final nodes = jsonList.map((e) => OsmNode.fromJson(e)).toList();
+      for (final node in nodes) {
+        if (!node.tags.containsKey('check_date') || (node.tags['check_date'] ?? '').isEmpty) {
+          node.tags['check_date'] = kFeatureReleaseDate.toIso8601String().split('T')[0];
+        }
+      }
+      return nodes;
     } catch (e) {
       debugPrint('[_loadAreaNodes] Error loading nodes from ${fileToLoad.path}: $e');
     }

@@ -146,8 +146,7 @@
     "showIndicator": "Mostrar indicador de nodos obsoletos",
     "showIndicatorExplanation": "Resaltar nodos que no se han verificado recientemente",
     "threshold": "Considerar obsoleto después de",
-    "daysCount": "{} días",
-    "explanation": "Los nodos sin check_date nunca se marcan como obsoletos."
+    "daysCount": "{} días"
   },
   "node": {
     "title": "Nodo #{}",

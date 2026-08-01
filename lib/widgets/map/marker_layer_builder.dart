@@ -77,8 +77,7 @@ class MarkerLayerBuilder {
           onNodeTap: onNodeTap, // Keep the original callback
           shouldDim: shouldDimNodes,
           enabled: !shouldDisableNodeTaps, // Use enabled parameter instead
-          stalenessIndicatorEnabled: appState.stalenessIndicatorEnabled,
-          stalenessThresholdDays: appState.stalenessThresholdDays,
+          stalenessIndicatorEnabled: appState.stalenessIndicatorEnabled
         );
 
         // Build suspected location markers (respect same zoom and count limits as nodes)

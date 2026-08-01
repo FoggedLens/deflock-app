@@ -287,9 +287,9 @@ class PendingUpload {
       }
     }
 
-    // Add current check_date:surveillance tag for all operations except delete (still there)
+    // Add current check_date tag for all operations except delete (still there)
     if (operation != UploadOperation.delete) {
-      tags['check_date:surveillance'] = DateTime.now()
+      tags['check_date'] = DateTime.now()
           .toIso8601String()
           .split('T')
           .first;

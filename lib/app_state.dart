@@ -180,7 +180,6 @@ class AppState extends ChangeNotifier {
       _settingsState.suspectedLocationMinDistance;
   bool get stalenessIndicatorEnabled =>
       _settingsState.stalenessIndicatorEnabled;
-  int get stalenessThresholdDays => _settingsState.stalenessThresholdDays;
 
   // Messages state
   int? get unreadMessageCount => _messagesState.unreadCount;
@@ -850,11 +849,6 @@ class AppState extends ChangeNotifier {
   /// Set staleness indicator enabled/disabled
   Future<void> setStalenessIndicatorEnabled(bool enabled) async {
     await _settingsState.setStalenessIndicatorEnabled(enabled);
-  }
-
-  /// Set staleness threshold in days
-  Future<void> setStalenessThresholdDays(int days) async {
-    await _settingsState.setStalenessThresholdDays(days);
   }
 
   /// Set navigation avoidance distance

@@ -102,7 +102,7 @@ const String kSuspectedLocationsCsvUrl =
 
 // Development/testing features - set to false for production builds
 const bool kEnableDevelopmentModes =
-    false; // Set to false to hide sandbox/simulate modes and force production mode
+    true; // Set to false to hide sandbox/simulate modes and force production mode
 
 // Navigation features - set to false to hide navigation UI elements while in development
 const bool kEnableNavigationFeatures =
@@ -141,6 +141,12 @@ const Duration kMapLongPressTimeout = Duration(
   milliseconds: 600,
 ); // Duration to trigger "add node here" on empty map area
 const Duration kDebounceCameraRefresh = Duration(milliseconds: 500);
+
+//Release date for stale node detection feature (used as default check_date for nodes without a check_date)
+final kFeatureReleaseDate = DateTime.utc(2025, 11, 14); // adjust to actual release date
+//Node staleness thresholds (in days) for visual indicator
+const int kAgingNodeThresholdDays = 60; // Threshold for stale node to begin fading -- "aging" node
+const int kStaleNodeThresholdDays = 360; // Threshold node to be fully stale
 
 // Pre-fetch area configuration
 const double kPreFetchAreaExpansionMultiplier = 3.0; // Expand visible bounds by this factor for pre-fetching

@@ -146,8 +146,7 @@
     "showIndicator": "Eski düğüm göstergesini göster",
     "showIndicatorExplanation": "Son zamanlarda kontrol edilmemiş düğümleri vurgula",
     "threshold": "Şu süreden sonra eski say",
-    "daysCount": "{} gün",
-    "explanation": "check_date değeri olmayan düğümler asla eski olarak işaretlenmez."
+    "daysCount": "{} gün"
   },
   "node": {
     "title": "Düğüm #{}",

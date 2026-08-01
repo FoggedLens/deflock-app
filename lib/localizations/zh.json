@@ -146,8 +146,7 @@
     "showIndicator": "显示过期节点指示器",
     "showIndicatorExplanation": "高亮显示最近未检查的节点",
     "threshold": "视为过期的天数",
-    "daysCount": "{} 天",
-    "explanation": "没有 check_date 的节点永远不会被标记为过期。"
+    "daysCount": "{} 天"
   },
   "node": {
     "title": "节点 #{}",

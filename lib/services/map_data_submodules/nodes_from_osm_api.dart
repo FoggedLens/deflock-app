@@ -7,6 +7,7 @@ import 'package:xml/xml.dart';
 import '../../models/node_profile.dart';
 import '../../models/osm_node.dart';
 import '../../app_state.dart';
+import '../../dev_config.dart';
 import '../http_client.dart';
 import '../service_policy.dart';
 
@@ -160,6 +161,10 @@ List<OsmNode> _parseOsmApiResponseWithConstraints(XmlDocument document, List<Nod
   for (final nodeData in surveillanceNodes.values) {
     final nodeId = nodeData['id'] as int;
     final isConstrained = constrainedNodeIds.contains(nodeId);
+
+    if (!nodeData['tags'].containsKey('check_date') || (nodeData['tags']['check_date'] as String).isEmpty) {
+      nodeData['tags']['check_date'] = kFeatureReleaseDate.toIso8601String().split('T')[0];
+    }
     
     nodes.add(OsmNode(
       id: nodeId,

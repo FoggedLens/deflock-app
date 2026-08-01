@@ -146,8 +146,7 @@
     "showIndicator": "Pokaż wskaźnik nieaktualnych węzłów",
     "showIndicatorExplanation": "Wyróżnij węzły, które nie były ostatnio sprawdzane",
     "threshold": "Uznaj za nieaktualne po",
-    "daysCount": "{} dni",
-    "explanation": "Węzły bez check_date nigdy nie są oznaczane jako nieaktualne."
+    "daysCount": "{} dni"
   },
   "node": {
     "title": "Węzeł #{}",

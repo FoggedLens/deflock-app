@@ -15,7 +15,6 @@ class NodeMapMarker extends StatefulWidget {
   final void Function(OsmNode)? onNodeTap;
   final bool enabled;
   final bool stalenessIndicatorEnabled;
-  final int stalenessThresholdDays;
 
   const NodeMapMarker({
     required this.node,
@@ -23,7 +22,6 @@ class NodeMapMarker extends StatefulWidget {
     this.onNodeTap,
     this.enabled = true,
     this.stalenessIndicatorEnabled = false,
-    this.stalenessThresholdDays = 60,
     super.key,
   });
 
@@ -90,23 +88,30 @@ class _NodeMapMarkerState extends State<NodeMapMarker> {
         widget.node.tags['_pending_deletion'] == 'true';
 
     CameraIconType iconType;
+    double agingProgress = 0.0;
     if (isPendingDeletion) {
       iconType = CameraIconType.pendingDeletion;
     } else if (isPendingUpload) {
       iconType = CameraIconType.pending;
     } else if (isPendingEdit) {
       iconType = CameraIconType.pendingEdit;
-    } else if (widget.stalenessIndicatorEnabled &&
-        widget.node.isStale(widget.stalenessThresholdDays)) {
-      iconType = CameraIconType.stale;
-    } else {
+    } else if (widget.stalenessIndicatorEnabled) {
+      final progress = widget.node.stalenessProgress;
+      if (progress >= 1.0) {
+        iconType = CameraIconType.stale;
+      } else if (progress > 0.0) {
+        iconType = CameraIconType.aging;
+        agingProgress = progress;
+      } else {
+        iconType = CameraIconType.real;  // ← Add this fallback
+      } } else {
       iconType = CameraIconType.real;
     }
 
     return GestureDetector(
       onTap: _onTap,
       onDoubleTap: _onDoubleTap,
-      child: CameraIcon(type: iconType),
+      child: CameraIcon(type: iconType, agingProgress: agingProgress),
     );
   }
 }
@@ -121,8 +126,7 @@ class NodeMarkersBuilder {
     void Function(OsmNode)? onNodeTap,
     bool shouldDim = false,
     bool enabled = true,
-    bool stalenessIndicatorEnabled = false,
-    int stalenessThresholdDays = 60,
+    bool stalenessIndicatorEnabled = false
   }) {
     final markers = <Marker>[
       // Node markers
@@ -143,8 +147,7 @@ class NodeMarkersBuilder {
               mapController: mapController,
               onNodeTap: onNodeTap,
               enabled: enabled,
-              stalenessIndicatorEnabled: stalenessIndicatorEnabled,
-              stalenessThresholdDays: stalenessThresholdDays,
+              stalenessIndicatorEnabled: stalenessIndicatorEnabled
             ),
           ),
         );

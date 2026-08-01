@@ -146,8 +146,7 @@
     "showIndicator": "Verouderde knooppuntindicator tonen",
     "showIndicatorExplanation": "Knooppunten markeren die niet recent zijn gecontroleerd",
     "threshold": "Als verouderd beschouwen na",
-    "daysCount": "{} dagen",
-    "explanation": "Knooppunten zonder check_date worden nooit als verouderd gemarkeerd."
+    "daysCount": "{} dagen"
   },
   "node": {
     "title": "Node #{}",

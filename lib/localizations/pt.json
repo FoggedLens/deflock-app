@@ -146,8 +146,7 @@
     "showIndicator": "Mostrar indicador de nós desatualizados",
     "showIndicatorExplanation": "Destacar nós que não foram verificados recentemente",
     "threshold": "Considerar desatualizado após",
-    "daysCount": "{} dias",
-    "explanation": "Nós sem check_date nunca são marcados como desatualizados."
+    "daysCount": "{} dias"
   },
   "node": {
     "title": "Nó #{}",

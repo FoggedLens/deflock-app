@@ -146,8 +146,7 @@
     "showIndicator": "Show stale node indicator",
     "showIndicatorExplanation": "Highlight nodes that haven't been checked recently",
     "threshold": "Consider stale after",
-    "daysCount": "{} days",
-    "explanation": "Nodes without a check_date are never marked stale."
+    "daysCount": "{} days"
   },
   "node": {
     "title": "Node #{}",

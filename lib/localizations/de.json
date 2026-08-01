@@ -109,8 +109,7 @@
     "showIndicator": "Veraltete Knoten anzeigen",
     "showIndicatorExplanation": "Knoten hervorheben, die nicht kürzlich überprüft wurden",
     "threshold": "Als veraltet betrachten nach",
-    "daysCount": "{} Tage",
-    "explanation": "Knoten ohne check_date werden nie als veraltet markiert."
+    "daysCount": "{} Tage"
   },
   "node": {
     "title": "Knoten #{}",

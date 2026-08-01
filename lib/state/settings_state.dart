@@ -38,8 +38,6 @@ class SettingsState extends ChangeNotifier {
       'proximity_alert_distance';
   static const String _stalenessIndicatorEnabledPrefsKey =
       'staleness_indicator_enabled';
-  static const String _stalenessThresholdDaysPrefsKey =
-      'staleness_threshold_days';
   static const String _networkStatusIndicatorEnabledPrefsKey =
       'network_status_indicator_enabled';
   static const String _suspectedLocationMinDistancePrefsKey =
@@ -67,7 +65,6 @@ class SettingsState extends ChangeNotifier {
   bool _proximityAlertsEnabled = false;
   int _proximityAlertDistance = kProximityAlertDefaultDistance;
   bool _stalenessIndicatorEnabled = false;
-  int _stalenessThresholdDays = 60; // days
   bool _networkStatusIndicatorEnabled = true;
   int _suspectedLocationMinDistance = 100; // meters
   List<TileProvider> _tileProviders = [];
@@ -84,7 +81,6 @@ class SettingsState extends ChangeNotifier {
   bool get proximityAlertsEnabled => _proximityAlertsEnabled;
   int get proximityAlertDistance => _proximityAlertDistance;
   bool get stalenessIndicatorEnabled => _stalenessIndicatorEnabled;
-  int get stalenessThresholdDays => _stalenessThresholdDays;
   bool get networkStatusIndicatorEnabled => _networkStatusIndicatorEnabled;
   int get suspectedLocationMinDistance => _suspectedLocationMinDistance;
   bool get keepScreenAwake => _keepScreenAwake;
@@ -166,8 +162,6 @@ class SettingsState extends ChangeNotifier {
     // Load staleness indicator settings
     _stalenessIndicatorEnabled =
         prefs.getBool(_stalenessIndicatorEnabledPrefsKey) ?? false;
-    _stalenessThresholdDays =
-        prefs.getInt(_stalenessThresholdDaysPrefsKey) ?? 60;
 
     // Load network status indicator setting
     _networkStatusIndicatorEnabled =
@@ -452,16 +446,6 @@ class SettingsState extends ChangeNotifier {
       _stalenessIndicatorEnabled = enabled;
       final prefs = await SharedPreferences.getInstance();
       await prefs.setBool(_stalenessIndicatorEnabledPrefsKey, enabled);
-      notifyListeners();
-    }
-  }
-
-  /// Set staleness threshold in days
-  Future<void> setStalenessThresholdDays(int days) async {
-    if (_stalenessThresholdDays != days) {
-      _stalenessThresholdDays = days;
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setInt(_stalenessThresholdDaysPrefsKey, days);
       notifyListeners();
     }
   }

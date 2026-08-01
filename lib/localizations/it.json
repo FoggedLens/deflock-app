@@ -146,8 +146,7 @@
     "showIndicator": "Mostra indicatore nodi obsoleti",
     "showIndicatorExplanation": "Evidenzia i nodi non controllati di recente",
     "threshold": "Considera obsoleto dopo",
-    "daysCount": "{} giorni",
-    "explanation": "I nodi senza check_date non vengono mai contrassegnati come obsoleti."
+    "daysCount": "{} giorni"
   },
   "node": {
     "title": "Nodo #{}",

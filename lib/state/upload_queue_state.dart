@@ -178,7 +178,7 @@ class UploadQueueState extends ChangeNotifier {
   }
 
   // Add a "verify" upload: resubmits a node with all existing tags unchanged,
-  // only bumping check_date:surveillance to confirm it's still present.
+  // only bumping check_date to confirm it's still present.
   PendingUpload addFromVerification(OsmNode node, {required UploadMode uploadMode}) {
     // Passthrough profile carrying no identity tags of its own - everything
     // comes from additionalExistingTags, so nothing is altered or reformatted

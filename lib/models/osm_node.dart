@@ -31,6 +31,11 @@ class OsmNode {
         tags[k.toString()] = v.toString();
       });
     }
+
+    if (!tags.containsKey('check_date') || (tags['check_date'] ?? '').isEmpty) {
+      tags['check_date'] = kFeatureReleaseDate.toIso8601String().split('T')[0];
+    }
+
     return OsmNode(
       id: json['id'] is int
           ? json['id'] as int
@@ -46,16 +51,17 @@ class OsmNode {
     );
   }
 
-  /// Parsed check_date tag, if present and valid. Null for nodes with no
-  /// check_date (treated as "unknown age", never stale).
-  DateTime? get checkDate => DateTime.tryParse(tags['check_date'] ?? '');
+  /// Parsed check_date tag, if present and valid. Set to feature release date by default
+  DateTime? get checkDate => DateTime.tryParse(tags['check_date'] ?? '') ?? kFeatureReleaseDate;
 
-  /// Whether this node's check_date is older than [staleDays].
-  /// Nodes without a check_date are never considered stale.
-  bool isStale(int staleDays) {
+  /// Whether this node's check_date is older than staleDays
+  double get stalenessProgress {
     final date = checkDate;
-    if (date == null) return false;
-    return DateTime.now().difference(date).inDays > staleDays;
+    if (date == null) return 0.0;
+    final ageDays = DateTime.now().difference(date).inDays;
+    if (ageDays <= kAgingNodeThresholdDays) return 0.0;
+    if (ageDays >= kStaleNodeThresholdDays) return 1.0;
+    return (ageDays - kAgingNodeThresholdDays) / (kStaleNodeThresholdDays - kAgingNodeThresholdDays);
   }
 
   bool get hasDirection => directionFovPairs.isNotEmpty;

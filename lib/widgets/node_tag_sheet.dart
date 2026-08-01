@@ -160,7 +160,7 @@ class _NodeTagSheetState extends State<NodeTagSheet> {
 
         void verifyNode() {
           Navigator.pop(context); // Close this sheet first
-          appState.verifyNode(node);
+          appState.verifyNode(displayNode);
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text(locService.t('node.verifyQueuedForUpload'))),
           );
@@ -497,35 +497,49 @@ class _NodeTagSheetState extends State<NodeTagSheet> {
                 ),
                 const SizedBox(height: 8),
                 // Second row: Edit, Delete, and Close buttons
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    if (isEditable) ...[
-                      ElevatedButton.icon(
-                        onPressed: openEditSheet,
-                        icon: const Icon(Icons.edit, size: 18),
-                        label: Text(locService.edit),
-                        style: ElevatedButton.styleFrom(
-                          minimumSize: const Size(0, 36),
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerRight,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      if (isEditable) ...[
+                        ElevatedButton.icon(
+                          onPressed: openEditSheet,
+                          icon: const Icon(Icons.edit, size: 18),
+                          label: Text(locService.edit),
+                          style: ElevatedButton.styleFrom(
+                            minimumSize: const Size(0, 36),
+                          ),
                         ),
-                      ),
-                      const SizedBox(width: 8),
-                      ElevatedButton.icon(
-                        onPressed: displayNode.isConstrained ? null : deleteNode,
-                        icon: const Icon(Icons.delete, size: 18),
-                        label: Text(locService.t('actions.delete')),
-                        style: ElevatedButton.styleFrom(
-                          minimumSize: const Size(0, 36),
-                          foregroundColor: displayNode.isConstrained ? null : Colors.red,
+                        const SizedBox(width: 8),
+                        ElevatedButton.icon(
+                          onPressed: verifyNode,
+                          icon: const Icon(Icons.check_circle_outline, size: 18),
+                          label: Text(locService.t('actions.verify')),
+                          style: ElevatedButton.styleFrom(
+                            minimumSize: const Size(0, 36),
+                          ),
                         ),
+                        const SizedBox(width: 8),
+                        ElevatedButton.icon(
+                          onPressed: displayNode.isConstrained ? null : deleteNode,
+                          icon: const Icon(Icons.delete, size: 18),
+                          label: Text(locService.t('actions.delete')),
+                          style: ElevatedButton.styleFrom(
+                            minimumSize: const Size(0, 36),
+                            foregroundColor: displayNode.isConstrained ? null : Colors.red,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                      ],
+                      TextButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: Text(locService.t('actions.close')),
                       ),
-                      const SizedBox(width: 12),
                     ],
-                    TextButton(
-                      onPressed: () => Navigator.pop(context),
-                      child: Text(locService.t('actions.close')),
-                    ),
-                  ],
+                  ),
                 ),
               ],
               ),

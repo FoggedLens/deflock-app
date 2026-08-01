@@ -146,8 +146,7 @@
     "showIndicator": "Afficher l'indicateur de nœuds obsolètes",
     "showIndicatorExplanation": "Mettre en évidence les nœuds qui n'ont pas été vérifiés récemment",
     "threshold": "Considérer comme obsolète après",
-    "daysCount": "{} jours",
-    "explanation": "Les nœuds sans check_date ne sont jamais marqués comme obsolètes."
+    "daysCount": "{} jours"
   },
   "node": {
     "title": "Nœud #{}",
