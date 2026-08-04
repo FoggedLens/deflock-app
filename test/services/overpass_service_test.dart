@@ -57,7 +57,7 @@ void main() {
   }
 
   group('query building', () {
-    test('uses out ids for way/relation pass, out body for node pass',
+    test('uses the way/relation membership pass with restriction conversion',
         () async {
       stubOverpassResponse([]);
 
@@ -68,10 +68,15 @@ void main() {
       ).captured;
 
       final query = (captured.last as Map<String, String>)['data']!;
-      expect(query, contains('out body;'));
-      expect(query, contains('out ids;'));
+      expect(query, contains('.allNodes out body;'));
+      expect(query, contains('way(bn.allNodes);'));
+      expect(query, contains('relation(bn.allNodes);'));
+      expect(query, contains('.resNodes'));
+      expect(query, contains('convert restriction ::id = id();'));
       expect(query, isNot(contains('out meta;')));
+      expect(query, isNot(contains('out ids;')));
     });
+
 
     test('empty tag values are excluded from filters', () async {
       final profileWithEmpty = [
@@ -137,10 +142,12 @@ void main() {
       expect(query, isNot(contains('manufacturer')));
       expect(query, isNot(contains('Flock Safety')));
 
-      // Only one node clause total.
-      final nodeClauseCount = RegExp(r'node\[').allMatches(query).length;
-      expect(nodeClauseCount, equals(1));
+      // Only one distinct tag-filter clause, appearing twice (once for
+      // .allNodes, once for the .resNodes re-filter).
+      final nodeClauseCount = RegExp(r'node[.\[]').allMatches(query).length;
+      expect(nodeClauseCount, equals(2));
     });
+
 
 
     test('unrelated profiles are all kept', () async {
@@ -186,11 +193,14 @@ void main() {
       ).captured;
       final query = (captured.last as Map<String, String>)['data']!;
 
-      final nodeClauseCount = RegExp(r'node\[').allMatches(query).length;
-      expect(nodeClauseCount, equals(2));
+      // Each of the 2 generic clauses appears twice (once in .allNodes,
+      // once in the .resNodes re-filter) = 4 total tag-filter clauses.
+      final nodeClauseCount = RegExp(r'node[.\[]').allMatches(query).length;
+      expect(nodeClauseCount, equals(4));
 
       expect(query, contains('["man_made"="surveillance"]["surveillance:type"="ALPR"]'));
       expect(query, contains('["man_made"="surveillance"]["surveillance:type"="gunshot_detector"]'));
+
       // Brand-specific tags should not appear anywhere in the reduced query.
       expect(query, isNot(contains('manufacturer')));
       expect(query, isNot(contains('ShotSpotter')));
@@ -223,7 +233,13 @@ void main() {
 
 
   group('response parsing — constraint detection', () {
-    test('nodes referenced by a way are constrained', () async {
+    test('a node referenced as a "restriction" element is constrained',
+        () async {
+      // The Overpass query converts each way/relation-referenced node ID
+      // into a synthetic {"type":"restriction","id":<nodeId>} element
+      // (via `convert restriction ::id = id();`) — this is how the server
+      // tells us a node is part of some way/relation, regardless of whether
+      // that way/relation came from a "way" or a "relation" in Overpass.
       stubOverpassResponse([
         {
           'type': 'node',
@@ -240,9 +256,8 @@ void main() {
           'tags': {'man_made': 'surveillance'},
         },
         {
-          'type': 'way',
-          'id': 100,
-          'nodes': [1],
+          'type': 'restriction',
+          'id': 1,
         },
       ]);
 
@@ -256,32 +271,8 @@ void main() {
       expect(node2.isConstrained, isFalse);
     });
 
-    test('nodes referenced by a relation member are constrained', () async {
-      stubOverpassResponse([
-        {
-          'type': 'node',
-          'id': 3,
-          'lat': 38.9,
-          'lon': -77.0,
-          'tags': {'man_made': 'surveillance'},
-        },
-        {
-          'type': 'relation',
-          'id': 200,
-          'members': [
-            {'type': 'node', 'ref': 3, 'role': ''},
-          ],
-        },
-      ]);
-
-      final nodes =
-          await service.fetchNodes(bounds: bounds, profiles: profiles);
-
-      expect(nodes, hasLength(1));
-      expect(nodes.first.isConstrained, isTrue);
-    });
-
-    test('nodes not in any way or relation are unconstrained', () async {
+    test('nodes not marked with a "restriction" element are unconstrained',
+        () async {
       stubOverpassResponse([
         {
           'type': 'node',
@@ -299,7 +290,8 @@ void main() {
       expect(nodes.first.isConstrained, isFalse);
     });
 
-    test('mixed response with nodes, ways, and relations', () async {
+    test('mixed response with multiple constrained and unconstrained nodes',
+        () async {
       stubOverpassResponse([
         {
           'type': 'node',
@@ -323,16 +315,12 @@ void main() {
           'tags': {'man_made': 'surveillance'},
         },
         {
-          'type': 'way',
-          'id': 300,
-          'nodes': [10],
+          'type': 'restriction',
+          'id': 10,
         },
         {
-          'type': 'relation',
-          'id': 400,
-          'members': [
-            {'type': 'node', 'ref': 11, 'role': ''},
-          ],
+          'type': 'restriction',
+          'id': 11,
         },
       ]);
 
@@ -345,6 +333,7 @@ void main() {
       expect(nodes.firstWhere((n) => n.id == 12).isConstrained, isFalse);
     });
   });
+
 
   group('error handling', () {
     test('HTTP 200 returns parsed nodes', () async {
