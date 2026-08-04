@@ -1,4 +1,12 @@
 {
+  "2.11.0": {
+    "content": [
+      "• Further improve node loading performance",
+      "• Fix node constrainment when part of a way/relation",
+      "• Show submission status in details sheet",
+      "• Fix profile import links not opening"
+    ]
+  },
   "2.10.5": {
     "content": [
       "• Make node tags selectable / copyable",
