@@ -15,11 +15,17 @@ import 'settings_state.dart';
 import 'session_state.dart';
 
 class UploadQueueState extends ChangeNotifier {
-  /// Helper to access the map data provider instance
-  MapDataProvider get _nodeCache => MapDataProvider();
+  final MapDataProvider _nodeCache;
+  final NodeProviderWithCache _nodeProvider;
   final List<PendingUpload> _queue = [];
   Timer? _uploadTimer;
   int _activeUploadCount = 0;
+
+  UploadQueueState({
+    MapDataProvider? nodeCache,
+    NodeProviderWithCache? nodeProvider,
+  })  : _nodeCache = nodeCache ?? MapDataProvider(),
+        _nodeProvider = nodeProvider ?? NodeProviderWithCache.instance;
 
   // Getters
   int get pendingCount => _queue.length;
@@ -116,7 +122,7 @@ class UploadQueueState extends ChangeNotifier {
       _saveQueue();
       
       // Notify node provider to update the map
-      NodeProviderWithCache.instance.notifyListeners();
+      _nodeProvider.notifyListeners();
     }
   }
 
@@ -156,7 +162,7 @@ class UploadQueueState extends ChangeNotifier {
     
     _nodeCache.addOrUpdate([tempNode]);
     // Notify node provider to update the map
-    NodeProviderWithCache.instance.notifyListeners();
+    _nodeProvider.notifyListeners();
     
     notifyListeners();
     return upload;
@@ -248,7 +254,7 @@ class UploadQueueState extends ChangeNotifier {
       _nodeCache.addOrUpdate([originalNode, editedNode]);
     }
     // Notify node provider to update the map
-    NodeProviderWithCache.instance.notifyListeners();
+    _nodeProvider.notifyListeners();
     
     notifyListeners();
     return upload;
@@ -281,7 +287,7 @@ class UploadQueueState extends ChangeNotifier {
     
     _nodeCache.addOrUpdate([nodeWithDeletionTag]);
     // Notify node provider to update the map
-    NodeProviderWithCache.instance.notifyListeners();
+    _nodeProvider.notifyListeners();
     
     notifyListeners();
     return upload;
@@ -297,7 +303,7 @@ class UploadQueueState extends ChangeNotifier {
     _saveQueue();
     
     // Notify node provider to update the map
-    NodeProviderWithCache.instance.notifyListeners();
+    _nodeProvider.notifyListeners();
     notifyListeners();
   }
   
@@ -309,7 +315,7 @@ class UploadQueueState extends ChangeNotifier {
     _saveQueue();
     
     // Notify node provider to update the map
-    NodeProviderWithCache.instance.notifyListeners();
+    _nodeProvider.notifyListeners();
     notifyListeners();
   }
 
@@ -725,7 +731,7 @@ class UploadQueueState extends ChangeNotifier {
     }
     
     // Notify node provider to update the map
-    NodeProviderWithCache.instance.notifyListeners();
+    _nodeProvider.notifyListeners();
   }
 
   // Handle successful deletion by removing the node from cache
@@ -735,7 +741,7 @@ class UploadQueueState extends ChangeNotifier {
       _nodeCache.removeNodeById(item.originalNodeId!);
       
       // Notify node provider to update the map
-      NodeProviderWithCache.instance.notifyListeners();
+      _nodeProvider.notifyListeners();
     }
   }
 

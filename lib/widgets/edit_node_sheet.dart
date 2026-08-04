@@ -85,14 +85,14 @@ class _EditNodeSheetState extends State<EditNodeSheet> {
     super.dispose();
   }
 
-  void _checkProximityAndCommit(BuildContext context, AppState appState, LocalizationService locService) {
-    _checkSubmissionGuideAndProceed(context, appState, locService);
+  void _checkProximityAndCommit() {
+    _checkSubmissionGuideAndProceed();
   }
 
-  void _checkSubmissionGuideAndProceed(BuildContext context, AppState appState, LocalizationService locService) async {
+  void _checkSubmissionGuideAndProceed() async {
     // Check if user has seen the submission guide
     final hasSeenGuide = await ChangelogService().hasSeenSubmissionGuide();
-    if (!context.mounted) return;
+    if (!mounted) return;
 
     if (!hasSeenGuide) {
       // Show submission guide dialog first
@@ -101,7 +101,7 @@ class _EditNodeSheetState extends State<EditNodeSheet> {
         barrierDismissible: false,
         builder: (context) => const SubmissionGuideDialog(),
       );
-      if (!context.mounted) return;
+      if (!mounted) return;
 
       // If user canceled the submission guide, don't proceed with submission
       if (shouldProceed != true) {
@@ -110,40 +110,42 @@ class _EditNodeSheetState extends State<EditNodeSheet> {
     }
 
     // Now proceed with proximity check
-    _checkProximityOnly(context, appState, locService);
+    _checkProximityOnly();
   }
 
-  void _checkProximityOnly(BuildContext context, AppState appState, LocalizationService locService) {
+  void _checkProximityOnly() {
     // Check for nearby nodes within the configured distance, excluding the node being edited
     final nearbyNodes = MapDataProvider().findNodesWithinDistance(
-      widget.session.target, 
+      widget.session.target,
       kNodeProximityWarningDistance,
       excludeNodeId: widget.session.originalNode.id,
     );
-    
+
     if (nearbyNodes.isNotEmpty) {
       // Show proximity warning dialog
       showDialog<void>(
         context: context,
-        builder: (context) => ProximityWarningDialog(
+        builder: (dialogContext) => ProximityWarningDialog(
           nearbyNodes: nearbyNodes,
           distance: kNodeProximityWarningDistance,
           onGoBack: () {
-            Navigator.of(context).pop(); // Close dialog
+            Navigator.of(dialogContext).pop(); // Close dialog
           },
           onSubmitAnyway: () {
-            Navigator.of(context).pop(); // Close dialog
-            _commitWithoutCheck(context, appState, locService);
+            Navigator.of(dialogContext).pop(); // Close dialog
+            _commitWithoutCheck();
           },
         ),
       );
     } else {
       // No nearby nodes, proceed with commit
-      _commitWithoutCheck(context, appState, locService);
+      _commitWithoutCheck();
     }
   }
 
-  void _commitWithoutCheck(BuildContext context, AppState appState, LocalizationService locService) {
+  void _commitWithoutCheck() {
+    final appState = context.read<AppState>();
+    final locService = LocalizationService.instance;
     appState.commitEditSession();
     Navigator.pop(context);
     ScaffoldMessenger.of(context).showSnackBar(
@@ -248,15 +250,16 @@ class _EditNodeSheetState extends State<EditNodeSheet> {
   }
 
   /// Show dialog explaining why submission is disabled due to no changes
-  void _showNoChangesDialog(BuildContext context, LocalizationService locService) {
+  void _showNoChangesDialog() {
+    final locService = LocalizationService.instance;
     showDialog<void>(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         title: Text(locService.t('editNode.noChangesTitle')),
         content: Text(locService.t('editNode.noChangesMessage')),
         actions: [
           TextButton(
-            onPressed: () => Navigator.of(context).pop(),
+            onPressed: () => Navigator.of(dialogContext).pop(),
             child: Text(locService.ok),
           ),
         ],
@@ -437,11 +440,11 @@ class _EditNodeSheetState extends State<EditNodeSheet> {
         void commit() {
           // Check if there are any actual changes to submit
           if (!_hasActualChanges(widget.session)) {
-            _showNoChangesDialog(context, locService);
+            _showNoChangesDialog();
             return;
           }
 
-          _checkProximityAndCommit(context, appState, locService);
+          _checkProximityAndCommit();
         }
 
         void cancel() {
