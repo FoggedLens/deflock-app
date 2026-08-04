@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map_animations/flutter_map_animations.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:latlong2/latlong.dart';
 import 'package:provider/provider.dart';
 
 import '../app_state.dart';
 import '../dev_config.dart';
 import '../widgets/map_view.dart';
 import '../services/localization_service.dart';
+import '../services/map_data_provider.dart';
+
 
 import '../widgets/node_tag_sheet.dart';
 import '../widgets/download_area_dialog.dart';
@@ -22,6 +25,7 @@ import '../models/rf_detection.dart';
 import '../models/suspected_location.dart';
 import '../models/search_result.dart';
 import '../services/changelog_service.dart';
+import '../services/deep_link_service.dart';
 import 'coordinators/sheet_coordinator.dart';
 import 'coordinators/navigation_coordinator.dart';
 import 'coordinators/map_interaction_handler.dart';
@@ -68,6 +72,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     // Listen to scanner state changes to reload RF detections
     final appState = context.read<AppState>();
     appState.scannerState.addListener(_onScannerStateChanged);
+    DeepLinkService().onNodeDeepLink = _handleNodeDeepLink;
   }
 
   void _onScannerStateChanged() {
@@ -80,6 +85,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     try {
       context.read<AppState>().scannerState.removeListener(_onScannerStateChanged);
     } catch (_) {}
+    DeepLinkService().onNodeDeepLink = null;
     _mapController.dispose();
     super.dispose();
   }
@@ -305,6 +311,40 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     );
   }
 
+  void _onMapLongPress(LatLng location) {
+    // Don't handle long press if tag sheet is open
+    if (_sheetCoordinator.tagSheetHeight > 0) {
+      debugPrint('[HomeScreen] Long press ignored - tag sheet is open');
+      return;
+    }
+    
+    _mapInteractionHandler.handleMapLongPress(
+      context: context,
+      tapLocation: location,
+      mapController: _mapController,
+      onAddNode: _openAddNodeSheet,
+    );
+  }
+
+  void _handleNodeDeepLink(OsmNode node) {
+    try {
+      _mapController.animateTo(
+        dest: node.coord,
+        zoom: 16.0,
+        duration: const Duration(milliseconds: 600),
+        curve: Curves.easeOut,
+      );
+    } catch (e) {
+      debugPrint('[HomeScreen] Could not animate to deep link node: $e');
+    }
+
+    Future.delayed(const Duration(milliseconds: 700), () {
+      if (mounted) {
+        openNodeTagSheet(node);
+      }
+    });
+  }
+
   void openNodeTagSheet(OsmNode node) {
     // Handle the map interaction (centering and follow-me disable)
     _mapInteractionHandler.handleNodeTap(
@@ -487,6 +527,22 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       });
     }
 
+    // Auto-focus a node's details sheet right after it was submitted/edited/deleted,
+    // behind kAutoOpenNodeSheetAfterSubmit (pending A/B testing/team feedback).
+    if (kAutoOpenNodeSheetAfterSubmit) {
+      final focusNodeId = appState.consumePendingFocusNodeId();
+      if (focusNodeId != null && !_sheetCoordinator.hasActiveNodeSheet) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (!mounted) return;
+          final node = MapDataProvider().getNodeById(focusNodeId);
+          if (node != null) {
+            openNodeTagSheet(node);
+          }
+        });
+      }
+    }
+
+
     // Pass the active sheet height directly to the map
     final activeSheetHeight = _sheetCoordinator.activeSheetHeight;
 
@@ -571,6 +627,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 // Re-render when location status changes (for follow-me button state)
                 setState(() {});
               },
+              onMapLongPress: _onMapLongPress,
               onUserGesture: () {
                 // Only clear selected node if tag sheet is not open
                 // This prevents nodes from losing their grey-out when map is moved while viewing tags
@@ -629,63 +686,70 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                         ),
                         margin: EdgeInsets.only(bottom: kBottomButtonBarOffset),
                         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              flex: 7, // 70% for primary action
-                              child: AnimatedBuilder(
-                                animation: LocalizationService.instance,
-                                builder: (context, child) => ElevatedButton.icon(
-                                  icon: Icon(Icons.add_location_alt),
-                                  label: Text(LocalizationService.instance.tagNode),
-                                  onPressed: _openAddNodeSheet,
-                                  style: ElevatedButton.styleFrom(
-                                    minimumSize: Size(0, 48),
-                                    textStyle: TextStyle(fontSize: 16),
-                                  ),
-                                ),
-                              ),
-                            ),
-                            SizedBox(width: 12),
-                            Expanded(
-                              flex: 3, // 30% for secondary action
-                              child: AnimatedBuilder(
-                                animation: LocalizationService.instance,
-                                builder: (context, child) => FittedBox(
-                                  fit: BoxFit.scaleDown,
+                        child: AnimatedBuilder(
+                          animation: LocalizationService.instance,
+                          builder: (context, child) {
+                            final appState = context.watch<AppState>();
+                            final showDownloadButton = appState.offlineFeaturesEnabled;
+                            final canDownload = appState.selectedTileType?.allowsOfflineDownload ?? false;
+
+                            return Row(
+                              children: [
+                                Expanded(
+                                  // Take full width when the download button is hidden
+                                  flex: showDownloadButton ? 7 : 10,
                                   child: ElevatedButton.icon(
-                                    icon: Icon(Icons.download_for_offline),
-                                    label: Text(LocalizationService.instance.download),
-                                    onPressed: () {
-                                      // Check minimum zoom level before opening download dialog
-                                      final currentZoom = _mapController.mapController.camera.zoom;
-                                      if (currentZoom < kMinZoomForOfflineDownload) {
-                                        ScaffoldMessenger.of(context).showSnackBar(
-                                          SnackBar(
-                                            content: Text(
-                                              LocalizationService.instance.t('download.areaTooBigMessage', 
-                                                params: [kMinZoomForOfflineDownload.toString()])
-                                            ),
-                                          ),
-                                        );
-                                        return;
-                                      }
-                                      
-                                      showDialog(
-                                        context: context,
-                                        builder: (ctx) => DownloadAreaDialog(controller: _mapController.mapController),
-                                      );
-                                    },
+                                    icon: Icon(Icons.add_location_alt),
+                                    label: Text(LocalizationService.instance.tagNode),
+                                    onPressed: _openAddNodeSheet,
                                     style: ElevatedButton.styleFrom(
                                       minimumSize: Size(0, 48),
                                       textStyle: TextStyle(fontSize: 16),
                                     ),
                                   ),
                                 ),
-                              ),
-                            ),
-                          ],
+                                if (showDownloadButton) ...[
+                                  SizedBox(width: 12),
+                                  Expanded(
+                                    flex: 3, // 30% for secondary action
+                                    child: FittedBox(
+                                      fit: BoxFit.scaleDown,
+                                      child: ElevatedButton.icon(
+                                        icon: Icon(Icons.download_for_offline),
+                                        label: Text(LocalizationService.instance.download),
+                                        onPressed: canDownload ? () {
+                                          // Check minimum zoom level before opening download dialog
+                                          final currentZoom = _mapController.mapController.camera.zoom;
+                                          if (currentZoom < kMinZoomForOfflineDownload) {
+                                            ScaffoldMessenger.of(context).showSnackBar(
+                                              SnackBar(
+                                                content: Text(
+                                                  LocalizationService.instance.t('download.areaTooBigMessage',
+                                                    params: [kMinZoomForOfflineDownload.toString()])
+                                                ),
+                                              ),
+                                            );
+                                            return;
+                                          }
+
+                                          showDialog(
+                                            context: context,
+                                            builder: (ctx) => DownloadAreaDialog(controller: _mapController.mapController),
+                                          );
+                                        } : null,
+                                        style: ElevatedButton.styleFrom(
+                                          minimumSize: Size(0, 48),
+                                          textStyle: TextStyle(fontSize: 16),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ],
+                            );
+                          },
                         ),
+
                       ),
                     ),
                   );

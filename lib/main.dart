@@ -15,19 +15,55 @@ import 'screens/osm_account_screen.dart';
 import 'screens/upload_queue_screen.dart';
 import 'screens/scanner_screen.dart';
 import 'services/localization_service.dart';
+import 'services/provider_tile_cache_manager.dart';
 import 'services/version_service.dart';
 import 'services/deep_link_service.dart';
+import 'services/deflock_tile_provider.dart' show TileLoadCancelledException, TileNotAvailableOfflineException;
 
-
+/// Suppress console noise for expected, already-handled tile load errors.
+///
+/// [TileLoadCancelledException] (tile scrolled off screen) and
+/// [TileNotAvailableOfflineException] (no cached data available) are thrown
+/// deliberately by DeflockOfflineTileImageProvider and are already handled —
+/// TileLayerManager.onTileLoadError() specifically skips retry logic for
+/// both. Flutter's image pipeline reports them via
+/// MultiFrameImageStreamCompleter with `silent: true`, but
+/// FlutterError.dumpErrorToConsole has a debug-mode assert() that ignores
+/// the silent flag and always prints to console anyway. This filters those
+/// two specific, expected exception types back out while leaving all other
+/// errors (including genuinely silent-but-unexpected ones) reported as
+/// normal.
+void _installTileErrorFilter() {
+  final defaultOnError = FlutterError.onError;
+  FlutterError.onError = (FlutterErrorDetails details) {
+    final exception = details.exception;
+    if (details.silent &&
+        (exception is TileLoadCancelledException ||
+            exception is TileNotAvailableOfflineException)) {
+      return; // Already handled — don't spam the console.
+    }
+    if (defaultOnError != null) {
+      defaultOnError(details);
+    } else {
+      FlutterError.presentError(details);
+    }
+  };
+}
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
+
+  _installTileErrorFilter();
+
+
   // Initialize version service
   await VersionService().init();
-  
+
   // Initialize localization service
   await LocalizationService.instance.init();
+
+  // Resolve platform cache directory for per-provider tile caching
+  await ProviderTileCacheManager.init();
 
   // Initialize deep link service
   await DeepLinkService().init();
@@ -90,8 +126,22 @@ class DeFlockApp extends StatelessWidget {
         '/scanner': (context) => const ScannerScreen(),
       },
       initialRoute: '/',
-
+      onUnknownRoute: (settings) {
+        // Fallback for any genuinely unknown named route (e.g. a stale/bad
+        // link). Deep links (deflockapp://...) are handled exclusively by
+        // DeepLinkService via the app_links package - Flutter's own
+        // implicit deep-link routing is disabled at the platform level
+        // (see AndroidManifest.xml's flutter_deeplinking_enabled and
+        // Info.plist's FlutterDeepLinkingEnabled) to avoid this handler
+        // double-navigating and burying screens pushed by DeepLinkService.
+        debugPrint('[Navigation] Unknown route intercepted: ${settings.name}');
+        return MaterialPageRoute(
+          settings: settings,
+          builder: (_) => const HomeScreen(),
+        );
+      },
     );
+
   }
 }
 

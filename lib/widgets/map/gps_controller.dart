@@ -3,12 +3,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_map_animations/flutter_map_animations.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:flutter/foundation.dart' show defaultTargetPlatform, TargetPlatform;
 
 import '../../dev_config.dart';
 import '../../app_state.dart' show FollowMeMode;
 import '../../services/proximity_alert_service.dart';
+import '../../services/coordinate_validation.dart';
 import '../../models/osm_node.dart';
 import '../../models/node_profile.dart';
+
 
 /// Simple GPS controller that handles precise location permissions only.
 /// Key principles: 
@@ -145,15 +148,21 @@ class GpsController {
   void _startPositionStream() {
     final followMeMode = _getCurrentFollowMeMode?.call() ?? FollowMeMode.off;
     final distanceFilter = followMeMode == FollowMeMode.off ? 5 : 1; // 5m normal, 1m follow-me
-    
+
     debugPrint('[GpsController] Starting GPS position stream (${distanceFilter}m filter)');
-    
+
     try {
       _positionSub = Geolocator.getPositionStream(
-        locationSettings: LocationSettings(
-          accuracy: LocationAccuracy.high, // Request best, accept what we get
-          distanceFilter: distanceFilter,
-        ),
+        locationSettings: defaultTargetPlatform == TargetPlatform.android
+            ? AndroidSettings(
+                accuracy: LocationAccuracy.high,
+                distanceFilter: distanceFilter,
+                forceLocationManager: true,
+              )
+            : LocationSettings(
+                accuracy: LocationAccuracy.high,
+                distanceFilter: distanceFilter,
+              ),
       ).listen(
         _onPositionReceived,
         onError: _onPositionError,
@@ -180,6 +189,18 @@ class GpsController {
 
   /// Handle incoming GPS position
   void _onPositionReceived(Position position) {
+    // Reject malformed fixes (occasionally NaN/Infinite from the platform
+    // location stack) before they reach map state.
+    if (!isValidLatitude(position.latitude) || !isValidLongitude(position.longitude)) {
+
+      debugPrint(
+        '[GpsController] Ignoring invalid GPS position: '
+        'lat=${position.latitude}, lng=${position.longitude}',
+      );
+      return;
+    }
+
+
     final newLocation = LatLng(position.latitude, position.longitude);
     _currentLocation = newLocation;
     
@@ -202,6 +223,7 @@ class GpsController {
   }
 
   /// Handle GPS stream errors
+
   void _onPositionError(dynamic error) {
     debugPrint('[GpsController] Position stream error: $error');
     if (_hasLocation) {

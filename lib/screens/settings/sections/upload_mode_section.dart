@@ -23,6 +23,8 @@ class UploadModeSection extends StatelessWidget {
               subtitle: Text(locService.t('uploadMode.subtitle')),
               trailing: DropdownButton<UploadMode>(
                 value: appState.uploadMode,
+                // This entire section is gated behind kEnableDevelopmentModes
+                // in osm_account_screen.dart, so all modes are always available here.
                 items: [
                   DropdownMenuItem(
                     value: UploadMode.production,

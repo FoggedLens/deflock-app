@@ -111,8 +111,23 @@
     "advancedSettings": "Configurações Avançadas",
     "advancedSettingsSubtitle": "Configurações de desempenho, alertas e provedores de mapas",
     "proximityAlerts": "Alertas de Proximidade",
-    "networkStatusIndicator": "Indicador de Status de Rede"
+    "keepScreenAwake": "Manter Ecrã Ativa",
+    "networkStatusIndicator": "Indicador de Status de Rede",
+    "hideZoomControls": "Ocultar Controlos de Zoom",
+    "enableOfflineFeatures": "Ativar Funcionalidades Offline",
+    "enableOfflineFeaturesTitle": "Ativar funcionalidades offline",
+    "enableOfflineFeaturesSubtitle": "Permitir descarregar e usar áreas de mapa offline. Se desativado, o modo offline e as áreas descarregadas não estarão disponíveis."
   },
+  "keepScreenAwake": {
+
+    "title": "Manter o ecrã ativo durante o uso do app",
+    "subtitle": "Impede que o ecrã se desligue automaticamente enquanto a app estiver em uso"
+  },
+  "hideZoomControls": {
+    "title": "Ocultar controlos de zoom",
+    "subtitle": "Oculta os botões de zoom +/- e o indicador de nível de zoom. Ainda pode ampliar com gestos de pinça."
+  },
+
   "proximityAlerts": {
     "getNotified": "Receba notificações ao se aproximar de dispositivos de vigilância",
     "batteryUsage": "Usa bateria extra para monitoramento contínuo de localização",
@@ -132,8 +147,28 @@
     "editQueuedForUpload": "Edição de nó na fila para envio",
     "deleteQueuedForUpload": "Exclusão de nó na fila para envio",
     "confirmDeleteTitle": "Excluir Nó",
-    "confirmDeleteMessage": "Tem certeza de que deseja excluir o nó #{}? Esta ação não pode ser desfeita."
+    "confirmDeleteMessage": "Tem certeza de que deseja excluir o nó #{}? Esta ação não pode ser desfeita.",
+    "deleteReasonLabel": "Motivo para Exclusão",
+    "deleteReasonSelectHint": "Selecionar...",
+    "deleteReasonDeviceRemoved": "Dispositivo removido",
+    "deleteReasonDuplicateNode": "Nó duplicado",
+    "deleteReasonMisidentifiedInfra": "Infraestrutura mal identificada",
+    "deleteReasonSpamVandalism": "Spam/vandalismo",
+    "deleteReasonCustom": "Personalizado..",
+    "deleteReasonHint": "Descreva o motivo...",
+
+    "mustBeLoggedInToDelete": "Você precisa estar conectado com uma conta do OpenStreetMap para contribuir com dados do mapa.",
+    "uploadPending": "Envio pendente",
+    "uploadCreatingChangeset": "Criando changeset...",
+    "uploadUploading": "Enviando...",
+    "uploadClosingChangeset": "Fechando changeset...",
+    "uploadError": "Falha no envio",
+    "uploadComplete": "Envio concluído",
+    "viewInQueue": "Ver na Fila",
+    "deletedSuccessfully": "Este nó foi excluído com sucesso do OpenStreetMap."
   },
+
+
   "addNode": {
     "profile": "Perfil",
     "selectProfile": "Selecionar um perfil...",
@@ -181,7 +216,10 @@
     "offlineModeWarning": "Downloads desabilitados no modo offline. Desative o modo offline para baixar novas áreas.",
     "areaTooBigMessage": "Amplie para pelo menos o nível {} para baixar áreas offline. Downloads de áreas grandes podem tornar o aplicativo não responsivo.",
     "downloadStarted": "Download iniciado! Buscando tiles e nós...",
-    "downloadFailed": "Falha ao iniciar o download: {}"
+    "downloadFailed": "Falha ao iniciar o download: {}",
+    "offlineNotPermitted": "O servidor {} não permite downloads offline. Mude para um provedor de tiles que permita uso offline (por ex., Bing Maps, Mapbox ou um servidor de tiles próprio).",
+    "currentTileProvider": "tile atual",
+    "noTileProviderSelected": "Nenhum provedor de tiles selecionado. Selecione um estilo de mapa antes de baixar uma área offline."
   },
   "downloadStarted": {
     "title": "Download Iniciado",
@@ -269,8 +307,13 @@
     "closingChangeset": " (Fechando changeset...)",
     "processingPaused": "Processamento da Fila Pausado",
     "pausedDueToOffline": "O processamento de upload está pausado porque o modo offline está habilitado.",
-    "pausedByUser": "O processamento de upload está pausado manualmente."
+    "pausedByUser": "O processamento de upload está pausado manualmente.",
+    "inFlightWaitTitle": "Finalizando Envio",
+    "inFlightWaitMessage": "Atualmente há um envio em andamento que precisa terminar antes que esta configuração possa ser aplicada. Isso deve levar apenas um momento.",
+    "inFlightCompleteTitle": "Envio Concluído",
+    "inFlightCompleteMessage": "Seu envio foi concluído com sucesso. Aplicando sua configuração agora."
   },
+
   "tileProviders": {
     "title": "Provedores de Tiles",
     "noProvidersConfigured": "Nenhum provedor de tiles configurado",
@@ -281,6 +324,9 @@
     "addProvider": "Adicionar Provedor",
     "deleteProvider": "Excluir Provedor",
     "deleteProviderConfirm": "Tem certeza de que deseja excluir \"{}\"?",
+    "clearCaches": "Limpar Caches",
+    "clearCachesConfirm": "Limpar todos os caches de mapas para \"{}\"? Isso liberará espaço de armazenamento, mas os mapas precisarão ser baixados novamente ao visualizar essas áreas.",
+    "cachesCleared": "Caches limpos para \"{}\"",
     "providerName": "Nome do Provedor",
     "providerNameHint": "ex., Mapas Personalizados Inc.",
     "providerNameRequired": "Nome do provedor é obrigatório",
@@ -329,13 +375,16 @@
     "addProfileChoiceMessage": "Como gostaria de adicionar um perfil?",
     "createCustomProfile": "Criar Perfil Personalizado",
     "createCustomProfileDescription": "Construir um perfil do zero com suas próprias tags",
-    "importFromWebsite": "Importar do Site", 
+    "importFromWebsite": "Importar do Site",
     "importFromWebsiteDescription": "Navegar e importar perfis do deflock.me/identify"
   },
   "mapTiles": {
     "title": "Tiles do Mapa",
     "manageProviders": "Gerenciar Provedores",
-    "attribution": "Atribuição do Mapa"
+    "attribution": "Atribuição do Mapa",
+    "mapAttribution": "Atribuição do mapa: {}",
+    "couldNotOpenLink": "Não foi possível abrir o link",
+    "openLicense": "Abrir licença: {}"
   },
   "profileEditor": {
     "viewProfile": "Ver Perfil",
@@ -350,6 +399,8 @@
     "fovHint": "Campo de visão em graus (deixar vazio para o padrão)",
     "fovSubtitle": "Campo de visão da câmera - usado para largura do cone e formato de envio por intervalo",
     "fovInvalid": "Campo de visão deve estar entre 1 e 360 graus",
+    "fov360": "Campo de Visão 360°",
+    "fov360Subtitle": "A câmera tem um campo de visão omnidirecional de 360 graus",
     "submittable": "Enviável",
     "submittableSubtitle": "Se este perfil pode ser usado para envios de câmeras",
     "osmTags": "Tags OSM",
@@ -362,7 +413,7 @@
   },
   "operatorProfileEditor": {
     "newOperatorProfile": "Novo Perfil de Operador",
-    "editOperatorProfile": "Editar Perfil de Operador", 
+    "editOperatorProfile": "Editar Perfil de Operador",
     "operatorName": "Nome do operador",
     "operatorNameHint": "ex., Departamento de Polícia de Austin",
     "operatorNameRequired": "Nome do operador é obrigatório",
@@ -408,8 +459,13 @@
     "refreshNodesSubtitle": "Buscar novamente os dados dos nós para esta área",
     "startRefresh": "Iniciar Atualização",
     "refreshStarted": "Atualização iniciada!",
-    "refreshFailed": "Atualização falhou: {}"
+    "refreshFailed": "Atualização falhou: {}",
+    "disableConfirmTitle": "Eliminar Dados de Áreas Offline Existentes?",
+    "disableConfirmMessage": "Já tem dados de áreas offline existentes. Desativar as funcionalidades offline impedirá que a app os utilize. Deseja manter estes dados no dispositivo caso reative as funcionalidades offline mais tarde, ou eliminá-los agora para libertar espaço de armazenamento?",
+    "keepData": "Manter Dados",
+    "deleteData": "Eliminar Dados"
   },
+
   "refineTagsSheet": {
     "title": "Refinar Tags",
     "operatorProfile": "Perfil de Operador",
@@ -513,14 +569,14 @@
     "dataSourceDescription": "Dados de licenças de serviços públicos indicando possíveis locais de instalação de infraestrutura de vigilância",
     "dataSourceCredit": "Coleta e hospedagem de dados fornecidas por alprwatch.org",
     "minimumDistance": "Distância Mínima de Nós Reais",
-    "minimumDistanceSubtitle": "Ocultar localizações suspeitas dentro de {}m de dispositivos de vigilância existentes",
+    "minimumDistanceSubtitle": "Ocultar localizações suspeitas dentro de {} de dispositivos de vigilância existentes",
     "updating": "Atualizando Localizações Suspeitas",
     "downloadingAndProcessing": "Baixando e processando dados...",
     "updateSuccess": "Localizações suspeitas atualizadas com sucesso",
     "updateFailed": "Falha ao atualizar localizações suspeitas",
     "neverFetched": "Nunca buscado",
     "daysAgo": "{} dias atrás",
-    "hoursAgo": "{} horas atrás", 
+    "hoursAgo": "{} horas atrás",
     "minutesAgo": "{} minutos atrás",
     "justNow": "Agora mesmo"
   },
@@ -528,7 +584,7 @@
     "title": "Localização Suspeita #{}",
     "ticketNo": "N° do Ticket",
     "address": "Endereço",
-    "street": "Rua", 
+    "street": "Rua",
     "city": "Cidade",
     "state": "Estado",
     "intersectingStreet": "Rua que Cruza",

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map_animations/flutter_map_animations.dart';
+import 'package:latlong2/latlong.dart';
 import 'package:provider/provider.dart';
 
 import '../../app_state.dart';
@@ -124,5 +125,51 @@ class MapInteractionHandler {
     
     // Clear suspected location selection
     appState.clearSuspectedLocationSelection();
+  }
+
+  /// Handle long press on empty map area (add node here)
+  void handleMapLongPress({
+    required BuildContext context,
+    required LatLng tapLocation,
+    required AnimatedMapController mapController,
+    required VoidCallback onAddNode,
+  }) {
+    final appState = context.read<AppState>();
+    
+    debugPrint('[MapInteractionHandler] Long press at: ${tapLocation.latitude}, ${tapLocation.longitude}');
+    
+    // Check if we should handle this long press
+    // Don't handle if any sheet is open or if in search mode
+    if (appState.isInSearchMode || appState.showingOverview) {
+      debugPrint('[MapInteractionHandler] Long press ignored - in search/navigation mode');
+      return;
+    }
+    
+    // Don't handle if any session is active (add/edit sheets are open)
+    if (appState.session != null || appState.editSession != null) {
+      debugPrint('[MapInteractionHandler] Long press ignored - node sheet already open');
+      return;
+    }
+    
+    // Disable follow-me when user long presses
+    appState.setFollowMeMode(FollowMeMode.off);
+    
+    // First, center the map on the tap location
+    try {
+      mapController.animateTo(
+        dest: tapLocation,
+        zoom: mapController.mapController.camera.zoom,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeOut,
+      );
+    } catch (e) {
+      debugPrint('[MapInteractionHandler] Could not center map on long press location: $e');
+    }
+    
+    // After a short delay to let the map center, open the add node sheet
+    // This matches the existing pattern used for node taps
+    Future.delayed(const Duration(milliseconds: 350), () {
+      onAddNode();
+    });
   }
 }

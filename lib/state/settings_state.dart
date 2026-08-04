@@ -4,7 +4,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:collection/collection.dart';
 
 import '../models/tile_provider.dart';
+import '../services/provider_tile_cache_manager.dart';
 import '../dev_config.dart';
+import '../keys.dart';
 
 // Enum for upload mode (Production, OSM Sandbox, Simulate)
 enum UploadMode { production, sandbox, simulate }
@@ -37,11 +39,19 @@ class SettingsState extends ChangeNotifier {
   static const String _pauseQueueProcessingPrefsKey = 'pause_queue_processing';
   static const String _navigationAvoidanceDistancePrefsKey = 'navigation_avoidance_distance';
   static const String _distanceUnitPrefsKey = 'distance_unit';
+  static const String _keepScreenAwakePrefsKey = 'keep_screen_awake';
+  static const String _hideZoomControlsPrefsKey = 'hide_zoom_controls';
+  static const String _offlineFeaturesEnabledPrefsKey = 'offline_features_enabled';
 
   bool _offlineMode = false;
   bool _pauseQueueProcessing = false;
+  bool _keepScreenAwake = false;
+  bool _hideZoomControls = false;
+  bool _offlineFeaturesEnabled = false;
+
   int _maxNodes = kDefaultMaxNodes;
-  UploadMode _uploadMode = kEnableDevelopmentModes ? UploadMode.simulate : UploadMode.production;
+  // Default must account for missing secrets (preview builds) even before init() runs
+  UploadMode _uploadMode = (kEnableDevelopmentModes || !kHasOsmSecrets) ? UploadMode.simulate : UploadMode.production;
   FollowMeMode _followMeMode = FollowMeMode.follow;
   bool _proximityAlertsEnabled = false;
   int _proximityAlertDistance = kProximityAlertDefaultDistance;
@@ -62,7 +72,12 @@ class SettingsState extends ChangeNotifier {
   int get proximityAlertDistance => _proximityAlertDistance;
   bool get networkStatusIndicatorEnabled => _networkStatusIndicatorEnabled;
   int get suspectedLocationMinDistance => _suspectedLocationMinDistance;
+  bool get keepScreenAwake => _keepScreenAwake;
+  bool get hideZoomControls => _hideZoomControls;
+  bool get offlineFeaturesEnabled => _offlineFeaturesEnabled;
   List<TileProvider> get tileProviders => List.unmodifiable(_tileProviders);
+
+
   String get selectedTileTypeId => _selectedTileTypeId;
   int get navigationAvoidanceDistance => _navigationAvoidanceDistance;
   DistanceUnit get distanceUnit => _distanceUnit;
@@ -135,7 +150,20 @@ class SettingsState extends ChangeNotifier {
     
     // Load suspected location minimum distance
     _suspectedLocationMinDistance = prefs.getInt(_suspectedLocationMinDistancePrefsKey) ?? 100;
+
+    // Load keep screen awake setting
+    _keepScreenAwake = prefs.getBool(_keepScreenAwakePrefsKey) ?? false;
+
+    // Load hide zoom controls setting
+    _hideZoomControls = prefs.getBool(_hideZoomControlsPrefsKey) ?? false;
+
+    // Load offline features enabled setting (defaults to false; migration
+    // for existing users with pre-existing offline area data lives in
+    // migrations.dart / migrate_2_10_5)
+    _offlineFeaturesEnabled = prefs.getBool(_offlineFeaturesEnabledPrefsKey) ?? false;
     
+
+
     // Load upload mode (including migration from old test_mode bool)
     if (prefs.containsKey(_uploadModePrefsKey)) {
       final idx = prefs.getInt(_uploadModePrefsKey) ?? 0;
@@ -150,8 +178,16 @@ class SettingsState extends ChangeNotifier {
       await prefs.setInt(_uploadModePrefsKey, _uploadMode.index);
     }
     
-    // In production builds, force production mode if development modes are disabled
-    if (!kEnableDevelopmentModes && _uploadMode != UploadMode.production) {
+    // Override persisted upload mode when the current build configuration
+    // doesn't support it. This handles two cases:
+    // 1. Preview/PR builds without OAuth secrets — force simulate to avoid crashes
+    // 2. Production builds — force production (prefs may have sandbox/simulate
+    //    from a previous dev build on the same device)
+    if (!kHasOsmSecrets && _uploadMode != UploadMode.simulate) {
+      debugPrint('SettingsState: No OSM secrets available, forcing simulate mode');
+      _uploadMode = UploadMode.simulate;
+      await prefs.setInt(_uploadModePrefsKey, _uploadMode.index);
+    } else if (kHasOsmSecrets && !kEnableDevelopmentModes && _uploadMode != UploadMode.production) {
       debugPrint('SettingsState: Development modes disabled, forcing production mode');
       _uploadMode = UploadMode.production;
       await prefs.setInt(_uploadModePrefsKey, _uploadMode.index);
@@ -258,11 +294,10 @@ class SettingsState extends ChangeNotifier {
   }
 
   Future<void> setUploadMode(UploadMode mode) async {
-    // In production builds, only allow production mode
-    if (!kEnableDevelopmentModes && mode != UploadMode.production) {
-      debugPrint('SettingsState: Development modes disabled, forcing production mode');
-      mode = UploadMode.production;
-    }
+    // The upload mode dropdown is only visible when kEnableDevelopmentModes is
+    // true (gated in osm_account_screen.dart), so no secrets/dev-mode guards
+    // are needed here. The init() method handles forcing the correct mode on
+    // startup for production builds and builds without OAuth secrets.
     
     _uploadMode = mode;
     final prefs = await SharedPreferences.getInstance();
@@ -323,6 +358,17 @@ class SettingsState extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Clear all tile caches for a specific provider
+  Future<void> clearTileProviderCaches(String providerId) async {
+    final provider = _tileProviders.firstWhereOrNull((p) => p.id == providerId);
+    if (provider == null) return;
+    
+    // Clear cache for each tile type in this provider
+    for (final tileType in provider.tileTypes) {
+      await ProviderTileCacheManager.deleteCache(providerId, tileType.id);
+    }
+  }
+
   /// Set follow-me mode
   Future<void> setFollowMeMode(FollowMeMode mode) async {
     if (_followMeMode != mode) {
@@ -376,7 +422,44 @@ class SettingsState extends ChangeNotifier {
     }
   }
 
-  // Set distance for avoidance of nodes during navigation
+  /// Set keep screen awake enabled/disabled
+    Future<void> setKeepScreenAwake(bool enabled) async {
+      if (_keepScreenAwake != enabled) {
+        _keepScreenAwake = enabled;
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setBool(_keepScreenAwakePrefsKey, enabled);
+        notifyListeners();
+      }
+    }
+
+  /// Set hide zoom controls enabled/disabled
+  Future<void> setHideZoomControls(bool enabled) async {
+    if (_hideZoomControls != enabled) {
+      _hideZoomControls = enabled;
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool(_hideZoomControlsPrefsKey, enabled);
+      notifyListeners();
+    }
+  }
+
+  /// Set the master "offline features enabled" toggle. When this is off,
+  /// offline areas (downloading, browsing, and using cached tiles/nodes) are
+  /// disabled entirely. Note: any cascading side effects (forcing offline
+  /// mode off, cancelling active downloads, prompting to delete existing
+  /// area data) are handled by the caller (see AppState.setOfflineFeaturesEnabled)
+  /// since those require access to services not owned by SettingsState.
+  Future<void> setOfflineFeaturesEnabled(bool enabled) async {
+    if (_offlineFeaturesEnabled != enabled) {
+      _offlineFeaturesEnabled = enabled;
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool(_offlineFeaturesEnabledPrefsKey, enabled);
+      notifyListeners();
+    }
+  }
+
+
+
+  /// Set distance for avoidance of nodes during navigation
   Future<void> setNavigationAvoidanceDistance(int distance) async {
     if (_navigationAvoidanceDistance != distance) {
       _navigationAvoidanceDistance = distance;

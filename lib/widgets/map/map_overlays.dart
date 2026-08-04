@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map_animations/flutter_map_animations.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../app_state.dart';
 import '../../dev_config.dart';
@@ -16,6 +17,7 @@ class MapOverlays extends StatelessWidget {
   final EditNodeSession? editSession;
   final String? attribution; // Attribution for current tile provider
   final VoidCallback? onSearchPressed; // Callback for search button
+  final bool hideZoomControls; // Hide zoom indicator + zoom in/out buttons
   const MapOverlays({
     super.key,
     required this.mapController,
@@ -24,18 +26,67 @@ class MapOverlays extends StatelessWidget {
     this.editSession,
     this.attribution,
     this.onSearchPressed,
+    this.hideZoomControls = false,
   });
 
-  /// Show full attribution text in a dialog
+
+  /// Show full attribution text in a dialog with license link.
   void _showAttributionDialog(BuildContext context, String attribution) {
     final locService = LocalizationService.instance;
+
+    // Get the license URL from the current tile provider's service policy
+    final appState = AppState.instance;
+    final tileType = appState.selectedTileType;
+    final attributionUrl = tileType?.servicePolicy.attributionUrl;
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         title: Text(locService.t('mapTiles.attribution')),
-        content: SelectableText(
-          attribution,
-          style: const TextStyle(fontSize: 14),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SelectableText(
+              attribution,
+              style: const TextStyle(fontSize: 14),
+            ),
+            if (attributionUrl != null) ...[
+              const SizedBox(height: 12),
+              Semantics(
+                link: true,
+                label: locService.t('mapTiles.openLicense', params: [attributionUrl]),
+                child: InkWell(
+                  onTap: () async {
+                    try {
+                      final uri = Uri.parse(attributionUrl);
+                      if (await canLaunchUrl(uri)) {
+                        await launchUrl(uri, mode: LaunchMode.externalApplication);
+                      } else if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text(locService.t('mapTiles.couldNotOpenLink'))),
+                        );
+                      }
+                    } catch (_) {
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text(locService.t('mapTiles.couldNotOpenLink'))),
+                        );
+                      }
+                    }
+                  },
+                  child: Text(
+                    attributionUrl,
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: Theme.of(context).colorScheme.primary,
+                      decoration: TextDecoration.underline,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ],
         ),
         actions: [
           TextButton(
@@ -90,58 +141,67 @@ class MapOverlays extends StatelessWidget {
         ),
 
         // Zoom indicator, positioned relative to button bar with left safe area
-        Positioned(
-          left: leftPositionWithSafeArea(10, safeArea),
-          bottom: bottomPositionFromButtonBar(kZoomIndicatorSpacingAboveButtonBar, safeArea.bottom),
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
-            decoration: BoxDecoration(
-              color: Colors.black.withValues(alpha: 0.52),
-              borderRadius: BorderRadius.circular(7),
-            ),
-            child: Builder(
-              builder: (context) {
-                double zoom = 15.0; // fallback
-                try {
-                  zoom = mapController.mapController.camera.zoom;
-                } catch (_) {
-                  // Map controller not ready yet
-                }
-                return Text(
-                  'Zoom: ${zoom.toStringAsFixed(2)}',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                  ),
-                );
-              },
+        if (!hideZoomControls)
+          Positioned(
+            left: leftPositionWithSafeArea(10, safeArea),
+            bottom: bottomPositionFromButtonBar(kZoomIndicatorSpacingAboveButtonBar, safeArea.bottom),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+              decoration: BoxDecoration(
+                color: Colors.black.withValues(alpha: 0.52),
+                borderRadius: BorderRadius.circular(7),
+              ),
+              child: Builder(
+                builder: (context) {
+                  double zoom = 15.0; // fallback
+                  try {
+                    zoom = mapController.mapController.camera.zoom;
+                  } catch (_) {
+                    // Map controller not ready yet
+                  }
+                  return Text(
+                    'Zoom: ${zoom.toStringAsFixed(2)}',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  );
+                },
+              ),
             ),
           ),
-        ),
+
 
         // Attribution overlay, positioned relative to button bar with left safe area
         if (attribution != null)
           Positioned(
             bottom: bottomPositionFromButtonBar(kAttributionSpacingAboveButtonBar, safeArea.bottom),
             left: leftPositionWithSafeArea(10, safeArea),
-            child: GestureDetector(
-              onTap: () => _showAttributionDialog(context, attribution!),
-              child: Container(
-                decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.9),
+            child: Semantics(
+              button: true,
+              label: LocalizationService.instance.t('mapTiles.mapAttribution', params: [attribution!]),
+              child: Material(
+                color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.9),
+                borderRadius: BorderRadius.circular(4),
+                child: InkWell(
                   borderRadius: BorderRadius.circular(4),
-                ),
-                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
-                constraints: const BoxConstraints(maxWidth: 250),
-                child: Text(
-                  attribution!,
-                  style: TextStyle(
-                    fontSize: 11,
-                    color: Theme.of(context).colorScheme.onSurface,
+                  onTap: () => _showAttributionDialog(context, attribution!),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 250),
+                      child: Text(
+                        attribution!,
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: Theme.of(context).colorScheme.onSurface,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 1,
+                      ),
+                    ),
                   ),
-                  overflow: TextOverflow.ellipsis,
-                  maxLines: 1,
                 ),
               ),
             ),
@@ -173,37 +233,40 @@ class MapOverlays extends StatelessWidget {
                   
                   // Layer selector button
                   const LayerSelectorButton(),
-                  const SizedBox(height: 8),
-                  // Zoom in button
-                  FloatingActionButton(
-                    mini: true,
-                    heroTag: "zoom_in",
-                    onPressed: () {
-                      try {
-                        final zoom = mapController.mapController.camera.zoom;
-                        mapController.mapController.move(mapController.mapController.camera.center, zoom + 1);
-                      } catch (_) {
-                        // Map controller not ready yet
-                      }
-                    },
-                    child: const Icon(Icons.add),
-                  ),
-                  const SizedBox(height: 8),
-                  // Zoom out button  
-                  FloatingActionButton(
-                    mini: true,
-                    heroTag: "zoom_out",
-                    onPressed: () {
-                      try {
-                        final zoom = mapController.mapController.camera.zoom;
-                        mapController.mapController.move(mapController.mapController.camera.center, zoom - 1);
-                      } catch (_) {
-                        // Map controller not ready yet
-                      }
-                    },
-                    child: const Icon(Icons.remove),
-                  ),
+                  if (!hideZoomControls) ...[
+                    const SizedBox(height: 8),
+                    // Zoom in button
+                    FloatingActionButton(
+                      mini: true,
+                      heroTag: "zoom_in",
+                      onPressed: () {
+                        try {
+                          final zoom = mapController.mapController.camera.zoom;
+                          mapController.mapController.move(mapController.mapController.camera.center, zoom + 1);
+                        } catch (_) {
+                          // Map controller not ready yet
+                        }
+                      },
+                      child: const Icon(Icons.add),
+                    ),
+                    const SizedBox(height: 8),
+                    // Zoom out button  
+                    FloatingActionButton(
+                      mini: true,
+                      heroTag: "zoom_out",
+                      onPressed: () {
+                        try {
+                          final zoom = mapController.mapController.camera.zoom;
+                          mapController.mapController.move(mapController.mapController.camera.center, zoom - 1);
+                        } catch (_) {
+                          // Map controller not ready yet
+                        }
+                      },
+                      child: const Icon(Icons.remove),
+                    ),
+                  ],
                 ],
+
               );
             },
           ),

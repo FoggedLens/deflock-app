@@ -155,8 +155,13 @@ class _OperatorProfileEditorState extends State<OperatorProfileEditor> {
     
     final tagMap = <String, String>{};
     for (final e in _tags) {
-      if (e.key.trim().isEmpty) continue; // Skip only if key is empty
-      tagMap[e.key.trim()] = e.value.trim(); // Allow empty values for refinement
+      final key = e.key.trim();
+      final value = e.value.trim();
+      
+      // Skip if key is empty OR value is empty (no empty values for operator profiles)
+      if (key.isEmpty || value.isEmpty) continue;
+      
+      tagMap[key] = value;
     }
     
     final newProfile = widget.profile.copyWith(

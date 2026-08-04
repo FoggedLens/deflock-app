@@ -111,8 +111,23 @@
     "advancedSettings": "Geavanceerde Instellingen",
     "advancedSettingsSubtitle": "Prestaties, waarschuwingen en tile provider instellingen",
     "proximityAlerts": "Nabijheids Waarschuwingen",
-    "networkStatusIndicator": "Netwerk Status Indicator"
+    "keepScreenAwake": "Scherm Actief Houden",
+    "networkStatusIndicator": "Netwerk Status Indicator",
+    "hideZoomControls": "Zoomknoppen Verbergen",
+    "enableOfflineFeatures": "Offline Functies Inschakelen",
+    "enableOfflineFeaturesTitle": "Offline functies inschakelen",
+    "enableOfflineFeaturesSubtitle": "Sta het downloaden en gebruiken van offline kaartgebieden toe. Indien uitgeschakeld, zijn offline modus en gedownloade gebieden niet beschikbaar."
   },
+
+  "keepScreenAwake": {
+    "title": "Houd het scherm actief tijdens het gebruik van de app",
+    "subtitle": "Voorkomt dat het scherm automatisch uitschakelt tijdens het gebruik van de app"
+  },
+  "hideZoomControls": {
+    "title": "Zoomknoppen verbergen",
+    "subtitle": "Verbergt de +/- zoomknoppen en de zoomniveau-indicator. U kunt nog steeds zoomen met knijpgebaren."
+  },
+
   "proximityAlerts": {
     "getNotified": "Krijg meldingen wanneer u surveillance apparaten nadert",
     "batteryUsage": "Gebruikt extra batterij voor continue locatie monitoring",
@@ -131,9 +146,29 @@
     "queuedForUpload": "Node in wachtrij geplaatst voor upload",
     "editQueuedForUpload": "Node bewerking in wachtrij geplaatst voor upload",
     "deleteQueuedForUpload": "Node verwijdering in wachtrij geplaatst voor upload",
-    "confirmDeleteTitle": "Verwijder Node",
-    "confirmDeleteMessage": "Weet u zeker dat u node #{} wilt verwijderen? Deze actie kan niet ongedaan worden gemaakt."
+    "confirmDeleteTitle": "Verwijder Node", 
+    "confirmDeleteMessage": "Weet u zeker dat u node #{} wilt verwijderen? Deze actie kan niet ongedaan worden gemaakt.",
+    "deleteReasonLabel": "Reden voor Verwijdering",
+    "deleteReasonSelectHint": "Selecteer...",
+    "deleteReasonDeviceRemoved": "Apparaat verwijderd",
+    "deleteReasonDuplicateNode": "Dubbele node",
+    "deleteReasonMisidentifiedInfra": "Verkeerd geïdentificeerde infrastructuur",
+    "deleteReasonSpamVandalism": "Spam/vandalisme",
+    "deleteReasonCustom": "Aangepast..",
+    "deleteReasonHint": "Beschrijf de reden...",
+
+    "mustBeLoggedInToDelete": "U moet ingelogd zijn met een OpenStreetMap-account om kaartgegevens bij te dragen.",
+    "uploadPending": "Upload in behandeling",
+    "uploadCreatingChangeset": "Changeset maken...",
+    "uploadUploading": "Uploaden...",
+    "uploadClosingChangeset": "Changeset sluiten...",
+    "uploadError": "Upload mislukt",
+    "uploadComplete": "Upload voltooid",
+    "viewInQueue": "Bekijk in Wachtrij",
+    "deletedSuccessfully": "Deze node is succesvol verwijderd van OpenStreetMap."
   },
+
+
   "addNode": {
     "profile": "Profiel",
     "selectProfile": "Selecteer een profiel...",
@@ -181,7 +216,10 @@
     "offlineModeWarning": "Downloads uitgeschakeld in offline modus. Schakel offline modus uit om nieuwe gebieden te downloaden.",
     "areaTooBigMessage": "Zoom in tot ten minste niveau {} om offline gebieden te downloaden. Grote gebied downloads kunnen ervoor zorgen dat de app niet meer reageert.",
     "downloadStarted": "Download gestart! Tiles en nodes ophalen...",
-    "downloadFailed": "Download starten mislukt: {}"
+    "downloadFailed": "Download starten mislukt: {}",
+    "offlineNotPermitted": "De {}-server staat geen offline downloads toe. Schakel over naar een tegelserver die offline gebruik toestaat (bijv. Bing Maps, Mapbox of een zelf gehoste tegelserver).",
+    "currentTileProvider": "huidige tegel",
+    "noTileProviderSelected": "Geen tegelprovider geselecteerd. Selecteer een kaartstijl voordat u een offlinegebied downloadt."
   },
   "downloadStarted": {
     "title": "Download Gestart",
@@ -269,8 +307,13 @@
     "closingChangeset": " (Changeset sluiten...)",
     "processingPaused": "Wachtrij Verwerking Gepauzeerd",
     "pausedDueToOffline": "Upload verwerking is gepauzeerd omdat offline modus is ingeschakeld.",
-    "pausedByUser": "Upload verwerking is handmatig gepauzeerd."
+    "pausedByUser": "Upload verwerking is handmatig gepauzeerd.",
+    "inFlightWaitTitle": "Indiening Wordt Afgerond",
+    "inFlightWaitMessage": "Er is momenteel een indiening bezig die moet worden afgerond voordat deze instelling kan worden toegepast. Dit zou maar een moment moeten duren.",
+    "inFlightCompleteTitle": "Indiening Voltooid",
+    "inFlightCompleteMessage": "Uw indiening is succesvol afgerond. Uw instelling wordt nu toegepast."
   },
+
   "tileProviders": {
     "title": "Tile Providers",
     "noProvidersConfigured": "Geen tile providers geconfigureerd",
@@ -281,6 +324,9 @@
     "addProvider": "Voeg Provider Toe",
     "deleteProvider": "Verwijder Provider",
     "deleteProviderConfirm": "Weet u zeker dat u \"{}\" wilt verwijderen?",
+    "clearCaches": "Cache Wissen",
+    "clearCachesConfirm": "Alle tegelcaches wissen voor \"{}\"? Dit zal opslagruimte vrijmaken maar tegels moeten opnieuw worden gedownload bij het bekijken van die gebieden.",
+    "cachesCleared": "Caches gewist voor \"{}\"",
     "providerName": "Provider Naam",
     "providerNameHint": "bijv., Aangepaste Kaarten B.V.",
     "providerNameRequired": "Provider naam is vereist",
@@ -335,7 +381,10 @@
   "mapTiles": {
     "title": "Kaart Tiles",
     "manageProviders": "Beheer Providers",
-    "attribution": "Kaart Attributie"
+    "attribution": "Kaart Attributie",
+    "mapAttribution": "Kaartbron: {}",
+    "couldNotOpenLink": "Kon link niet openen",
+    "openLicense": "Open licentie: {}"
   },
   "profileEditor": {
     "viewProfile": "Bekijk Profiel",
@@ -350,6 +399,8 @@
     "fovHint": "FOV in graden (laat leeg voor standaard)",
     "fovSubtitle": "Camera gezichtsveld - gebruikt voor kegel breedte en bereik inzending formaat",
     "fovInvalid": "FOV moet tussen 1 en 360 graden zijn",
+    "fov360": "360° Gezichtsveld",
+    "fov360Subtitle": "Camera heeft een 360-graden omnidirectioneel gezichtsveld",
     "submittable": "Indienbaar",
     "submittableSubtitle": "Of dit profiel gebruikt kan worden voor camera inzendingen",
     "osmTags": "OSM Tags",
@@ -408,8 +459,13 @@
     "refreshNodesSubtitle": "Haal node gegevens opnieuw op voor dit gebied",
     "startRefresh": "Start Verversen",
     "refreshStarted": "Verversen gestart!",
-    "refreshFailed": "Verversen mislukt: {}"
+    "refreshFailed": "Verversen mislukt: {}",
+    "disableConfirmTitle": "Bestaande Offline Gebiedsgegevens Verwijderen?",
+    "disableConfirmMessage": "U heeft al bestaande offline gebiedsgegevens. Het uitschakelen van offline functies zal voorkomen dat de app deze gebruikt. Wilt u deze gegevens op het apparaat bewaren voor het geval u offline functies later weer inschakelt, of ze nu verwijderen om opslagruimte vrij te maken?",
+    "keepData": "Gegevens Behouden",
+    "deleteData": "Gegevens Verwijderen"
   },
+
   "refineTagsSheet": {
     "title": "Verfijn Tags",
     "operatorProfile": "Operator Profiel",
@@ -513,7 +569,7 @@
     "dataSourceDescription": "Nutsbedrijf vergunning data die mogelijke surveillance infrastructuur installatie sites aangeeft",
     "dataSourceCredit": "Gegevens verzameling en hosting geleverd door alprwatch.org",
     "minimumDistance": "Minimum Afstand van Echte Nodes",
-    "minimumDistanceSubtitle": "Verberg verdachte locaties binnen {}m van bestaande surveillance apparaten",
+    "minimumDistanceSubtitle": "Verberg verdachte locaties binnen {} van bestaande surveillance apparaten",
     "updating": "Verdachte Locaties Bijwerken",
     "downloadingAndProcessing": "Data downloaden en verwerken...",
     "updateSuccess": "Verdachte locaties succesvol bijgewerkt",

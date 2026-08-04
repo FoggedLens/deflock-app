@@ -195,49 +195,8 @@ class _OSMAccountScreenState extends State<OSMAccountScreen> {
                     child: UploadModeSection(),
                   ),
                 ),
-                const SizedBox(height: 16),
+              const SizedBox(height: 16),
               ],
-              
-              // Information Section
-              Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        locService.t('auth.aboutOSM'),
-                        style: Theme.of(context).textTheme.titleMedium,
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        locService.t('auth.aboutOSMDescription'),
-                        style: Theme.of(context).textTheme.bodyMedium,
-                      ),
-                      const SizedBox(height: 16),
-                      SizedBox(
-                        width: double.infinity,
-                        child: OutlinedButton.icon(
-                          onPressed: () async {
-                            final url = Uri.parse('https://openstreetmap.org');
-                            if (await canLaunchUrl(url)) {
-                              await launchUrl(url, mode: LaunchMode.externalApplication);
-                            } else {
-                              if (context.mounted) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(content: Text(locService.t('advancedEdit.couldNotOpenOSMWebsite'))),
-                                );
-                              }
-                            }
-                          },
-                          icon: const Icon(Icons.open_in_new),
-                          label: Text(locService.t('auth.visitOSM')),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
               
               // Account deletion section - only show when logged in and not in simulate mode
               if (appState.isLoggedIn && appState.uploadMode != UploadMode.simulate) ...[

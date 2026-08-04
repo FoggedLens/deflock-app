@@ -269,16 +269,33 @@ class NodeProfile {
   /// Used as the default `<Existing tags>` option when editing nodes
   /// All existing tags will flow through as additionalExistingTags
   static NodeProfile createExistingTagsProfile(OsmNode node) {
-    // Calculate FOV from existing direction ranges if applicable
+    // Only assign FOV if the original direction string actually contained range notation
+    // (e.g., "90-270" or "55-125"), not if it was just single directions (e.g., "90")
     double? calculatedFov;
     
-    // If node has direction/FOV pairs, check if they all have the same FOV
-    if (node.directionFovPairs.isNotEmpty) {
-      final firstFov = node.directionFovPairs.first.fovDegrees;
+    final raw = node.tags['direction'] ?? node.tags['camera:direction'];
+    if (raw != null) {
+      // Check if any part of the direction string contains range notation (dash with numbers)
+      final parts = raw.split(';');
+      bool hasRangeNotation = false;
       
-      // If all directions have the same FOV, use it for the profile
-      if (node.directionFovPairs.every((df) => df.fovDegrees == firstFov)) {
-        calculatedFov = firstFov;
+      for (final part in parts) {
+        final trimmed = part.trim();
+        // Look for range pattern: numbers-numbers (e.g., "90-270", "55-125")
+        if (trimmed.contains('-') && RegExp(r'^\d+\.?\d*-\d+\.?\d*$').hasMatch(trimmed)) {
+          hasRangeNotation = true;
+          break;
+        }
+      }
+      
+      // Only calculate FOV if the node originally had range notation
+      if (hasRangeNotation && node.directionFovPairs.isNotEmpty) {
+        final firstFov = node.directionFovPairs.first.fovDegrees;
+        
+        // If all directions have the same FOV, use it for the profile
+        if (node.directionFovPairs.every((df) => df.fovDegrees == firstFov)) {
+          calculatedFov = firstFov;
+        }
       }
     }
     
@@ -290,7 +307,7 @@ class NodeProfile {
       requiresDirection: true,
       submittable: true,
       editable: false,
-      fov: calculatedFov, // Use calculated FOV from existing direction ranges
+      fov: calculatedFov, // Only use FOV if original had explicit range notation
     );
   }
 

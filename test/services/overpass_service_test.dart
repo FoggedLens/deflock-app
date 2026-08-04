@@ -7,6 +7,7 @@ import 'package:mocktail/mocktail.dart';
 
 import 'package:deflockapp/models/node_profile.dart';
 import 'package:deflockapp/services/overpass_service.dart';
+import 'package:deflockapp/services/service_policy.dart';
 
 class MockHttpClient extends Mock implements http.Client {}
 
@@ -36,6 +37,7 @@ void main() {
 
   setUp(() {
     mockClient = MockHttpClient();
+    // Initialize OverpassService with a mock HTTP client for testing
     service = OverpassService(client: mockClient);
   });
 
@@ -55,7 +57,7 @@ void main() {
   }
 
   group('query building', () {
-    test('uses out skel for way/relation pass, out body for node pass',
+    test('uses the way/relation membership pass with restriction conversion',
         () async {
       stubOverpassResponse([]);
 
@@ -66,10 +68,15 @@ void main() {
       ).captured;
 
       final query = (captured.last as Map<String, String>)['data']!;
-      expect(query, contains('out body;'));
-      expect(query, contains('out skel;'));
+      expect(query, contains('.allNodes out body;'));
+      expect(query, contains('way(bn.allNodes);'));
+      expect(query, contains('relation(bn.allNodes);'));
+      expect(query, contains('.resNodes'));
+      expect(query, contains('convert restriction ::id = id();'));
       expect(query, isNot(contains('out meta;')));
+      expect(query, isNot(contains('out ids;')));
     });
+
 
     test('empty tag values are excluded from filters', () async {
       final profileWithEmpty = [
@@ -97,8 +104,142 @@ void main() {
     });
   });
 
+  group('profile deduplication (subsumption)', () {
+    test('a specific profile subsumed by a generic one is dropped', () async {
+      final generic = NodeProfile(
+        id: 'generic-alpr',
+        name: 'Generic ALPR',
+        tags: const {
+          'man_made': 'surveillance',
+          'surveillance:type': 'ALPR',
+        },
+      );
+      final specific = NodeProfile(
+        id: 'flock',
+        name: 'Flock',
+        tags: const {
+          'man_made': 'surveillance',
+          'surveillance': 'public',
+          'surveillance:type': 'ALPR',
+          'surveillance:zone': 'traffic',
+          'camera:type': 'fixed',
+          'manufacturer': 'Flock Safety',
+          'manufacturer:wikidata': 'Q108485435',
+        },
+      );
+
+      stubOverpassResponse([]);
+
+      await service.fetchNodes(bounds: bounds, profiles: [generic, specific]);
+
+      final captured = verify(
+        () => mockClient.post(any(), body: captureAny(named: 'body')),
+      ).captured;
+      final query = (captured.last as Map<String, String>)['data']!;
+
+      // Only the generic clause should remain.
+      expect(query, contains('["man_made"="surveillance"]["surveillance:type"="ALPR"]'));
+      expect(query, isNot(contains('manufacturer')));
+      expect(query, isNot(contains('Flock Safety')));
+
+      // Only one distinct tag-filter clause, appearing twice (once for
+      // .allNodes, once for the .resNodes re-filter).
+      final nodeClauseCount = RegExp(r'node[.\[]').allMatches(query).length;
+      expect(nodeClauseCount, equals(2));
+    });
+
+
+
+    test('unrelated profiles are all kept', () async {
+      final alprGeneric = NodeProfile(
+        id: 'generic-alpr',
+        name: 'Generic ALPR',
+        tags: const {
+          'man_made': 'surveillance',
+          'surveillance:type': 'ALPR',
+        },
+      );
+      final gunshotGeneric = NodeProfile(
+        id: 'generic-gunshot',
+        name: 'Generic Gunshot Detector',
+        tags: const {
+          'man_made': 'surveillance',
+          'surveillance:type': 'gunshot_detector',
+        },
+      );
+
+      stubOverpassResponse([]);
+
+      await service.fetchNodes(bounds: bounds, profiles: [alprGeneric, gunshotGeneric]);
+
+      final captured = verify(
+        () => mockClient.post(any(), body: captureAny(named: 'body')),
+      ).captured;
+      final query = (captured.last as Map<String, String>)['data']!;
+
+      expect(query, contains('["surveillance:type"="ALPR"]'));
+      expect(query, contains('["surveillance:type"="gunshot_detector"]'));
+    });
+
+    test('full default profile set reduces to the two generic clauses', () async {
+      final profiles = NodeProfile.getDefaults();
+
+      stubOverpassResponse([]);
+
+      await service.fetchNodes(bounds: bounds, profiles: profiles);
+
+      final captured = verify(
+        () => mockClient.post(any(), body: captureAny(named: 'body')),
+      ).captured;
+      final query = (captured.last as Map<String, String>)['data']!;
+
+      // Each of the 2 generic clauses appears twice (once in .allNodes,
+      // once in the .resNodes re-filter) = 4 total tag-filter clauses.
+      final nodeClauseCount = RegExp(r'node[.\[]').allMatches(query).length;
+      expect(nodeClauseCount, equals(4));
+
+      expect(query, contains('["man_made"="surveillance"]["surveillance:type"="ALPR"]'));
+      expect(query, contains('["man_made"="surveillance"]["surveillance:type"="gunshot_detector"]'));
+
+      // Brand-specific tags should not appear anywhere in the reduced query.
+      expect(query, isNot(contains('manufacturer')));
+      expect(query, isNot(contains('ShotSpotter')));
+    });
+
+    test('profiles with only empty tags do not subsume or break the query', () async {
+      final emptyTagsProfile = NodeProfile(
+        id: 'empty',
+        name: 'Empty',
+        tags: const {'camera:mount': ''},
+      );
+      final normalProfile = NodeProfile(
+        id: 'normal',
+        name: 'Normal',
+        tags: const {'man_made': 'surveillance'},
+      );
+
+      stubOverpassResponse([]);
+
+      await service.fetchNodes(bounds: bounds, profiles: [emptyTagsProfile, normalProfile]);
+
+      final captured = verify(
+        () => mockClient.post(any(), body: captureAny(named: 'body')),
+      ).captured;
+      final query = (captured.last as Map<String, String>)['data']!;
+
+      expect(query, contains('["man_made"="surveillance"]'));
+    });
+  });
+
+
   group('response parsing — constraint detection', () {
-    test('nodes referenced by a way are constrained', () async {
+    test('a node referenced as a "restriction" element is constrained',
+        () async {
+      // The Overpass query converts each way/relation-referenced node ID
+      // into a synthetic {"type":"restriction","id":<nodeId>} element
+      // (via `convert restriction ::id = id();`) — this is how the server
+      // tells us a node is part of some way/relation, regardless of whether
+      // that way/relation came from a "way" or a "relation" in Overpass.
       stubOverpassResponse([
         {
           'type': 'node',
@@ -115,9 +256,8 @@ void main() {
           'tags': {'man_made': 'surveillance'},
         },
         {
-          'type': 'way',
-          'id': 100,
-          'nodes': [1],
+          'type': 'restriction',
+          'id': 1,
         },
       ]);
 
@@ -131,32 +271,8 @@ void main() {
       expect(node2.isConstrained, isFalse);
     });
 
-    test('nodes referenced by a relation member are constrained', () async {
-      stubOverpassResponse([
-        {
-          'type': 'node',
-          'id': 3,
-          'lat': 38.9,
-          'lon': -77.0,
-          'tags': {'man_made': 'surveillance'},
-        },
-        {
-          'type': 'relation',
-          'id': 200,
-          'members': [
-            {'type': 'node', 'ref': 3, 'role': ''},
-          ],
-        },
-      ]);
-
-      final nodes =
-          await service.fetchNodes(bounds: bounds, profiles: profiles);
-
-      expect(nodes, hasLength(1));
-      expect(nodes.first.isConstrained, isTrue);
-    });
-
-    test('nodes not in any way or relation are unconstrained', () async {
+    test('nodes not marked with a "restriction" element are unconstrained',
+        () async {
       stubOverpassResponse([
         {
           'type': 'node',
@@ -174,7 +290,8 @@ void main() {
       expect(nodes.first.isConstrained, isFalse);
     });
 
-    test('mixed response with nodes, ways, and relations', () async {
+    test('mixed response with multiple constrained and unconstrained nodes',
+        () async {
       stubOverpassResponse([
         {
           'type': 'node',
@@ -198,16 +315,12 @@ void main() {
           'tags': {'man_made': 'surveillance'},
         },
         {
-          'type': 'way',
-          'id': 300,
-          'nodes': [10],
+          'type': 'restriction',
+          'id': 10,
         },
         {
-          'type': 'relation',
-          'id': 400,
-          'members': [
-            {'type': 'node', 'ref': 11, 'role': ''},
-          ],
+          'type': 'restriction',
+          'id': 11,
         },
       ]);
 
@@ -220,6 +333,7 @@ void main() {
       expect(nodes.firstWhere((n) => n.id == 12).isConstrained, isFalse);
     });
   });
+
 
   group('error handling', () {
     test('HTTP 200 returns parsed nodes', () async {
@@ -246,40 +360,41 @@ void main() {
       stubErrorResponse(
           400, 'Error: too many nodes (limit is 50000) in query');
 
-      expect(
+      await expectLater(
         () => service.fetchNodes(
-            bounds: bounds, profiles: profiles, maxRetries: 0),
+            bounds: bounds, profiles: profiles, policy: const ResiliencePolicy(maxRetries: 0)),
         throwsA(isA<NodeLimitError>()),
       );
     });
 
-    test('response with "timeout" throws NodeLimitError', () async {
+    test('response with "timeout" throws NetworkError (not split)', () async {
       stubErrorResponse(400, 'runtime error: timeout in query execution');
 
-      expect(
+      await expectLater(
         () => service.fetchNodes(
-            bounds: bounds, profiles: profiles, maxRetries: 0),
-        throwsA(isA<NodeLimitError>()),
+            bounds: bounds, profiles: profiles, policy: const ResiliencePolicy(maxRetries: 0)),
+        throwsA(isA<NetworkError>()),
       );
     });
 
-    test('response with "runtime limit exceeded" throws NodeLimitError',
+    test('response with "runtime limit exceeded" throws NetworkError (not split)',
         () async {
       stubErrorResponse(400, 'runtime limit exceeded');
 
-      expect(
+      await expectLater(
         () => service.fetchNodes(
-            bounds: bounds, profiles: profiles, maxRetries: 0),
-        throwsA(isA<NodeLimitError>()),
+            bounds: bounds, profiles: profiles, policy: const ResiliencePolicy(maxRetries: 0)),
+        throwsA(isA<NetworkError>()),
       );
     });
+
 
     test('HTTP 429 throws RateLimitError', () async {
       stubErrorResponse(429, 'Too Many Requests');
 
-      expect(
+      await expectLater(
         () => service.fetchNodes(
-            bounds: bounds, profiles: profiles, maxRetries: 0),
+            bounds: bounds, profiles: profiles, policy: const ResiliencePolicy(maxRetries: 0)),
         throwsA(isA<RateLimitError>()),
       );
     });
@@ -287,9 +402,9 @@ void main() {
     test('response with "rate limited" throws RateLimitError', () async {
       stubErrorResponse(503, 'You are rate limited');
 
-      expect(
+      await expectLater(
         () => service.fetchNodes(
-            bounds: bounds, profiles: profiles, maxRetries: 0),
+            bounds: bounds, profiles: profiles, policy: const ResiliencePolicy(maxRetries: 0)),
         throwsA(isA<RateLimitError>()),
       );
     });
@@ -298,9 +413,9 @@ void main() {
         () async {
       stubErrorResponse(500, 'Internal Server Error');
 
-      expect(
+      await expectLater(
         () => service.fetchNodes(
-            bounds: bounds, profiles: profiles, maxRetries: 0),
+            bounds: bounds, profiles: profiles, policy: const ResiliencePolicy(maxRetries: 0)),
         throwsA(isA<NetworkError>()),
       );
     });
@@ -311,6 +426,180 @@ void main() {
 
       expect(nodes, isEmpty);
       verifyNever(() => mockClient.post(any(), body: any(named: 'body')));
+    });
+  });
+
+  group('fallback behavior', () {
+    test('falls back to overpass-api.de on NetworkError after retries', () async {
+      int callCount = 0;
+      when(() => mockClient.post(any(), body: any(named: 'body')))
+          .thenAnswer((invocation) async {
+        callCount++;
+        final uri = invocation.positionalArguments[0] as Uri;
+
+        if (uri.host == 'overpass.deflock.org') {
+          return http.Response('Internal Server Error', 500);
+        }
+        // Fallback succeeds
+        return http.Response(
+          jsonEncode({
+            'elements': [
+              {
+                'type': 'node',
+                'id': 1,
+                'lat': 38.9,
+                'lon': -77.0,
+                'tags': {'man_made': 'surveillance'},
+              },
+            ]
+          }),
+          200,
+        );
+      });
+
+      final nodes = await service.fetchNodes(
+          bounds: bounds, profiles: profiles, policy: const ResiliencePolicy(maxRetries: 0));
+
+      expect(nodes, hasLength(1));
+      // primary (1 attempt, 0 retries) + fallback (1 attempt) = 2
+      expect(callCount, equals(2));
+    });
+
+    test('does NOT fallback on NodeLimitError', () async {
+      when(() => mockClient.post(any(), body: any(named: 'body')))
+          .thenAnswer((_) async => http.Response(
+                'Error: too many nodes (limit is 50000) in query',
+                400,
+              ));
+
+      await expectLater(
+        () => service.fetchNodes(
+            bounds: bounds, profiles: profiles, policy: const ResiliencePolicy(maxRetries: 0)),
+        throwsA(isA<NodeLimitError>()),
+      );
+
+      // Only one call — no fallback (abort disposition)
+      verify(() => mockClient.post(any(), body: any(named: 'body')))
+          .called(1);
+    });
+
+    test('RateLimitError triggers fallback without retrying primary', () async {
+      int callCount = 0;
+      when(() => mockClient.post(any(), body: any(named: 'body')))
+          .thenAnswer((invocation) async {
+        callCount++;
+        final uri = invocation.positionalArguments[0] as Uri;
+
+        if (uri.host == 'overpass.deflock.org') {
+          return http.Response('Too Many Requests', 429);
+        }
+        // Fallback succeeds
+        return http.Response(
+          jsonEncode({
+            'elements': [
+              {
+                'type': 'node',
+                'id': 1,
+                'lat': 38.9,
+                'lon': -77.0,
+                'tags': {'man_made': 'surveillance'},
+              },
+            ]
+          }),
+          200,
+        );
+      });
+
+      final nodes = await service.fetchNodes(
+          bounds: bounds, profiles: profiles, policy: const ResiliencePolicy(maxRetries: 2));
+
+      expect(nodes, hasLength(1));
+      // 1 primary (no retry on fallback disposition) + 1 fallback = 2
+      expect(callCount, equals(2));
+    });
+
+    test('primary fails then fallback also fails -> error propagated', () async {
+      when(() => mockClient.post(any(), body: any(named: 'body')))
+          .thenAnswer((_) async =>
+              http.Response('Internal Server Error', 500));
+
+      await expectLater(
+        () => service.fetchNodes(
+            bounds: bounds, profiles: profiles, policy: const ResiliencePolicy(maxRetries: 0)),
+        throwsA(isA<NetworkError>()),
+      );
+
+      // primary + fallback
+      verify(() => mockClient.post(any(), body: any(named: 'body')))
+          .called(2);
+    });
+
+    test('does NOT fallback when using custom endpoint', () async {
+      final customService = OverpassService(
+        client: mockClient,
+        endpoint: 'https://custom.example.com/api/interpreter',
+      );
+
+      when(() => mockClient.post(any(), body: any(named: 'body')))
+          .thenAnswer((_) async =>
+              http.Response('Internal Server Error', 500));
+
+      await expectLater(
+        () => customService.fetchNodes(
+            bounds: bounds, profiles: profiles, policy: const ResiliencePolicy(maxRetries: 0)),
+        throwsA(isA<NetworkError>()),
+      );
+
+      // Only one call - no fallback with custom endpoint
+      verify(() => mockClient.post(any(), body: any(named: 'body')))
+          .called(1);
+    });
+
+    test('retries exhaust before fallback kicks in', () async {
+      int callCount = 0;
+      when(() => mockClient.post(any(), body: any(named: 'body')))
+          .thenAnswer((invocation) async {
+        callCount++;
+        final uri = invocation.positionalArguments[0] as Uri;
+
+        if (uri.host == 'overpass.deflock.org') {
+          return http.Response('Server Error', 500);
+        }
+        // Fallback succeeds
+        return http.Response(
+          jsonEncode({
+            'elements': [
+              {
+                'type': 'node',
+                'id': 1,
+                'lat': 38.9,
+                'lon': -77.0,
+                'tags': {'man_made': 'surveillance'},
+              },
+            ]
+          }),
+          200,
+        );
+      });
+
+      final nodes = await service.fetchNodes(
+          bounds: bounds, profiles: profiles, policy: const ResiliencePolicy(maxRetries: 2));
+
+      expect(nodes, hasLength(1));
+      // 3 primary attempts (1 + 2 retries) + 1 fallback = 4
+      expect(callCount, equals(4));
+    });
+  });
+
+  group('default endpoints', () {
+    test('default endpoint is overpass.deflock.org', () {
+      expect(OverpassService.defaultEndpoint,
+          equals('https://overpass.deflock.org/api/interpreter'));
+    });
+
+    test('fallback endpoint is overpass-api.de', () {
+      expect(OverpassService.fallbackEndpoint,
+          equals('https://overpass-api.de/api/interpreter'));
     });
   });
 }

@@ -70,7 +70,7 @@
     "submitAnyway": "Submit Anyway",
     "nodeType": {
       "alpr": "ALPR/ANPR Camera",
-      "publicCamera": "Public Surveillance Camera", 
+      "publicCamera": "Public Surveillance Camera",
       "camera": "Surveillance Camera",
       "amenity": "{}",
       "device": "{} Device",
@@ -111,8 +111,23 @@
     "advancedSettings": "Advanced Settings",
     "advancedSettingsSubtitle": "Performance, alerts, and tile provider settings",
     "proximityAlerts": "Proximity Alerts",
-    "networkStatusIndicator": "Network Status Indicator"
+    "networkStatusIndicator": "Network Status Indicator",
+    "keepScreenAwake": "Keep Screen Awake",
+    "hideZoomControls": "Hide Zoom Controls",
+    "enableOfflineFeatures": "Enable Offline Features",
+    "enableOfflineFeaturesTitle": "Enable offline features",
+    "enableOfflineFeaturesSubtitle": "Allow downloading and using offline map areas. When disabled, offline mode and downloaded areas are unavailable."
   },
+
+  "keepScreenAwake": {
+    "title": "Keep screen awake while using app",
+    "subtitle": "Prevents the screen from turning off automatically while using the app"
+  },
+  "hideZoomControls": {
+    "title": "Hide zoom controls",
+    "subtitle": "Hide the +/- zoom buttons and zoom level indicator. You can still zoom with pinch gestures."
+  },
+
   "proximityAlerts": {
     "getNotified": "Get notified when approaching surveillance devices",
     "batteryUsage": "Uses extra battery for continuous location monitoring",
@@ -132,8 +147,27 @@
     "editQueuedForUpload": "Node edit queued for upload",
     "deleteQueuedForUpload": "Node deletion queued for upload",
     "confirmDeleteTitle": "Delete Node",
-    "confirmDeleteMessage": "Are you sure you want to delete node #{}? This action cannot be undone."
+    "confirmDeleteMessage": "Are you sure you want to delete node #{}? This action cannot be undone.",
+    "deleteReasonLabel": "Reason for Deletion",
+    "deleteReasonSelectHint": "Select...",
+    "deleteReasonDeviceRemoved": "Device removed",
+    "deleteReasonDuplicateNode": "Duplicate node",
+    "deleteReasonMisidentifiedInfra": "Misidentified infra",
+    "deleteReasonSpamVandalism": "Spam/vandalism",
+    "deleteReasonCustom": "Custom..",
+    "deleteReasonHint": "Please describe the reason...",
+    "mustBeLoggedInToDelete": "You must be logged in with an OpenStreetMap account to contribute map data.",
+    "uploadPending": "Pending upload",
+    "uploadCreatingChangeset": "Creating changeset...",
+    "uploadUploading": "Uploading...",
+    "uploadClosingChangeset": "Closing changeset...",
+    "uploadError": "Upload failed",
+    "uploadComplete": "Upload complete",
+    "viewInQueue": "View in Queue",
+    "deletedSuccessfully": "This node was successfully deleted from OpenStreetMap."
   },
+
+
   "addNode": {
     "profile": "Profile",
     "selectProfile": "Select a profile...",
@@ -181,7 +215,10 @@
     "offlineModeWarning": "Downloads disabled while in offline mode. Disable offline mode to download new areas.",
     "areaTooBigMessage": "Zoom in to at least level {} to download offline areas. Large area downloads can cause the app to become unresponsive.",
     "downloadStarted": "Download started! Fetching tiles and nodes...",
-    "downloadFailed": "Failed to start download: {}"
+    "downloadFailed": "Failed to start download: {}",
+    "offlineNotPermitted": "The {} server does not permit offline downloads. Switch to a tile provider that allows offline use (e.g., Bing Maps, Mapbox, or a self-hosted tile server).",
+    "currentTileProvider": "current tile",
+    "noTileProviderSelected": "No tile provider is selected. Please select a map style before downloading an offline area."
   },
   "downloadStarted": {
     "title": "Download Started",
@@ -269,8 +306,13 @@
     "closingChangeset": " (Closing changeset...)",
     "processingPaused": "Queue Processing Paused",
     "pausedDueToOffline": "Upload processing is paused because offline mode is enabled.",
-    "pausedByUser": "Upload processing is manually paused."
+    "pausedByUser": "Upload processing is manually paused.",
+    "inFlightWaitTitle": "Finishing Submission",
+    "inFlightWaitMessage": "A submission is currently in progress and needs to finish before this setting can be applied. This should only take a moment.",
+    "inFlightCompleteTitle": "Submission Complete",
+    "inFlightCompleteMessage": "Your submission finished successfully. Applying your setting now."
   },
+
   "tileProviders": {
     "title": "Tile Providers",
     "noProvidersConfigured": "No tile providers configured",
@@ -279,8 +321,11 @@
     "needsApiKey": "Needs API key",
     "editProvider": "Edit Provider",
     "addProvider": "Add Provider",
-    "deleteProvider": "Delete Provider",
+    "deleteProvider": "Delete Provider", 
     "deleteProviderConfirm": "Are you sure you want to delete \"{}\"?",
+    "clearCaches": "Clear Caches",
+    "clearCachesConfirm": "Clear all tile caches for \"{}\"? This will free up storage space but tiles will need to be downloaded again when viewing those areas.",
+    "cachesCleared": "Caches cleared for \"{}\"",
     "providerName": "Provider Name",
     "providerNameHint": "e.g., Custom Maps Inc.",
     "providerNameRequired": "Provider name is required",
@@ -329,13 +374,16 @@
     "addProfileChoiceMessage": "How would you like to add a profile?",
     "createCustomProfile": "Create Custom Profile",
     "createCustomProfileDescription": "Build a profile from scratch with your own tags",
-    "importFromWebsite": "Import from Website", 
+    "importFromWebsite": "Import from Website",
     "importFromWebsiteDescription": "Browse and import profiles from deflock.me/identify"
   },
   "mapTiles": {
     "title": "Map Tiles",
     "manageProviders": "Manage Providers",
-    "attribution": "Map Attribution"
+    "attribution": "Map Attribution",
+    "mapAttribution": "Map attribution: {}",
+    "couldNotOpenLink": "Could not open link",
+    "openLicense": "Open license: {}"
   },
   "profileEditor": {
     "viewProfile": "View Profile",
@@ -350,6 +398,8 @@
     "fovHint": "FOV in degrees (leave empty for default)",
     "fovSubtitle": "Camera field of view - used for cone width and range submission format",
     "fovInvalid": "FOV must be between 1 and 360 degrees",
+    "fov360": "360 FOV",
+    "fov360Subtitle": "Camera has 360-degree omnidirectional field of view",
     "submittable": "Submittable",
     "submittableSubtitle": "Whether this profile can be used for camera submissions",
     "osmTags": "OSM Tags",
@@ -362,7 +412,7 @@
   },
   "operatorProfileEditor": {
     "newOperatorProfile": "New Operator Profile",
-    "editOperatorProfile": "Edit Operator Profile", 
+    "editOperatorProfile": "Edit Operator Profile",
     "operatorName": "Operator name",
     "operatorNameHint": "e.g., Austin Police Department",
     "operatorNameRequired": "Operator name is required",
@@ -408,8 +458,13 @@
     "refreshNodesSubtitle": "Re-fetch node data for this area",
     "startRefresh": "Start Refresh",
     "refreshStarted": "Refresh started!",
-    "refreshFailed": "Refresh failed: {}"
+    "refreshFailed": "Refresh failed: {}",
+    "disableConfirmTitle": "Delete Existing Offline Area Data?",
+    "disableConfirmMessage": "You have existing offline area data. Disabling offline features will stop the app from using it. Would you like to keep this data on disk in case you re-enable offline features later, or delete it now to free up storage space?",
+    "keepData": "Keep Data",
+    "deleteData": "Delete Data"
   },
+
   "refineTagsSheet": {
     "title": "Refine Tags",
     "operatorProfile": "Operator Profile",
@@ -443,7 +498,7 @@
     "mobileEditors": "Mobile Editors",
     "iDEditor": "iD Editor",
     "iDEditorSubtitle": "Full-featured web editor - always works",
-    "rapidEditor": "RapiD Editor", 
+    "rapidEditor": "RapiD Editor",
     "rapidEditorSubtitle": "AI-assisted editing with Facebook data",
     "vespucci": "Vespucci",
     "vespucciSubtitle": "Advanced Android OSM editor",
@@ -513,14 +568,14 @@
     "dataSourceDescription": "Utility permit data indicating potential surveillance infrastructure installation sites",
     "dataSourceCredit": "Data collection and hosting provided by alprwatch.org",
     "minimumDistance": "Minimum Distance from Real Nodes",
-    "minimumDistanceSubtitle": "Hide suspected locations within {}m of existing surveillance devices",
+    "minimumDistanceSubtitle": "Hide suspected locations within {} of existing surveillance devices",
     "updating": "Updating Suspected Locations",
     "downloadingAndProcessing": "Downloading and processing data...",
     "updateSuccess": "Suspected locations updated successfully",
     "updateFailed": "Failed to update suspected locations",
     "neverFetched": "Never fetched",
     "daysAgo": "{} days ago",
-    "hoursAgo": "{} hours ago", 
+    "hoursAgo": "{} hours ago",
     "minutesAgo": "{} minutes ago",
     "justNow": "Just now"
   },
@@ -528,7 +583,7 @@
     "title": "Suspected Location #{}",
     "ticketNo": "Ticket No",
     "address": "Address",
-    "street": "Street", 
+    "street": "Street",
     "city": "City",
     "state": "State",
     "intersectingStreet": "Intersecting Street",

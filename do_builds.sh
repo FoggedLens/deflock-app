@@ -28,7 +28,7 @@ read_from_file() {
       echo "$v"
       return 0
     fi
-  done < "$file"
+  done < <(cat "$file"; echo)
   
   return 1
 }

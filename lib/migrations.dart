@@ -3,9 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'app_state.dart';
+import 'services/offline_area_service.dart';
 import 'services/profile_service.dart';
 import 'services/suspected_location_cache.dart';
 import 'widgets/nuclear_reset_dialog.dart';
+import 'dev_config.dart';
+
 
 /// One-time migrations that run when users upgrade to specific versions.
 /// Each migration function is named after the version where it should run.
@@ -114,6 +117,104 @@ class OneTimeMigrations {
     }
   }
 
+  /// Initialize profile ordering for existing users (v2.7.3)
+  static Future<void> migrate_2_7_3(AppState appState) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      const orderKey = 'profile_order';
+      
+      // Check if user already has custom profile ordering
+      if (prefs.containsKey(orderKey)) {
+        debugPrint('[Migration] 2.7.3: Profile order already exists, skipping');
+        return;
+      }
+      
+      // Initialize with current profile order (preserves existing UI order)
+      final currentProfiles = appState.profiles;
+      final initialOrder = currentProfiles.map((p) => p.id).toList();
+      
+      if (initialOrder.isNotEmpty) {
+        await prefs.setStringList(orderKey, initialOrder);
+        debugPrint('[Migration] 2.7.3: Initialized profile order with ${initialOrder.length} profiles');
+      }
+      
+      debugPrint('[Migration] 2.7.3 completed: initialized profile ordering');
+    } catch (e) {
+      debugPrint('[Migration] 2.7.3 ERROR: Failed to initialize profile ordering: $e');
+      // Don't rethrow - this is non-critical, profiles will just use default order
+    }
+  }
+
+  /// Clear non-360 FOV values from all profiles (v2.10.0)
+  static Future<void> migrate_2_10_0(AppState appState) async {
+    try {
+      // Only perform this migration if non-360 FOVs are disabled
+      if (kEnableNon360FOVs) {
+        debugPrint('[Migration] 2.10.0: Non-360 FOVs enabled, skipping FOV cleanup');
+        return;
+      }
+
+      // Load all profiles from storage
+      final profiles = await ProfileService().load();
+      bool anyProfileChanged = false;
+      int profilesCleared = 0;
+
+      // Clear non-360 FOV values from all profiles
+      final updatedProfiles = profiles.map((profile) {
+        if (profile.fov != null) {
+          // Use approximation to handle floating point precision issues
+          final fovValue = profile.fov!;
+          final is360 = (fovValue - 360.0).abs() < 0.01; // Within 0.01 degrees of 360
+          
+          if (!is360) {
+            debugPrint('[Migration] 2.10.0: Clearing FOV $fovValue from profile: ${profile.name}');
+            anyProfileChanged = true;
+            profilesCleared++;
+            return profile.copyWith(fov: null);
+          }
+        }
+        return profile;
+      }).toList();
+
+      // Save updated profiles back to storage if any changes were made
+      if (anyProfileChanged) {
+        await ProfileService().save(updatedProfiles);
+        await appState.reloadProfiles();
+        debugPrint('[Migration] 2.10.0: Cleared FOV from $profilesCleared profiles');
+      }
+
+      debugPrint('[Migration] 2.10.0 completed: cleared non-360 FOV values from profiles');
+    } catch (e, stackTrace) {
+      debugPrint('[Migration] 2.10.0 ERROR: Failed to clear non-360 FOV values: $e');
+      debugPrint('[Migration] 2.10.0 ERROR: Stack trace: $stackTrace');
+      // Don't rethrow - this is non-critical, FOV restrictions will still apply going forward
+    }
+  }
+
+  /// Enable offline features for existing users who already have offline
+  /// area data (v2.10.5). New installs and existing users who never used
+  /// offline areas will keep the new "offline features enabled" setting at
+  /// its default of false.
+  static Future<void> migrate_2_10_5(AppState appState) async {
+    try {
+      final offlineAreaService = OfflineAreaService();
+      await offlineAreaService.ensureInitialized();
+
+      if (offlineAreaService.offlineAreas.isNotEmpty) {
+        await appState.setOfflineFeaturesEnabled(true);
+        debugPrint('[Migration] 2.10.5: Existing offline area data found - enabled offline features');
+      } else {
+        debugPrint('[Migration] 2.10.5: No existing offline area data - leaving offline features disabled');
+      }
+
+      debugPrint('[Migration] 2.10.5 completed: offline features migration done');
+    } catch (e) {
+      debugPrint('[Migration] 2.10.5 ERROR: Failed to migrate offline features setting: $e');
+      // Don't rethrow - this is non-critical, worst case is the user needs
+      // to manually re-enable the toggle to see their existing offline areas.
+    }
+  }
+
   /// Get the migration function for a specific version
   static Future<void> Function(AppState)? getMigrationForVersion(String version) {
     switch (version) {
@@ -127,10 +228,17 @@ class OneTimeMigrations {
         return migrate_1_8_0;
       case '2.1.0':
         return migrate_2_1_0;
+      case '2.7.3':
+        return migrate_2_7_3;
+      case '2.10.0':
+        return migrate_2_10_0;
+      case '2.10.5':
+        return migrate_2_10_5;
       default:
         return null;
     }
   }
+
 
   /// Run migration for a specific version with nuclear reset on failure
   static Future<void> runMigration(String version, AppState appState, BuildContext? context) async {

@@ -29,18 +29,52 @@ class OfflineAreaService {
   /// Fast check: do we have any completed offline areas for a specific provider/type?
   /// This allows smart cache routing without expensive filesystem searches.
   /// Safe to call before initialization - returns false if not yet initialized.
+  ///
+  /// Returns false immediately if the user has disabled offline features via
+  /// the master "Enable Offline Features" toggle, regardless of whether area
+  /// data still exists on disk — this fully gates the offline-first tile
+  /// pipeline without needing to touch fetchLocalTile/fetchLocalNodes.
   bool hasOfflineAreasForProvider(String providerId, String tileTypeId) {
+    if (!AppState.instance.offlineFeaturesEnabled) return false;
     if (!_initialized) {
       return false; // No offline areas loaded yet
     }
-    
-    return _areas.any((area) => 
+
+    return _areas.any((area) =>
       area.status == OfflineAreaStatus.complete &&
       area.tileProviderId == providerId &&
       area.tileTypeId == tileTypeId
     );
   }
+
+  /// Like [hasOfflineAreasForProvider] but also checks that at least one area
+  /// covers the given [zoom] level.  Used by [DeflockTileProvider] to skip the
+  /// offline-first path for tiles that will never be found locally.
+  ///
+  /// Also returns false immediately when offline features are disabled (see
+  /// [hasOfflineAreasForProvider] for rationale).
+  bool hasOfflineAreasForProviderAtZoom(String providerId, String tileTypeId, int zoom) {
+    if (!AppState.instance.offlineFeaturesEnabled) return false;
+    if (!_initialized) return false;
+    return _areas.any((area) =>
+      area.status == OfflineAreaStatus.complete &&
+      area.tileProviderId == providerId &&
+      area.tileTypeId == tileTypeId &&
+      zoom >= area.minZoom &&
+      zoom <= area.maxZoom
+    );
+  }
+
   
+  /// Reset service state and inject areas for unit tests.
+  @visibleForTesting
+  void setAreasForTesting(List<OfflineArea> areas) {
+    _areas
+      ..clear()
+      ..addAll(areas);
+    _initialized = true;
+  }
+
   /// Cancel all active downloads (used when enabling offline mode)
   Future<void> cancelActiveDownloads() async {
     final activeAreas = _areas.where((area) => area.status == OfflineAreaStatus.downloading).toList();
@@ -213,7 +247,7 @@ class OfflineAreaService {
     area = OfflineArea(
       id: id,
       name: name ?? area?.name ?? '',
-      bounds: bounds,
+      bounds: normalizeBounds(bounds),
       minZoom: minZoom,
       maxZoom: maxZoom,
       directory: directory,

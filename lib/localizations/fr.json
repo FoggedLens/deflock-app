@@ -111,8 +111,23 @@
     "advancedSettings": "Paramètres Avancés",
     "advancedSettingsSubtitle": "Paramètres de performance, alertes et fournisseurs de tuiles",
     "proximityAlerts": "Alertes de Proximité",
-    "networkStatusIndicator": "Indicateur de Statut Réseau"
+    "keepScreenAwake": "Maintenir l'écran Allumé",
+    "networkStatusIndicator": "Indicateur de Statut Réseau",
+    "hideZoomControls": "Masquer les Contrôles de Zoom",
+    "enableOfflineFeatures": "Activer les Fonctionnalités Hors Ligne",
+    "enableOfflineFeaturesTitle": "Activer les fonctionnalités hors ligne",
+    "enableOfflineFeaturesSubtitle": "Autoriser le téléchargement et l'utilisation de zones de carte hors ligne. Si désactivé, le mode hors ligne et les zones téléchargées ne seront pas disponibles."
   },
+  "keepScreenAwake": {
+
+    "title": "Maintenir l'écran allumé lors de l'utilisation de l'application",
+    "subtitle": "Empêche l'écran de s'éteindre automatiquement pendant l'utilisation de l'application"
+  },
+  "hideZoomControls": {
+    "title": "Masquer les contrôles de zoom",
+    "subtitle": "Masque les boutons de zoom +/- et l'indicateur de niveau de zoom. Vous pouvez toujours zoomer avec des gestes de pincement."
+  },
+
   "proximityAlerts": {
     "getNotified": "Recevoir des notifications en s'approchant de dispositifs de surveillance",
     "batteryUsage": "Utilise de la batterie supplémentaire pour la surveillance continue de la localisation",
@@ -132,8 +147,28 @@
     "editQueuedForUpload": "Modification de nœud mise en file pour envoi",
     "deleteQueuedForUpload": "Suppression de nœud mise en file pour envoi",
     "confirmDeleteTitle": "Supprimer le Nœud",
-    "confirmDeleteMessage": "Êtes-vous sûr de vouloir supprimer le nœud #{} ? Cette action ne peut pas être annulée."
+    "confirmDeleteMessage": "Êtes-vous sûr de vouloir supprimer le nœud #{} ? Cette action ne peut pas être annulée.",
+    "deleteReasonLabel": "Raison de Suppression",
+    "deleteReasonSelectHint": "Sélectionner...",
+    "deleteReasonDeviceRemoved": "Appareil retiré",
+    "deleteReasonDuplicateNode": "Nœud dupliqué",
+    "deleteReasonMisidentifiedInfra": "Infrastructure mal identifiée",
+    "deleteReasonSpamVandalism": "Spam/vandalisme",
+    "deleteReasonCustom": "Personnalisé..",
+    "deleteReasonHint": "Veuillez décrire la raison...",
+
+    "mustBeLoggedInToDelete": "Vous devez être connecté avec un compte OpenStreetMap pour contribuer aux données cartographiques.",
+    "uploadPending": "Téléchargement en attente",
+    "uploadCreatingChangeset": "Création du changeset...",
+    "uploadUploading": "Téléchargement en cours...",
+    "uploadClosingChangeset": "Fermeture du changeset...",
+    "uploadError": "Échec du téléchargement",
+    "uploadComplete": "Téléchargement terminé",
+    "viewInQueue": "Voir dans la File d'Attente",
+    "deletedSuccessfully": "Ce nœud a été supprimé avec succès d'OpenStreetMap."
   },
+
+
   "addNode": {
     "profile": "Profil",
     "selectProfile": "Sélectionner un profil...",
@@ -181,7 +216,10 @@
     "offlineModeWarning": "Téléchargements désactivés en mode hors ligne. Désactivez le mode hors ligne pour télécharger de nouvelles zones.",
     "areaTooBigMessage": "Zoomez au moins au niveau {} pour télécharger des zones hors ligne. Les téléchargements de grandes zones peuvent rendre l'application non réactive.",
     "downloadStarted": "Téléchargement démarré ! Récupération des tuiles et nœuds...",
-    "downloadFailed": "Échec du démarrage du téléchargement: {}"
+    "downloadFailed": "Échec du démarrage du téléchargement: {}",
+    "offlineNotPermitted": "Le serveur {} ne permet pas les téléchargements hors ligne. Passez à un fournisseur de tuiles qui autorise l'utilisation hors ligne (par ex., Bing Maps, Mapbox ou un serveur de tuiles auto-hébergé).",
+    "currentTileProvider": "tuile actuelle",
+    "noTileProviderSelected": "Aucun fournisseur de tuiles sélectionné. Veuillez choisir un style de carte avant de télécharger une zone hors ligne."
   },
   "downloadStarted": {
     "title": "Téléchargement Démarré",
@@ -269,8 +307,13 @@
     "closingChangeset": " (Fermeture du changeset...)",
     "processingPaused": "Traitement de la File d'Attente Interrompu",
     "pausedDueToOffline": "Le traitement des téléversements est interrompu car le mode hors ligne est activé.",
-    "pausedByUser": "Le traitement des téléversements est interrompu manuellement."
+    "pausedByUser": "Le traitement des téléversements est interrompu manuellement.",
+    "inFlightWaitTitle": "Finalisation de la Soumission",
+    "inFlightWaitMessage": "Une soumission est actuellement en cours et doit se terminer avant que ce paramètre puisse être appliqué. Cela ne devrait prendre qu'un instant.",
+    "inFlightCompleteTitle": "Soumission Terminée",
+    "inFlightCompleteMessage": "Votre soumission s'est terminée avec succès. Application de votre paramètre maintenant."
   },
+
   "tileProviders": {
     "title": "Fournisseurs de Tuiles",
     "noProvidersConfigured": "Aucun fournisseur de tuiles configuré",
@@ -281,6 +324,9 @@
     "addProvider": "Ajouter Fournisseur",
     "deleteProvider": "Supprimer Fournisseur",
     "deleteProviderConfirm": "Êtes-vous sûr de vouloir supprimer \"{}\"?",
+    "clearCaches": "Vider les Caches",
+    "clearCachesConfirm": "Vider tous les caches de tuiles pour \"{}\"? Cela libérera de l'espace de stockage mais les tuiles devront être téléchargées à nouveau lors de la consultation de ces zones.",
+    "cachesCleared": "Caches vidés pour \"{}\"",
     "providerName": "Nom du Fournisseur",
     "providerNameHint": "ex., Cartes Personnalisées Inc.",
     "providerNameRequired": "Le nom du fournisseur est requis",
@@ -329,13 +375,16 @@
     "addProfileChoiceMessage": "Comment souhaitez-vous ajouter un profil?",
     "createCustomProfile": "Créer Profil Personnalisé",
     "createCustomProfileDescription": "Créer un profil à partir de zéro avec vos propres balises",
-    "importFromWebsite": "Importer depuis Site Web", 
+    "importFromWebsite": "Importer depuis Site Web",
     "importFromWebsiteDescription": "Parcourir et importer des profils depuis deflock.me/identify"
   },
   "mapTiles": {
     "title": "Tuiles de Carte",
     "manageProviders": "Gérer Fournisseurs",
-    "attribution": "Attribution de Carte"
+    "attribution": "Attribution de Carte",
+    "mapAttribution": "Attribution de la carte : {}",
+    "couldNotOpenLink": "Impossible d'ouvrir le lien",
+    "openLicense": "Ouvrir la licence : {}"
   },
   "profileEditor": {
     "viewProfile": "Voir Profil",
@@ -350,6 +399,8 @@
     "fovHint": "Champ de vision en degrés (laisser vide pour la valeur par défaut)",
     "fovSubtitle": "Champ de vision de la caméra - utilisé pour la largeur du cône et le format de soumission par plage",
     "fovInvalid": "Le champ de vision doit être entre 1 et 360 degrés",
+    "fov360": "Champ de Vision 360°",
+    "fov360Subtitle": "La caméra a un champ de vision omnidirectionnel de 360 degrés",
     "submittable": "Soumissible",
     "submittableSubtitle": "Si ce profil peut être utilisé pour les soumissions de caméras",
     "osmTags": "Balises OSM",
@@ -362,7 +413,7 @@
   },
   "operatorProfileEditor": {
     "newOperatorProfile": "Nouveau Profil d'Opérateur",
-    "editOperatorProfile": "Modifier Profil d'Opérateur", 
+    "editOperatorProfile": "Modifier Profil d'Opérateur",
     "operatorName": "Nom de l'opérateur",
     "operatorNameHint": "ex., Département de Police d'Austin",
     "operatorNameRequired": "Le nom de l'opérateur est requis",
@@ -408,8 +459,13 @@
     "refreshNodesSubtitle": "Récupérer à nouveau les données de nœuds pour cette zone",
     "startRefresh": "Démarrer l'Actualisation",
     "refreshStarted": "Actualisation démarrée !",
-    "refreshFailed": "Actualisation échouée : {}"
+    "refreshFailed": "Actualisation échouée : {}",
+    "disableConfirmTitle": "Supprimer les Données de Zones Hors Ligne Existantes ?",
+    "disableConfirmMessage": "Vous avez déjà des données de zones hors ligne. Désactiver les fonctionnalités hors ligne empêchera l'application de les utiliser. Souhaitez-vous conserver ces données sur l'appareil au cas où vous réactiveriez les fonctionnalités hors ligne plus tard, ou les supprimer maintenant pour libérer de l'espace de stockage ?",
+    "keepData": "Conserver les Données",
+    "deleteData": "Supprimer les Données"
   },
+
   "refineTagsSheet": {
     "title": "Affiner les Étiquettes",
     "operatorProfile": "Profil d'Opérateur",
@@ -513,14 +569,14 @@
     "dataSourceDescription": "Données de permis de services publics indiquant des sites d'installation potentiels d'infrastructure de surveillance",
     "dataSourceCredit": "Collecte et hébergement des données fournis par alprwatch.org",
     "minimumDistance": "Distance Minimale des Nœuds Réels",
-    "minimumDistanceSubtitle": "Masquer les emplacements suspects dans un rayon de {}m des dispositifs de surveillance existants",
+    "minimumDistanceSubtitle": "Masquer les emplacements suspects dans un rayon de {} des dispositifs de surveillance existants",
     "updating": "Mise à Jour des Emplacements Suspects",
     "downloadingAndProcessing": "Téléchargement et traitement des données...",
     "updateSuccess": "Emplacements suspects mis à jour avec succès",
     "updateFailed": "Échec de la mise à jour des emplacements suspects",
     "neverFetched": "Jamais récupéré",
     "daysAgo": "il y a {} jours",
-    "hoursAgo": "il y a {} heures", 
+    "hoursAgo": "il y a {} heures",
     "minutesAgo": "il y a {} minutes",
     "justNow": "À l'instant"
   },
@@ -528,7 +584,7 @@
     "title": "Emplacement Suspect #{}",
     "ticketNo": "N° de Ticket",
     "address": "Adresse",
-    "street": "Rue", 
+    "street": "Rue",
     "city": "Ville",
     "state": "État",
     "intersectingStreet": "Rue Transversale",

@@ -111,8 +111,23 @@
     "advancedSettings": "Impostazioni Avanzate",
     "advancedSettingsSubtitle": "Impostazioni di prestazioni, avvisi e fornitori di tessere",
     "proximityAlerts": "Avvisi di Prossimità",
-    "networkStatusIndicator": "Indicatore di Stato di Rete"
+    "keepScreenAwake": "Mantieni lo Schermo Attivo",
+    "networkStatusIndicator": "Indicatore di Stato di Rete",
+    "hideZoomControls": "Nascondi Controlli Zoom",
+    "enableOfflineFeatures": "Abilita Funzionalità Offline",
+    "enableOfflineFeaturesTitle": "Abilita funzionalità offline",
+    "enableOfflineFeaturesSubtitle": "Consenti il download e l'uso di aree mappa offline. Se disabilitato, la modalità offline e le aree scaricate non saranno disponibili."
   },
+  "keepScreenAwake": {
+
+    "title": "Mantieni lo schermo attivo durante l'utilizzo dell'app",
+    "subtitle": "Impedisce allo schermo di spegnersi automaticamente durante l'utilizzo dell'app"
+  },
+  "hideZoomControls": {
+    "title": "Nascondi i controlli dello zoom",
+    "subtitle": "Nasconde i pulsanti di zoom +/- e l'indicatore del livello di zoom. Puoi ancora usare i gesti di pizzico per lo zoom."
+  },
+
   "proximityAlerts": {
     "getNotified": "Ricevi notifiche quando ti avvicini a dispositivi di sorveglianza",
     "batteryUsage": "Utilizza batteria extra per il monitoraggio continuo della posizione",
@@ -132,8 +147,28 @@
     "editQueuedForUpload": "Modifica nodo in coda per il caricamento",
     "deleteQueuedForUpload": "Eliminazione nodo in coda per il caricamento",
     "confirmDeleteTitle": "Elimina Nodo",
-    "confirmDeleteMessage": "Sei sicuro di voler eliminare il nodo #{}? Questa azione non può essere annullata."
+    "confirmDeleteMessage": "Sei sicuro di voler eliminare il nodo #{}? Questa azione non può essere annullata.",
+    "deleteReasonLabel": "Motivo per Eliminazione",
+    "deleteReasonSelectHint": "Seleziona...",
+    "deleteReasonDeviceRemoved": "Dispositivo rimosso",
+    "deleteReasonDuplicateNode": "Nodo duplicato",
+    "deleteReasonMisidentifiedInfra": "Infrastruttura identificata erroneamente",
+    "deleteReasonSpamVandalism": "Spam/vandalismo",
+    "deleteReasonCustom": "Personalizzato..",
+    "deleteReasonHint": "Descrivi il motivo...",
+
+    "mustBeLoggedInToDelete": "Devi aver effettuato l'accesso con un account OpenStreetMap per contribuire ai dati della mappa.",
+    "uploadPending": "Caricamento in sospeso",
+    "uploadCreatingChangeset": "Creazione changeset...",
+    "uploadUploading": "Caricamento...",
+    "uploadClosingChangeset": "Chiusura changeset...",
+    "uploadError": "Caricamento fallito",
+    "uploadComplete": "Caricamento completato",
+    "viewInQueue": "Visualizza in Coda",
+    "deletedSuccessfully": "Questo nodo è stato eliminato con successo da OpenStreetMap."
   },
+
+
   "addNode": {
     "profile": "Profilo",
     "selectProfile": "Seleziona un profilo...",
@@ -181,7 +216,10 @@
     "offlineModeWarning": "Download disabilitati in modalità offline. Disabilita la modalità offline per scaricare nuove aree.",
     "areaTooBigMessage": "Ingrandisci almeno al livello {} per scaricare aree offline. I download di aree grandi possono rendere l'app non reattiva.",
     "downloadStarted": "Download avviato! Recupero tile e nodi...",
-    "downloadFailed": "Impossibile avviare il download: {}"
+    "downloadFailed": "Impossibile avviare il download: {}",
+    "offlineNotPermitted": "Il server {} non consente i download offline. Passa a un fornitore di tile che consenta l'uso offline (ad es., Bing Maps, Mapbox o un server di tile auto-ospitato).",
+    "currentTileProvider": "tile attuale",
+    "noTileProviderSelected": "Nessun provider di tile selezionato. Seleziona uno stile di mappa prima di scaricare un'area offline."
   },
   "downloadStarted": {
     "title": "Download Avviato",
@@ -269,8 +307,13 @@
     "closingChangeset": " (Chiusura changeset...)",
     "processingPaused": "Elaborazione Coda Sospesa",
     "pausedDueToOffline": "L'elaborazione dei caricamenti è sospesa perché la modalità offline è abilitata.",
-    "pausedByUser": "L'elaborazione dei caricamenti è sospesa manualmente."
+    "pausedByUser": "L'elaborazione dei caricamenti è sospesa manualmente.",
+    "inFlightWaitTitle": "Completamento Invio",
+    "inFlightWaitMessage": "Un invio è attualmente in corso e deve terminare prima che questa impostazione possa essere applicata. Questo dovrebbe richiedere solo un momento.",
+    "inFlightCompleteTitle": "Invio Completato",
+    "inFlightCompleteMessage": "Il tuo invio è terminato con successo. Applicazione della tua impostazione in corso."
   },
+
   "tileProviders": {
     "title": "Fornitori di Tile",
     "noProvidersConfigured": "Nessun fornitore di tile configurato",
@@ -281,6 +324,9 @@
     "addProvider": "Aggiungi Fornitore",
     "deleteProvider": "Elimina Fornitore",
     "deleteProviderConfirm": "Sei sicuro di voler eliminare \"{}\"?",
+    "clearCaches": "Svuota Cache",
+    "clearCachesConfirm": "Svuotare tutte le cache delle tessere per \"{}\"? Questo libererà spazio di archiviazione ma le tessere dovranno essere scaricate nuovamente quando si visualizzano quelle aree.",
+    "cachesCleared": "Cache svuotate per \"{}\"",
     "providerName": "Nome Fornitore",
     "providerNameHint": "es., Mappe Personalizzate Inc.",
     "providerNameRequired": "Il nome del fornitore è obbligatorio",
@@ -329,13 +375,16 @@
     "addProfileChoiceMessage": "Come desideri aggiungere un profilo?",
     "createCustomProfile": "Crea Profilo Personalizzato",
     "createCustomProfileDescription": "Crea un profilo da zero con i tuoi tag",
-    "importFromWebsite": "Importa da Sito Web", 
+    "importFromWebsite": "Importa da Sito Web",
     "importFromWebsiteDescription": "Sfoglia e importa profili da deflock.me/identify"
   },
   "mapTiles": {
     "title": "Tile Mappa",
     "manageProviders": "Gestisci Fornitori",
-    "attribution": "Attribuzione Mappa"
+    "attribution": "Attribuzione Mappa",
+    "mapAttribution": "Attribuzione mappa: {}",
+    "couldNotOpenLink": "Impossibile aprire il link",
+    "openLicense": "Apri licenza: {}"
   },
   "profileEditor": {
     "viewProfile": "Visualizza Profilo",
@@ -350,6 +399,8 @@
     "fovHint": "Campo visivo in gradi (lasciare vuoto per il valore predefinito)",
     "fovSubtitle": "Campo visivo della telecamera - utilizzato per la larghezza del cono e il formato di invio per intervallo",
     "fovInvalid": "Il campo visivo deve essere tra 1 e 360 gradi",
+    "fov360": "Campo Visivo 360°",
+    "fov360Subtitle": "La telecamera ha un campo visivo omnidirezionale di 360 gradi",
     "submittable": "Inviabile",
     "submittableSubtitle": "Se questo profilo può essere usato per invii di telecamere",
     "osmTags": "Tag OSM",
@@ -362,7 +413,7 @@
   },
   "operatorProfileEditor": {
     "newOperatorProfile": "Nuovo Profilo Operatore",
-    "editOperatorProfile": "Modifica Profilo Operatore", 
+    "editOperatorProfile": "Modifica Profilo Operatore",
     "operatorName": "Nome operatore",
     "operatorNameHint": "es., Dipartimento di Polizia di Austin",
     "operatorNameRequired": "Il nome dell'operatore è obbligatorio",
@@ -408,8 +459,13 @@
     "refreshNodesSubtitle": "Ricarica i dati dei nodi per quest'area",
     "startRefresh": "Avvia Aggiornamento",
     "refreshStarted": "Aggiornamento avviato!",
-    "refreshFailed": "Aggiornamento fallito: {}"
+    "refreshFailed": "Aggiornamento fallito: {}",
+    "disableConfirmTitle": "Eliminare i Dati delle Aree Offline Esistenti?",
+    "disableConfirmMessage": "Hai già dati di aree offline esistenti. Disabilitare le funzionalità offline impedirà all'app di usarli. Vuoi conservare questi dati sul dispositivo nel caso in cui riattivi le funzionalità offline in seguito, oppure eliminarli ora per liberare spazio di archiviazione?",
+    "keepData": "Conserva Dati",
+    "deleteData": "Elimina Dati"
   },
+
   "refineTagsSheet": {
     "title": "Affina Tag",
     "operatorProfile": "Profilo Operatore",
@@ -513,14 +569,14 @@
     "dataSourceDescription": "Dati dei permessi dei servizi pubblici che indicano potenziali siti di installazione di infrastrutture di sorveglianza",
     "dataSourceCredit": "Raccolta e hosting dei dati forniti da alprwatch.org",
     "minimumDistance": "Distanza Minima dai Nodi Reali",
-    "minimumDistanceSubtitle": "Nascondi posizioni sospette entro {}m dai dispositivi di sorveglianza esistenti",
+    "minimumDistanceSubtitle": "Nascondi posizioni sospette entro {} dai dispositivi di sorveglianza esistenti",
     "updating": "Aggiornamento Posizioni Sospette",
     "downloadingAndProcessing": "Scaricamento e elaborazione dati...",
     "updateSuccess": "Posizioni sospette aggiornate con successo",
     "updateFailed": "Aggiornamento posizioni sospette fallito",
     "neverFetched": "Mai recuperato",
     "daysAgo": "{} giorni fa",
-    "hoursAgo": "{} ore fa", 
+    "hoursAgo": "{} ore fa",
     "minutesAgo": "{} minuti fa",
     "justNow": "Proprio ora"
   },
@@ -528,7 +584,7 @@
     "title": "Posizione Sospetta #{}",
     "ticketNo": "N. Ticket",
     "address": "Indirizzo",
-    "street": "Via", 
+    "street": "Via",
     "city": "Città",
     "state": "Stato",
     "intersectingStreet": "Via che Interseca",

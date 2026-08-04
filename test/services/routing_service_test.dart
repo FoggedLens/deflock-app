@@ -41,6 +41,30 @@ void main() {
     AppState.instance = MockAppState();
   });
 
+  /// Helper: stub a successful routing response
+  void stubSuccessResponse() {
+    when(() => mockClient.post(
+          any(),
+          headers: any(named: 'headers'),
+          body: any(named: 'body'),
+        )).thenAnswer((_) async => http.Response(
+          json.encode({
+            'ok': true,
+            'result': {
+              'route': {
+                'coordinates': [
+                  [-77.0, 38.9],
+                  [-77.1, 39.0],
+                ],
+                'distance': 1000.0,
+                'duration': 600.0,
+              },
+            },
+          }),
+          200,
+        ));
+  }
+
   group('RoutingService', () {
     test('empty tags are filtered from request body', () async {
       // Profile with empty tag values (like builtin-flock has camera:mount: '')
@@ -57,29 +81,7 @@ void main() {
       ];
       when(() => mockAppState.enabledProfiles).thenReturn(profiles);
 
-      // Capture the request body
-      when(() => mockClient.post(
-            any(),
-            headers: any(named: 'headers'),
-            body: any(named: 'body'),
-          )).thenAnswer((invocation) async {
-        return http.Response(
-          json.encode({
-            'ok': true,
-            'result': {
-              'route': {
-                'coordinates': [
-                  [-77.0, 38.9],
-                  [-77.1, 39.0],
-                ],
-                'distance': 1000.0,
-                'duration': 600.0,
-              },
-            },
-          }),
-          200,
-        );
-      });
+      stubSuccessResponse();
 
       await service.calculateRoute(start: start, end: end);
 
@@ -147,7 +149,7 @@ void main() {
             reasonPhrase: 'Bad Request',
           ));
 
-      expect(
+      await expectLater(
         () => service.calculateRoute(start: start, end: end),
         throwsA(isA<RoutingException>().having(
           (e) => e.message,
@@ -166,7 +168,7 @@ void main() {
             body: any(named: 'body'),
           )).thenThrow(http.ClientException('Connection refused'));
 
-      expect(
+      await expectLater(
         () => service.calculateRoute(start: start, end: end),
         throwsA(isA<RoutingException>().having(
           (e) => e.message,
@@ -176,7 +178,7 @@ void main() {
       );
     });
 
-    test('API-level error surfaces alprwatch message', () async {
+    test('API-level error surfaces message', () async {
       when(() => mockAppState.enabledProfiles).thenReturn([]);
 
       when(() => mockClient.post(
@@ -191,7 +193,7 @@ void main() {
             200,
           ));
 
-      expect(
+      await expectLater(
         () => service.calculateRoute(start: start, end: end),
         throwsA(isA<RoutingException>().having(
           (e) => e.message,
@@ -199,6 +201,301 @@ void main() {
           contains('Invalid profile configuration'),
         )),
       );
+    });
+  });
+
+  group('fallback behavior', () {
+    test('falls back to secondary on server error (500) after retries', () async {
+      when(() => mockAppState.enabledProfiles).thenReturn([]);
+
+      int callCount = 0;
+      when(() => mockClient.post(
+            any(),
+            headers: any(named: 'headers'),
+            body: any(named: 'body'),
+          )).thenAnswer((invocation) async {
+        callCount++;
+        final uri = invocation.positionalArguments[0] as Uri;
+
+        if (uri.host == 'api.dontgetflocked.com') {
+          return http.Response('Internal Server Error', 500,
+              reasonPhrase: 'Internal Server Error');
+        }
+        // Fallback succeeds
+        return http.Response(
+          json.encode({
+            'ok': true,
+            'result': {
+              'route': {
+                'coordinates': [
+                  [-77.0, 38.9],
+                  [-77.1, 39.0],
+                ],
+                'distance': 5000.0,
+                'duration': 300.0,
+              },
+            },
+          }),
+          200,
+        );
+      });
+
+      final result = await service.calculateRoute(start: start, end: end);
+      expect(result.distanceMeters, equals(5000.0));
+      // 2 primary attempts (1 + 1 retry) + 1 fallback = 3
+      expect(callCount, equals(3));
+    });
+
+    test('falls back on 502 (GraphHopper unavailable) after retries', () async {
+      when(() => mockAppState.enabledProfiles).thenReturn([]);
+
+      int callCount = 0;
+      when(() => mockClient.post(
+            any(),
+            headers: any(named: 'headers'),
+            body: any(named: 'body'),
+          )).thenAnswer((invocation) async {
+        callCount++;
+        final uri = invocation.positionalArguments[0] as Uri;
+        if (uri.host == 'api.dontgetflocked.com') {
+          return http.Response('Bad Gateway', 502, reasonPhrase: 'Bad Gateway');
+        }
+        return http.Response(
+          json.encode({
+            'ok': true,
+            'result': {
+              'route': {
+                'coordinates': [[-77.0, 38.9]],
+                'distance': 100.0,
+                'duration': 60.0,
+              },
+            },
+          }),
+          200,
+        );
+      });
+
+      final result = await service.calculateRoute(start: start, end: end);
+      expect(result.distanceMeters, equals(100.0));
+      // 2 primary attempts + 1 fallback = 3
+      expect(callCount, equals(3));
+    });
+
+    test('falls back on network error after retries', () async {
+      when(() => mockAppState.enabledProfiles).thenReturn([]);
+
+      int callCount = 0;
+      when(() => mockClient.post(
+            any(),
+            headers: any(named: 'headers'),
+            body: any(named: 'body'),
+          )).thenAnswer((invocation) async {
+        callCount++;
+        final uri = invocation.positionalArguments[0] as Uri;
+        if (uri.host == 'api.dontgetflocked.com') {
+          throw http.ClientException('Connection refused');
+        }
+        return http.Response(
+          json.encode({
+            'ok': true,
+            'result': {
+              'route': {
+                'coordinates': [[-77.0, 38.9]],
+                'distance': 100.0,
+                'duration': 60.0,
+              },
+            },
+          }),
+          200,
+        );
+      });
+
+      final result = await service.calculateRoute(start: start, end: end);
+      expect(result.distanceMeters, equals(100.0));
+      // 2 primary attempts + 1 fallback = 3
+      expect(callCount, equals(3));
+    });
+
+    test('429 triggers fallback without retrying primary', () async {
+      when(() => mockAppState.enabledProfiles).thenReturn([]);
+
+      int callCount = 0;
+      when(() => mockClient.post(
+            any(),
+            headers: any(named: 'headers'),
+            body: any(named: 'body'),
+          )).thenAnswer((invocation) async {
+        callCount++;
+        final uri = invocation.positionalArguments[0] as Uri;
+        if (uri.host == 'api.dontgetflocked.com') {
+          return http.Response('Too Many Requests', 429,
+              reasonPhrase: 'Too Many Requests');
+        }
+        return http.Response(
+          json.encode({
+            'ok': true,
+            'result': {
+              'route': {
+                'coordinates': [[-77.0, 38.9]],
+                'distance': 200.0,
+                'duration': 120.0,
+              },
+            },
+          }),
+          200,
+        );
+      });
+
+      final result = await service.calculateRoute(start: start, end: end);
+      expect(result.distanceMeters, equals(200.0));
+      // 1 primary (no retry on 429/fallback disposition) + 1 fallback = 2
+      expect(callCount, equals(2));
+    });
+
+    test('does NOT fallback on 400 (validation error)', () async {
+      when(() => mockAppState.enabledProfiles).thenReturn([]);
+
+      when(() => mockClient.post(
+            any(),
+            headers: any(named: 'headers'),
+            body: any(named: 'body'),
+          )).thenAnswer((_) async => http.Response(
+            'Bad Request: missing start', 400,
+            reasonPhrase: 'Bad Request'));
+
+      await expectLater(
+        () => service.calculateRoute(start: start, end: end),
+        throwsA(isA<RoutingException>().having(
+          (e) => e.statusCode, 'statusCode', 400)),
+      );
+
+      // Only one call — no retry, no fallback (abort disposition)
+      verify(() => mockClient.post(
+            any(),
+            headers: any(named: 'headers'),
+            body: any(named: 'body'),
+          )).called(1);
+    });
+
+    test('does NOT fallback on 403 (all 4xx except 429 abort)', () async {
+      when(() => mockAppState.enabledProfiles).thenReturn([]);
+
+      when(() => mockClient.post(
+            any(),
+            headers: any(named: 'headers'),
+            body: any(named: 'body'),
+          )).thenAnswer((_) async => http.Response(
+            'Forbidden', 403,
+            reasonPhrase: 'Forbidden'));
+
+      await expectLater(
+        () => service.calculateRoute(start: start, end: end),
+        throwsA(isA<RoutingException>().having(
+          (e) => e.statusCode, 'statusCode', 403)),
+      );
+
+      // Only one call — no retry, no fallback (abort disposition)
+      verify(() => mockClient.post(
+            any(),
+            headers: any(named: 'headers'),
+            body: any(named: 'body'),
+          )).called(1);
+    });
+
+    test('does NOT fallback on API-level business logic errors', () async {
+      when(() => mockAppState.enabledProfiles).thenReturn([]);
+
+      when(() => mockClient.post(
+            any(),
+            headers: any(named: 'headers'),
+            body: any(named: 'body'),
+          )).thenAnswer((_) async => http.Response(
+            json.encode({
+              'ok': false,
+              'error': 'No route found',
+            }),
+            200,
+          ));
+
+      await expectLater(
+        () => service.calculateRoute(start: start, end: end),
+        throwsA(isA<RoutingException>().having(
+          (e) => e.isApiError, 'isApiError', true)),
+      );
+
+      verify(() => mockClient.post(
+            any(),
+            headers: any(named: 'headers'),
+            body: any(named: 'body'),
+          )).called(1);
+    });
+
+    test('primary fails then fallback also fails -> error propagated', () async {
+      when(() => mockAppState.enabledProfiles).thenReturn([]);
+
+      when(() => mockClient.post(
+            any(),
+            headers: any(named: 'headers'),
+            body: any(named: 'body'),
+          )).thenAnswer((_) async => http.Response(
+            'Internal Server Error', 500,
+            reasonPhrase: 'Internal Server Error'));
+
+      await expectLater(
+        () => service.calculateRoute(start: start, end: end),
+        throwsA(isA<RoutingException>().having(
+          (e) => e.statusCode, 'statusCode', 500)),
+      );
+
+      // 2 primary attempts + 2 fallback attempts = 4
+      verify(() => mockClient.post(
+            any(),
+            headers: any(named: 'headers'),
+            body: any(named: 'body'),
+          )).called(4);
+    });
+
+    test('does NOT fallback when using custom baseUrl', () async {
+      final customService = RoutingService(
+        client: mockClient,
+        baseUrl: 'https://custom.example.com/route',
+      );
+
+      when(() => mockAppState.enabledProfiles).thenReturn([]);
+
+      when(() => mockClient.post(
+            any(),
+            headers: any(named: 'headers'),
+            body: any(named: 'body'),
+          )).thenAnswer((_) async => http.Response(
+            'Service Unavailable', 503,
+            reasonPhrase: 'Service Unavailable'));
+
+      await expectLater(
+        () => customService.calculateRoute(start: start, end: end),
+        throwsA(isA<RoutingException>()),
+      );
+
+      // 2 attempts (1 + 1 retry), no fallback with custom URL
+      verify(() => mockClient.post(
+            any(),
+            headers: any(named: 'headers'),
+            body: any(named: 'body'),
+          )).called(2);
+    });
+  });
+
+  group('RoutingException', () {
+    test('statusCode is preserved', () {
+      const e = RoutingException('test', statusCode: 502);
+      expect(e.statusCode, 502);
+      expect(e.isApiError, false);
+    });
+
+    test('isApiError flag works', () {
+      const e = RoutingException('test', isApiError: true);
+      expect(e.isApiError, true);
+      expect(e.statusCode, isNull);
     });
   });
 }

@@ -111,8 +111,23 @@
     "advancedSettings": "Ustawienia Zaawansowane",
     "advancedSettingsSubtitle": "Wydajność, alerty i ustawienia dostawców kafelków",
     "proximityAlerts": "Alerty Bliskości",
-    "networkStatusIndicator": "Wskaźnik Stanu Sieci"
+    "keepScreenAwake": "Nie Wygaszaj Ekranu",
+    "networkStatusIndicator": "Wskaźnik Stanu Sieci",
+    "hideZoomControls": "Ukryj Kontrolki Zoomu",
+    "enableOfflineFeatures": "Włącz Funkcje Offline",
+    "enableOfflineFeaturesTitle": "Włącz funkcje offline",
+    "enableOfflineFeaturesSubtitle": "Zezwól na pobieranie i korzystanie z map offline. Jeśli wyłączone, tryb offline i pobrane obszary będą niedostępne."
   },
+
+  "keepScreenAwake": {
+    "title": "Nie wygaszaj ekranu podczas korzystania z aplikacji",
+    "subtitle": "Zapobiega automatycznemu wygaszaniu ekranu podczas korzystania z aplikacji"
+  },
+  "hideZoomControls": {
+    "title": "Ukryj kontrolki zoomu",
+    "subtitle": "Ukrywa przyciski zoomu +/- oraz wskaźnik poziomu powiększenia. Nadal możesz powiększać za pomocą gestów szczypania."
+  },
+
   "proximityAlerts": {
     "getNotified": "Otrzymuj powiadomienia przy zbliżaniu się do urządzeń nadzoru",
     "batteryUsage": "Używa dodatkowej baterii do ciągłego monitorowania lokalizacji",
@@ -132,8 +147,28 @@
     "editQueuedForUpload": "Edycja węzła umieszczona w kolejce do przesłania",
     "deleteQueuedForUpload": "Usuwanie węzła umieszczone w kolejce do przesłania",
     "confirmDeleteTitle": "Usuń Węzeł",
-    "confirmDeleteMessage": "Czy na pewno chcesz usunąć węzeł #{}? Tej akcji nie można cofnąć."
+    "confirmDeleteMessage": "Czy na pewno chcesz usunąć węzeł #{}? Tej akcji nie można cofnąć.",
+    "deleteReasonLabel": "Powód Usunięcia",
+    "deleteReasonSelectHint": "Wybierz...",
+    "deleteReasonDeviceRemoved": "Urządzenie usunięte",
+    "deleteReasonDuplicateNode": "Zduplikowany węzeł",
+    "deleteReasonMisidentifiedInfra": "Błędnie zidentyfikowana infrastruktura",
+    "deleteReasonSpamVandalism": "Spam/wandalizm",
+    "deleteReasonCustom": "Niestandardowy..",
+    "deleteReasonHint": "Opisz powód...",
+
+    "mustBeLoggedInToDelete": "Musisz być zalogowany na konto OpenStreetMap, aby dodawać dane do mapy.",
+    "uploadPending": "Przesyłanie oczekujące",
+    "uploadCreatingChangeset": "Tworzenie zestawu zmian...",
+    "uploadUploading": "Przesyłanie...",
+    "uploadClosingChangeset": "Zamykanie zestawu zmian...",
+    "uploadError": "Przesyłanie nie powiodło się",
+    "uploadComplete": "Przesyłanie zakończone",
+    "viewInQueue": "Zobacz w Kolejce",
+    "deletedSuccessfully": "Ten węzeł został pomyślnie usunięty z OpenStreetMap."
   },
+
+
   "addNode": {
     "profile": "Profil",
     "selectProfile": "Wybierz profil...",
@@ -181,7 +216,10 @@
     "offlineModeWarning": "Pobieranie wyłączone w trybie offline. Wyłącz tryb offline, aby pobierać nowe obszary.",
     "areaTooBigMessage": "Przybliż do co najmniej poziomu {}, aby pobierać obszary offline. Duże pobieranie obszarów może sprawić, że aplikacja przestanie odpowiadać.",
     "downloadStarted": "Pobieranie rozpoczęte! Pobieranie kafelków i węzłów...",
-    "downloadFailed": "Nie udało się rozpocząć pobierania: {}"
+    "downloadFailed": "Nie udało się rozpocząć pobierania: {}",
+    "offlineNotPermitted": "Serwer {} nie zezwala na pobieranie offline. Przełącz się na dostawcę kafelków, który obsługuje tryb offline (np. Bing Maps, Mapbox lub samodzielnie hostowany serwer kafelków).",
+    "currentTileProvider": "bieżący kafelek",
+    "noTileProviderSelected": "Nie wybrano dostawcy kafelków. Wybierz styl mapy przed pobraniem obszaru offline."
   },
   "downloadStarted": {
     "title": "Pobieranie Rozpoczęte",
@@ -269,8 +307,13 @@
     "closingChangeset": " (Zamykanie zestawu zmian...)",
     "processingPaused": "Przetwarzanie Kolejki Wstrzymane",
     "pausedDueToOffline": "Przetwarzanie przesyłania jest wstrzymane, ponieważ tryb offline jest włączony.",
-    "pausedByUser": "Przetwarzanie przesyłania jest ręcznie wstrzymane."
+    "pausedByUser": "Przetwarzanie przesyłania jest ręcznie wstrzymane.",
+    "inFlightWaitTitle": "Kończenie Przesyłania",
+    "inFlightWaitMessage": "Przesyłanie jest obecnie w toku i musi zostać zakończone, zanim to ustawienie będzie mogło zostać zastosowane. To powinno zająć tylko chwilę.",
+    "inFlightCompleteTitle": "Przesyłanie Zakończone",
+    "inFlightCompleteMessage": "Twoje przesyłanie zakończyło się pomyślnie. Stosowanie ustawienia teraz."
   },
+
   "tileProviders": {
     "title": "Dostawcy Kafelków",
     "noProvidersConfigured": "Brak skonfigurowanych dostawców kafelków",
@@ -281,6 +324,9 @@
     "addProvider": "Dodaj Dostawcę",
     "deleteProvider": "Usuń Dostawcę",
     "deleteProviderConfirm": "Czy na pewno chcesz usunąć \"{}\"?",
+    "clearCaches": "Wyczyść Cache",
+    "clearCachesConfirm": "Wyczyścić wszystkie cache kafelków dla \"{}\"? To zwolni miejsce na dysku, ale kafelki będą musiały zostać ponownie pobrane podczas przeglądania tych obszarów.",
+    "cachesCleared": "Cache wyczyszczone dla \"{}\"",
     "providerName": "Nazwa Dostawcy",
     "providerNameHint": "np., Niestandardowe Mapy Sp. z o.o.",
     "providerNameRequired": "Nazwa dostawcy jest wymagana",
@@ -335,7 +381,10 @@
   "mapTiles": {
     "title": "Kafelki Mapy",
     "manageProviders": "Zarządzaj Dostawcami",
-    "attribution": "Atrybucja Mapy"
+    "attribution": "Atrybucja Mapy",
+    "mapAttribution": "Źródło mapy: {}",
+    "couldNotOpenLink": "Nie udało się otworzyć linku",
+    "openLicense": "Otwórz licencję: {}"
   },
   "profileEditor": {
     "viewProfile": "Zobacz Profil",
@@ -350,6 +399,8 @@
     "fovHint": "FOV w stopniach (zostaw puste dla domyślnego)",
     "fovSubtitle": "Pole widzenia kamery - używane dla szerokości stożka i formatu zgłaszania zasięgu",
     "fovInvalid": "FOV musi być między 1 a 360 stopniami",
+    "fov360": "Pole Widzenia 360°",
+    "fov360Subtitle": "Kamera ma wielokierunkowe pole widzenia o zasięgu 360 stopni",
     "submittable": "Możliwy do Zgłoszenia",
     "submittableSubtitle": "Czy ten profil może być używany do zgłoszeń kamer",
     "osmTags": "Tagi OSM",
@@ -408,8 +459,13 @@
     "refreshNodesSubtitle": "Pobierz ponownie dane węzłów dla tego obszaru",
     "startRefresh": "Rozpocznij Odświeżanie",
     "refreshStarted": "Odświeżanie rozpoczęte!",
-    "refreshFailed": "Odświeżanie nie powiodło się: {}"
+    "refreshFailed": "Odświeżanie nie powiodło się: {}",
+    "disableConfirmTitle": "Usunąć Istniejące Dane Obszarów Offline?",
+    "disableConfirmMessage": "Masz już istniejące dane obszarów offline. Wyłączenie funkcji offline uniemożliwi aplikacji ich używanie. Czy chcesz zachować te dane na urządzeniu na wypadek ponownego włączenia funkcji offline później, czy usunąć je teraz, aby zwolnić miejsce na dysku?",
+    "keepData": "Zachowaj Dane",
+    "deleteData": "Usuń Dane"
   },
+
   "refineTagsSheet": {
     "title": "Doprecyzuj Tagi",
     "operatorProfile": "Profil Operatora",
@@ -513,7 +569,7 @@
     "dataSourceDescription": "Dane pozwoleń użyteczności publicznej wskazujące potencjalne miejsca instalacji infrastruktury nadzoru",
     "dataSourceCredit": "Zbieranie danych i hosting zapewnione przez alprwatch.org",
     "minimumDistance": "Minimalna Odległość od Rzeczywistych Węzłów",
-    "minimumDistanceSubtitle": "Ukryj podejrzane lokalizacje w promieniu {}m od istniejących urządzeń nadzoru",
+    "minimumDistanceSubtitle": "Ukryj podejrzane lokalizacje w promieniu {} od istniejących urządzeń nadzoru",
     "updating": "Aktualizowanie Podejrzanych Lokalizacji",
     "downloadingAndProcessing": "Pobieranie i przetwarzanie danych...",
     "updateSuccess": "Podejrzane lokalizacje zaktualizowane pomyślnie",

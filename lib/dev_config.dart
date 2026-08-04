@@ -64,8 +64,12 @@ const Duration kChangesetCloseMaxRetryDelay = Duration(minutes: 5);  // Cap at 5
 const Duration kChangesetAutoCloseTimeout = Duration(minutes: 59); // Give up and trust OSM auto-close
 const double kChangesetCloseBackoffMultiplier = 2.0;
 
-// Navigation routing configuration
-const Duration kNavigationRoutingTimeout = Duration(seconds: 90); // HTTP timeout for routing requests
+// How long to keep the "Submission Complete" confirmation visible in the
+// in-flight upload wait dialog (shown when the user enables offline mode or
+// pauses the upload queue while a submission is actively in progress) before
+// automatically dismissing and applying the requested setting change.
+const Duration kInFlightUploadCompleteDisplayDuration = Duration(seconds: 2);
+
 
 // Overpass API configuration
 const Duration kOverpassQueryTimeout = Duration(seconds: 45); // Timeout for Overpass API queries (was 25s hardcoded)
@@ -74,7 +78,7 @@ const Duration kOverpassQueryTimeout = Duration(seconds: 45); // Timeout for Ove
 const String kSuspectedLocationsCsvUrl = 'https://alprwatch.org/suspected-locations/deflock-latest.csv';
 
 // Development/testing features - set to false for production builds
-const bool kEnableDevelopmentModes = false; // Set to false to hide sandbox/simulate modes and force production mode
+const bool kEnableDevelopmentModes = true; // Set to false to hide sandbox/simulate modes and force production mode
 
 // Navigation features - set to false to hide navigation UI elements while in development
 const bool kEnableNavigationFeatures = true; // Hide navigation until fully implemented
@@ -85,6 +89,12 @@ const bool kEnableNodeEdits = true; // Set to false to temporarily disable node 
 // Node extraction features - set to false to hide extract functionality for constrained nodes
 const bool kEnableNodeExtraction = false; // Set to true to enable extract from way/relation feature (WIP)
 
+// Auto-open tags sheet after add/edit/delete, so the user can watch upload status update live.
+const bool kAutoOpenNodeSheetAfterSubmit = true; // Set to true to enable auto-focus behavior
+
+// Profile FOV features - set to false to restrict profiles to 360° FOV only
+const bool kEnableNon360FOVs = false; // Set to true to allow custom FOV values in profiles
+
 /// Navigation availability: only dev builds, and only when online
 bool enableNavigationFeatures({required bool offlineMode}) {
   return kEnableNavigationFeatures && !offlineMode;
@@ -93,18 +103,16 @@ bool enableNavigationFeatures({required bool offlineMode}) {
 // Marker/node interaction
 const int kNodeMinZoomLevel = 10; // Minimum zoom to show nodes (Overpass)
 const int kOsmApiMinZoomLevel = 13; // Minimum zoom for OSM API bbox queries (sandbox mode)
-const int kMinZoomForNodeEditingSheets = 15; // Minimum zoom to open add/edit node sheets
+const int kMinZoomForNodeEditingSheets = 16; // Minimum zoom to open add/edit node sheets
 const int kMinZoomForOfflineDownload = 10; // Minimum zoom to download offline areas (prevents large area crashes)
 const Duration kMarkerTapTimeout = Duration(milliseconds: 250);
+const Duration kMapLongPressTimeout = Duration(milliseconds: 600); // Duration to trigger "add node here" on empty map area
 const Duration kDebounceCameraRefresh = Duration(milliseconds: 500);
 
-// Pre-fetch area configuration
-const double kPreFetchAreaExpansionMultiplier = 3.0; // Expand visible bounds by this factor for pre-fetching
 const double kNodeRenderingBoundsExpansion = 1.3; // Expand visible bounds by this factor for node rendering to prevent edge blinking
 const double kRouteProximityThresholdMeters = 500.0; // Distance threshold for determining if user is near route when resuming navigation
 const double kResumeNavigationZoomLevel = 16.0; // Zoom level when resuming navigation
-const int kPreFetchZoomLevel = 10; // Always pre-fetch at this zoom level for consistent area sizes
-const int kMaxPreFetchSplitDepth = 3; // Maximum recursive splits when hitting Overpass node limit
+
 
 // Data refresh configuration
 const int kDataRefreshIntervalSeconds = 60; // Refresh cached data after this many seconds
@@ -131,7 +139,7 @@ const int kProximityAlertMaxDistance = 1600; // meters
 const Duration kProximityAlertCooldown = Duration(minutes: 10); // Cooldown between alerts for same node
 
 // Node proximity warning configuration (for new/edited nodes that are too close to existing ones)
-const double kNodeProximityWarningDistance = 15.0; // meters - distance threshold to show warning
+const double kNodeProximityWarningDistance = 50.0; // meters - distance threshold to show warning
 
 // Positioning tutorial configuration
 const double kPositioningTutorialBlurSigma = 3.0; // Blur strength for sheet overlay
@@ -139,7 +147,7 @@ const double kPositioningTutorialMinMovementMeters = 1.0; // Minimum map movemen
 
 // Navigation route planning configuration
 const double kNavigationMinRouteDistance = 100.0; // meters - minimum distance between start and end points
-const double kNavigationDistanceWarningThreshold = 20000.0; // meters - distance threshold for timeout warning (30km)
+const double kNavigationDistanceWarningThreshold = 300000.0; // meters - distance threshold for timeout warning (30km)
 
 // Node display configuration
 const int kDefaultMaxNodes = 500; // Default maximum number of nodes to render on the map at once
@@ -164,11 +172,11 @@ const int kAbsoluteMaxTileCount = 50000;
 const int kAbsoluteMaxZoom = 23;
 
 // Node icon configuration
-const double kNodeIconDiameter = 18.0;
-const double _kNodeRingThicknessBase = 2.5;
-const double kNodeDotOpacity = 0.3; // Opacity for the grey dot interior
+const double kNodeIconDiameter = 17.0;
+const double _kNodeRingThicknessBase = 2.6;
+const double kNodeDotOpacity = 0.28; // Opacity for the grey dot interior
 const Color kNodeRingColorReal = Color(0xFF3036F0); // Real nodes from OSM - blue
-const Color kNodeRingColorMock = Color(0xD0FFFFFF); // Add node mock point - white
+const Color kNodeRingColorMock = Color(0xE044BB55); // Add node mock point - white
 const Color kNodeRingColorPending = Color(0xD09C27B0); // Submitted/pending nodes - purple
 const Color kNodeRingColorEditing = Color(0xD0FF9800); // Node being edited - orange
 const Color kNodeRingColorPendingEdit = Color(0xD0757575); // Original node with pending edit - grey

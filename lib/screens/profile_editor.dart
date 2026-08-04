@@ -6,6 +6,7 @@ import '../models/node_profile.dart';
 import '../app_state.dart';
 import '../services/localization_service.dart';
 import '../widgets/nsi_tag_value_field.dart';
+import '../dev_config.dart';
 
 class ProfileEditor extends StatefulWidget {
   const ProfileEditor({super.key, required this.profile});
@@ -22,6 +23,7 @@ class _ProfileEditorState extends State<ProfileEditor> {
   late bool _requiresDirection;
   late bool _submittable;
   late TextEditingController _fovCtrl;
+  late bool _is360Fov;
 
   static const _defaultTags = [
     MapEntry('man_made', 'surveillance'),
@@ -41,6 +43,7 @@ class _ProfileEditorState extends State<ProfileEditor> {
     _requiresDirection = widget.profile.requiresDirection;
     _submittable = widget.profile.submittable;
     _fovCtrl = TextEditingController(text: widget.profile.fov?.toString() ?? '');
+    _is360Fov = widget.profile.fov == 360.0;
 
     if (widget.profile.tags.isEmpty) {
       // New profile → start with sensible defaults
@@ -94,28 +97,68 @@ class _ProfileEditorState extends State<ProfileEditor> {
               ),
               const SizedBox(height: 16),
               if (widget.profile.editable) ...[
-                CheckboxListTile(
-                  title: Text(locService.t('profileEditor.requiresDirection')),
-                  subtitle: Text(locService.t('profileEditor.requiresDirectionSubtitle')),
-                  value: _requiresDirection,
-                  onChanged: (value) => setState(() => _requiresDirection = value ?? true),
-                  controlAffinity: ListTileControlAffinity.leading,
-                ),
-                if (_requiresDirection) Padding(
-                  padding: const EdgeInsets.only(left: 16, right: 16, bottom: 8),
-                  child: TextField(
-                    controller: _fovCtrl,
-                    keyboardType: TextInputType.number,
-                    decoration: InputDecoration(
-                      labelText: locService.t('profileEditor.fov'),
-                      hintText: locService.t('profileEditor.fovHint'),
-                      helperText: locService.t('profileEditor.fovSubtitle'),
-                      errorText: _validateFov(),
-                      suffixText: '°',
-                    ),
-                    onChanged: (value) => setState(() {}), // Trigger validation
+                // Direction and FOV configuration - show different UI based on dev config
+                if (kEnableNon360FOVs) ...[
+                  // Old UI: direction required + optional custom FOV text field (development mode)
+                  CheckboxListTile(
+                    title: Text(locService.t('profileEditor.requiresDirection')),
+                    subtitle: Text(locService.t('profileEditor.requiresDirectionSubtitle')),
+                    value: _requiresDirection,
+                    onChanged: (value) => setState(() => _requiresDirection = value ?? true),
+                    controlAffinity: ListTileControlAffinity.leading,
                   ),
-                ),
+                  if (_requiresDirection) Padding(
+                    padding: const EdgeInsets.only(left: 16, right: 16, bottom: 8),
+                    child: TextField(
+                      controller: _fovCtrl,
+                      keyboardType: TextInputType.number,
+                      decoration: InputDecoration(
+                        labelText: locService.t('profileEditor.fov'),
+                        hintText: locService.t('profileEditor.fovHint'),
+                        helperText: locService.t('profileEditor.fovSubtitle'),
+                        errorText: _validateFov(),
+                        suffixText: '°',
+                      ),
+                      onChanged: (value) => setState(() {}), // Trigger validation
+                    ),
+                  ),
+                ] else ...[
+                  // New UI: mutually exclusive direction vs 360° FOV checkboxes (production mode)
+                  CheckboxListTile(
+                    title: Text(locService.t('profileEditor.requiresDirection')),
+                    subtitle: Text(locService.t('profileEditor.requiresDirectionSubtitle')),
+                    value: _requiresDirection,
+                    onChanged: widget.profile.editable 
+                        ? (value) {
+                            setState(() {
+                              _requiresDirection = value ?? false;
+                              // Make mutually exclusive with 360° FOV
+                              if (_requiresDirection) {
+                                _is360Fov = false;
+                              }
+                            });
+                          }
+                        : null,
+                    controlAffinity: ListTileControlAffinity.leading,
+                  ),
+                  CheckboxListTile(
+                    title: Text(locService.t('profileEditor.fov360')),
+                    subtitle: Text(locService.t('profileEditor.fov360Subtitle')),
+                    value: _is360Fov,
+                    onChanged: widget.profile.editable 
+                        ? (value) {
+                            setState(() {
+                              _is360Fov = value ?? false;
+                              // Make mutually exclusive with direction requirement
+                              if (_is360Fov) {
+                                _requiresDirection = false;
+                              }
+                            });
+                          }
+                        : null,
+                    controlAffinity: ListTileControlAffinity.leading,
+                  ),
+                ],
                 CheckboxListTile(
                   title: Text(locService.t('profileEditor.submittable')),
                   subtitle: Text(locService.t('profileEditor.submittableSubtitle')),
@@ -199,6 +242,9 @@ class _ProfileEditorState extends State<ProfileEditor> {
   }
 
   String? _validateFov() {
+    // Only validate when using text field mode
+    if (!kEnableNon360FOVs) return null;
+    
     final text = _fovCtrl.text.trim();
     if (text.isEmpty) return null; // Optional field
     
@@ -219,14 +265,21 @@ class _ProfileEditorState extends State<ProfileEditor> {
       return;
     }
 
-    // Validate FOV if provided
-    if (_validateFov() != null) {
+    // Validate FOV if using text field mode
+    if (kEnableNon360FOVs && _validateFov() != null) {
       return; // Don't save if FOV validation fails
     }
 
-    // Parse FOV
-    final fovText = _fovCtrl.text.trim();
-    final fov = fovText.isEmpty ? null : double.tryParse(fovText);
+    // Parse FOV based on dev config mode
+    double? fov;
+    if (kEnableNon360FOVs) {
+      // Old mode: parse from text field
+      final fovText = _fovCtrl.text.trim();
+      fov = fovText.isEmpty ? null : double.tryParse(fovText);
+    } else {
+      // New mode: use checkbox state
+      fov = _is360Fov ? 360.0 : null;
+    }
     
     final tagMap = <String, String>{};
     for (final e in _tags) {

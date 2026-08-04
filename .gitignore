@@ -38,13 +38,14 @@ ios/Flutter/Flutter.framework
 ios/Pods/
 ios/.generated/
 ios/.idea/
-ios/Runner.xcworkspace/
+ios/Runner.xcworkspace/xcuserdata/
+ios/Runner.xcworkspace/project.xcworkspace/xcuserdata/
 macos/Pods/
 macos/.generated/
 macos/Flutter/ephemeral/
-# CocoaPods – commit Podfile.lock if you need reproducible iOS builds
-Podfile.lock
 Pods/
+Podfile
+Podfile.lock
 
 # Generated icons and splash screens  
 ios/Runner/Assets.xcassets/AppIcon.appiconset/*
@@ -73,12 +74,13 @@ fuchsia/build/
 web/build/
 
 # ───────────────────────────────
-# IDE / Editor Settings
+# IDE / Editor / AI Tool Settings
 # ───────────────────────────────
 .idea/
 .idea/**/workspace.xml
 .idea/**/tasks.xml
 .vscode/
+.claude/settings.local.json
 # Swap files
 *.swp
 *.swo
