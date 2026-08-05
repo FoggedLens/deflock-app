@@ -47,6 +47,7 @@
     "download": "Baixar",
     "settings": "Configurações",
     "edit": "Editar",
+    "verify": "Verificar",
     "delete": "Excluir",
     "cancel": "Cancelar",
     "ok": "OK",
@@ -112,6 +113,7 @@
     "advancedSettingsSubtitle": "Configurações de desempenho, alertas e provedores de mapas",
     "proximityAlerts": "Alertas de Proximidade",
     "keepScreenAwake": "Manter Ecrã Ativa",
+    "dataFreshness": "Atualidade dos dados",
     "networkStatusIndicator": "Indicador de Status de Rede",
     "hideZoomControls": "Ocultar Controlos de Zoom",
     "enableOfflineFeatures": "Ativar Funcionalidades Offline",
@@ -139,6 +141,12 @@
     "checkingPermissions": "Verificando permissões...",
     "alertDistance": "Distância de alerta: ",
     "rangeInfo": "Faixa: {}-{} {} (padrão: {})"
+  },
+  "staleness": {
+    "showIndicator": "Mostrar indicador de nós desatualizados",
+    "showIndicatorExplanation": "Destacar nós que não foram verificados recentemente",
+    "threshold": "Considerar desatualizado após",
+    "daysCount": "{} dias"
   },
   "node": {
     "title": "Nó #{}",

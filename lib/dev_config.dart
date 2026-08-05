@@ -25,7 +25,7 @@ const double kButtonBarHeight = 60.0; // Button height (48) + padding (12)
 
 // Map overlay spacing relative to button bar top
 const double kAttributionSpacingAboveButtonBar = 10.0; // Attribution above button bar top
-const double kZoomIndicatorSpacingAboveButtonBar = 40.0; // Zoom indicator above button bar top  
+const double kZoomIndicatorSpacingAboveButtonBar = 40.0; // Zoom indicator above button bar top
 const double kScaleBarSpacingAboveButtonBar = 70.0; // Scale bar above button bar top
 const double kZoomControlsSpacingAboveButtonBar = 20.0; // Zoom controls above button bar top
 
@@ -60,7 +60,7 @@ const Duration kUploadHttpTimeout = Duration(seconds: 30); // HTTP request timeo
 const Duration kUploadQueueProcessingInterval = Duration(seconds: 5); // How often to check for new uploads to start
 const int kMaxConcurrentUploads = 5; // Maximum number of uploads processing simultaneously
 const Duration kChangesetCloseInitialRetryDelay = Duration(seconds: 10);
-const Duration kChangesetCloseMaxRetryDelay = Duration(minutes: 5);  // Cap at 5 minutes
+const Duration kChangesetCloseMaxRetryDelay = Duration(minutes: 5); // Cap at 5 minutes
 const Duration kChangesetAutoCloseTimeout = Duration(minutes: 59); // Give up and trust OSM auto-close
 const double kChangesetCloseBackoffMultiplier = 2.0;
 
@@ -78,7 +78,7 @@ const Duration kOverpassQueryTimeout = Duration(seconds: 45); // Timeout for Ove
 const String kSuspectedLocationsCsvUrl = 'https://alprwatch.org/suspected-locations/deflock-latest.csv';
 
 // Development/testing features - set to false for production builds
-const bool kEnableDevelopmentModes = false; // Set to false to hide sandbox/simulate modes and force production mode
+const bool kEnableDevelopmentModes = true; // Set to false to hide sandbox/simulate modes and force production mode
 
 // Navigation features - set to false to hide navigation UI elements while in development
 const bool kEnableNavigationFeatures = true; // Hide navigation until fully implemented
@@ -109,10 +109,19 @@ const Duration kMarkerTapTimeout = Duration(milliseconds: 250);
 const Duration kMapLongPressTimeout = Duration(milliseconds: 600); // Duration to trigger "add node here" on empty map area
 const Duration kDebounceCameraRefresh = Duration(milliseconds: 500);
 
+//Release date for stale node detection feature (used as default check_date for nodes without a check_date)
+final kFeatureReleaseDate = DateTime.utc(2026, 8, 5); // adjust to actual release date
+//Node staleness thresholds (in days) for visual indicator
+const int kAgingNodeThresholdDays = 60; // Threshold for stale node to begin fading -- "aging" node
+const int kStaleNodeThresholdDays = 360; // Threshold node to be fully stale
+
+// Pre-fetch area configuration
+const double kPreFetchAreaExpansionMultiplier = 3.0; // Expand visible bounds by this factor for pre-fetching
 const double kNodeRenderingBoundsExpansion = 1.3; // Expand visible bounds by this factor for node rendering to prevent edge blinking
 const double kRouteProximityThresholdMeters = 500.0; // Distance threshold for determining if user is near route when resuming navigation
 const double kResumeNavigationZoomLevel = 16.0; // Zoom level when resuming navigation
-
+const int kPreFetchZoomLevel = 10; // Always pre-fetch at this zoom level for consistent area sizes
+const int kMaxPreFetchSplitDepth = 3; // Maximum recursive splits when hitting Overpass node limit
 
 // Data refresh configuration
 const int kDataRefreshIntervalSeconds = 60; // Refresh cached data after this many seconds
@@ -176,6 +185,7 @@ const double kNodeIconDiameter = 17.0;
 const double _kNodeRingThicknessBase = 2.6;
 const double kNodeDotOpacity = 0.28; // Opacity for the grey dot interior
 const Color kNodeRingColorReal = Color(0xFF3036F0); // Real nodes from OSM - blue
+const Color kNodeRingColorStale = Color(0xFF6F4E37); // Real but stale OSM nodes - brown
 const Color kNodeRingColorMock = Color(0xE044BB55); // Add node mock point - white
 const Color kNodeRingColorPending = Color(0xD09C27B0); // Submitted/pending nodes - purple
 const Color kNodeRingColorEditing = Color(0xD0FF9800); // Node being edited - orange
@@ -188,12 +198,11 @@ const double kDirectionButtonMinHeight = 32.0;
 
 // Helper functions for pixel-ratio scaling
 double getDirectionConeBorderWidth(BuildContext context) {
-//  return _kDirectionConeBorderWidthBase * MediaQuery.of(context).devicePixelRatio;
+  //  return _kDirectionConeBorderWidthBase * MediaQuery.of(context).devicePixelRatio;
   return _kDirectionConeBorderWidthBase;
 }
 
 double getNodeRingThickness(BuildContext context) {
-//  return _kNodeRingThicknessBase * MediaQuery.of(context).devicePixelRatio;
+  //  return _kNodeRingThicknessBase * MediaQuery.of(context).devicePixelRatio;
   return _kNodeRingThicknessBase;
 }
-
