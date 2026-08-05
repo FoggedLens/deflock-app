@@ -12,12 +12,9 @@ class AddNodeSession {
   OperatorProfile? operatorProfile;
   LatLng? target;
   List<double> directions; // All directions [90, 180, 270]
-  int
-  currentDirectionIndex; // Which direction we're editing (e.g. 1 = editing the 180°)
-  Map<String, String>
-  refinedTags; // User-selected values for empty profile tags
-  Map<String, String>
-  additionalExistingTags; // For consistency (always empty for new nodes)
+  int currentDirectionIndex; // Which direction we're editing (e.g. 1 = editing the 180°)
+  Map<String, String> refinedTags; // User-selected values for empty profile tags
+  Map<String, String> additionalExistingTags; // For consistency (always empty for new nodes)
   String changesetComment; // User-editable changeset comment
 
   AddNodeSession({
@@ -31,13 +28,11 @@ class AddNodeSession {
   }) : directions = [initialDirection],
        currentDirectionIndex = 0,
        refinedTags = refinedTags ?? {},
-       additionalExistingTags =
-           additionalExistingTags ?? {}, // Always empty for new nodes
+       additionalExistingTags = additionalExistingTags ?? {}, // Always empty for new nodes
        changesetComment = changesetComment ?? '';
 
   // Slider always shows the current direction being edited
-  double get directionDegrees =>
-      directions.isNotEmpty && currentDirectionIndex >= 0
+  double get directionDegrees => directions.isNotEmpty && currentDirectionIndex >= 0
       ? directions[currentDirectionIndex]
       : 0.0;
   set directionDegrees(double value) {
@@ -55,13 +50,10 @@ class EditNodeSession {
   OperatorProfile? operatorProfile;
   LatLng target; // Current position (can be dragged)
   List<double> directions; // All directions [90, 180, 270]
-  int
-  currentDirectionIndex; // Which direction we're editing (e.g. 1 = editing the 180°)
+  int currentDirectionIndex; // Which direction we're editing (e.g. 1 = editing the 180°)
   bool extractFromWay; // True if user wants to extract this constrained node
-  Map<String, String>
-  refinedTags; // User-selected values for empty profile tags
-  Map<String, String>
-  additionalExistingTags; // Tags that exist on node but not in profile
+  Map<String, String> refinedTags; // User-selected values for empty profile tags
+  Map<String, String> additionalExistingTags; // Tags that exist on node but not in profile
   String changesetComment; // User-editable changeset comment
 
   EditNodeSession({
@@ -82,8 +74,7 @@ class EditNodeSession {
        changesetComment = changesetComment ?? '';
 
   // Slider always shows the current direction being edited
-  double get directionDegrees =>
-      directions.isNotEmpty && currentDirectionIndex >= 0
+  double get directionDegrees => directions.isNotEmpty && currentDirectionIndex >= 0
       ? directions[currentDirectionIndex]
       : 0.0;
   set directionDegrees(double value) {
@@ -105,42 +96,27 @@ class SessionState extends ChangeNotifier {
   void startAddSession(List<NodeProfile> enabledProfiles) {
     // Start with no profile selected - force user to choose
     _session = AddNodeSession(
-      changesetComment:
-          'Add surveillance node', // Default comment, will be updated when profile is selected
+      changesetComment: 'Add surveillance node', // Default comment, will be updated when profile is selected
     );
     _editSession = null; // Clear any edit session
     notifyListeners();
   }
 
-  void startEditSession(
-    OsmNode node,
-    List<NodeProfile> enabledProfiles,
-    List<OperatorProfile> operatorProfiles,
-  ) {
+  void startEditSession(OsmNode node, List<NodeProfile> enabledProfiles, List<OperatorProfile> operatorProfiles) {
     // Always create and pre-select the temporary "existing tags" profile (now empty)
     final existingTagsProfile = NodeProfile.createExistingTagsProfile(node);
 
     // Detect and store operator profile (persists across profile changes)
-    _detectedOperatorProfile = OperatorProfile.createExistingOperatorProfile(
-      node,
-      operatorProfiles,
-    );
+    _detectedOperatorProfile = OperatorProfile.createExistingOperatorProfile(node, operatorProfiles);
 
     // Initialize edit session with all existing directions, or empty list if none
-    final existingDirections = node.directionDeg.isNotEmpty
-        ? node.directionDeg
-        : <double>[];
-    final initialDirection = existingDirections.isNotEmpty
-        ? existingDirections.first
-        : 0.0;
+    final existingDirections = node.directionDeg.isNotEmpty ? node.directionDeg : <double>[];
+    final initialDirection = existingDirections.isNotEmpty ? existingDirections.first : 0.0;
     final originalHadDirections = existingDirections.isNotEmpty;
 
     // Since the "existing tags" profile is now empty, all existing node tags
     // (minus special ones) should go into additionalExistingTags
-    final initialAdditionalTags = _calculateAdditionalExistingTags(
-      existingTagsProfile,
-      node,
-    );
+    final initialAdditionalTags = _calculateAdditionalExistingTags(existingTagsProfile, node);
 
     // Auto-populate refined tags (empty profile means no refined tags initially)
     final initialRefinedTags = _calculateRefinedTags(existingTagsProfile, node);
@@ -154,24 +130,18 @@ class SessionState extends ChangeNotifier {
       target: node.coord,
       additionalExistingTags: initialAdditionalTags,
       refinedTags: initialRefinedTags,
-      changesetComment:
-          'Update a surveillance node', // Default comment for existing tags profile
+      changesetComment: 'Update a surveillance node', // Default comment for existing tags profile
     );
 
     // Replace the default single direction with all existing directions (or empty list)
     _editSession!.directions = List<double>.from(existingDirections);
-    _editSession!.currentDirectionIndex = existingDirections.isNotEmpty
-        ? 0
-        : -1; // -1 indicates no directions
+    _editSession!.currentDirectionIndex = existingDirections.isNotEmpty ? 0 : -1; // -1 indicates no directions
     _session = null; // Clear any add session
     notifyListeners();
   }
 
   /// Calculate additional existing tags for a given profile change
-  Map<String, String> _calculateAdditionalExistingTags(
-    NodeProfile? newProfile,
-    OsmNode originalNode,
-  ) {
+  Map<String, String> _calculateAdditionalExistingTags(NodeProfile? newProfile, OsmNode originalNode) {
     final additionalTags = <String, String>{};
 
     // Skip if no profile
@@ -201,10 +171,7 @@ class SessionState extends ChangeNotifier {
   }
 
   /// Auto-populate refined tags with existing values from the original node
-  Map<String, String> _calculateRefinedTags(
-    NodeProfile? profile,
-    OsmNode originalNode,
-  ) {
+  Map<String, String> _calculateRefinedTags(NodeProfile? profile, OsmNode originalNode) {
     final refinedTags = <String, String>{};
 
     if (profile == null) return refinedTags;
@@ -280,9 +247,7 @@ class SessionState extends ChangeNotifier {
       dirty = true;
     }
     if (additionalExistingTags != null) {
-      _session!.additionalExistingTags = Map<String, String>.from(
-        additionalExistingTags,
-      );
+      _session!.additionalExistingTags = Map<String, String>.from(additionalExistingTags);
       dirty = true;
     }
     if (changesetComment != null) {
@@ -309,8 +274,7 @@ class SessionState extends ChangeNotifier {
     bool snapBackRequired = false;
     LatLng? snapBackTarget;
 
-    if (directionDeg != null &&
-        directionDeg != _editSession!.directionDegrees) {
+    if (directionDeg != null && directionDeg != _editSession!.directionDegrees) {
       _editSession!.directionDegrees = directionDeg;
       dirty = true;
     }
@@ -330,25 +294,17 @@ class SessionState extends ChangeNotifier {
       // Calculate additional existing tags for non-existing-tags profiles
       // Only do this if additionalExistingTags wasn't explicitly provided
       if (additionalExistingTags == null) {
-        _editSession!.additionalExistingTags = _calculateAdditionalExistingTags(
-          profile,
-          _editSession!.originalNode,
-        );
+        _editSession!.additionalExistingTags = _calculateAdditionalExistingTags(profile, _editSession!.originalNode);
       }
 
       // Auto-populate refined tags with existing values for empty profile tags
       // Only do this if refinedTags wasn't explicitly provided
       if (refinedTags == null) {
-        _editSession!.refinedTags = _calculateRefinedTags(
-          profile,
-          _editSession!.originalNode,
-        );
+        _editSession!.refinedTags = _calculateRefinedTags(profile, _editSession!.originalNode);
       }
 
       // Regenerate changeset comment when profile changes
-      final operation = _editSession!.extractFromWay
-          ? UploadOperation.extract
-          : UploadOperation.modify;
+      final operation = _editSession!.extractFromWay ? UploadOperation.extract : UploadOperation.modify;
       _editSession!.changesetComment = _generateDefaultChangesetComment(
         profile: profile,
         operation: operation,
@@ -357,8 +313,7 @@ class SessionState extends ChangeNotifier {
       dirty = true;
     }
     // Only update operator profile when explicitly requested
-    if (updateOperatorProfile &&
-        operatorProfile != _editSession!.operatorProfile) {
+    if (updateOperatorProfile && operatorProfile != _editSession!.operatorProfile) {
       _editSession!.operatorProfile = operatorProfile; // This can be null
       dirty = true;
     }
@@ -366,8 +321,7 @@ class SessionState extends ChangeNotifier {
       _editSession!.target = target;
       dirty = true;
     }
-    if (extractFromWay != null &&
-        extractFromWay != _editSession!.extractFromWay) {
+    if (extractFromWay != null && extractFromWay != _editSession!.extractFromWay) {
       _editSession!.extractFromWay = extractFromWay;
       // When extract is unchecked, snap back to original location
       if (!extractFromWay) {
@@ -383,9 +337,7 @@ class SessionState extends ChangeNotifier {
       dirty = true;
     }
     if (additionalExistingTags != null) {
-      _editSession!.additionalExistingTags = Map<String, String>.from(
-        additionalExistingTags,
-      );
+      _editSession!.additionalExistingTags = Map<String, String>.from(additionalExistingTags);
       dirty = true;
     }
     if (changesetComment != null) {
@@ -441,10 +393,8 @@ class SessionState extends ChangeNotifier {
         _editSession!.directions.removeAt(_editSession!.currentDirectionIndex);
         if (_editSession!.directions.isEmpty) {
           _editSession!.currentDirectionIndex = -1; // No directions
-        } else if (_editSession!.currentDirectionIndex >=
-            _editSession!.directions.length) {
-          _editSession!.currentDirectionIndex =
-              _editSession!.directions.length - 1;
+        } else if (_editSession!.currentDirectionIndex >= _editSession!.directions.length) {
+          _editSession!.currentDirectionIndex = _editSession!.directions.length - 1;
         }
         notifyListeners();
       }
@@ -454,15 +404,10 @@ class SessionState extends ChangeNotifier {
   // Cycle to next direction
   void cycleDirection() {
     if (_session != null && _session!.directions.length > 1) {
-      _session!.currentDirectionIndex =
-          (_session!.currentDirectionIndex + 1) % _session!.directions.length;
+      _session!.currentDirectionIndex = (_session!.currentDirectionIndex + 1) % _session!.directions.length;
       notifyListeners();
-    } else if (_editSession != null &&
-        _editSession!.directions.length > 1 &&
-        _editSession!.currentDirectionIndex >= 0) {
-      _editSession!.currentDirectionIndex =
-          (_editSession!.currentDirectionIndex + 1) %
-          _editSession!.directions.length;
+    } else if (_editSession != null && _editSession!.directions.length > 1 && _editSession!.currentDirectionIndex >= 0) {
+      _editSession!.currentDirectionIndex = (_editSession!.currentDirectionIndex + 1) % _editSession!.directions.length;
       notifyListeners();
     }
   }
@@ -513,10 +458,7 @@ class SessionState extends ChangeNotifier {
   }
 
   /// Handle direction requirements when profile changes in edit session
-  void _handleDirectionRequirementsOnProfileChange(
-    NodeProfile? oldProfile,
-    NodeProfile newProfile,
-  ) {
+  void _handleDirectionRequirementsOnProfileChange(NodeProfile? oldProfile, NodeProfile newProfile) {
     if (_editSession == null) return;
 
     final minimum = _getMinimumDirections();
@@ -535,9 +477,7 @@ class SessionState extends ChangeNotifier {
     required UploadOperation operation,
   }) {
     // Handle temp profiles with brackets by using "a"
-    final profileName =
-        profile?.name.startsWith('<') == true &&
-            profile?.name.endsWith('>') == true
+    final profileName = profile?.name.startsWith('<') == true && profile?.name.endsWith('>') == true
         ? 'a'
         : profile?.name ?? 'surveillance';
 

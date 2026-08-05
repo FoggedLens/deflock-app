@@ -20,29 +20,18 @@ const double kDirectionConeOpacity = 0.5; // Fill opacity for FOV cones
 const double _kDirectionConeBorderWidthBase = 1.6;
 
 // Bottom button bar positioning
-const double kBottomButtonBarOffset =
-    4.0; // Distance from screen bottom (above safe area)
+const double kBottomButtonBarOffset = 4.0; // Distance from screen bottom (above safe area)
 const double kButtonBarHeight = 60.0; // Button height (48) + padding (12)
 
 // Map overlay spacing relative to button bar top
-const double kAttributionSpacingAboveButtonBar =
-    10.0; // Attribution above button bar top
-const double kZoomIndicatorSpacingAboveButtonBar =
-    40.0; // Zoom indicator above button bar top
-const double kScaleBarSpacingAboveButtonBar =
-    70.0; // Scale bar above button bar top
-const double kZoomControlsSpacingAboveButtonBar =
-    20.0; // Zoom controls above button bar top
+const double kAttributionSpacingAboveButtonBar = 10.0; // Attribution above button bar top
+const double kZoomIndicatorSpacingAboveButtonBar = 40.0; // Zoom indicator above button bar top
+const double kScaleBarSpacingAboveButtonBar = 70.0; // Scale bar above button bar top
+const double kZoomControlsSpacingAboveButtonBar = 20.0; // Zoom controls above button bar top
 
 // Helper to calculate bottom position relative to button bar
-double bottomPositionFromButtonBar(
-  double spacingAboveButtonBar,
-  double safeAreaBottom,
-) {
-  return safeAreaBottom +
-      kBottomButtonBarOffset +
-      kButtonBarHeight +
-      spacingAboveButtonBar;
+double bottomPositionFromButtonBar(double spacingAboveButtonBar, double safeAreaBottom) {
+  return safeAreaBottom + kBottomButtonBarOffset + kButtonBarHeight + spacingAboveButtonBar;
 }
 
 // Helper to get left positioning that accounts for safe area (for landscape mode)
@@ -67,21 +56,12 @@ const String kContactEmail = 'admin@stopflock.com';
 const String kHomepageUrl = 'https://deflock.org';
 
 // Upload and changeset configuration
-const Duration kUploadHttpTimeout = Duration(
-  seconds: 30,
-); // HTTP request timeout for uploads
-const Duration kUploadQueueProcessingInterval = Duration(
-  seconds: 5,
-); // How often to check for new uploads to start
-const int kMaxConcurrentUploads =
-    5; // Maximum number of uploads processing simultaneously
+const Duration kUploadHttpTimeout = Duration(seconds: 30); // HTTP request timeout for uploads
+const Duration kUploadQueueProcessingInterval = Duration(seconds: 5); // How often to check for new uploads to start
+const int kMaxConcurrentUploads = 5; // Maximum number of uploads processing simultaneously
 const Duration kChangesetCloseInitialRetryDelay = Duration(seconds: 10);
-const Duration kChangesetCloseMaxRetryDelay = Duration(
-  minutes: 5,
-); // Cap at 5 minutes
-const Duration kChangesetAutoCloseTimeout = Duration(
-  minutes: 59,
-); // Give up and trust OSM auto-close
+const Duration kChangesetCloseMaxRetryDelay = Duration(minutes: 5); // Cap at 5 minutes
+const Duration kChangesetAutoCloseTimeout = Duration(minutes: 59); // Give up and trust OSM auto-close
 const double kChangesetCloseBackoffMultiplier = 2.0;
 
 // How long to keep the "Submission Complete" confirmation visible in the
@@ -92,36 +72,28 @@ const Duration kInFlightUploadCompleteDisplayDuration = Duration(seconds: 2);
 
 
 // Overpass API configuration
-const Duration kOverpassQueryTimeout = Duration(
-  seconds: 45,
-); // Timeout for Overpass API queries (was 25s hardcoded)
+const Duration kOverpassQueryTimeout = Duration(seconds: 45); // Timeout for Overpass API queries (was 25s hardcoded)
 
 // Suspected locations CSV URL
-const String kSuspectedLocationsCsvUrl =
-    'https://alprwatch.org/suspected-locations/deflock-latest.csv';
+const String kSuspectedLocationsCsvUrl = 'https://alprwatch.org/suspected-locations/deflock-latest.csv';
 
 // Development/testing features - set to false for production builds
-const bool kEnableDevelopmentModes =
-    true; // Set to false to hide sandbox/simulate modes and force production mode
+const bool kEnableDevelopmentModes = true; // Set to false to hide sandbox/simulate modes and force production mode
 
 // Navigation features - set to false to hide navigation UI elements while in development
-const bool kEnableNavigationFeatures =
-    true; // Hide navigation until fully implemented
+const bool kEnableNavigationFeatures = true; // Hide navigation until fully implemented
 
 // Node editing features - set to false to temporarily disable editing
-const bool kEnableNodeEdits =
-    true; // Set to false to temporarily disable node editing
+const bool kEnableNodeEdits = true; // Set to false to temporarily disable node editing
 
 // Node extraction features - set to false to hide extract functionality for constrained nodes
-const bool kEnableNodeExtraction =
-    false; // Set to true to enable extract from way/relation feature (WIP)
+const bool kEnableNodeExtraction = false; // Set to true to enable extract from way/relation feature (WIP)
 
 // Auto-open tags sheet after add/edit/delete, so the user can watch upload status update live.
 const bool kAutoOpenNodeSheetAfterSubmit = true; // Set to true to enable auto-focus behavior
 
 // Profile FOV features - set to false to restrict profiles to 360° FOV only
-const bool kEnableNon360FOVs =
-    false; // Set to true to allow custom FOV values in profiles
+const bool kEnableNon360FOVs = false; // Set to true to allow custom FOV values in profiles
 
 /// Navigation availability: only dev builds, and only when online
 bool enableNavigationFeatures({required bool offlineMode}) {
@@ -130,20 +102,15 @@ bool enableNavigationFeatures({required bool offlineMode}) {
 
 // Marker/node interaction
 const int kNodeMinZoomLevel = 10; // Minimum zoom to show nodes (Overpass)
-const int kOsmApiMinZoomLevel =
-    13; // Minimum zoom for OSM API bbox queries (sandbox mode)
-const int kMinZoomForNodeEditingSheets =
-    16; // Minimum zoom to open add/edit node sheets
-const int kMinZoomForOfflineDownload =
-    10; // Minimum zoom to download offline areas (prevents large area crashes)
+const int kOsmApiMinZoomLevel = 13; // Minimum zoom for OSM API bbox queries (sandbox mode)
+const int kMinZoomForNodeEditingSheets = 16; // Minimum zoom to open add/edit node sheets
+const int kMinZoomForOfflineDownload = 10; // Minimum zoom to download offline areas (prevents large area crashes)
 const Duration kMarkerTapTimeout = Duration(milliseconds: 250);
-const Duration kMapLongPressTimeout = Duration(
-  milliseconds: 600,
-); // Duration to trigger "add node here" on empty map area
+const Duration kMapLongPressTimeout = Duration(milliseconds: 600); // Duration to trigger "add node here" on empty map area
 const Duration kDebounceCameraRefresh = Duration(milliseconds: 500);
 
 //Release date for stale node detection feature (used as default check_date for nodes without a check_date)
-final kFeatureReleaseDate = DateTime.utc(2026, 8, 1); // adjust to actual release date
+final kFeatureReleaseDate = DateTime.utc(2026, 8, 5); // adjust to actual release date
 //Node staleness thresholds (in days) for visual indicator
 const int kAgingNodeThresholdDays = 60; // Threshold for stale node to begin fading -- "aging" node
 const int kStaleNodeThresholdDays = 360; // Threshold node to be fully stale
@@ -157,74 +124,53 @@ const int kPreFetchZoomLevel = 10; // Always pre-fetch at this zoom level for co
 const int kMaxPreFetchSplitDepth = 3; // Maximum recursive splits when hitting Overpass node limit
 
 // Data refresh configuration
-const int kDataRefreshIntervalSeconds =
-    60; // Refresh cached data after this many seconds
+const int kDataRefreshIntervalSeconds = 60; // Refresh cached data after this many seconds
 
 // Follow-me mode smooth transitions
 const Duration kFollowMeAnimationDuration = Duration(milliseconds: 600);
-const double kMinSpeedForRotationMps =
-    1.0; // Minimum speed (m/s) to apply rotation
+const double kMinSpeedForRotationMps = 1.0; // Minimum speed (m/s) to apply rotation
 
 // Sheet content configuration
-const double kMaxTagListHeightRatioPortrait =
-    0.3; // Maximum height for tag lists in portrait mode
-const double kMaxTagListHeightRatioLandscape =
-    0.2; // Maximum height for tag lists in landscape mode
+const double kMaxTagListHeightRatioPortrait = 0.3; // Maximum height for tag lists in portrait mode
+const double kMaxTagListHeightRatioLandscape = 0.2; // Maximum height for tag lists in landscape mode
 
 /// Get appropriate tag list height ratio based on screen orientation
 double getTagListHeightRatio(BuildContext context) {
   final size = MediaQuery.of(context).size;
   final isLandscape = size.width > size.height;
-  return isLandscape
-      ? kMaxTagListHeightRatioLandscape
-      : kMaxTagListHeightRatioPortrait;
+  return isLandscape ? kMaxTagListHeightRatioLandscape : kMaxTagListHeightRatioPortrait;
 }
 
 // Proximity alerts configuration
 const int kProximityAlertDefaultDistance = 400; // meters
 const int kProximityAlertMinDistance = 50; // meters
 const int kProximityAlertMaxDistance = 1600; // meters
-const Duration kProximityAlertCooldown = Duration(
-  minutes: 10,
-); // Cooldown between alerts for same node
+const Duration kProximityAlertCooldown = Duration(minutes: 10); // Cooldown between alerts for same node
 
 // Node proximity warning configuration (for new/edited nodes that are too close to existing ones)
-const double kNodeProximityWarningDistance =
-    50.0; // meters - distance threshold to show warning
+const double kNodeProximityWarningDistance = 50.0; // meters - distance threshold to show warning
 
 // Positioning tutorial configuration
-const double kPositioningTutorialBlurSigma =
-    3.0; // Blur strength for sheet overlay
-const double kPositioningTutorialMinMovementMeters =
-    1.0; // Minimum map movement to complete tutorial
+const double kPositioningTutorialBlurSigma = 3.0; // Blur strength for sheet overlay
+const double kPositioningTutorialMinMovementMeters = 1.0; // Minimum map movement to complete tutorial
 
 // Navigation route planning configuration
-const double kNavigationMinRouteDistance =
-    100.0; // meters - minimum distance between start and end points
-const double kNavigationDistanceWarningThreshold =
-    300000.0; // meters - distance threshold for timeout warning (30km)
+const double kNavigationMinRouteDistance = 100.0; // meters - minimum distance between start and end points
+const double kNavigationDistanceWarningThreshold = 300000.0; // meters - distance threshold for timeout warning (30km)
 
 // Node display configuration
-const int kDefaultMaxNodes =
-    500; // Default maximum number of nodes to render on the map at once
+const int kDefaultMaxNodes = 500; // Default maximum number of nodes to render on the map at once
 
 // NSI (Name Suggestion Index) configuration
-const int kNSIMinimumHitCount =
-    500; // Minimum hit count for NSI suggestions to be considered useful
-const int kNSIMaxSuggestions =
-    10; // Maximum number of tag value suggestions to fetch and display
+const int kNSIMinimumHitCount = 500; // Minimum hit count for NSI suggestions to be considered useful
+const int kNSIMaxSuggestions = 10; // Maximum number of tag value suggestions to fetch and display
 
 // Map interaction configuration
-const double kNodeDoubleTapZoomDelta =
-    1.0; // How much to zoom in when double-tapping nodes (was 1.0)
-const double kScrollWheelVelocity =
-    0.01; // Mouse scroll wheel zoom speed (default 0.005)
-const double kPinchZoomThreshold =
-    0.2; // How much pinch required to start zoom (reduced for gesture race)
-const double kPinchMoveThreshold =
-    30.0; // How much drag required for two-finger pan (default 40.0)
-const double kRotationThreshold =
-    6.0; // Degrees of rotation required before map actually rotates (Google Maps style)
+const double kNodeDoubleTapZoomDelta = 1.0; // How much to zoom in when double-tapping nodes (was 1.0)
+const double kScrollWheelVelocity = 0.01; // Mouse scroll wheel zoom speed (default 0.005)
+const double kPinchZoomThreshold = 0.2; // How much pinch required to start zoom (reduced for gesture race)
+const double kPinchMoveThreshold = 30.0; // How much drag required for two-finger pan (default 40.0)
+const double kRotationThreshold = 6.0; // Degrees of rotation required before map actually rotates (Google Maps style)
 
 // User download max zoom span (user can download up to kMaxUserDownloadZoomSpan zooms above min)
 const int kMaxUserDownloadZoomSpan = 7;

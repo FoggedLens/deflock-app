@@ -11,8 +11,7 @@ import '../app_state.dart';
 /// Provides surveillance nodes for a map view, using an in-memory cache and optionally
 /// merging in new results from Overpass via MapDataProvider when not offline.
 class NodeProviderWithCache extends ChangeNotifier {
-  static final NodeProviderWithCache instance =
-      NodeProviderWithCache._internal();
+  static final NodeProviderWithCache instance = NodeProviderWithCache._internal();
   factory NodeProviderWithCache() => instance;
   NodeProviderWithCache._internal();
 

@@ -204,9 +204,7 @@ class _NodeTagSheetState extends State<NodeTagSheet> {
             Navigator.pop(context); // Close this sheet first
             appState.deleteNode(displayNode, changesetComment: result!.comment);
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(locService.t('node.deleteQueuedForUpload')),
-              ),
+              SnackBar(content: Text(locService.t('node.deleteQueuedForUpload'))),
             );
           }
         }
@@ -220,22 +218,14 @@ class _NodeTagSheetState extends State<NodeTagSheet> {
             } else {
               if (context.mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(
-                      locService.t('advancedEdit.couldNotOpenOSMWebsite'),
-                    ),
-                  ),
+                  SnackBar(content: Text(locService.t('advancedEdit.couldNotOpenOSMWebsite'))),
                 );
               }
             }
           } catch (e) {
             if (context.mounted) {
               ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(
-                    locService.t('advancedEdit.couldNotOpenOSMWebsite'),
-                  ),
-                ),
+                SnackBar(content: Text(locService.t('advancedEdit.couldNotOpenOSMWebsite'))),
               );
             }
           }
@@ -653,7 +643,10 @@ class _DeleteNodeDialog extends StatefulWidget {
   final String nodeId;
   final LocalizationService locService;
 
-  const _DeleteNodeDialog({required this.nodeId, required this.locService});
+  const _DeleteNodeDialog({
+    required this.nodeId,
+    required this.locService,
+  });
 
   @override
   State<_DeleteNodeDialog> createState() => _DeleteNodeDialogState();
@@ -691,12 +684,7 @@ class _DeleteNodeDialogState extends State<_DeleteNodeDialog> {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            widget.locService.t(
-              'node.confirmDeleteMessage',
-              params: [widget.nodeId],
-            ),
-          ),
+          Text(widget.locService.t('node.confirmDeleteMessage', params: [widget.nodeId])),
           const SizedBox(height: 16),
           Text(
             widget.locService.t('node.deleteReasonLabel'),
@@ -740,8 +728,7 @@ class _DeleteNodeDialogState extends State<_DeleteNodeDialog> {
       ),
       actions: [
         TextButton(
-          onPressed: () =>
-              Navigator.of(context).pop((confirmed: false, comment: '')),
+          onPressed: () => Navigator.of(context).pop((confirmed: false, comment: '')),
           child: Text(widget.locService.cancel),
         ),
         TextButton(

@@ -69,8 +69,7 @@ class PendingUpload {
        additionalExistingTags = additionalExistingTags ?? {},
        assert(
          (operation == UploadOperation.create && originalNodeId == null) ||
-             (operation == UploadOperation.create) ||
-             (originalNodeId != null),
+         (operation == UploadOperation.create) || (originalNodeId != null),
          'originalNodeId must be null for create operations and non-null for modify/delete/extract operations',
        ),
        assert(
@@ -89,10 +88,8 @@ class PendingUpload {
 
   // New state-based helpers
   bool get needsUserRetry => uploadState == UploadState.error;
-  bool get isActivelyProcessing =>
-      uploadState == UploadState.creatingChangeset ||
-      uploadState == UploadState.uploading ||
-      uploadState == UploadState.closingChangeset;
+  bool get isActivelyProcessing => uploadState == UploadState.creatingChangeset || uploadState == UploadState.uploading ||
+uploadState == UploadState.closingChangeset;
   bool get isComplete => uploadState == UploadState.complete;
   bool get isPending => uploadState == UploadState.pending;
   bool get isCreatingChangeset => uploadState == UploadState.creatingChangeset;
@@ -112,8 +109,7 @@ class PendingUpload {
   // This uses nodeOperationCompletedAt (when changeset was created) as the reference
   bool get hasChangesetExpired {
     if (nodeOperationCompletedAt == null) return false;
-    return DateTime.now().difference(nodeOperationCompletedAt!) >=
-        kChangesetAutoCloseTimeout;
+    return DateTime.now().difference(nodeOperationCompletedAt!) >= kChangesetAutoCloseTimeout;
   }
 
   // Legacy method name for backward compatibility
@@ -122,26 +118,19 @@ class PendingUpload {
   // Calculate next retry delay for changeset close using exponential backoff
   Duration get nextChangesetCloseRetryDelay {
     final delay = Duration(
-      milliseconds:
-          (kChangesetCloseInitialRetryDelay.inMilliseconds *
-                  math.pow(
-                    kChangesetCloseBackoffMultiplier,
-                    changesetCloseAttempts,
-                  ))
-              .round(),
+      milliseconds: (kChangesetCloseInitialRetryDelay.inMilliseconds *
+                  math.pow(kChangesetCloseBackoffMultiplier, changesetCloseAttempts)).round()
     );
     return delay > kChangesetCloseMaxRetryDelay
-        ? kChangesetCloseMaxRetryDelay
-        : delay;
+      ? kChangesetCloseMaxRetryDelay
+      : delay;
   }
 
   // Check if it's time to retry changeset close
   bool get isReadyForChangesetCloseRetry {
     if (lastChangesetCloseAttemptAt == null) return true; // First attempt
 
-    final nextRetryTime = lastChangesetCloseAttemptAt!.add(
-      nextChangesetCloseRetryDelay,
-    );
+    final nextRetryTime = lastChangesetCloseAttemptAt!.add(nextChangesetCloseRetryDelay);
     return DateTime.now().isAfter(nextRetryTime);
   }
 
@@ -190,8 +179,7 @@ class PendingUpload {
   void markChangesetCreated(String csId) {
     uploadState = UploadState.uploading;
     changesetId = csId;
-    nodeOperationCompletedAt =
-        DateTime.now(); // Track when changeset was created for 59-minute timeout
+    nodeOperationCompletedAt = DateTime.now(); // Track when changeset was created for 59-minute timeout
   }
 
   // Mark node operation as complete, start changeset close phase
@@ -224,26 +212,19 @@ class PendingUpload {
   // Calculate next retry delay for node submission using exponential backoff
   Duration get nextNodeSubmissionRetryDelay {
     final delay = Duration(
-      milliseconds:
-          (kChangesetCloseInitialRetryDelay.inMilliseconds *
-                  math.pow(
-                    kChangesetCloseBackoffMultiplier,
-                    nodeSubmissionAttempts,
-                  ))
-              .round(),
+      milliseconds: (kChangesetCloseInitialRetryDelay.inMilliseconds *
+                  math.pow(kChangesetCloseBackoffMultiplier, nodeSubmissionAttempts)).round()
     );
     return delay > kChangesetCloseMaxRetryDelay
-        ? kChangesetCloseMaxRetryDelay
-        : delay;
+      ? kChangesetCloseMaxRetryDelay
+      : delay;
   }
 
   // Check if it's time to retry node submission
   bool get isReadyForNodeSubmissionRetry {
     if (lastNodeSubmissionAttemptAt == null) return true; // First attempt
 
-    final nextRetryTime = lastNodeSubmissionAttemptAt!.add(
-      nextNodeSubmissionRetryDelay,
-    );
+    final nextRetryTime = lastNodeSubmissionAttemptAt!.add(nextNodeSubmissionRetryDelay);
     return DateTime.now().isAfter(nextRetryTime);
   }
 
@@ -265,8 +246,7 @@ class PendingUpload {
     // Apply refined tags (these fill in empty values from the profile)
     for (final entry in refinedTags.entries) {
       // Only apply refined tags if the profile tag value is empty
-      if (profile!.tags.containsKey(entry.key) &&
-          profile!.tags[entry.key]?.trim().isEmpty == true) {
+      if (profile!.tags.containsKey(entry.key) && profile!.tags[entry.key]?.trim().isEmpty == true) {
         tags[entry.key] = entry.value;
       }
     }
@@ -322,14 +302,11 @@ class PendingUpload {
     'completing': completing,
     'uploadState': uploadState.index,
     'changesetId': changesetId,
-    'nodeOperationCompletedAt':
-        nodeOperationCompletedAt?.millisecondsSinceEpoch,
+    'nodeOperationCompletedAt': nodeOperationCompletedAt?.millisecondsSinceEpoch,
     'changesetCloseAttempts': changesetCloseAttempts,
-    'lastChangesetCloseAttemptAt':
-        lastChangesetCloseAttemptAt?.millisecondsSinceEpoch,
+    'lastChangesetCloseAttemptAt': lastChangesetCloseAttemptAt?.millisecondsSinceEpoch,
     'nodeSubmissionAttempts': nodeSubmissionAttempts,
-    'lastNodeSubmissionAttemptAt':
-        lastNodeSubmissionAttemptAt?.millisecondsSinceEpoch,
+    'lastNodeSubmissionAttemptAt': lastNodeSubmissionAttemptAt?.millisecondsSinceEpoch,
   };
 
   factory PendingUpload.fromJson(Map<String, dynamic> j) => PendingUpload(
@@ -347,17 +324,13 @@ class PendingUpload {
     additionalExistingTags: j['additionalExistingTags'] != null
         ? Map<String, String>.from(j['additionalExistingTags'])
         : {}, // Default empty map for legacy entries
-    changesetComment:
-        j['changesetComment'] ??
-        _generateLegacyComment(j), // Default for legacy entries
+    changesetComment: j['changesetComment'] ?? _generateLegacyComment(j), // Default for legacy entries
     uploadMode: j['uploadMode'] != null
         ? UploadMode.values[j['uploadMode']]
         : UploadMode.production, // Default for legacy entries
     operation: j['operation'] != null
         ? UploadOperation.values[j['operation']]
-        : (j['originalNodeId'] != null
-              ? UploadOperation.modify
-              : UploadOperation.create), // Legacy compatibility
+        : (j['originalNodeId'] != null ? UploadOperation.modify : UploadOperation.create), // Legacy compatibility
     originalNodeId: j['originalNodeId'],
     submittedNodeId: j['submittedNodeId'],
     tempNodeId: j['tempNodeId'],
@@ -398,9 +371,7 @@ class PendingUpload {
   static String _generateLegacyComment(Map<String, dynamic> j) {
     final operation = j['operation'] != null
         ? UploadOperation.values[j['operation']]
-        : (j['originalNodeId'] != null
-              ? UploadOperation.modify
-              : UploadOperation.create);
+        : (j['originalNodeId'] != null ? UploadOperation.modify : UploadOperation.create);
 
     final profileName = j['profile']?['name'] ?? 'surveillance';
 

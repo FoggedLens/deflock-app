@@ -61,8 +61,7 @@ class AppState extends ChangeNotifier {
 
   // Positioning tutorial state
   LatLng? _tutorialStartPosition; // Track where the tutorial started
-  VoidCallback?
-  _tutorialCompletionCallback; // Callback when tutorial is completed
+  VoidCallback? _tutorialCompletionCallback; // Callback when tutorial is completed
   Timer? _messageCheckTimer;
 
   // Node ID to auto-focus (open the details sheet for) after a submit/edit/delete
@@ -128,8 +127,7 @@ class AppState extends ChangeNotifier {
   bool get isSettingSecondPoint => _navigationState.isSettingSecondPoint;
   bool get areRoutePointsTooClose => _navigationState.areRoutePointsTooClose;
   double? get distanceFromFirstPoint => _navigationState.distanceFromFirstPoint;
-  bool get distanceExceedsWarningThreshold =>
-      _navigationState.distanceExceedsWarningThreshold;
+  bool get distanceExceedsWarningThreshold => _navigationState.distanceExceedsWarningThreshold;
   bool get isCalculating => _navigationState.isCalculating;
   bool get showingOverview => _navigationState.showingOverview;
   String? get routingError => _navigationState.routingError;
@@ -137,10 +135,8 @@ class AppState extends ChangeNotifier {
 
   // Navigation search state
   bool get isNavigationSearchLoading => _navigationState.isSearchLoading;
-  List<SearchResult> get navigationSearchResults =>
-      _navigationState.searchResults;
-  int get navigationAvoidanceDistance =>
-      _settingsState.navigationAvoidanceDistance;
+  List<SearchResult> get navigationSearchResults => _navigationState.searchResults;
+  int get navigationAvoidanceDistance => _settingsState.navigationAvoidanceDistance;
   DistanceUnit get distanceUnit => _settingsState.distanceUnit;
 
   // Profile state
@@ -174,12 +170,9 @@ class AppState extends ChangeNotifier {
 
   bool get proximityAlertsEnabled => _settingsState.proximityAlertsEnabled;
   int get proximityAlertDistance => _settingsState.proximityAlertDistance;
-  bool get networkStatusIndicatorEnabled =>
-      _settingsState.networkStatusIndicatorEnabled;
-  int get suspectedLocationMinDistance =>
-      _settingsState.suspectedLocationMinDistance;
-  bool get stalenessIndicatorEnabled =>
-      _settingsState.stalenessIndicatorEnabled;
+  bool get networkStatusIndicatorEnabled => _settingsState.networkStatusIndicatorEnabled;
+  int get suspectedLocationMinDistance => _settingsState.suspectedLocationMinDistance;
+  bool get stalenessIndicatorEnabled =>  _settingsState.stalenessIndicatorEnabled;
 
   // Messages state
   int? get unreadMessageCount => _messagesState.unreadCount;
@@ -203,14 +196,11 @@ class AppState extends ChangeNotifier {
 
 
   // Suspected location state
-  SuspectedLocation? get selectedSuspectedLocation =>
-      _suspectedLocationState.selectedLocation;
+  SuspectedLocation? get selectedSuspectedLocation => _suspectedLocationState.selectedLocation;
   bool get suspectedLocationsEnabled => _suspectedLocationState.isEnabled;
   bool get suspectedLocationsLoading => _suspectedLocationState.isLoading;
-  double? get suspectedLocationsDownloadProgress =>
-      _suspectedLocationState.downloadProgress;
-  Future<DateTime?> get suspectedLocationsLastFetch =>
-      _suspectedLocationState.lastFetchTime;
+  double? get suspectedLocationsDownloadProgress => _suspectedLocationState.downloadProgress;
+  Future<DateTime?> get suspectedLocationsLastFetch => _suspectedLocationState.lastFetchTime;
 
   void _onStateChanged() {
     notifyListeners();
@@ -236,8 +226,7 @@ class AppState extends ChangeNotifier {
     final existingOperatorProfiles = await OperatorProfileService().load();
     final existingNodeProfiles = await ProfileService().load();
 
-    final shouldAddOperatorDefaults =
-        isFirstLaunch || existingOperatorProfiles.isEmpty;
+    final shouldAddOperatorDefaults = isFirstLaunch || existingOperatorProfiles.isEmpty;
     final shouldAddNodeDefaults = isFirstLaunch || existingNodeProfiles.isEmpty;
 
     await _operatorProfileState.init(addDefaults: shouldAddOperatorDefaults);
@@ -298,11 +287,14 @@ class AppState extends ChangeNotifier {
     _messageCheckTimer?.cancel();
 
     // Check messages every 10 minutes when logged in
-    _messageCheckTimer = Timer.periodic(const Duration(minutes: 10), (timer) {
-      if (isLoggedIn) {
-        checkMessages();
+    _messageCheckTimer = Timer.periodic(
+      const Duration(minutes: 10),
+      (timer) {
+        if (isLoggedIn) {
+          checkMessages();
+        }
       }
-    });
+    );
   }
 
   // ---------- Auth Methods ----------
@@ -563,17 +555,11 @@ class AppState extends ChangeNotifier {
   }
 
   void _checkTutorialCompletion(LatLng newPosition) {
-    if (_tutorialCompletionCallback == null || _tutorialStartPosition == null) {
-      return;
-    }
+    if (_tutorialCompletionCallback == null || _tutorialStartPosition == null) return;
 
     // Calculate distance moved
     final distance = Distance();
-    final distanceMoved = distance.as(
-      LengthUnit.Meter,
-      _tutorialStartPosition!,
-      newPosition,
-    );
+    final distanceMoved = distance.as(LengthUnit.Meter, _tutorialStartPosition!, newPosition);
 
     if (distanceMoved >= kPositioningTutorialMinMovementMeters) {
       // Tutorial completed! Mark as complete and notify callback immediately
@@ -636,11 +622,7 @@ class AppState extends ChangeNotifier {
   }
 
   void deleteNode(OsmNode node, {String? changesetComment}) {
-    _uploadQueueState.addFromNodeDeletion(
-      node,
-      uploadMode: uploadMode,
-      changesetComment: changesetComment,
-    );
+    _uploadQueueState.addFromNodeDeletion(node, uploadMode: uploadMode, changesetComment: changesetComment);
     _startUploader();
     if (kAutoOpenNodeSheetAfterSubmit) {
       _pendingFocusNodeId = node.id;
@@ -685,9 +667,7 @@ class AppState extends ChangeNotifier {
   }
 
   void startRoutePlanning({required bool thisLocationIsStart}) {
-    _navigationState.startRoutePlanning(
-      thisLocationIsStart: thisLocationIsStart,
-    );
+    _navigationState.startRoutePlanning(thisLocationIsStart: thisLocationIsStart);
   }
 
   void selectSecondRoutePoint() {
@@ -937,9 +917,7 @@ class AppState extends ChangeNotifier {
     required UploadOperation operation,
   }) {
     // Handle temp profiles with brackets by using "a"
-    final profileName =
-        profile?.name.startsWith('<') == true &&
-            profile?.name.endsWith('>') == true
+    final profileName = profile?.name.startsWith('<') == true && profile?.name.endsWith('>') == true
         ? 'a'
         : profile?.name ?? 'surveillance';
 

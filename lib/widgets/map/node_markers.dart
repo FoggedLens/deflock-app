@@ -46,9 +46,7 @@ class _NodeMapMarkerState extends State<NodeMapMarker> {
       } else {
         // Fallback: This should not happen if callbacks are properly provided,
         // but if it does, at least open the sheet (without map coordination)
-        debugPrint(
-          '[NodeMapMarker] Warning: onNodeTap callback not provided, using fallback',
-        );
+        debugPrint('[NodeMapMarker] Warning: onNodeTap callback not provided, using fallback');
         showModalBottomSheet(
           context: context,
           builder: (_) => NodeTagSheet(node: widget.node),
@@ -62,10 +60,7 @@ class _NodeMapMarkerState extends State<NodeMapMarker> {
     if (!widget.enabled) return; // Don't respond to double taps when disabled
 
     _tapTimer?.cancel();
-    widget.mapController.move(
-      widget.node.coord,
-      widget.mapController.camera.zoom + kNodeDoubleTapZoomDelta,
-    );
+    widget.mapController.move(widget.node.coord, widget.mapController.camera.zoom + kNodeDoubleTapZoomDelta);
   }
 
   @override
@@ -77,15 +72,12 @@ class _NodeMapMarkerState extends State<NodeMapMarker> {
   @override
   Widget build(BuildContext context) {
     // Check node state
-    final isPendingUpload =
-        widget.node.tags.containsKey('_pending_upload') &&
-        widget.node.tags['_pending_upload'] == 'true';
-    final isPendingEdit =
-        widget.node.tags.containsKey('_pending_edit') &&
-        widget.node.tags['_pending_edit'] == 'true';
-    final isPendingDeletion =
-        widget.node.tags.containsKey('_pending_deletion') &&
-        widget.node.tags['_pending_deletion'] == 'true';
+    final isPendingUpload = widget.node.tags.containsKey('_pending_upload') &&
+                          widget.node.tags['_pending_upload'] == 'true';
+    final isPendingEdit = widget.node.tags.containsKey('_pending_edit') &&
+                        widget.node.tags['_pending_edit'] == 'true';
+    final isPendingDeletion = widget.node.tags.containsKey('_pending_deletion') &&
+                            widget.node.tags['_pending_deletion'] == 'true';
 
     CameraIconType iconType;
     double agingProgress = 0.0;
@@ -130,11 +122,11 @@ class NodeMarkersBuilder {
   }) {
     final markers = <Marker>[
       // Node markers
-      ...nodes.where(_isValidNodeCoordinate).map((n) {
+      ...nodes.where(_isValidNodeCoordinate)
+      .map((n) {
         // Check if this node should be highlighted (selected) or dimmed
         final isSelected = selectedNodeId == n.id;
-        final shouldDimNode =
-            shouldDim || (selectedNodeId != null && !isSelected);
+        final shouldDimNode = shouldDim || (selectedNodeId != null && !isSelected);
 
         return Marker(
           point: n.coord,
@@ -148,7 +140,7 @@ class NodeMarkersBuilder {
               onNodeTap: onNodeTap,
               enabled: enabled,
               stalenessIndicatorEnabled: stalenessIndicatorEnabled
-            ),
+              ),
           ),
         );
       }),

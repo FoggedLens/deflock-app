@@ -45,8 +45,7 @@ class _EditNodeSheetState extends State<EditNodeSheet> {
   }
 
   Future<void> _checkTutorialStatus() async {
-    final hasCompleted = await ChangelogService()
-        .hasCompletedPositioningTutorial();
+    final hasCompleted = await ChangelogService().hasCompletedPositioningTutorial();
     if (mounted) {
       setState(() {
         _showTutorial = !hasCompleted;
@@ -86,19 +85,11 @@ class _EditNodeSheetState extends State<EditNodeSheet> {
     super.dispose();
   }
 
-  void _checkProximityAndCommit(
-    BuildContext context,
-    AppState appState,
-    LocalizationService locService,
-  ) {
+  void _checkProximityAndCommit(BuildContext context, AppState appState, LocalizationService locService) {
     _checkSubmissionGuideAndProceed(context, appState, locService);
   }
 
-  void _checkSubmissionGuideAndProceed(
-    BuildContext context,
-    AppState appState,
-    LocalizationService locService,
-  ) async {
+  void _checkSubmissionGuideAndProceed(BuildContext context, AppState appState, LocalizationService locService) async {
     // Check if user has seen the submission guide
     final hasSeenGuide = await ChangelogService().hasSeenSubmissionGuide();
     if (!context.mounted) return;
@@ -122,11 +113,7 @@ class _EditNodeSheetState extends State<EditNodeSheet> {
     _checkProximityOnly(context, appState, locService);
   }
 
-  void _checkProximityOnly(
-    BuildContext context,
-    AppState appState,
-    LocalizationService locService,
-  ) {
+  void _checkProximityOnly(BuildContext context, AppState appState, LocalizationService locService) {
     // Check for nearby nodes within the configured distance, excluding the node being edited
     final nearbyNodes = MapDataProvider().findNodesWithinDistance(
       widget.session.target,
@@ -156,11 +143,7 @@ class _EditNodeSheetState extends State<EditNodeSheet> {
     }
   }
 
-  void _commitWithoutCheck(
-    BuildContext context,
-    AppState appState,
-    LocalizationService locService,
-  ) {
+  void _commitWithoutCheck(BuildContext context, AppState appState, LocalizationService locService) {
     appState.commitEditSession();
     Navigator.pop(context);
     ScaffoldMessenger.of(context).showSnackBar(
@@ -175,19 +158,13 @@ class _EditNodeSheetState extends State<EditNodeSheet> {
 
     // Check location change
     const double tolerance = 0.0000001; // ~1cm precision
-    if ((session.target.latitude - session.originalNode.coord.latitude).abs() >
-            tolerance ||
-        (session.target.longitude - session.originalNode.coord.longitude)
-                .abs() >
-            tolerance) {
+    if ((session.target.latitude - session.originalNode.coord.latitude).abs() > tolerance ||
+        (session.target.longitude - session.originalNode.coord.longitude).abs() > tolerance) {
       return true;
     }
 
     // Check direction changes
-    if (!_directionsEqual(
-      session.directions,
-      session.originalNode.directionDeg,
-    )) {
+    if (!_directionsEqual(session.directions, session.originalNode.directionDeg)) {
       return true;
     }
 
@@ -260,11 +237,9 @@ class _EditNodeSheetState extends State<EditNodeSheet> {
       profile: session.profile,
       operatorProfile: session.operatorProfile,
       refinedTags: session.refinedTags,
-      additionalExistingTags:
-          session.additionalExistingTags, // Include additional existing tags!
+      additionalExistingTags: session.additionalExistingTags, // Include additional existing tags!
       changesetComment: session.changesetComment, // Required parameter
-      uploadMode:
-          UploadMode.production, // Mode doesn't matter for tag combination
+      uploadMode: UploadMode.production, // Mode doesn't matter for tag combination
       operation: UploadOperation.modify,
       originalNodeId: session.originalNode.id, // Required for modify operations
     );
@@ -273,10 +248,7 @@ class _EditNodeSheetState extends State<EditNodeSheet> {
   }
 
   /// Show dialog explaining why submission is disabled due to no changes
-  void _showNoChangesDialog(
-    BuildContext context,
-    LocalizationService locService,
-  ) {
+  void _showNoChangesDialog(BuildContext context, LocalizationService locService) {
     showDialog<void>(
       context: context,
       builder: (context) => AlertDialog(
@@ -292,18 +264,12 @@ class _EditNodeSheetState extends State<EditNodeSheet> {
     );
   }
 
-  Widget _buildDirectionControls(
-    BuildContext context,
-    AppState appState,
-    EditNodeSession session,
-    LocalizationService locService,
-  ) {
-    final requiresDirection =
-        session.profile != null && session.profile!.requiresDirection;
+  Widget _buildDirectionControls(BuildContext context, AppState appState, EditNodeSession session, LocalizationService
+locService) {
+    final requiresDirection = session.profile != null && session.profile!.requiresDirection;
     final is360Fov = session.profile?.fov == 360;
     final hasDirections = session.directions.isNotEmpty;
-    final enableDirectionControls =
-        requiresDirection && !is360Fov && hasDirections;
+    final enableDirectionControls = requiresDirection && !is360Fov && hasDirections;
     final enableAddButton = requiresDirection && !is360Fov;
 
     // Force direction to 0 when FOV is 360 (omnidirectional)
@@ -345,29 +311,19 @@ class _EditNodeSheetState extends State<EditNodeSheet> {
                           return TextSpan(
                             text: entry.value,
                             style: TextStyle(
-                              fontWeight: isEven
-                                  ? FontWeight.normal
-                                  : FontWeight.bold,
+                              fontWeight: isEven ? FontWeight.normal : FontWeight.bold,
                             ),
                           );
                         })
                       else
                         const TextSpan(
                           text: 'None',
-                          style: TextStyle(
-                            fontStyle: FontStyle.italic,
-                            color: Colors.grey,
-                          ),
+                          style: TextStyle(fontStyle: FontStyle.italic, color: Colors.grey),
                         ),
                     ],
                   ),
                 )
-              : Text(
-                  locService.t(
-                    'editNode.direction',
-                    params: [session.directionDegrees.round().toString()],
-                  ),
-                ),
+              : Text(locService.t('editNode.direction', params: [session.directionDegrees.round().toString()])),
           subtitle: Row(
             children: [
               // Slider takes most of the space
@@ -378,9 +334,7 @@ class _EditNodeSheetState extends State<EditNodeSheet> {
                   divisions: 359,
                   value: session.directionDegrees,
                   label: session.directionDegrees.round().toString(),
-                  onChanged: enableDirectionControls
-                      ? (v) => appState.updateEditSession(directionDeg: v)
-                      : null,
+                  onChanged: enableDirectionControls ? (v) => appState.updateEditSession(directionDeg: v) : null,
                 ),
               ),
               // Direction control buttons - always show but grey out when direction not required
@@ -390,76 +344,49 @@ class _EditNodeSheetState extends State<EditNodeSheet> {
                 icon: Icon(
                   Icons.remove,
                   size: 20,
-                  color: enableDirectionControls && appState.canRemoveDirection
-                      ? null
-                      : Theme.of(context).disabledColor,
+                  color: enableDirectionControls && appState.canRemoveDirection ? null : Theme.of(context).disabledColor,
                 ),
-                onPressed:
-                    enableDirectionControls && appState.canRemoveDirection
-                    ? () => appState.removeDirection()
-                    : null,
+                onPressed: enableDirectionControls && appState.canRemoveDirection
+                    ? () => appState.removeDirection() : null,
                 tooltip: requiresDirection
                     ? (hasDirections
-                          ? (appState.canRemoveDirection
-                                ? 'Remove current direction'
-                                : 'Cannot remove - minimum reached')
-                          : 'No directions to remove')
+                        ? (appState.canRemoveDirection ? 'Remove current direction' : 'Cannot remove - minimum reached')
+                        : 'No directions to remove')
                     : 'Direction not required for this profile',
                 padding: EdgeInsets.zero,
-                constraints: const BoxConstraints(
-                  minWidth: kDirectionButtonMinWidth,
-                  minHeight: kDirectionButtonMinHeight,
-                ),
+                constraints: const BoxConstraints(minWidth: kDirectionButtonMinWidth, minHeight: kDirectionButtonMinHeight),
               ),
               // Add button
               IconButton(
                 icon: Icon(
                   Icons.add,
                   size: 20,
-                  color: enableAddButton && session.directions.length < 8
-                      ? null
-                      : Theme.of(context).disabledColor,
+                  color: enableAddButton && session.directions.length < 8 ? null : Theme.of(context).disabledColor,
                 ),
-                onPressed: enableAddButton && session.directions.length < 8
-                    ? () => appState.addDirection()
-                    : null,
+                onPressed: enableAddButton && session.directions.length < 8 ? () => appState.addDirection() : null,
                 tooltip: requiresDirection
-                    ? (session.directions.length >= 8
-                          ? 'Maximum 8 directions allowed'
-                          : 'Add new direction')
+                    ? (session.directions.length >= 8 ? 'Maximum 8 directions allowed' : 'Add new direction')
                     : 'Direction not required for this profile',
                 padding: EdgeInsets.zero,
-                constraints: const BoxConstraints(
-                  minWidth: kDirectionButtonMinWidth,
-                  minHeight: kDirectionButtonMinHeight,
-                ),
+                constraints: const BoxConstraints(minWidth: kDirectionButtonMinWidth, minHeight: kDirectionButtonMinHeight),
               ),
               // Cycle button
               IconButton(
                 icon: Icon(
                   Icons.repeat,
                   size: 20,
-                  color:
-                      enableDirectionControls && session.directions.length > 1
-                      ? null
-                      : Theme.of(context).disabledColor,
+                  color: enableDirectionControls && session.directions.length > 1 ? null : Theme.of(context).disabledColor,
                 ),
-                onPressed:
-                    enableDirectionControls && session.directions.length > 1
+                onPressed: enableDirectionControls && session.directions.length > 1
                     ? () => appState.cycleDirection()
                     : null,
                 tooltip: requiresDirection
                     ? (hasDirections
-                          ? (session.directions.length > 1
-                                ? 'Cycle through directions'
-                                : 'Only one direction')
+                          ? (session.directions.length > 1 ? 'Cycle through directions' : 'Only one direction')
                           : 'No directions to cycle')
                     : 'Direction not required for this profile',
                 padding: EdgeInsets.zero,
-                constraints: const BoxConstraints(
-                  minWidth: kDirectionButtonMinWidth,
-                  minHeight: kDirectionButtonMinHeight,
-                ),
+                constraints: const BoxConstraints(minWidth: kDirectionButtonMinWidth, minHeight: kDirectionButtonMinHeight),
               ),
             ],
           ),
@@ -525,22 +452,14 @@ class _EditNodeSheetState extends State<EditNodeSheet> {
         }
 
         final session = widget.session;
-        final submittableProfiles = appState.enabledProfiles
-            .where((p) => p.isSubmittable)
-            .toList();
+        final submittableProfiles = appState.enabledProfiles.where((p) => p.isSubmittable).toList();
         // Check if we have good cache coverage around the node position
         bool hasGoodCoverage = true;
         final nodeCoord = session.originalNode.coord;
         const double bufferDegrees = 0.001; // ~100m buffer
         final targetBounds = LatLngBounds(
-          LatLng(
-            nodeCoord.latitude - bufferDegrees,
-            nodeCoord.longitude - bufferDegrees,
-          ),
-          LatLng(
-            nodeCoord.latitude + bufferDegrees,
-            nodeCoord.longitude + bufferDegrees,
-          ),
+          LatLng(nodeCoord.latitude - bufferDegrees, nodeCoord.longitude - bufferDegrees),
+          LatLng(nodeCoord.latitude + bufferDegrees, nodeCoord.longitude + bufferDegrees),
         );
         hasGoodCoverage = MapDataProvider().hasGoodCoverageFor(targetBounds);
 
@@ -554,8 +473,7 @@ class _EditNodeSheetState extends State<EditNodeSheet> {
           hasGoodCoverage = nearbyNodes.isNotEmpty;
         }
 
-        final allowSubmit =
-            kEnableNodeEdits &&
+        final allowSubmit = kEnableNodeEdits &&
             appState.isLoggedIn &&
             submittableProfiles.isNotEmpty &&
             session.profile != null &&
@@ -576,9 +494,7 @@ class _EditNodeSheetState extends State<EditNodeSheet> {
                 currentRefinedTags: session.refinedTags,
                 currentAdditionalExistingTags: session.additionalExistingTags,
                 originalNodeTags: session.originalNode.tags,
-                operation: session.extractFromWay
-                    ? UploadOperation.extract
-                    : UploadOperation.modify,
+                operation: session.extractFromWay ? UploadOperation.extract : UploadOperation.modify,
               ),
               fullscreenDialog: true,
             ),
@@ -612,22 +528,13 @@ class _EditNodeSheetState extends State<EditNodeSheet> {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  locService.t(
-                    'editNode.title',
-                    params: [session.originalNode.id.toString()],
-                  ),
+                  locService.t('editNode.title', params: [session.originalNode.id.toString()]),
                   style: Theme.of(context).textTheme.titleMedium,
                 ),
                 const SizedBox(height: 16),
                 ListTile(
                   title: Text(locService.t('editNode.profile')),
-                  trailing: _buildProfileDropdown(
-                    context,
-                    appState,
-                    session,
-                    submittableProfiles,
-                    locService,
-                  ),
+                  trailing: _buildProfileDropdown(context, appState, session, submittableProfiles, locService),
                 ),
                 // Direction controls
                 _buildDirectionControls(context, appState, session, locService),
@@ -641,12 +548,8 @@ class _EditNodeSheetState extends State<EditNodeSheet> {
                         // Extract from way checkbox (only show if enabled in dev config)
                         if (kEnableNodeExtraction) ...[
                           CheckboxListTile(
-                            title: Text(
-                              locService.t('editNode.extractFromWay'),
-                            ),
-                            subtitle: Text(
-                              locService.t('editNode.extractFromWaySubtitle'),
-                            ),
+                            title: Text(locService.t('editNode.extractFromWay')),
+                            subtitle: Text(locService.t('editNode.extractFromWaySubtitle')),
                             value: session.extractFromWay,
                             onChanged: (value) {
                               appState.updateEditSession(extractFromWay: value);
@@ -665,9 +568,7 @@ class _EditNodeSheetState extends State<EditNodeSheet> {
                               const SizedBox(width: 8),
                               Expanded(
                                 child: Text(
-                                  locService.t(
-                                    'editNode.cannotMoveConstrainedNode',
-                                  ),
+                                  locService.t('editNode.cannotMoveConstrainedNode'),
                                   style: Theme.of(context).textTheme.bodyMedium,
                                 ),
                               ),
@@ -681,9 +582,7 @@ class _EditNodeSheetState extends State<EditNodeSheet> {
                             OutlinedButton.icon(
                               onPressed: () => _openAdvancedEdit(context),
                               icon: const Icon(Icons.open_in_new, size: 16),
-                              label: Text(
-                                locService.t('actions.useAdvancedEditor'),
-                              ),
+                              label: Text(locService.t('actions.useAdvancedEditor')),
                               style: OutlinedButton.styleFrom(
                                 minimumSize: const Size(0, 32),
                               ),
@@ -699,19 +598,12 @@ class _EditNodeSheetState extends State<EditNodeSheet> {
                     padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
                     child: Row(
                       children: [
-                        const Icon(
-                          Icons.construction,
-                          color: Colors.orange,
-                          size: 20,
-                        ),
+                        const Icon(Icons.construction, color: Colors.orange, size: 20),
                         const SizedBox(width: 6),
                         Expanded(
                           child: Text(
                             locService.t('editNode.temporarilyDisabled'),
-                            style: const TextStyle(
-                              color: Colors.orange,
-                              fontSize: 13,
-                            ),
+                            style: const TextStyle(color: Colors.orange, fontSize: 13),
                           ),
                         ),
                       ],
@@ -722,19 +614,12 @@ class _EditNodeSheetState extends State<EditNodeSheet> {
                     padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
                     child: Row(
                       children: [
-                        const Icon(
-                          Icons.info_outline,
-                          color: Colors.red,
-                          size: 20,
-                        ),
+                        const Icon(Icons.info_outline, color: Colors.red, size: 20),
                         const SizedBox(width: 6),
                         Expanded(
                           child: Text(
                             locService.t('editNode.mustBeLoggedIn'),
-                            style: const TextStyle(
-                              color: Colors.red,
-                              fontSize: 13,
-                            ),
+                            style: const TextStyle(color: Colors.red, fontSize: 13),
                           ),
                         ),
                       ],
@@ -745,19 +630,12 @@ class _EditNodeSheetState extends State<EditNodeSheet> {
                     padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
                     child: Row(
                       children: [
-                        const Icon(
-                          Icons.info_outline,
-                          color: Colors.red,
-                          size: 20,
-                        ),
+                        const Icon(Icons.info_outline, color: Colors.red, size: 20),
                         const SizedBox(width: 6),
                         Expanded(
                           child: Text(
                             locService.t('editNode.enableSubmittableProfile'),
-                            style: const TextStyle(
-                              color: Colors.red,
-                              fontSize: 13,
-                            ),
+                            style: const TextStyle(color: Colors.red, fontSize: 13),
                           ),
                         ),
                       ],
@@ -768,19 +646,12 @@ class _EditNodeSheetState extends State<EditNodeSheet> {
                     padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
                     child: Row(
                       children: [
-                        const Icon(
-                          Icons.info_outline,
-                          color: Colors.orange,
-                          size: 20,
-                        ),
+                        const Icon(Icons.info_outline, color: Colors.orange, size: 20),
                         const SizedBox(width: 6),
                         Expanded(
                           child: Text(
                             locService.t('editNode.profileRequired'),
-                            style: const TextStyle(
-                              color: Colors.orange,
-                              fontSize: 13,
-                            ),
+                            style: const TextStyle(color: Colors.orange, fontSize: 13),
                           ),
                         ),
                       ],
@@ -791,19 +662,12 @@ class _EditNodeSheetState extends State<EditNodeSheet> {
                     padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
                     child: Row(
                       children: [
-                        const Icon(
-                          Icons.info_outline,
-                          color: Colors.orange,
-                          size: 20,
-                        ),
+                        const Icon(Icons.info_outline, color: Colors.orange, size: 20),
                         const SizedBox(width: 6),
                         Expanded(
                           child: Text(
                             locService.t('editNode.profileViewOnlyWarning'),
-                            style: const TextStyle(
-                              color: Colors.orange,
-                              fontSize: 13,
-                            ),
+                            style: const TextStyle(color: Colors.orange, fontSize: 13),
                           ),
                         ),
                       ],
@@ -814,19 +678,12 @@ class _EditNodeSheetState extends State<EditNodeSheet> {
                     padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
                     child: Row(
                       children: [
-                        const Icon(
-                          Icons.cloud_download,
-                          color: Colors.blue,
-                          size: 20,
-                        ),
+                        const Icon(Icons.cloud_download, color: Colors.blue, size: 20),
                         const SizedBox(width: 6),
                         Expanded(
                           child: Text(
                             locService.t('editNode.loadingAreaData'),
-                            style: const TextStyle(
-                              color: Colors.blue,
-                              fontSize: 13,
-                            ),
+                            style: const TextStyle(color: Colors.blue, fontSize: 13),
                           ),
                         ),
                       ],
@@ -838,9 +695,7 @@ class _EditNodeSheetState extends State<EditNodeSheet> {
                   child: SizedBox(
                     width: double.infinity,
                     child: OutlinedButton.icon(
-                      onPressed: session.profile != null
-                          ? openRefineTags
-                          : null, // Disabled when no profile selected
+                      onPressed: session.profile != null ? openRefineTags : null, // Disabled when no profile selected
                       icon: const Icon(Icons.tune),
                       label: Text(locService.t('editNode.refineTags')),
                     ),
@@ -860,14 +715,8 @@ class _EditNodeSheetState extends State<EditNodeSheet> {
                       const SizedBox(width: 12),
                       Expanded(
                         child: ElevatedButton(
-                          onPressed: !appState.isLoggedIn
-                              ? navigateToLogin
-                              : (allowSubmit ? commit : null),
-                          child: Text(
-                            !appState.isLoggedIn
-                                ? locService.t('actions.logIn')
-                                : locService.t('actions.saveEdit'),
-                          ),
+                          onPressed: !appState.isLoggedIn ? navigateToLogin : (allowSubmit ? commit : null),
+                          child: Text(!appState.isLoggedIn ? locService.t('actions.logIn') : locService.t('actions.saveEdit')),
                         ),
                       ),
                     ],
@@ -886,13 +735,8 @@ class _EditNodeSheetState extends State<EditNodeSheet> {
     );
   }
 
-  Widget _buildProfileDropdown(
-    BuildContext context,
-    AppState appState,
-    EditNodeSession session,
-    List<NodeProfile> submittableProfiles,
-    LocalizationService locService,
-  ) {
+  Widget _buildProfileDropdown(BuildContext context, AppState appState, EditNodeSession session, List<NodeProfile>
+submittableProfiles, LocalizationService locService) {
     // Display name for the current profile - localize the existing tags profile
     String getDisplayName(NodeProfile? profile) {
       if (profile == null) return locService.t('editNode.selectProfile');
@@ -931,7 +775,8 @@ class _EditNodeSheetState extends State<EditNodeSheet> {
           child: Text(locService.t('editNode.existingTags')),
         ),
         // Divider after existing tags profile
-        if (submittableProfiles.isNotEmpty) const PopupMenuDivider(),
+        if (submittableProfiles.isNotEmpty)
+          const PopupMenuDivider(),
         // Regular profiles
         ...submittableProfiles.map(
           (profile) => PopupMenuItem<String>(
@@ -951,7 +796,9 @@ class _EditNodeSheetState extends State<EditNodeSheet> {
               const SizedBox(width: 8),
               Text(
                 locService.t('profiles.getMore'),
-                style: const TextStyle(fontStyle: FontStyle.italic),
+                style: const TextStyle(
+                  fontStyle: FontStyle.italic,
+                ),
               ),
             ],
           ),
@@ -962,15 +809,11 @@ class _EditNodeSheetState extends State<EditNodeSheet> {
           _openIdentifyWebsite(context);
         } else if (value == 'existing_tags') {
           // Re-create and select the existing tags profile
-          final existingTagsProfile = NodeProfile.createExistingTagsProfile(
-            session.originalNode,
-          );
+          final existingTagsProfile = NodeProfile.createExistingTagsProfile(session.originalNode);
           appState.updateEditSession(profile: existingTagsProfile);
         } else if (value.startsWith('profile_')) {
           final profileId = value.substring(8); // Remove 'profile_' prefix
-          final profile = submittableProfiles.firstWhere(
-            (p) => p.id == profileId,
-          );
+          final profile = submittableProfiles.firstWhere((p) => p.id == profileId);
           appState.updateEditSession(profile: profile);
         }
       },
@@ -1001,7 +844,10 @@ class _EditNodeSheetState extends State<EditNodeSheet> {
 
   void _showErrorSnackBar(BuildContext context, String message) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message), backgroundColor: Colors.red),
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.red,
+      ),
     );
   }
 
@@ -1009,8 +855,7 @@ class _EditNodeSheetState extends State<EditNodeSheet> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      builder: (context) =>
-          AdvancedEditOptionsSheet(node: widget.session.originalNode),
+      builder: (context) => AdvancedEditOptionsSheet(node: widget.session.originalNode),
     );
   }
 }
