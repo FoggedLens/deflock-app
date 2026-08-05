@@ -1,0 +1,28 @@
+// Dev container for the Gatling load test project.
+//
+// This provides a ready-to-go JVM + Scala environment without needing
+// to install anything locally. Open the load-tests/ folder in VS Code
+// and select "Dev Containers: Reopen in Container".
+//
+// Includes:
+// - JDK 21 (Temurin)
+// - Scala via Coursier
+// - VS Code extensions: Scala Metals (IDE support) + Gradle (build tasks)
+{
+  "name": "Deflock Load Tests",
+  "build": {
+    "dockerfile": "Dockerfile"
+  },
+  "workspaceFolder": "/workspaces/deflock-app/load-tests",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "scalameta.metals",
+        "vscjava.vscode-gradle"
+      ]
+    }
+  },
+  // Pre-download all Gradle + Gatling dependencies so the first
+  // `./gradlew gatlingRun` is fast.
+  "postCreateCommand": "./gradlew dependencies"
+}
