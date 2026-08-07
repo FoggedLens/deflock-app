@@ -18,7 +18,8 @@ class ProximityAlertsSection extends StatefulWidget {
   State<ProximityAlertsSection> createState() => _ProximityAlertsSectionState();
 }
 
-class _ProximityAlertsSectionState extends State<ProximityAlertsSection> {
+class _ProximityAlertsSectionState extends State<ProximityAlertsSection>
+    with WidgetsBindingObserver {
   late final TextEditingController _distanceController;
   bool _notificationsEnabled = false;
   bool _checkingPermissions = false;
@@ -26,6 +27,9 @@ class _ProximityAlertsSectionState extends State<ProximityAlertsSection> {
   @override
   void initState() {
     super.initState();
+    // Re-check on resume: the user may have just granted notifications in the
+    // system settings app and come back.
+    WidgetsBinding.instance.addObserver(this);
     final appState = context.read<AppState>();
     // Convert meters to display units for the text field
     final displayValue = DistanceService.convertFromMeters(
@@ -57,19 +61,59 @@ class _ProximityAlertsSectionState extends State<ProximityAlertsSection> {
     setState(() {
       _checkingPermissions = true;
     });
-    
+
     final enabled = await ProximityAlertService().requestNotificationPermissions();
-    
-    if (mounted) {
-      setState(() {
-        _notificationsEnabled = enabled;
-        _checkingPermissions = false;
-      });
+
+    if (!mounted) return;
+    setState(() {
+      _notificationsEnabled = enabled;
+      _checkingPermissions = false;
+    });
+
+    // Still not granted. On iOS the system prompt only ever appears once, so
+    // re-requesting silently does nothing — the only remaining path is the
+    // system settings app.
+    if (!enabled) {
+      await _promptOpenSystemSettings();
+    }
+  }
+
+  Future<void> _promptOpenSystemSettings() async {
+    final locService = LocalizationService.instance;
+
+    final shouldOpen = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(locService.t('proximityAlerts.blockedTitle')),
+        content: Text(locService.t('proximityAlerts.blockedMessage')),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: Text(locService.t('actions.cancel')),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: Text(locService.t('proximityAlerts.openSettings')),
+          ),
+        ],
+      ),
+    );
+
+    if (shouldOpen == true) {
+      await ProximityAlertService().openSystemSettings();
+    }
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      _checkNotificationPermissions();
     }
   }
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _distanceController.dispose();
     super.dispose();
   }

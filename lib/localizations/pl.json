@@ -118,7 +118,6 @@
     "enableOfflineFeaturesTitle": "Włącz funkcje offline",
     "enableOfflineFeaturesSubtitle": "Zezwól na pobieranie i korzystanie z map offline. Jeśli wyłączone, tryb offline i pobrane obszary będą niedostępne."
   },
-
   "keepScreenAwake": {
     "title": "Nie wygaszaj ekranu podczas korzystania z aplikacji",
     "subtitle": "Zapobiega automatycznemu wygaszaniu ekranu podczas korzystania z aplikacji"
@@ -127,7 +126,6 @@
     "title": "Ukryj kontrolki zoomu",
     "subtitle": "Ukrywa przyciski zoomu +/- oraz wskaźnik poziomu powiększenia. Nadal możesz powiększać za pomocą gestów szczypania."
   },
-
   "proximityAlerts": {
     "getNotified": "Otrzymuj powiadomienia przy zbliżaniu się do urządzeń nadzoru",
     "batteryUsage": "Używa dodatkowej baterii do ciągłego monitorowania lokalizacji",
@@ -138,7 +136,13 @@
     "enableNotifications": "Włącz Powiadomienia",
     "checkingPermissions": "Sprawdzanie uprawnień...",
     "alertDistance": "Odległość alertu: ",
-    "rangeInfo": "Zakres: {}-{} {} (domyślnie: {})"
+    "rangeInfo": "Zakres: {}-{} {} (domyślnie: {})",
+    "backgroundServiceTitle": "Alerty o bliskości aktywne",
+    "backgroundServiceText": "Wyszukiwanie pobliskich urządzeń monitorujących",
+    "backgroundServiceChannel": "Monitorowanie alertów o bliskości",
+    "openSettings": "Otwórz ustawienia",
+    "blockedTitle": "Powiadomienia są zablokowane",
+    "blockedMessage": "Powiadomienia dla DeFlock są wyłączone. Włącz je w ustawieniach systemowych, aby otrzymywać alerty o bliskości."
   },
   "node": {
     "title": "Węzeł #{}",
@@ -156,7 +160,6 @@
     "deleteReasonSpamVandalism": "Spam/wandalizm",
     "deleteReasonCustom": "Niestandardowy..",
     "deleteReasonHint": "Opisz powód...",
-
     "mustBeLoggedInToDelete": "Musisz być zalogowany na konto OpenStreetMap, aby dodawać dane do mapy.",
     "uploadPending": "Przesyłanie oczekujące",
     "uploadCreatingChangeset": "Tworzenie zestawu zmian...",
@@ -167,8 +170,6 @@
     "viewInQueue": "Zobacz w Kolejce",
     "deletedSuccessfully": "Ten węzeł został pomyślnie usunięty z OpenStreetMap."
   },
-
-
   "addNode": {
     "profile": "Profil",
     "selectProfile": "Wybierz profil...",
@@ -313,7 +314,6 @@
     "inFlightCompleteTitle": "Przesyłanie Zakończone",
     "inFlightCompleteMessage": "Twoje przesyłanie zakończyło się pomyślnie. Stosowanie ustawienia teraz."
   },
-
   "tileProviders": {
     "title": "Dostawcy Kafelków",
     "noProvidersConfigured": "Brak skonfigurowanych dostawców kafelków",
@@ -465,7 +465,6 @@
     "keepData": "Zachowaj Dane",
     "deleteData": "Usuń Dane"
   },
-
   "refineTagsSheet": {
     "title": "Doprecyzuj Tagi",
     "operatorProfile": "Profil Operatora",

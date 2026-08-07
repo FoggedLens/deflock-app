@@ -9,6 +9,7 @@ import '../../dev_config.dart';
 import '../../app_state.dart' show FollowMeMode;
 import '../../services/proximity_alert_service.dart';
 import '../../services/coordinate_validation.dart';
+import '../../services/localization_service.dart';
 import '../../models/osm_node.dart';
 import '../../models/node_profile.dart';
 
@@ -21,7 +22,11 @@ import '../../models/node_profile.dart';
 class GpsController {
   StreamSubscription<Position>? _positionSub;
   Timer? _retryTimer;
-  
+
+  /// Whether the live stream was started with background delivery armed, so a
+  /// proximity-alerts toggle knows whether it actually needs to rebuild it.
+  bool _streamIsBackgroundCapable = false;
+
   // Location state
   LatLng? _currentLocation;
   bool _hasLocation = false;
@@ -32,7 +37,7 @@ class GpsController {
   FollowMeMode Function()? _getCurrentFollowMeMode;
   bool Function()? _getProximityAlertsEnabled;
   int Function()? _getProximityAlertDistance;
-  List<OsmNode> Function()? _getNearbyNodes;
+  List<OsmNode> Function(LatLng userLocation, int radiusMeters)? _getNearbyNodes;
   List<NodeProfile> Function()? _getEnabledProfiles;
   VoidCallback? _onMapMovedProgrammatically;
   bool Function()? _isUserInteracting;
@@ -50,7 +55,7 @@ class GpsController {
     required FollowMeMode Function() getCurrentFollowMeMode,
     required bool Function() getProximityAlertsEnabled,
     required int Function() getProximityAlertDistance,
-    required List<OsmNode> Function() getNearbyNodes,
+    required List<OsmNode> Function(LatLng userLocation, int radiusMeters) getNearbyNodes,
     required List<NodeProfile> Function() getEnabledProfiles,
     VoidCallback? onMapMovedProgrammatically,
     bool Function()? isUserInteracting,
@@ -84,6 +89,38 @@ class GpsController {
     
     // Handle initial animation when follow-me is first enabled
     _handleInitialFollowMeAnimation(newMode, oldMode);
+  }
+
+  /// Force a fresh fix, e.g. when the app returns from the background.
+  ///
+  /// The position stream can stay silent after a resume — and a simulated
+  /// location that "teleported" while the app was suspended produces no
+  /// movement event at all — leaving _currentLocation stale, so proximity
+  /// alerts would keep evaluating against the old position.
+  Future<void> refreshLocation() async {
+    debugPrint('[GpsController] Refreshing location after resume');
+
+    // Restart the stream first: iOS often stops delivering to a subscription
+    // that spanned suspension.
+    if (_positionSub != null) {
+      _stopLocationTracking();
+      _startPositionStream();
+    }
+
+    try {
+      // geolocator 10.x: getCurrentPosition takes desiredAccuracy, unlike
+      // getPositionStream above which takes a LocationSettings object.
+      final position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high,
+        // Match the stream's forceLocationManager: true, so the one-shot and
+        // the stream cannot disagree about where we are on Android.
+        forceAndroidLocationManager: true,
+        timeLimit: const Duration(seconds: 10),
+      );
+      _onPositionReceived(position);
+    } catch (e) {
+      debugPrint('[GpsController] Failed to refresh location: $e');
+    }
   }
 
   /// Manual retry (e.g., user pressed follow-me button)
@@ -149,30 +186,108 @@ class GpsController {
     final followMeMode = _getCurrentFollowMeMode?.call() ?? FollowMeMode.off;
     final distanceFilter = followMeMode == FollowMeMode.off ? 5 : 1; // 5m normal, 1m follow-me
 
-    debugPrint('[GpsController] Starting GPS position stream (${distanceFilter}m filter)');
+    // Both platforms stop feeding a backgrounded app by default, which is why
+    // alerts only ever fired with the app on screen. Keeping the stream alive
+    // in the background is visible to the user (persistent notification on
+    // Android, blue status bar on iOS), so only ask for it when proximity
+    // alerts are actually switched on.
+    final background = _getProximityAlertsEnabled?.call() ?? false;
+
+    debugPrint(
+      '[GpsController] Starting GPS position stream '
+      '(${distanceFilter}m filter, background=$background)',
+    );
 
     try {
       _positionSub = Geolocator.getPositionStream(
-        locationSettings: defaultTargetPlatform == TargetPlatform.android
-            ? AndroidSettings(
-                accuracy: LocationAccuracy.high,
-                distanceFilter: distanceFilter,
-                forceLocationManager: true,
-              )
-            : LocationSettings(
-                accuracy: LocationAccuracy.high,
-                distanceFilter: distanceFilter,
-              ),
+        locationSettings: _buildLocationSettings(
+          distanceFilter: distanceFilter,
+          background: background,
+        ),
       ).listen(
         _onPositionReceived,
         onError: _onPositionError,
       );
+      _streamIsBackgroundCapable = background;
     } catch (e) {
       debugPrint('[GpsController] Failed to start position stream: $e');
       _hasLocation = false;
       _notifyLocationChange();
       _scheduleRetry();
     }
+  }
+
+  /// Platform-specific location settings.
+  ///
+  /// When [background] is false these are exactly the old foreground-only
+  /// settings, so nothing changes for users who leave proximity alerts off.
+  LocationSettings _buildLocationSettings({
+    required int distanceFilter,
+    required bool background,
+  }) {
+    final locService = LocalizationService.instance;
+
+    if (defaultTargetPlatform == TargetPlatform.android) {
+      return AndroidSettings(
+        accuracy: LocationAccuracy.high,
+        distanceFilter: distanceFilter,
+        forceLocationManager: true,
+        // Supplying this config is what makes geolocator run its
+        // GeolocatorLocationService as a foreground service. Without it
+        // Android throttles a backgrounded app to a few updates per hour and
+        // then stops entirely, so alerts never fire.
+        foregroundNotificationConfig: background
+            ? ForegroundNotificationConfig(
+                notificationTitle:
+                    locService.t('proximityAlerts.backgroundServiceTitle'),
+                notificationText:
+                    locService.t('proximityAlerts.backgroundServiceText'),
+                notificationChannelName:
+                    locService.t('proximityAlerts.backgroundServiceChannel'),
+                // Without a wake lock the system sleeps and delivers the
+                // queued positions in one burst on wake — far too late to warn
+                // anyone about a device they already drove past.
+                enableWakeLock: true,
+                setOngoing: true,
+              )
+            : null,
+      );
+    }
+
+    if (defaultTargetPlatform == TargetPlatform.iOS ||
+        defaultTargetPlatform == TargetPlatform.macOS) {
+      return AppleSettings(
+        accuracy: LocationAccuracy.high,
+        distanceFilter: distanceFilter,
+        // Pairs with UIBackgroundModes=location in Info.plist. Together they
+        // stop iOS from suspending the app on background, which is what killed
+        // the position stream (and therefore every alert) before.
+        allowBackgroundLocationUpdates: background,
+        // iOS otherwise pauses updates when it decides you have stopped moving
+        // and never reliably resumes them — a silent death for alerts.
+        pauseLocationUpdatesAutomatically: false,
+        // The blue status bar pill. Non-negotiable honesty: the app is reading
+        // location off screen and the user should be able to see that.
+        showBackgroundLocationIndicator: background,
+        activityType: ActivityType.otherNavigation,
+      );
+    }
+
+    return LocationSettings(
+      accuracy: LocationAccuracy.high,
+      distanceFilter: distanceFilter,
+    );
+  }
+
+  /// Rebuild the stream when the proximity-alerts setting is toggled, so
+  /// background delivery is armed (or dropped) immediately rather than at the
+  /// next unrelated stream restart.
+  void updateProximityAlertsEnabled(bool enabled) {
+    if (_positionSub == null || _streamIsBackgroundCapable == enabled) return;
+
+    debugPrint('[GpsController] Proximity alerts $enabled — rebuilding stream');
+    _stopLocationTracking();
+    _startPositionStream();
   }
 
   /// Restart position stream with current follow-me settings
@@ -217,7 +332,7 @@ class GpsController {
     
     // Handle proximity alerts
     _checkProximityAlerts(newLocation);
-    
+
     // Handle follow-me animations
     _handleFollowMeUpdate(position, newLocation);
   }
@@ -239,13 +354,20 @@ class GpsController {
   void _checkProximityAlerts(LatLng userLocation) {
     final proximityEnabled = _getProximityAlertsEnabled?.call() ?? false;
     if (!proximityEnabled) return;
-    
-    final nearbyNodes = _getNearbyNodes?.call() ?? [];
-    if (nearbyNodes.isEmpty) return;
-    
+
     final alertDistance = _getProximityAlertDistance?.call() ?? 200;
+
+    // Look up nodes around where the user actually is, not around whatever the
+    // map camera happens to show. Backgrounded, the camera never moves, so the
+    // old viewport-based lookup went stale the moment you drove out of it —
+    // and even in the foreground it missed alerts whenever the map was panned
+    // away from your position.
+    final nearbyNodes = _getNearbyNodes?.call(userLocation, alertDistance) ?? [];
+    if (nearbyNodes.isEmpty) return;
+
     final enabledProfiles = _getEnabledProfiles?.call() ?? [];
-    
+
+
     ProximityAlertService().checkProximity(
       userLocation: userLocation,
       nodes: nearbyNodes,
