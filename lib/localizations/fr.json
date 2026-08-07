@@ -119,7 +119,6 @@
     "enableOfflineFeaturesSubtitle": "Autoriser le téléchargement et l'utilisation de zones de carte hors ligne. Si désactivé, le mode hors ligne et les zones téléchargées ne seront pas disponibles."
   },
   "keepScreenAwake": {
-
     "title": "Maintenir l'écran allumé lors de l'utilisation de l'application",
     "subtitle": "Empêche l'écran de s'éteindre automatiquement pendant l'utilisation de l'application"
   },
@@ -127,7 +126,6 @@
     "title": "Masquer les contrôles de zoom",
     "subtitle": "Masque les boutons de zoom +/- et l'indicateur de niveau de zoom. Vous pouvez toujours zoomer avec des gestes de pincement."
   },
-
   "proximityAlerts": {
     "getNotified": "Recevoir des notifications en s'approchant de dispositifs de surveillance",
     "batteryUsage": "Utilise de la batterie supplémentaire pour la surveillance continue de la localisation",
@@ -138,7 +136,13 @@
     "enableNotifications": "Activer les Notifications",
     "checkingPermissions": "Vérification des autorisations...",
     "alertDistance": "Distance d'alerte : ",
-    "rangeInfo": "Plage : {}-{} {} (par défaut : {})"
+    "rangeInfo": "Plage : {}-{} {} (par défaut : {})",
+    "backgroundServiceTitle": "Alertes de proximité actives",
+    "backgroundServiceText": "Recherche d'appareils de surveillance à proximité",
+    "backgroundServiceChannel": "Surveillance des alertes de proximité",
+    "openSettings": "Ouvrir les réglages",
+    "blockedTitle": "Les notifications sont bloquées",
+    "blockedMessage": "Les notifications sont désactivées pour DeFlock. Activez-les dans les réglages du système pour recevoir les alertes de proximité."
   },
   "node": {
     "title": "Nœud #{}",
@@ -156,7 +160,6 @@
     "deleteReasonSpamVandalism": "Spam/vandalisme",
     "deleteReasonCustom": "Personnalisé..",
     "deleteReasonHint": "Veuillez décrire la raison...",
-
     "mustBeLoggedInToDelete": "Vous devez être connecté avec un compte OpenStreetMap pour contribuer aux données cartographiques.",
     "uploadPending": "Téléchargement en attente",
     "uploadCreatingChangeset": "Création du changeset...",
@@ -167,8 +170,6 @@
     "viewInQueue": "Voir dans la File d'Attente",
     "deletedSuccessfully": "Ce nœud a été supprimé avec succès d'OpenStreetMap."
   },
-
-
   "addNode": {
     "profile": "Profil",
     "selectProfile": "Sélectionner un profil...",
@@ -313,7 +314,6 @@
     "inFlightCompleteTitle": "Soumission Terminée",
     "inFlightCompleteMessage": "Votre soumission s'est terminée avec succès. Application de votre paramètre maintenant."
   },
-
   "tileProviders": {
     "title": "Fournisseurs de Tuiles",
     "noProvidersConfigured": "Aucun fournisseur de tuiles configuré",
@@ -465,7 +465,6 @@
     "keepData": "Conserver les Données",
     "deleteData": "Supprimer les Données"
   },
-
   "refineTagsSheet": {
     "title": "Affiner les Étiquettes",
     "operatorProfile": "Profil d'Opérateur",
