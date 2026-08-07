@@ -118,7 +118,6 @@
     "enableOfflineFeaturesTitle": "Çevrimdışı özellikleri etkinleştir",
     "enableOfflineFeaturesSubtitle": "Çevrimdışı harita alanlarını indirmeye ve kullanmaya izin ver. Devre dışı bırakılırsa, çevrimdışı mod ve indirilen alanlar kullanılamaz."
   },
-
   "keepScreenAwake": {
     "title": "Uygulamayı kullanırken ekranı açık tut",
     "subtitle": "Uygulamayı kullanırken ekranın otomatik olarak kapanmasını engeller"
@@ -127,7 +126,6 @@
     "title": "Yakınlaştırma kontrollerini gizle",
     "subtitle": "+/- yakınlaştırma düğmelerini ve yakınlaştırma seviyesi göstergesini gizler. Yine de kıstırma hareketleriyle yakınlaştırabilirsiniz."
   },
-
   "proximityAlerts": {
     "getNotified": "Gözetleme cihazlarına yaklaşırken bildirim al",
     "batteryUsage": "Sürekli konum izleme için ekstra batarya kullanır",
@@ -138,7 +136,13 @@
     "enableNotifications": "Bildirimleri Etkinleştir",
     "checkingPermissions": "İzinler kontrol ediliyor...",
     "alertDistance": "Uyarı mesafesi: ",
-    "rangeInfo": "Aralık: {}-{} {} (varsayılan: {})"
+    "rangeInfo": "Aralık: {}-{} {} (varsayılan: {})",
+    "backgroundServiceTitle": "Yakınlık uyarıları etkin",
+    "backgroundServiceText": "Yakındaki gözetim cihazları aranıyor",
+    "backgroundServiceChannel": "Yakınlık Uyarısı İzleme",
+    "openSettings": "Ayarları aç",
+    "blockedTitle": "Bildirimler engellendi",
+    "blockedMessage": "DeFlock için bildirimler kapalı. Yakınlık uyarıları almak için sistem ayarlarından etkinleştirin."
   },
   "node": {
     "title": "Düğüm #{}",
@@ -156,7 +160,6 @@
     "deleteReasonSpamVandalism": "Spam/vandalizm",
     "deleteReasonCustom": "Özel..",
     "deleteReasonHint": "Lütfen nedeni açıklayın...",
-
     "mustBeLoggedInToDelete": "Harita verilerine katkıda bulunmak için bir OpenStreetMap hesabıyla oturum açmış olmanız gerekir.",
     "uploadPending": "Yükleme bekliyor",
     "uploadCreatingChangeset": "Değişiklik seti oluşturuluyor...",
@@ -167,8 +170,6 @@
     "viewInQueue": "Sırada Görüntüle",
     "deletedSuccessfully": "Bu düğüm OpenStreetMap'ten başarıyla silindi."
   },
-
-
   "addNode": {
     "profile": "Profil",
     "selectProfile": "Bir profil seçin...",
@@ -318,7 +319,6 @@
     "inFlightCompleteTitle": "Gönderim Tamamlandı",
     "inFlightCompleteMessage": "Gönderiminiz başarıyla tamamlandı. Ayarınız şimdi uygulanıyor."
   },
-
   "tileProviders": {
     "title": "Döşeme Sağlayıcıları",
     "noProvidersConfigured": "Döşeme sağlayıcısı yapılandırılmamış",
@@ -470,7 +470,6 @@
     "keepData": "Verileri Sakla",
     "deleteData": "Verileri Sil"
   },
-
   "refineTagsSheet": {
     "title": "Etiketleri Düzenle",
     "operatorProfile": "Operatör Profili",

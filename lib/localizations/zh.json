@@ -118,7 +118,6 @@
     "enableOfflineFeaturesTitle": "启用离线功能",
     "enableOfflineFeaturesSubtitle": "允许下载和使用离线地图区域。禁用后，离线模式和已下载的区域将不可用。"
   },
-
   "keepScreenAwake": {
     "title": "使用应用时保持屏幕常亮",
     "subtitle": "防止在使用应用期间屏幕自动熄灭"
@@ -127,7 +126,6 @@
     "title": "隐藏缩放控件",
     "subtitle": "隐藏 +/- 缩放按钮和缩放级别指示器。您仍然可以使用捏合手势进行缩放。"
   },
-
   "proximityAlerts": {
     "getNotified": "接近监控设备时接收通知",
     "batteryUsage": "使用额外电量进行连续位置监控",
@@ -138,7 +136,13 @@
     "enableNotifications": "启用通知",
     "checkingPermissions": "检查权限中...",
     "alertDistance": "警报距离：",
-    "rangeInfo": "范围：{}-{} {}（默认：{}）"
+    "rangeInfo": "范围：{}-{} {}（默认：{}）",
+    "backgroundServiceTitle": "邻近提醒已启用",
+    "backgroundServiceText": "正在搜索附近的监控设备",
+    "backgroundServiceChannel": "邻近提醒监控",
+    "openSettings": "打开设置",
+    "blockedTitle": "通知已被阻止",
+    "blockedMessage": "DeFlock 的通知已关闭。请在系统设置中启用，以接收邻近提醒。"
   },
   "node": {
     "title": "节点 #{}",
@@ -156,7 +160,6 @@
     "deleteReasonSpamVandalism": "垃圾信息/破坏",
     "deleteReasonCustom": "自定义..",
     "deleteReasonHint": "请描述原因...",
-
     "mustBeLoggedInToDelete": "您必须使用 OpenStreetMap 账户登录才能贡献地图数据。",
     "uploadPending": "上传待处理",
     "uploadCreatingChangeset": "正在创建变更集...",
@@ -167,8 +170,6 @@
     "viewInQueue": "在队列中查看",
     "deletedSuccessfully": "此节点已成功从 OpenStreetMap 删除。"
   },
-
-
   "addNode": {
     "profile": "配置文件",
     "selectProfile": "选择配置文件...",
@@ -318,7 +319,6 @@
     "inFlightCompleteTitle": "提交完成",
     "inFlightCompleteMessage": "您的提交已成功完成。正在应用您的设置。"
   },
-
   "tileProviders": {
     "title": "瓦片提供商",
     "noProvidersConfigured": "未配置瓦片提供商",
@@ -470,7 +470,6 @@
     "keepData": "保留数据",
     "deleteData": "删除数据"
   },
-
   "refineTagsSheet": {
     "title": "细化标签",
     "operatorProfile": "运营商配置文件",
