@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter_map/flutter_map.dart' show LatLngBounds;
 import 'package:flutter_map_animations/flutter_map_animations.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
@@ -12,7 +13,7 @@ import '../../services/coordinate_validation.dart';
 import '../../services/localization_service.dart';
 import '../../models/osm_node.dart';
 import '../../models/node_profile.dart';
-
+import '../../services/geo_bounds.dart';
 
 /// Simple GPS controller that handles precise location permissions only.
 /// Key principles: 
@@ -42,6 +43,10 @@ class GpsController {
   VoidCallback? _onMapMovedProgrammatically;
   bool Function()? _isUserInteracting;
 
+  LatLngBounds? _backgroundTrackingBounds;
+  bool _isFetchingBackgroundNodes = false;
+  Future<void> Function(LatLngBounds)? _onFetchBackgroundNodes;
+
   /// Get the current GPS location (if available)
   LatLng? get currentLocation => _currentLocation;
   
@@ -57,6 +62,7 @@ class GpsController {
     required int Function() getProximityAlertDistance,
     required List<OsmNode> Function(LatLng userLocation, int radiusMeters) getNearbyNodes,
     required List<NodeProfile> Function() getEnabledProfiles,
+    Future<void> Function(LatLngBounds)? onFetchBackgroundNodes,
     VoidCallback? onMapMovedProgrammatically,
     bool Function()? isUserInteracting,
   }) async {
@@ -70,6 +76,7 @@ class GpsController {
     _getProximityAlertDistance = getProximityAlertDistance;
     _getNearbyNodes = getNearbyNodes;
     _getEnabledProfiles = getEnabledProfiles;
+    _onFetchBackgroundNodes = onFetchBackgroundNodes;
     _onMapMovedProgrammatically = onMapMovedProgrammatically;
     _isUserInteracting = isUserInteracting;
 
@@ -283,7 +290,7 @@ class GpsController {
   /// background delivery is armed (or dropped) immediately rather than at the
   /// next unrelated stream restart.
   void updateProximityAlertsEnabled(bool enabled) {
-    if (_positionSub == null || _streamIsBackgroundCapable == enabled) return;
+    if (_streamIsBackgroundCapable == enabled) return;
 
     debugPrint('[GpsController] Proximity alerts $enabled — rebuilding stream');
     _stopLocationTracking();
@@ -302,19 +309,64 @@ class GpsController {
     _startPositionStream();
   }
 
+  Future<void> _checkBackgroundDataRefresh(LatLng userLocation) async {
+    final proximityEnabled = _getProximityAlertsEnabled?.call() ?? false;
+
+    // Debug 1: Check the early return conditions
+    debugPrint('[GpsController-Background] proximityEnabled: $proximityEnabled, '
+               'onFetchBackgroundNodes null: ${_onFetchBackgroundNodes == null}, '
+               'isFetchingBackgroundNodes: $_isFetchingBackgroundNodes');
+
+    if (!proximityEnabled || _onFetchBackgroundNodes == null || _isFetchingBackgroundNodes) return;
+
+    bool needsRefresh = false;
+    if (_backgroundTrackingBounds == null) {
+      debugPrint('[GpsController-Background] Bounds are null. Triggering initial refresh.');
+      needsRefresh = true;
+    } else {
+      final bounds = _backgroundTrackingBounds!;
+      final northDist = Geolocator.distanceBetween(userLocation.latitude, userLocation.longitude, bounds.north, userLocation.longitude);
+      final southDist = Geolocator.distanceBetween(userLocation.latitude, userLocation.longitude, bounds.south, userLocation.longitude);
+      final eastDist = Geolocator.distanceBetween(userLocation.latitude, userLocation.longitude, userLocation.latitude, bounds.east);
+      final westDist = Geolocator.distanceBetween(userLocation.latitude, userLocation.longitude, userLocation.latitude, bounds.west);
+
+      final minDist = [northDist, southDist, eastDist, westDist].reduce((a, b) => a < b ? a : b);
+
+      // Debug 2: Print the closest distance to the edge
+      debugPrint('[GpsController-Background] Closest edge distance: ${minDist.toStringAsFixed(1)}m (Threshold: 1000m)');
+
+      if (minDist < 1000) {
+        debugPrint('[GpsController-Background] Threshold crossed. Triggering refresh.');
+        needsRefresh = true;
+      }
+    }
+
+    if (needsRefresh) {
+      _isFetchingBackgroundNodes = true;
+      try {
+        final newBounds = boundsAround(userLocation, 5000);
+        await _onFetchBackgroundNodes?.call(newBounds);
+        _backgroundTrackingBounds = newBounds;
+        debugPrint('[GpsController-Background] Successfully fetched and updated tracking bounds.');
+      } catch (e) {
+        debugPrint('[GpsController-Background] Background fetch failed: $e');
+      } finally {
+        _isFetchingBackgroundNodes = false;
+      }
+    }
+  }
+
   /// Handle incoming GPS position
   void _onPositionReceived(Position position) {
     // Reject malformed fixes (occasionally NaN/Infinite from the platform
     // location stack) before they reach map state.
     if (!isValidLatitude(position.latitude) || !isValidLongitude(position.longitude)) {
-
       debugPrint(
         '[GpsController] Ignoring invalid GPS position: '
         'lat=${position.latitude}, lng=${position.longitude}',
       );
       return;
     }
-
 
     final newLocation = LatLng(position.latitude, position.longitude);
     _currentLocation = newLocation;
@@ -332,13 +384,13 @@ class GpsController {
     
     // Handle proximity alerts
     _checkProximityAlerts(newLocation);
+    _checkBackgroundDataRefresh(newLocation);
 
     // Handle follow-me animations
     _handleFollowMeUpdate(position, newLocation);
   }
 
   /// Handle GPS stream errors
-
   void _onPositionError(dynamic error) {
     debugPrint('[GpsController] Position stream error: $error');
     if (_hasLocation) {
@@ -366,7 +418,6 @@ class GpsController {
     if (nearbyNodes.isEmpty) return;
 
     final enabledProfiles = _getEnabledProfiles?.call() ?? [];
-
 
     ProximityAlertService().checkProximity(
       userLocation: userLocation,
@@ -499,6 +550,7 @@ class GpsController {
     _getProximityAlertDistance = null;
     _getNearbyNodes = null;
     _getEnabledProfiles = null;
+    _onFetchBackgroundNodes = null;
     _onMapMovedProgrammatically = null;
     _isUserInteracting = null;
   }

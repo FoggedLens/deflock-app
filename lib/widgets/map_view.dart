@@ -217,6 +217,16 @@ class MapViewState extends State<MapView> with WidgetsBindingObserver {
         }
         return [];
       },
+      onFetchBackgroundNodes: (bounds) async {
+        if (!mounted) return;
+        final appState = context.read<AppState>();
+
+        NodeProviderWithCache.instance.fetchAndUpdate(
+          bounds: bounds,
+          profiles: appState.enabledProfiles,
+          uploadMode: appState.uploadMode,
+        );
+      },
       onMapMovedProgrammatically: () {
         // Refresh nodes when GPS controller moves the map
         _refreshNodesFromProvider();
