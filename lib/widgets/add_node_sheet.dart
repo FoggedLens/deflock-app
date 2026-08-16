@@ -1,3 +1,5 @@
+import 'dart:collection';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -8,7 +10,6 @@ import '../app_state.dart';
 import '../dev_config.dart';
 import '../models/node_profile.dart';
 import '../services/localization_service.dart';
-import '../services/map_data_provider.dart';
 import '../services/node_data_manager.dart';
 import '../services/changelog_service.dart';
 import 'refine_tags_sheet.dart';
@@ -17,27 +18,56 @@ import 'submission_guide_dialog.dart';
 import 'positioning_tutorial_overlay.dart';
 
 class AddNodeSheet extends StatefulWidget {
-  const AddNodeSheet({super.key, required this.session});
+  const AddNodeSheet({super.key, required this.session, this.nodeDataManager});
 
   final AddNodeSession session;
+  final NodeDataManager? nodeDataManager;
 
   @override
   State<AddNodeSheet> createState() => _AddNodeSheetState();
 }
 
+class _CoverageRequestState {
+  final inFlight = <String>{};
+  final settled = <String>{};
+
+  bool get isEmpty => inFlight.isEmpty && settled.isEmpty;
+}
+
 class _AddNodeSheetState extends State<AddNodeSheet> {
   bool _showTutorial = false;
   bool _isCheckingTutorial = true;
+  late NodeDataManager _nodeDataManager;
+  final Map<NodeDataManager, _CoverageRequestState> _coverageRequests =
+      HashMap.identity();
 
   @override
   void initState() {
     super.initState();
+    _nodeDataManager = widget.nodeDataManager ?? NodeDataManager();
     _checkTutorialStatus();
     // Listen to node data manager for cache updates
-    NodeDataManager().addListener(_onCacheUpdated);
+    _nodeDataManager.addListener(_onCacheUpdated);
+  }
+
+  @override
+  void didUpdateWidget(AddNodeSheet oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    final newNodeDataManager = widget.nodeDataManager ?? NodeDataManager();
+    if (!identical(newNodeDataManager, _nodeDataManager)) {
+      _nodeDataManager.removeListener(_onCacheUpdated);
+      _nodeDataManager = newNodeDataManager;
+      _nodeDataManager.addListener(_onCacheUpdated);
+    }
   }
 
   void _onCacheUpdated() {
+    final requestState = _coverageRequests[_nodeDataManager];
+    if (requestState != null && requestState.settled.isNotEmpty) {
+      requestState.inFlight.removeAll(requestState.settled);
+      requestState.settled.clear();
+      _removeCoverageRequestStateIfEmpty(_nodeDataManager, requestState);
+    }
     // Rebuild when cache updates (e.g., when new data loads)
     if (mounted) setState(() {});
   }
@@ -69,7 +99,7 @@ class _AddNodeSheetState extends State<AddNodeSheet> {
   @override
   void dispose() {
     // Remove listener
-    NodeDataManager().removeListener(_onCacheUpdated);
+    _nodeDataManager.removeListener(_onCacheUpdated);
     
     // Clear tutorial callback when widget is disposed
     if (_showTutorial) {
@@ -118,7 +148,7 @@ class _AddNodeSheetState extends State<AddNodeSheet> {
     }
     
     // Check for nearby nodes within the configured distance
-    final nearbyNodes = MapDataProvider().findNodesWithinDistance(
+    final nearbyNodes = _nodeDataManager.findNodesWithinDistance(
       widget.session.target!, 
       kNodeProximityWarningDistance,
     );
@@ -151,6 +181,54 @@ class _AddNodeSheetState extends State<AddNodeSheet> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(locService.t('node.queuedForUpload'))),
     );
+  }
+
+  void _scheduleCoverageRecovery({
+    required LatLngBounds bounds,
+    required List<NodeProfile> profiles,
+    required UploadMode uploadMode,
+  }) {
+    final profileIds = profiles.map((profile) => profile.id).toList()..sort();
+    final fingerprint = '${bounds.south},${bounds.west},'
+        '${bounds.north},${bounds.east}|'
+        '${profileIds.join(',')}|$uploadMode';
+    final nodeDataManager = _nodeDataManager;
+    final requestState = _coverageRequests.putIfAbsent(
+      nodeDataManager,
+      _CoverageRequestState.new,
+    );
+    if (!requestState.inFlight.add(fingerprint)) {
+      return;
+    }
+
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      try {
+        if (!mounted) return;
+        await nodeDataManager.getNodesFor(
+          bounds: bounds,
+          profiles: profiles,
+          uploadMode: uploadMode,
+          isUserInitiated: true,
+        );
+      } finally {
+        requestState.settled.add(fingerprint);
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          requestState.inFlight.remove(fingerprint);
+          requestState.settled.remove(fingerprint);
+          _removeCoverageRequestStateIfEmpty(nodeDataManager, requestState);
+        });
+      }
+    });
+  }
+
+  void _removeCoverageRequestStateIfEmpty(
+    NodeDataManager nodeDataManager,
+    _CoverageRequestState requestState,
+  ) {
+    if (requestState.isEmpty &&
+        identical(_coverageRequests[nodeDataManager], requestState)) {
+      _coverageRequests.remove(nodeDataManager);
+    }
   }
 
   Widget _buildProfileDropdown(BuildContext context, AppState appState, AddNodeSession session, List<NodeProfile> submittableProfiles, LocalizationService locService) {
@@ -407,16 +485,26 @@ class _AddNodeSheetState extends State<AddNodeSheet> {
             LatLng(session.target!.latitude - bufferDegrees, session.target!.longitude - bufferDegrees),
             LatLng(session.target!.latitude + bufferDegrees, session.target!.longitude + bufferDegrees),
           );
-          hasGoodCoverage = MapDataProvider().hasGoodCoverageFor(targetBounds);
+          hasGoodCoverage = _nodeDataManager.hasGoodCoverageFor(targetBounds);
           
           // If strict coverage check fails, fall back to checking if we have any nodes nearby
           // This handles the timing issue where cache might not be marked as "covered" yet
           if (!hasGoodCoverage) {
-            final nearbyNodes = MapDataProvider().findNodesWithinDistance(
+            final nearbyNodes = _nodeDataManager.findNodesWithinDistance(
               session.target!, 
               200.0, // 200m radius - if we have nodes nearby, we likely have good data
             );
             hasGoodCoverage = nearbyNodes.isNotEmpty;
+          }
+
+          final profiles = appState.enabledProfiles;
+          final uploadMode = appState.uploadMode;
+          if (!hasGoodCoverage) {
+            _scheduleCoverageRecovery(
+              bounds: targetBounds,
+              profiles: profiles,
+              uploadMode: uploadMode,
+            );
           }
         }
         
@@ -605,4 +693,3 @@ class _AddNodeSheetState extends State<AddNodeSheet> {
     );
   }
 }
-
