@@ -18,6 +18,7 @@ import '../widgets/search_bar.dart';
 import '../widgets/suspected_location_sheet.dart';
 import '../widgets/welcome_dialog.dart';
 import '../widgets/changelog_dialog.dart';
+import '../widgets/unread_notifications_dialog.dart';
 import '../models/osm_node.dart';
 import '../models/suspected_location.dart';
 import '../models/search_result.dart';
@@ -53,6 +54,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   
   // Track popup display to avoid showing multiple times
   bool _hasCheckedForPopup = false;
+  
+  // Track whether we've shown the unread notifications popup this session
+  bool _hasShownUnreadNotificationsPopup = false;
 
   @override
   void initState() {
@@ -245,6 +249,21 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         debugPrint('[HomeScreen] Error completing version change: $e2');
       }
     }
+  }
+
+  void _showUnreadNotificationsDialog() {
+    if (!mounted) return;
+    showDialog(
+      context: context,
+      builder: (context) => UnreadNotificationsDialog(
+        onView: () {
+          Navigator.of(context).pushNamed('/settings/osm-account');
+        },
+        onDismiss: () {
+          // Just dismiss - badges remain visible until the user views them.
+        },
+      ),
+    );
   }
 
   void _onStartRoute() {
@@ -457,6 +476,19 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       });
     }
 
+    // Show a one-time popup this session if the user has unread messages
+    // and/or unread changeset comments. Gated on _hasCheckedForPopup so it
+    // doesn't race with the welcome/changelog dialog above.
+    if (_hasCheckedForPopup &&
+        !_hasShownUnreadNotificationsPopup &&
+        appState.isLoggedIn &&
+        appState.hasUnreadNotifications) {
+      _hasShownUnreadNotificationsPopup = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _showUnreadNotificationsDialog();
+      });
+    }
+
     // Auto-focus a node's details sheet right after it was submitted/edited/deleted,
     // behind kAutoOpenNodeSheetAfterSubmit (pending A/B testing/team feedback).
     if (kAutoOpenNodeSheetAfterSubmit) {
@@ -510,23 +542,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 final appState = context.watch<AppState>();
                 return IconButton(
                   tooltip: LocalizationService.instance.settings,
-                  icon: Stack(
-                    children: [
-                      const Icon(Icons.settings),
-                      if (appState.hasUnreadMessages)
-                        Positioned(
-                          right: 0,
-                          top: 0,
-                          child: Container(
-                            width: 10,
-                            height: 10,
-                            decoration: BoxDecoration(
-                              color: Theme.of(context).colorScheme.error,
-                              shape: BoxShape.circle,
-                            ),
-                          ),
-                        ),
-                    ],
+                  icon: Badge(
+                    isLabelVisible: appState.hasUnreadNotifications,
+                    child: const Icon(Icons.settings),
                   ),
                   onPressed: () => Navigator.pushNamed(context, '/settings'),
                 );
