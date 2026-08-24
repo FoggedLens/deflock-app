@@ -45,8 +45,8 @@ class MessagesState extends ChangeNotifier {
         ),
       ]);
       
-      final count = results[0] as int?;
-      final unreadChangesetId = results[1] as int?;
+      final count = results[0];
+      final unreadChangesetId = results[1];
       
       if (_unreadCount != count || _unreadChangesetId != unreadChangesetId) {
         _unreadCount = count;
