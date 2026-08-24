@@ -267,11 +267,16 @@
     "viewMessages": "View Messages on OSM",
     "unreadMessagesCount": "You have {} unread messages",
     "noUnreadMessages": "No unread messages",
+    "newChangesetComments": "New Changeset Comment",
+    "newChangesetCommentsSubtitle": "Someone commented on one or more of your changesets",
     "reauthRequired": "Refresh Authentication",
     "reauthExplanation": "You must refresh your authentication to receive OSM message notifications through the app.",
     "reauthBenefit": "This will enable notification dots when you have unread messages on OpenStreetMap.",
     "reauthNow": "Do That Now",
-    "reauthLater": "Later"
+    "reauthLater": "Later",
+    "unreadNotificationsTitle": "You Have Unread Notifications",
+    "unreadNotificationsMessage": "You have unread OSM messages and/or new comments on your changesets.",
+    "unreadNotificationsView": "View Now"
   },
   "queue": {
     "title": "Upload Queue",

@@ -272,7 +272,12 @@
     "reauthExplanation": "Ви повинні оновити вашу автентифікацію, щоб отримувати сповіщення про повідомлення OSM через додаток.",
     "reauthBenefit": "Це дозволить показувати точки сповіщень, коли у вас є непрочитані повідомлення в OpenStreetMap.",
     "reauthNow": "Зробити Зараз",
-    "reauthLater": "Пізніше"
+    "newChangesetComments": "Новий Коментар до Набору Змін",
+    "newChangesetCommentsSubtitle": "Хтось прокоментував один або декілька ваших наборів змін",
+    "reauthLater": "Пізніше",
+    "unreadNotificationsTitle": "У Вас Є Непрочитані Сповіщення",
+    "unreadNotificationsMessage": "У вас є непрочитані повідомлення OSM та/або нові коментарі до ваших наборів змін.",
+    "unreadNotificationsView": "Переглянути Зараз"
   },
   "queue": {
     "title": "Черга Завантаження",

@@ -176,6 +176,8 @@ class AppState extends ChangeNotifier {
   // Messages state
   int? get unreadMessageCount => _messagesState.unreadCount;
   bool get hasUnreadMessages => _messagesState.hasUnreadMessages;
+  bool get hasUnreadChangesetComments => _messagesState.hasUnreadChangesetComments;
+  bool get hasUnreadNotifications => _messagesState.hasUnreadNotifications;
   bool get isCheckingMessages => _messagesState.isChecking;
   
   // Tile provider state
@@ -331,6 +333,7 @@ class AppState extends ChangeNotifier {
     final accessToken = await _authState.getAccessToken();
     await _messagesState.checkMessages(
       accessToken: accessToken,
+      username: isLoggedIn ? username : null,
       uploadMode: uploadMode,
       forceRefresh: forceRefresh,
     );
@@ -340,8 +343,22 @@ class AppState extends ChangeNotifier {
     return _messagesState.getMessagesUrl(uploadMode);
   }
   
+  /// URL of the specific changeset with unread comments, on OSM's website,
+  /// or null if there are no unread changeset comments.
+  String? getUnreadChangesetUrl() {
+    return _messagesState.getUnreadChangesetUrl(uploadMode);
+  }
+  
   void clearMessages() {
     _messagesState.clearMessages();
+  }
+  
+  /// Mark changeset comments as read (called when user views the changeset on OSM)
+  Future<void> markChangesetCommentsRead() async {
+    await _messagesState.markChangesetCommentsRead(
+      username: isLoggedIn ? username : null,
+      uploadMode: uploadMode,
+    );
   }
   
   /// Check if the current OAuth token has required scopes for message notifications
