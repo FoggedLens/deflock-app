@@ -10,6 +10,7 @@ import '../services/offline_area_service.dart';
 
 import '../models/osm_node.dart';
 import '../models/suspected_location.dart';
+import '../models/rf_detection.dart';
 import 'debouncer.dart';
 import 'node_provider_with_cache.dart';
 import 'map/map_overlays.dart';
@@ -43,6 +44,8 @@ class MapView extends StatefulWidget {
     this.selectedNodeId,
     this.onNodeTap,
     this.onSuspectedLocationTap,
+    this.onRfDetectionTap,
+    this.rfDetections,
     this.onSearchPressed,
     this.onNodeLimitChanged,
     this.onLocationStatusChanged,
@@ -55,6 +58,8 @@ class MapView extends StatefulWidget {
   final int? selectedNodeId;
   final void Function(OsmNode)? onNodeTap;
   final void Function(SuspectedLocation)? onSuspectedLocationTap;
+  final void Function(RfDetection)? onRfDetectionTap;
+  final List<RfDetection>? rfDetections;
   final VoidCallback? onSearchPressed;
   final void Function(bool isLimited)? onNodeLimitChanged;
   final VoidCallback? onLocationStatusChanged;
@@ -405,6 +410,8 @@ class MapViewState extends State<MapView> {
           mapBounds: mapBounds,
           onNodeTap: widget.onNodeTap,
           onSuspectedLocationTap: widget.onSuspectedLocationTap,
+          rfDetections: widget.rfDetections,
+          onRfDetectionTap: widget.onRfDetectionTap,
         );
 
         // Build all overlay layers
