@@ -280,7 +280,12 @@
     "reauthExplanation": "Devi aggiornare la tua autenticazione per ricevere notifiche di messaggi OSM tramite l'app.",
     "reauthBenefit": "Questo abiliterà i punti di notifica quando hai messaggi non letti su OpenStreetMap.",
     "reauthNow": "Fallo Ora",
-    "reauthLater": "Più Tardi"
+    "newChangesetComments": "Nuovo Commento al Changeset",
+    "newChangesetCommentsSubtitle": "Qualcuno ha commentato uno o più dei tuoi changeset",
+    "reauthLater": "Più Tardi",
+    "unreadNotificationsTitle": "Hai Notifiche Non Lette",
+    "unreadNotificationsMessage": "Hai messaggi OSM non letti e/o nuovi commenti sui tuoi changeset.",
+    "unreadNotificationsView": "Visualizza Ora"
   },
   "queue": {
     "title": "Coda di Upload",

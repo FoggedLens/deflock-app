@@ -143,26 +143,54 @@ class OverpassService {
           '[OverpassService] Deduplicated ${profiles.length} profiles to ${profilesToQuery.length} for query efficiency');
     }
 
-    final nodeClauses = profilesToQuery.map((profile) {
-      // Convert profile tags to Overpass filter format, excluding empty values
-      final tagFilters = profile.tags.entries
+    // Per-profile tag filter strings (e.g. ["man_made"="surveillance"]["surveillance:type"="ALPR"]),
+    // excluding empty tag values. Reused twice below: once to select our nodes
+    // in the bbox, and again to re-select just our nodes out of the pool of
+    // way/relation-connected nodes (which may include unrelated node types).
+    final tagFilterStrings = profilesToQuery.map((profile) {
+      return profile.tags.entries
           .where((entry) => entry.value.trim().isNotEmpty)
           .map((entry) => '["${entry.key}"="${entry.value}"]')
           .join();
+    }).toList();
 
-      return 'node$tagFilters(${bounds.southWest.latitude},${bounds.southWest.longitude},${bounds.northEast.latitude},${bounds.northEast.longitude});';
-    }).join('\n  ');
+    final bboxStr = '${bounds.southWest.latitude},${bounds.southWest.longitude},'
+        '${bounds.northEast.latitude},${bounds.northEast.longitude}';
 
+    final allNodesClauses =
+        tagFilterStrings.map((filters) => 'node$filters($bboxStr);').join('\n  ');
+    final resNodesClauses =
+        tagFilterStrings.map((filters) => 'node.resNodes$filters;').join('\n  ');
+
+    // Query strategy:
+    // 1. Find all matching nodes in bbox -> .allNodes, output them with tags ("out body").
+    // 2. Find any way/relation that references one of .allNodes ("bn." = "by node"),
+    //    then pull the node IDs those ways/relations reference -> .wayNodes/.relNodes.
+    //    (`node(w)`/`node(r)` on a way/relation set returns only node IDs, not
+    //    full tags/coords, keeping the query/response cheap.)
+    // 3. Re-filter that combined node pool down to just our own matching
+    //    surveillance nodes (.resNodes may contain unrelated node types too).
+    // 4. `convert restriction ::id = id();` emits each of those node IDs as a
+    //    lightweight synthetic `{"type":"restriction","id":<nodeId>}` element —
+    //    a flat, unambiguous list of which node IDs are "constrained" (part of
+    //    some way/relation), without needing the full way/relation node lists.
     return '''
 [out:json][timeout:${kOverpassQueryTimeout.inSeconds}];
 (
-  $nodeClauses
+  $allNodesClauses
+)->.allNodes;
+.allNodes out body;
+way(bn.allNodes); node(w)->.wayNodes;
+relation(bn.allNodes); node(r)->.relNodes;
+(.wayNodes;.relNodes;)->.resNodes;
+(
+  $resNodesClauses
 );
-out body;
-<;
-out ids;
+convert restriction ::id = id();
+out;
 ''';
   }
+
 
   /// Deduplicate profiles for Overpass queries by removing profiles that are
   /// subsumed by others. A profile A subsumes profile B if all of A's
@@ -232,7 +260,16 @@ out ids;
   }
 
 
-  /// Parse Overpass JSON response into OsmNode objects
+  /// Parse Overpass JSON response into OsmNode objects.
+  ///
+  /// The query (see [_buildQuery]) produces two kinds of elements:
+  /// - `type: "node"` — our matched surveillance nodes, with full tags/coords
+  ///   (from `.allNodes out body;`).
+  /// - `type: "restriction"` — synthetic elements (from
+  ///   `convert restriction ::id = id();`) whose `id` is the OSM node ID of
+  ///   one of our nodes that Overpass determined is referenced by some way
+  ///   or relation. These carry no lat/lon/tags — just the id — and exist
+  ///   purely to tell us which node IDs are "constrained".
   List<OsmNode> _parseResponse(String responseBody) {
     final data = jsonDecode(responseBody) as Map<String, dynamic>;
     final elements = data['elements'] as List<dynamic>;
@@ -240,21 +277,16 @@ out ids;
     final nodeElements = <Map<String, dynamic>>[];
     final constrainedNodeIds = <int>{};
 
-    // First pass: collect surveillance nodes and identify constrained nodes
+    // First pass: collect surveillance nodes and constrained-node markers.
     for (final element in elements.whereType<Map<String, dynamic>>()) {
       final type = element['type'] as String?;
 
       if (type == 'node') {
         nodeElements.add(element);
-      } else if (type == 'way' || type == 'relation') {
-        // Mark referenced nodes as constrained
-        final refs = element['nodes'] as List<dynamic>? ??
-                     element['members']?.where((m) => m['type'] == 'node').map((m) => m['ref']) ?? [];
-
-        for (final ref in refs) {
-          final nodeId = ref is int ? ref : int.tryParse(ref.toString());
-          if (nodeId != null) constrainedNodeIds.add(nodeId);
-        }
+      } else if (type == 'restriction') {
+        final rawId = element['id'];
+        final nodeId = rawId is int ? rawId : int.tryParse(rawId.toString());
+        if (nodeId != null) constrainedNodeIds.add(nodeId);
       }
     }
 
@@ -278,6 +310,7 @@ out ids;
     return nodes;
   }
 }
+
 
 /// Error thrown when a query would exceed Overpass's 50k node limit.
 /// The caller should split the query area into smaller regions to resolve this

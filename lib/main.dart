@@ -125,16 +125,21 @@ class DeFlockApp extends StatelessWidget {
       },
       initialRoute: '/',
       onUnknownRoute: (settings) {
-        // Handle deep link routes that Flutter tries to process before app_links
-        // This catches routes like "/?id=13939398601" from "deflockapp://node?id=13939398601"
-        debugPrint('[Navigation] Unknown route intercepted: ${settings.name} (likely deep link, will be handled by DeepLinkService)');
+        // Fallback for any genuinely unknown named route (e.g. a stale/bad
+        // link). Deep links (deflockapp://...) are handled exclusively by
+        // DeepLinkService via the app_links package - Flutter's own
+        // implicit deep-link routing is disabled at the platform level
+        // (see AndroidManifest.xml's flutter_deeplinking_enabled and
+        // Info.plist's FlutterDeepLinkingEnabled) to avoid this handler
+        // double-navigating and burying screens pushed by DeepLinkService.
+        debugPrint('[Navigation] Unknown route intercepted: ${settings.name}');
         return MaterialPageRoute(
           settings: settings,
           builder: (_) => const HomeScreen(),
         );
       },
-
     );
+
   }
 }
 

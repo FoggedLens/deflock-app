@@ -243,7 +243,12 @@
     "reauthExplanation": "Sie müssen Ihre Authentifizierung aktualisieren, um OSM-Nachrichtenbenachrichtigungen über die App zu erhalten.",
     "reauthBenefit": "Dies ermöglicht Benachrichtigungspunkte, wenn Sie ungelesene Nachrichten auf OpenStreetMap haben.",
     "reauthNow": "Jetzt machen",
-    "reauthLater": "Später"
+    "newChangesetComments": "Neuer Changeset-Kommentar",
+    "newChangesetCommentsSubtitle": "Jemand hat einen oder mehrere Ihrer Changesets kommentiert",
+    "reauthLater": "Später",
+    "unreadNotificationsTitle": "Sie haben ungelesene Benachrichtigungen",
+    "unreadNotificationsMessage": "Sie haben ungelesene OSM-Nachrichten und/oder neue Kommentare zu Ihren Changesets.",
+    "unreadNotificationsView": "Jetzt ansehen"
   },
   "queue": {
     "title": "Upload-Warteschlange",

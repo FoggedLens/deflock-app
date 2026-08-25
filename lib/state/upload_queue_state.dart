@@ -6,8 +6,8 @@ import 'package:latlong2/latlong.dart';
 
 import '../models/pending_upload.dart';
 import '../models/osm_node.dart';
-import '../models/node_profile.dart';
 import '../services/map_data_provider.dart';
+import '../services/direction_submission_formatter.dart';
 import '../services/uploader.dart';
 import '../widgets/node_provider_with_cache.dart';
 import '../dev_config.dart';
@@ -120,8 +120,8 @@ class UploadQueueState extends ChangeNotifier {
   PendingUpload addFromSession(AddNodeSession session, {required UploadMode uploadMode}) {
     final upload = PendingUpload(
       coord: session.target!,
-      direction: _formatDirectionsForSubmission(session.directions, session.profile),
-      profile: session.profile!, // Safe to use ! because commitSession() checks for null
+      direction: DirectionSubmissionFormatter.format(session.directions, session.profile),
+      profile: session.profile!,  // Safe to use ! because commitSession() checks for null
       operatorProfile: session.operatorProfile,
       refinedTags: session.refinedTags,
       additionalExistingTags: session.additionalExistingTags, // Always empty for new nodes
@@ -222,8 +222,8 @@ class UploadQueueState extends ChangeNotifier {
 
     final upload = PendingUpload(
       coord: coordToUse,
-      direction: _formatDirectionsForSubmission(session.directions, session.profile),
-      profile: session.profile!, // Safe to use ! because commitEditSession() checks for null
+      direction: DirectionSubmissionFormatter.format(session.directions, session.profile),
+      profile: session.profile!,  // Safe to use ! because commitEditSession() checks for null
       operatorProfile: session.operatorProfile,
       refinedTags: session.refinedTags,
       additionalExistingTags: session.additionalExistingTags,
@@ -774,38 +774,6 @@ class UploadQueueState extends ChangeNotifier {
       // Notify node provider to update the map
       NodeProviderWithCache.instance.notifyListeners();
     }
-  }
-
-  // Helper method to format multiple directions for submission, supporting profile FOV
-  dynamic _formatDirectionsForSubmission(List<double> directions, NodeProfile? profile) {
-    if (directions.isEmpty) return 0.0;
-
-    // If profile has FOV, convert center directions to range notation
-    if (profile?.fov != null && profile!.fov! > 0) {
-      final ranges = directions.map((center) => 
-          _formatDirectionWithFov(center, profile.fov!)
-          ).toList();
-
-      return ranges.length == 1 ? ranges.first : ranges.join(';');
-    }
-
-    // No profile FOV: use original format (single number or semicolon-separated)
-    if (directions.length == 1) return directions.first;
-    return directions.map((d) => d.round().toString()).join(';');
-  }
-
-  // Convert a center direction and FOV to range notation (e.g., 180° center with 90° FOV -> "135-225")
-  String _formatDirectionWithFov(double center, double fov) {
-    // Handle 360-degree FOV as special case
-    if (fov >= 360) {
-      return '0-360';
-    }
-
-    final halfFov = fov / 2;
-    final start = (center - halfFov + 360) % 360;
-    final end = (center + halfFov) % 360;
-
-    return '${start.round()}-${end.round()}';
   }
 
   // Clean up pending nodes from cache when queue items are deleted/cleared

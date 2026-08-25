@@ -280,7 +280,12 @@
     "reauthExplanation": "Musisz odświeżyć uwierzytelnienie, aby otrzymywać powiadomienia o wiadomościach OSM przez aplikację.",
     "reauthBenefit": "To włączy kropki powiadomień, gdy masz nieprzeczytane wiadomości w OpenStreetMap.",
     "reauthNow": "Zrób To Teraz",
-    "reauthLater": "Później"
+    "newChangesetComments": "Nowy Komentarz do Zestawu Zmian",
+    "newChangesetCommentsSubtitle": "Ktoś skomentował jeden lub więcej Twoich zestawów zmian",
+    "reauthLater": "Później",
+    "unreadNotificationsTitle": "Masz Nieprzeczytane Powiadomienia",
+    "unreadNotificationsMessage": "Masz nieprzeczytane wiadomości OSM i/lub nowe komentarze do Twoich zestawów zmian.",
+    "unreadNotificationsView": "Zobacz Teraz"
   },
   "queue": {
     "title": "Kolejka Przesyłania",

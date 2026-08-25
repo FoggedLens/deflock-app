@@ -90,7 +90,7 @@ const bool kEnableNodeEdits = true; // Set to false to temporarily disable node 
 const bool kEnableNodeExtraction = false; // Set to true to enable extract from way/relation feature (WIP)
 
 // Auto-open tags sheet after add/edit/delete, so the user can watch upload status update live.
-const bool kAutoOpenNodeSheetAfterSubmit = true; // Set to true to enable auto-focus behavior
+const bool kAutoOpenNodeSheetAfterSubmit = false; // Set to true to enable auto-focus behavior
 
 // Profile FOV features - set to false to restrict profiles to 360° FOV only
 const bool kEnableNon360FOVs = false; // Set to true to allow custom FOV values in profiles

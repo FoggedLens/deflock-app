@@ -280,7 +280,12 @@
     "reauthExplanation": "U moet uw authenticatie verversen om OSM bericht meldingen te ontvangen via de app.",
     "reauthBenefit": "Dit zal melding stippen inschakelen wanneer u ongelezen berichten heeft op OpenStreetMap.",
     "reauthNow": "Doe Dat Nu",
-    "reauthLater": "Later"
+    "newChangesetComments": "Nieuwe Changeset-opmerking",
+    "newChangesetCommentsSubtitle": "Iemand heeft commentaar gegeven op een of meer van uw changesets",
+    "reauthLater": "Later",
+    "unreadNotificationsTitle": "U Heeft Ongelezen Meldingen",
+    "unreadNotificationsMessage": "U heeft ongelezen OSM-berichten en/of nieuwe opmerkingen op uw changesets.",
+    "unreadNotificationsView": "Nu Bekijken"
   },
   "queue": {
     "title": "Upload Wachtrij",

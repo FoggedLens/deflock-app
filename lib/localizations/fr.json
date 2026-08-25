@@ -280,7 +280,12 @@
     "reauthExplanation": "Vous devez actualiser votre authentification pour recevoir des notifications de messages OSM via l'application.",
     "reauthBenefit": "Cela activera les points de notification lorsque vous avez des messages non lus sur OpenStreetMap.",
     "reauthNow": "Le Faire Maintenant",
-    "reauthLater": "Plus Tard"
+    "newChangesetComments": "Nouveau Commentaire de Changeset",
+    "newChangesetCommentsSubtitle": "Quelqu'un a commenté un ou plusieurs de vos changesets",
+    "reauthLater": "Plus Tard",
+    "unreadNotificationsTitle": "Vous Avez des Notifications Non Lues",
+    "unreadNotificationsMessage": "Vous avez des messages OSM non lus et/ou de nouveaux commentaires sur vos changesets.",
+    "unreadNotificationsView": "Voir Maintenant"
   },
   "queue": {
     "title": "File de Téléchargement",

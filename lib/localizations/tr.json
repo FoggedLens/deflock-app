@@ -280,7 +280,12 @@
     "reauthExplanation": "Uygulama üzerinden OSM mesaj bildirimlerini alabilmek için kimlik doğrulamanızı yenilemeniz gerekir.",
     "reauthBenefit": "Bu, OpenStreetMap'te okunmamış mesajlarınız olduğunda bildirim noktalarını etkinleştirecek.",
     "reauthNow": "Şimdi Yap",
-    "reauthLater": "Sonra"
+    "newChangesetComments": "Yeni Değişiklik Kümesi Yorumu",
+    "newChangesetCommentsSubtitle": "Biri değişiklik kümelerinizden birine veya birkaçına yorum yaptı",
+    "reauthLater": "Sonra",
+    "unreadNotificationsTitle": "Okunmamış Bildirimleriniz Var",
+    "unreadNotificationsMessage": "Okunmamış OSM mesajlarınız ve/veya değişiklik kümelerinize yapılan yeni yorumlar var.",
+    "unreadNotificationsView": "Şimdi Görüntüle"
   },
   "queue": {
     "title": "Yükleme Kuyruğu",

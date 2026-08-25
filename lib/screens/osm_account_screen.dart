@@ -128,38 +128,46 @@ class _OSMAccountScreenState extends State<OSMAccountScreen> {
                           },
                         ),
                         
+                        // Unread changeset comments - links directly to the
+                        // specific changeset with the new comment, and only
+                        // appears when there is one.
+                        if (appState.hasUnreadChangesetComments) ...[
+                          const Divider(),
+                          ListTile(
+                            leading: Badge(
+                              isLabelVisible: true,
+                              child: const Icon(Icons.comment),
+                            ),
+                            title: Text(locService.t('auth.newChangesetComments')),
+                            subtitle: Text(locService.t('auth.newChangesetCommentsSubtitle')),
+                            trailing: const Icon(Icons.open_in_new),
+                            onTap: () async {
+                              final changesetUrl = appState.getUnreadChangesetUrl();
+                              if (changesetUrl == null) return;
+                              final url = Uri.parse(changesetUrl);
+                              if (await canLaunchUrl(url)) {
+                                await launchUrl(url, mode: LaunchMode.externalApplication);
+                                // The user has now had the opportunity to see the
+                                // new comment on OSM's website - clear our badge.
+                                appState.markChangesetCommentsRead();
+                              } else {
+                                if (context.mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(content: Text(locService.t('advancedEdit.couldNotOpenOSMWebsite'))),
+                                  );
+                                }
+                              }
+                            },
+                          ),
+                        ],
+                        
                         // Messages button - only show when not in simulate mode
                         const Divider(),
                       ListTile(
-                        leading: Stack(
-                          children: [
-                            const Icon(Icons.message),
-                            if (appState.hasUnreadMessages)
-                              Positioned(
-                                right: 0,
-                                top: 0,
-                                child: Container(
-                                  padding: const EdgeInsets.all(2),
-                                  decoration: BoxDecoration(
-                                    color: Theme.of(context).colorScheme.error,
-                                    shape: BoxShape.circle,
-                                  ),
-                                  constraints: const BoxConstraints(
-                                    minWidth: 12,
-                                    minHeight: 12,
-                                  ),
-                                  child: Text(
-                                    '${appState.unreadMessageCount}',
-                                    style: TextStyle(
-                                      color: Theme.of(context).colorScheme.onError,
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                    textAlign: TextAlign.center,
-                                  ),
-                                ),
-                              ),
-                          ],
+                        leading: Badge(
+                          isLabelVisible: appState.hasUnreadMessages,
+                          label: Text('${appState.unreadMessageCount ?? 0}'),
+                          child: const Icon(Icons.message),
                         ),
                         title: Text(locService.t('auth.viewMessages')),
                         subtitle: Text(appState.hasUnreadMessages
