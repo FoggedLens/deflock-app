@@ -272,7 +272,12 @@
     "reauthExplanation": "您必须刷新身份验证才能通过应用接收 OSM 消息通知。",
     "reauthBenefit": "这将在您在 OpenStreetMap 上有未读消息时启用通知点。",
     "reauthNow": "现在执行",
-    "reauthLater": "稍后"
+    "newChangesetComments": "新的变更集评论",
+    "newChangesetCommentsSubtitle": "有人评论了您的一个或多个变更集",
+    "reauthLater": "稍后",
+    "unreadNotificationsTitle": "您有未读通知",
+    "unreadNotificationsMessage": "您有未读的 OSM 消息和/或对您变更集的新评论。",
+    "unreadNotificationsView": "立即查看"
   },
   "queue": {
     "title": "上传队列",

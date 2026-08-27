@@ -117,23 +117,9 @@ class SettingsScreen extends StatelessWidget {
     final appState = context.watch<AppState>();
     
     return ListTile(
-      leading: Stack(
-        children: [
-          const Icon(Icons.account_circle),
-          if (appState.hasUnreadMessages)
-            Positioned(
-              right: 0,
-              top: 0,
-              child: Container(
-                width: 10,
-                height: 10,
-                decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.error,
-                  shape: BoxShape.circle,
-                ),
-              ),
-            ),
-        ],
+      leading: Badge(
+        isLabelVisible: appState.hasUnreadNotifications,
+        child: const Icon(Icons.account_circle),
       ),
       title: Text(locService.t('auth.osmAccountTitle')),
       subtitle: Text(locService.t('auth.osmAccountSubtitle')),

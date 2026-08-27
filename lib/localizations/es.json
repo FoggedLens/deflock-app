@@ -272,7 +272,12 @@
     "reauthExplanation": "Debes actualizar tu autenticación para recibir notificaciones de mensajes OSM a través de la aplicación.",
     "reauthBenefit": "Esto habilitará puntos de notificación cuando tengas mensajes sin leer en OpenStreetMap.",
     "reauthNow": "Hazlo Ahora",
-    "reauthLater": "Más Tarde"
+    "newChangesetComments": "Nuevo Comentario en Changeset",
+    "newChangesetCommentsSubtitle": "Alguien comentó en uno o más de tus changesets",
+    "reauthLater": "Más Tarde",
+    "unreadNotificationsTitle": "Tienes Notificaciones Sin Leer",
+    "unreadNotificationsMessage": "Tienes mensajes de OSM sin leer y/o nuevos comentarios en tus changesets.",
+    "unreadNotificationsView": "Ver Ahora"
   },
   "queue": {
     "title": "Cola de Subida",
