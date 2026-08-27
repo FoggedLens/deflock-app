@@ -192,44 +192,6 @@ out;
   }
 
 
-  /// Fetch nodes last edited by [username] that match a raw tag filter, with
-  /// no bounding box (global query). Used for one-time account-wide data-fix
-  /// scans (e.g. finding a user's own nodes still using a stale profile's
-  /// old tags after that profile's tags are corrected in a later release).
-  Future<List<OsmNode>> fetchNodesByUserAndTags({
-    required String username,
-    required Map<String, String> tagFilter,
-    ResiliencePolicy? policy,
-  }) async {
-    final query = _buildUserTagQuery(username, tagFilter);
-    final endpoint = _primaryEndpoint;
-    final canFallback = _endpointOverride == null;
-    final effectivePolicy = policy ?? _policy;
-
-    return executeWithFallback<List<OsmNode>>(
-      primaryUrl: endpoint,
-      fallbackUrl: canFallback ? fallbackEndpoint : null,
-      execute: (url) => _attemptFetch(url, query, effectivePolicy),
-      classifyError: _classifyError,
-      policy: effectivePolicy,
-    );
-  }
-
-  /// Build an Overpass QL query for all nodes last touched by [username]
-  /// matching every entry in [tagFilter].
-  String _buildUserTagQuery(String username, Map<String, String> tagFilter) {
-    final escapedUser = username.replaceAll('\\', '\\\\').replaceAll('"', '\\"');
-    final filters = tagFilter.entries
-        .map((entry) => '["${entry.key}"="${entry.value}"]')
-        .join();
-
-    return '''
-[out:json][timeout:60];
-node(user:"$escapedUser")$filters;
-out body;
-''';
-  }
-
   /// Deduplicate profiles for Overpass queries by removing profiles that are
   /// subsumed by others. A profile A subsumes profile B if all of A's
   /// non-empty tags exist in B with identical values — meaning every node

@@ -2,7 +2,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../dev_config.dart';
-import '../migrations.dart';
 import '../services/localization_service.dart';
 import '../services/nuclear_reset_service.dart';
 import '../widgets/welcome_dialog.dart';
@@ -262,31 +261,10 @@ class AboutScreen extends StatelessWidget {
                   ),
                 ),
               ),
-            const SizedBox(height: 8),
-            SizedBox(
-              width: double.infinity,
-              child: OutlinedButton.icon(
-                onPressed: () => _resetFlockRavenLiveFixPrompt(context),
-                icon: const Icon(Icons.replay),
-                label: const Text('Reset Flock Raven Live-Fix Prompt'),
-              ),
-            ),
           ],
         ),
       ),
     );
-  }
-
-  /// Dev-only: clears the one-time "already prompted" flag for the live OSM
-  /// Flock Raven tag scan, so it can be re-triggered on the next app launch
-  /// without a full data reset (which would also log the user out).
-  Future<void> _resetFlockRavenLiveFixPrompt(BuildContext context) async {
-    await FlockRavenLiveDataFix.resetPromptedFlagForTesting();
-    if (context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Flag reset. Relaunch the app to retrigger the scan/prompt.')),
-      );
-    }
   }
 
   /// Show confirmation dialog for nuclear reset

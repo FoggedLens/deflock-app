@@ -287,61 +287,6 @@ class UploadQueueState extends ChangeNotifier {
     return upload;
   }
 
-  /// Queue corrective "modify" uploads for live OSM nodes (found via an
-  /// account-wide scan, not necessarily in the local cache) that still carry
-  /// the old Flock Raven tag scheme. Unlike a normal edit session these nodes
-  /// may not be cached locally, so no pending-edit visual markers are added —
-  /// they'll simply refresh once each upload completes.
-  List<PendingUpload> addFlockRavenCorrections(List<OsmNode> staleNodes, {required UploadMode uploadMode}) {
-    final correctedProfile = NodeProfile(
-      id: 'builtin-flock-raven',
-      name: 'Flock Raven',
-      tags: const {
-        'man_made': 'surveillance',
-        'surveillance': 'outdoor',
-        'surveillance:type': 'gunshot_detector',
-        'manufacturer': 'Flock Safety',
-        'manufacturer:wikidata': 'Q108485435',
-      },
-      builtin: true,
-      requiresDirection: false,
-      submittable: true,
-      editable: true,
-    );
-
-    final corrections = <PendingUpload>[];
-
-    for (final node in staleNodes) {
-      final existingTags = Map<String, String>.from(node.tags);
-      for (final key in correctedProfile.tags.keys) {
-        existingTags.remove(key);
-      }
-      existingTags.remove('brand');
-      existingTags.remove('brand:wikidata');
-
-      final upload = PendingUpload(
-        coord: node.coord,
-        direction: 0,
-        profile: correctedProfile,
-        additionalExistingTags: existingTags,
-        changesetComment: 'Correct Flock Raven surveillance/manufacturer tags',
-        uploadMode: uploadMode,
-        operation: UploadOperation.modify,
-        originalNodeId: node.id,
-      );
-
-      _queue.add(upload);
-      corrections.add(upload);
-    }
-
-    if (corrections.isNotEmpty) {
-      _saveQueue();
-      notifyListeners();
-    }
-
-    return corrections;
-  }
-
   void clearQueue() {
     // Clean up all pending nodes from cache before clearing queue
     for (final upload in _queue) {

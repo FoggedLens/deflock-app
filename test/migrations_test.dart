@@ -10,7 +10,6 @@ import 'package:deflockapp/migrations.dart';
 import 'package:deflockapp/models/node_profile.dart';
 import 'package:deflockapp/models/pending_upload.dart';
 import 'package:deflockapp/services/profile_service.dart';
-import 'package:deflockapp/state/settings_state.dart';
 import 'package:deflockapp/state/upload_queue_state.dart';
 
 class MockAppState extends Mock implements AppState {}
