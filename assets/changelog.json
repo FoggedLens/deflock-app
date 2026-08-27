@@ -1,4 +1,9 @@
 {
+  "2.11.1": {
+    "content": [
+      "• Fix incorrect Flock Raven tags (surveillance/manufacturer) on existing saved entries"
+    ]
+  },
   "2.11.0": {
     "content": [
       "• Further improve node loading performance",

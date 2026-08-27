@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 
 import '../app_state.dart';
 import '../dev_config.dart';
+import '../migrations.dart';
 import '../widgets/map_view.dart';
 import '../services/localization_service.dart';
 import '../services/map_data_provider.dart';
@@ -233,7 +234,12 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       
       // Complete the version change workflow (updates last seen version)
       await ChangelogService().completeVersionChange();
-      
+
+      // One-time (not version-gated) scan/prompt for live OSM data still
+      // using the old Flock Raven tag scheme.
+      if (!mounted) return;
+      await FlockRavenLiveDataFix.checkAndPrompt(appState, context);
+
     } catch (e) {
       // Silently handle errors to avoid breaking the app launch
       debugPrint('[HomeScreen] Error checking for popup: $e');

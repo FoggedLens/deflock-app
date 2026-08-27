@@ -616,6 +616,16 @@ class AppState extends ChangeNotifier {
     }
   }
 
+  /// Queue corrective uploads for the user's own live OSM nodes still using
+  /// the old Flock Raven tag scheme (for the one-time live-data fix prompt).
+  List<PendingUpload> addFlockRavenCorrections(List<OsmNode> staleNodes) {
+    final corrections = _uploadQueueState.addFlockRavenCorrections(staleNodes, uploadMode: uploadMode);
+    if (corrections.isNotEmpty) {
+      _startUploader();
+    }
+    return corrections;
+  }
+
   void deleteNode(OsmNode node, {String? changesetComment}) {
     _uploadQueueState.addFromNodeDeletion(node, uploadMode: uploadMode, changesetComment: changesetComment);
     _startUploader();
@@ -849,6 +859,11 @@ class AppState extends ChangeNotifier {
   /// Reload upload queue from storage (for migration purposes)
   Future<void> reloadUploadQueue() async {
     await _uploadQueueState.reloadQueue();
+  }
+
+  /// Fix queued Flock Raven entries still using the old tag scheme (for migration purposes)
+  Future<bool> migrateFlockRavenQueueTags() async {
+    return _uploadQueueState.migrateFlockRavenQueueTags();
   }
 
   // ---------- Suspected Location Methods ----------

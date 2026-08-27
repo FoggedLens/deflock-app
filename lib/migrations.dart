@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'app_state.dart';
 import 'services/offline_area_service.dart';
+import 'services/overpass_service.dart';
 import 'services/profile_service.dart';
 import 'services/suspected_location_cache.dart';
 import 'widgets/nuclear_reset_dialog.dart';
@@ -215,6 +216,50 @@ class OneTimeMigrations {
     }
   }
 
+  /// Fix Flock Raven tags that were using the wrong surveillance scheme (v2.11.1)
+  /// Old (incorrect): 'surveillance': 'public', 'brand': 'Flock Safety', 'brand:wikidata': 'Q108485435'
+  /// New (correct): 'surveillance': 'outdoor', 'manufacturer': 'Flock Safety', 'manufacturer:wikidata': 'Q108485435'
+  static Future<void> migrate_2_11_1(AppState appState) async {
+    try {
+      // Fix the persisted profile catalog (used when creating new nodes going forward)
+      final profiles = await ProfileService().load();
+      bool profilesChanged = false;
+
+      final updatedProfiles = profiles.map((profile) {
+        final tags = profile.tags;
+        if (tags['surveillance'] == 'public' &&
+            tags['brand'] == 'Flock Safety' &&
+            tags['surveillance:type'] == 'gunshot_detector') {
+          debugPrint('[Migration] 2.11.1: Fixing Flock Raven tags on profile: ${profile.id}');
+          final newTags = Map<String, String>.from(tags);
+          final wikidata = newTags.remove('brand:wikidata');
+          newTags.remove('brand');
+          newTags['surveillance'] = 'outdoor';
+          newTags['manufacturer'] = 'Flock Safety';
+          newTags['manufacturer:wikidata'] = wikidata ?? 'Q108485435';
+          profilesChanged = true;
+          return profile.copyWith(tags: newTags);
+        }
+        return profile;
+      }).toList();
+
+      if (profilesChanged) {
+        await ProfileService().save(updatedProfiles);
+        await appState.reloadProfiles();
+      }
+
+      // Fix any not-yet-uploaded queue entries that snapshotted the old tags
+      final queueChanged = await appState.migrateFlockRavenQueueTags();
+
+      debugPrint('[Migration] 2.11.1 completed: fixed Flock Raven tags '
+          '(profiles changed=$profilesChanged, queue changed=$queueChanged)');
+    } catch (e, stackTrace) {
+      debugPrint('[Migration] 2.11.1 ERROR: Failed to fix Flock Raven tags: $e');
+      debugPrint('[Migration] 2.11.1 ERROR: Stack trace: $stackTrace');
+      // Don't rethrow - non-critical, worst case stale tags persist until manually fixed
+    }
+  }
+
   /// Get the migration function for a specific version
   static Future<void> Function(AppState)? getMigrationForVersion(String version) {
     switch (version) {
@@ -234,6 +279,8 @@ class OneTimeMigrations {
         return migrate_2_10_0;
       case '2.10.5':
         return migrate_2_10_5;
+      case '2.11.1':
+        return migrate_2_11_1;
       default:
         return null;
     }
@@ -261,5 +308,99 @@ class OneTimeMigrations {
         debugPrint('[Migration] No context available for error dialog, migration failure unhandled');
       }
     }
+  }
+}
+
+/// One-time (not version-gated) scan of the logged-in user's own live OSM
+/// data for nodes still using the old Flock Raven tag scheme, offering to
+/// correct them. Runs at most once ever: skipped permanently once the user
+/// has answered the prompt, or once a scan finds nothing to fix. A failed
+/// scan (e.g. offline) is *not* marked as done, so it's retried on a later
+/// launch once conditions allow.
+class FlockRavenLiveDataFix {
+  static const _promptedKey = 'flock_raven_live_fix_prompted';
+
+  /// The old (incorrect) Flock Raven tag scheme this scan looks for.
+  static const Map<String, String> _staleTags = {
+    'man_made': 'surveillance',
+    'surveillance': 'public',
+    'surveillance:type': 'gunshot_detector',
+    'brand': 'Flock Safety',
+  };
+
+  static Future<void> checkAndPrompt(AppState appState, BuildContext? context) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      if (prefs.getBool(_promptedKey) == true) return;
+
+      if (!appState.isLoggedIn || appState.username.isEmpty) {
+        debugPrint('[FlockRavenLiveFix] Not logged in, will retry on a later launch');
+        return;
+      }
+
+      if (context == null || !context.mounted) {
+        debugPrint('[FlockRavenLiveFix] No context available, will retry on a later launch');
+        return;
+      }
+
+      debugPrint('[FlockRavenLiveFix] Scanning OSM for stale Flock Raven nodes owned by ${appState.username}');
+      final staleNodes = await OverpassService().fetchNodesByUserAndTags(
+        username: appState.username,
+        tagFilter: _staleTags,
+      );
+
+      if (staleNodes.isEmpty) {
+        debugPrint('[FlockRavenLiveFix] No stale nodes found, marking as done');
+        await prefs.setBool(_promptedKey, true);
+        return;
+      }
+
+      if (!context.mounted) return; // Re-check after the async scan
+
+      final count = staleNodes.length;
+      final shouldFix = await showDialog<bool>(
+        context: context,
+        barrierDismissible: false,
+        builder: (ctx) => AlertDialog(
+          title: const Text('Update Flock Raven tags?'),
+          content: Text(
+            'Found $count Flock Raven ${count == 1 ? 'node' : 'nodes'} on your OpenStreetMap '
+            'account using outdated tags. Update ${count == 1 ? 'it' : 'them'} to the correct tags now?',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(false),
+              child: const Text('No'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(true),
+              child: const Text('Yes'),
+            ),
+          ],
+        ),
+      );
+
+      if (shouldFix == true) {
+        final queued = appState.addFlockRavenCorrections(staleNodes);
+        debugPrint('[FlockRavenLiveFix] Queued ${queued.length} corrective uploads');
+      } else {
+        debugPrint('[FlockRavenLiveFix] User declined the live data fix');
+      }
+
+      // Never ask again, regardless of the answer.
+      await prefs.setBool(_promptedKey, true);
+    } catch (e, stackTrace) {
+      debugPrint('[FlockRavenLiveFix] ERROR: Scan/prompt failed: $e');
+      debugPrint('[FlockRavenLiveFix] Stack trace: $stackTrace');
+      // Don't mark as prompted - retry on a later launch
+    }
+  }
+
+  /// Dev-only: clear the "already prompted" flag so the scan/prompt fires
+  /// again on the next app launch, without needing a full app/data reset.
+  static Future<void> resetPromptedFlagForTesting() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_promptedKey);
+    debugPrint('[FlockRavenLiveFix] Reset prompted flag for testing');
   }
 }
