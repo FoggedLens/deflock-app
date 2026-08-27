@@ -790,6 +790,66 @@ class UploadQueueState extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Fix queued (not-yet-uploaded) Flock Raven entries that still carry the old
+  /// tag scheme ('surveillance': 'public', 'brand': 'Flock Safety') by
+  /// replacing them with the corrected scheme ('surveillance': 'outdoor',
+  /// 'manufacturer': 'Flock Safety'). Returns true if any entries were changed.
+  Future<bool> migrateFlockRavenQueueTags() async {
+    bool changed = false;
+
+    for (var i = 0; i < _queue.length; i++) {
+      final upload = _queue[i];
+      final profile = upload.profile;
+      if (profile == null) continue;
+
+      final tags = profile.tags;
+      if (tags['surveillance'] == 'public' &&
+          tags['brand'] == 'Flock Safety' &&
+          tags['surveillance:type'] == 'gunshot_detector') {
+        final newTags = Map<String, String>.from(tags);
+        final wikidata = newTags.remove('brand:wikidata');
+        newTags.remove('brand');
+        newTags['surveillance'] = 'outdoor';
+        newTags['manufacturer'] = 'Flock Safety';
+        newTags['manufacturer:wikidata'] = wikidata ?? 'Q108485435';
+
+        _queue[i] = PendingUpload(
+          coord: upload.coord,
+          direction: upload.direction,
+          profile: profile.copyWith(tags: newTags),
+          operatorProfile: upload.operatorProfile,
+          refinedTags: upload.refinedTags,
+          additionalExistingTags: upload.additionalExistingTags,
+          changesetComment: upload.changesetComment,
+          uploadMode: upload.uploadMode,
+          operation: upload.operation,
+          originalNodeId: upload.originalNodeId,
+          submittedNodeId: upload.submittedNodeId,
+          tempNodeId: upload.tempNodeId,
+          attempts: upload.attempts,
+          error: upload.error,
+          errorMessage: upload.errorMessage,
+          completing: upload.completing,
+          uploadState: upload.uploadState,
+          changesetId: upload.changesetId,
+          nodeOperationCompletedAt: upload.nodeOperationCompletedAt,
+          changesetCloseAttempts: upload.changesetCloseAttempts,
+          lastChangesetCloseAttemptAt: upload.lastChangesetCloseAttemptAt,
+          nodeSubmissionAttempts: upload.nodeSubmissionAttempts,
+          lastNodeSubmissionAttemptAt: upload.lastNodeSubmissionAttemptAt,
+        );
+        changed = true;
+      }
+    }
+
+    if (changed) {
+      await _saveQueue();
+      notifyListeners();
+    }
+
+    return changed;
+  }
+
   // Public method to manually trigger cache repopulation (useful for debugging or after cache clears)
   void repopulateCacheFromQueue() {
     _repopulateCacheFromQueue();
