@@ -333,9 +333,9 @@ class GpsController {
       final minDist = [northDist, southDist, eastDist, westDist].reduce((a, b) => a < b ? a : b);
 
       // Debug 2: Print the closest distance to the edge
-      debugPrint('[GpsController-Background] Closest edge distance: ${minDist.toStringAsFixed(1)}m (Threshold: 1000m)');
+      debugPrint('[GpsController-Background] Closest edge distance: ${minDist.toStringAsFixed(1)}m (Threshold: 2500m)');
 
-      if (minDist < 1000) {
+      if (minDist < 2500) {
         debugPrint('[GpsController-Background] Threshold crossed. Triggering refresh.');
         needsRefresh = true;
       }

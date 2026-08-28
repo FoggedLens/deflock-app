@@ -221,7 +221,7 @@ class MapViewState extends State<MapView> with WidgetsBindingObserver {
         if (!mounted) return;
         final appState = context.read<AppState>();
 
-        NodeProviderWithCache.instance.fetchAndUpdate(
+        await NodeProviderWithCache.instance.fetchAndUpdate(
           bounds: bounds,
           profiles: appState.enabledProfiles,
           uploadMode: appState.uploadMode,
