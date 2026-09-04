@@ -47,6 +47,7 @@
     "download": "Descargar",
     "settings": "Configuración",
     "edit": "Editar",
+    "verify": "Verificar",
     "delete": "Eliminar",
     "cancel": "Cancelar",
     "ok": "Aceptar",
@@ -112,6 +113,7 @@
     "advancedSettingsSubtitle": "Configuración de rendimiento, alertas y proveedores de teselas",
     "proximityAlerts": "Alertas de Proximidad",
     "keepScreenAwake": "Mantener la Pantalla Encendida",
+    "dataFreshness": "Actualidad de los datos",
     "networkStatusIndicator": "Indicador de Estado de Red",
     "hideZoomControls": "Ocultar Controles de Zoom",
     "enableOfflineFeatures": "Activar Funciones sin Conexión",
@@ -143,6 +145,12 @@
     "openSettings": "Abrir ajustes",
     "blockedTitle": "Las notificaciones están bloqueadas",
     "blockedMessage": "Las notificaciones están desactivadas para DeFlock. Actívalas en los ajustes del sistema para recibir alertas de proximidad."
+  },
+  "staleness": {
+    "showIndicator": "Mostrar indicador de nodos obsoletos",
+    "showIndicatorExplanation": "Resaltar nodos que no se han verificado recientemente",
+    "threshold": "Considerar obsoleto después de",
+    "daysCount": "{} días"
   },
   "node": {
     "title": "Nodo #{}",

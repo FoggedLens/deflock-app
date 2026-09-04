@@ -37,16 +37,16 @@ class UploadQueueState extends ChangeNotifier {
   void _repopulateCacheFromQueue() {
     debugPrint('[UploadQueue] Repopulating cache from ${_queue.length} queue items');
     final nodesToAdd = <OsmNode>[];
-    
+
     for (final upload in _queue) {
       // Skip completed uploads - they should already be in OSM and will be fetched normally
       if (upload.isComplete) {
         debugPrint('[UploadQueue] Skipping completed upload at ${upload.coord}');
         continue;
       }
-      
+
       debugPrint('[UploadQueue] Processing ${upload.operation} upload at ${upload.coord}');
-      
+
       if (upload.isDeletion) {
         // For deletions: mark the original node as pending deletion if it exists in cache
         if (upload.originalNodeId != null) {
@@ -54,7 +54,7 @@ class UploadQueueState extends ChangeNotifier {
           if (existingNode != null) {
             final deletionTags = Map<String, String>.from(existingNode.tags);
             deletionTags['_pending_deletion'] = 'true';
-            
+
             final nodeWithDeletionTag = OsmNode(
               id: upload.originalNodeId!,
               coord: existingNode.coord,
@@ -67,14 +67,14 @@ class UploadQueueState extends ChangeNotifier {
         // For creates, edits, and extracts: recreate temp node if needed
         // Generate new temp ID if not already stored (for backward compatibility)
         final tempId = upload.tempNodeId ?? -DateTime.now().millisecondsSinceEpoch - _queue.indexOf(upload);
-        
+
         final tags = upload.getCombinedTags();
         tags['_pending_upload'] = 'true';
         tags['_temp_id'] = tempId.toString();
-        
+
         // Store temp ID for future cleanup if not already set
         upload.tempNodeId ??= tempId;
-        
+
         if (upload.isEdit) {
           // For edits: also mark original with _pending_edit if it exists
           if (upload.originalNodeId != null) {
@@ -82,7 +82,7 @@ class UploadQueueState extends ChangeNotifier {
             if (existingOriginal != null) {
               final originalTags = Map<String, String>.from(existingOriginal.tags);
               originalTags['_pending_edit'] = 'true';
-              
+
               final originalWithEdit = OsmNode(
                 id: upload.originalNodeId!,
                 coord: existingOriginal.coord,
@@ -91,30 +91,26 @@ class UploadQueueState extends ChangeNotifier {
               nodesToAdd.add(originalWithEdit);
             }
           }
-          
+
           // Add connection line marker
           tags['_original_node_id'] = upload.originalNodeId.toString();
         } else if (upload.operation == UploadOperation.extract) {
           // For extracts: add connection line marker
           tags['_original_node_id'] = upload.originalNodeId.toString();
         }
-        
-        final tempNode = OsmNode(
-          id: tempId,
-          coord: upload.coord,
-          tags: tags,
-        );
+
+        final tempNode = OsmNode(id: tempId, coord: upload.coord, tags: tags);
         nodesToAdd.add(tempNode);
       }
     }
-    
+
     if (nodesToAdd.isNotEmpty) {
       _nodeCache.addOrUpdate(nodesToAdd);
       debugPrint('[UploadQueue] Repopulated cache with ${nodesToAdd.length} pending nodes from queue');
-      
+
       // Save queue if we updated any temp IDs for backward compatibility
       _saveQueue();
-      
+
       // Notify node provider to update the map
       NodeProviderWithCache.instance.notifyListeners();
     }
@@ -133,10 +129,10 @@ class UploadQueueState extends ChangeNotifier {
       uploadMode: uploadMode,
       operation: UploadOperation.create,
     );
-    
+
     _queue.add(upload);
     _saveQueue();
-    
+
     // Add to node cache immediately so it shows on the map
     // Create a temporary node with a negative ID (to distinguish from real OSM nodes)
     // Using timestamp as negative ID to ensure uniqueness
@@ -144,20 +140,62 @@ class UploadQueueState extends ChangeNotifier {
     final tags = upload.getCombinedTags();
     tags['_pending_upload'] = 'true'; // Mark as pending for potential UI distinction
     tags['_temp_id'] = tempId.toString(); // Store temp ID for specific removal
-    
+
     // Store the temp ID in the upload for cleanup purposes
     upload.tempNodeId = tempId;
-    
-    final tempNode = OsmNode(
-      id: tempId,
-      coord: upload.coord,
-      tags: tags,
-    );
-    
+
+    final tempNode = OsmNode(id: tempId, coord: upload.coord, tags: tags);
+
     _nodeCache.addOrUpdate([tempNode]);
     // Notify node provider to update the map
     NodeProviderWithCache.instance.notifyListeners();
-    
+
+    notifyListeners();
+    return upload;
+  }
+
+  // Add a "verify" upload: resubmits a node with all existing tags unchanged,
+  // only bumping check_date to confirm it's still present.
+  PendingUpload addFromVerification(OsmNode node, {required UploadMode uploadMode}) {
+    // Passthrough profile carrying no identity tags of its own - everything
+    // comes from additionalExistingTags, so nothing is altered or reformatted
+    final passthroughProfile = NodeProfile.createExistingTagsProfile(node).copyWith(requiresDirection: false);
+
+    final upload = PendingUpload(
+      coord: node.coord,
+      direction: 0.0, //requiresDirection is false
+      profile: passthroughProfile,
+      additionalExistingTags: Map<String, String>.from(node.tags)
+        ..removeWhere((key, _) => key.startsWith('_')), // strip internal cache markers
+      changesetComment: 'Verify surveillance node still present',
+      uploadMode: uploadMode,
+      operation: UploadOperation.modify,
+      originalNodeId: node.id,
+    );
+
+    _queue.add(upload);
+    _saveQueue();
+
+    // Same visual pattern as a normal edit:
+    // merge back into one entry under the same node ID on completion.
+    final originalTags = Map<String, String>.from(node.tags);
+    originalTags['_pending_edit'] = 'true';
+
+    final originalNode = OsmNode(id: node.id, coord: node.coord, tags: originalTags);
+
+    final tempId = -DateTime.now().millisecondsSinceEpoch;
+    final verifiedTags = upload.getCombinedTags();
+    verifiedTags['_pending_upload'] = 'true';
+    verifiedTags['_original_node_id'] = node.id.toString();
+    verifiedTags['_temp_id'] = tempId.toString();
+
+    upload.tempNodeId = tempId;
+
+    final tempNode = OsmNode(id: tempId, coord: node.coord, tags: verifiedTags);
+
+    _nodeCache.addOrUpdate([originalNode, tempNode]);
+    NodeProviderWithCache.instance.notifyListeners();
+
     notifyListeners();
     return upload;
   }
@@ -167,7 +205,7 @@ class UploadQueueState extends ChangeNotifier {
     // Determine operation type and coordinates
     final UploadOperation operation;
     final LatLng coordToUse;
-    
+
     if (session.extractFromWay && session.originalNode.isConstrained) {
       // Extract operation: create new node at new location
       operation = UploadOperation.extract;
@@ -181,7 +219,7 @@ class UploadQueueState extends ChangeNotifier {
       operation = UploadOperation.modify;
       coordToUse = session.target;
     }
-    
+
     final upload = PendingUpload(
       coord: coordToUse,
       direction: DirectionSubmissionFormatter.format(session.directions, session.profile),
@@ -194,10 +232,10 @@ class UploadQueueState extends ChangeNotifier {
       operation: operation,
       originalNodeId: session.originalNode.id, // Track which node we're editing
     );
-    
+
     _queue.add(upload);
     _saveQueue();
-    
+
     // Create cache entries based on operation type:
     if (operation == UploadOperation.extract) {
       // For extract: only create new node, leave original unchanged
@@ -206,50 +244,50 @@ class UploadQueueState extends ChangeNotifier {
       extractedTags['_pending_upload'] = 'true'; // Mark as pending upload
       extractedTags['_original_node_id'] = session.originalNode.id.toString(); // Track original for line drawing
       extractedTags['_temp_id'] = tempId.toString(); // Store temp ID for specific removal
-      
+
       // Store the temp ID in the upload for cleanup purposes
       upload.tempNodeId = tempId;
-      
+
       final extractedNode = OsmNode(
         id: tempId,
         coord: upload.coord, // At new location
         tags: extractedTags,
       );
-      
+
       _nodeCache.addOrUpdate([extractedNode]);
     } else {
       // For modify: mark original with grey ring and create new temp node
       // 1. Mark the original node with _pending_edit (grey ring) at original location
       final originalTags = Map<String, String>.from(session.originalNode.tags);
       originalTags['_pending_edit'] = 'true'; // Mark original as having pending edit
-      
+
       final originalNode = OsmNode(
         id: session.originalNode.id,
         coord: session.originalNode.coord, // Keep at original location
         tags: originalTags,
       );
-      
+
       // 2. Create new temp node for the edited node (purple ring) at new location
       final tempId = -DateTime.now().millisecondsSinceEpoch;
       final editedTags = upload.getCombinedTags();
       editedTags['_pending_upload'] = 'true'; // Mark as pending upload
       editedTags['_original_node_id'] = session.originalNode.id.toString(); // Track original for line drawing
       editedTags['_temp_id'] = tempId.toString(); // Store temp ID for specific removal
-      
+
       // Store the temp ID in the upload for cleanup purposes
       upload.tempNodeId = tempId;
-      
+
       final editedNode = OsmNode(
         id: tempId,
         coord: upload.coord, // At new location
         tags: editedTags,
       );
-      
+
       _nodeCache.addOrUpdate([originalNode, editedNode]);
     }
     // Notify node provider to update the map
     NodeProviderWithCache.instance.notifyListeners();
-    
+
     notifyListeners();
     return upload;
   }
@@ -265,24 +303,24 @@ class UploadQueueState extends ChangeNotifier {
       operation: UploadOperation.delete,
       originalNodeId: node.id,
     );
-    
+
     _queue.add(upload);
     _saveQueue();
-    
+
     // Mark the original node as pending deletion in the cache
     final deletionTags = Map<String, String>.from(node.tags);
     deletionTags['_pending_deletion'] = 'true';
-    
+
     final nodeWithDeletionTag = OsmNode(
       id: node.id,
       coord: node.coord,
       tags: deletionTags,
     );
-    
+
     _nodeCache.addOrUpdate([nodeWithDeletionTag]);
     // Notify node provider to update the map
     NodeProviderWithCache.instance.notifyListeners();
-    
+
     notifyListeners();
     return upload;
   }
@@ -292,22 +330,22 @@ class UploadQueueState extends ChangeNotifier {
     for (final upload in _queue) {
       _cleanupPendingNodeFromCache(upload);
     }
-    
+
     _queue.clear();
     _saveQueue();
-    
+
     // Notify node provider to update the map
     NodeProviderWithCache.instance.notifyListeners();
     notifyListeners();
   }
-  
+
   void removeFromQueue(PendingUpload upload) {
     // Clean up pending node from cache before removing from queue
     _cleanupPendingNodeFromCache(upload);
-    
+
     _queue.remove(upload);
     _saveQueue();
-    
+
     // Notify node provider to update the map
     NodeProviderWithCache.instance.notifyListeners();
     notifyListeners();
@@ -322,7 +360,7 @@ class UploadQueueState extends ChangeNotifier {
 
   // Start the upload processing loop
   void startUploader({
-    required bool offlineMode, 
+    required bool offlineMode,
     required bool pauseQueueProcessing,
     required UploadMode uploadMode,
     required Future<String?> Function() getAccessToken,
@@ -347,7 +385,7 @@ class UploadQueueState extends ChangeNotifier {
       // Process any expired items
       final uploadingItems = _queue.where((pu) => pu.uploadState == UploadState.uploading).toList();
       final closingItems = _queue.where((pu) => pu.uploadState == UploadState.closingChangeset).toList();
-      
+
       for (final uploadingItem in uploadingItems) {
         if (uploadingItem.hasChangesetExpired) {
           debugPrint('[UploadQueue] Changeset expired during node submission - marking as failed');
@@ -356,7 +394,7 @@ class UploadQueueState extends ChangeNotifier {
           notifyListeners();
         }
       }
-      
+
       for (final closingItem in closingItems) {
         if (closingItem.hasChangesetExpired) {
           debugPrint('[UploadQueue] Changeset expired during close - trusting OSM auto-close (node was submitted successfully)');
@@ -366,15 +404,15 @@ class UploadQueueState extends ChangeNotifier {
 
       // Find next pending item to start
       final pendingItems = _queue.where((pu) => pu.uploadState == UploadState.pending).toList();
-      
+
       if (pendingItems.isEmpty) {
         // Check if queue is effectively empty
-        final hasActiveItems = _queue.any((pu) => 
+        final hasActiveItems = _queue.any((pu) =>
           pu.uploadState == UploadState.creatingChangeset ||
           pu.uploadState == UploadState.uploading ||
-          pu.uploadState == UploadState.closingChangeset
+          pu.uploadState == UploadState.closingChangeset,
         );
-        
+
         if (!hasActiveItems) {
           debugPrint('[UploadQueue] No active items remaining, stopping uploader');
           _uploadTimer?.cancel();
@@ -389,7 +427,7 @@ class UploadQueueState extends ChangeNotifier {
       // Start processing the next pending upload
       final item = pendingItems.first;
       debugPrint('[UploadQueue] Starting new upload processing for item at ${item.coord} ($_activeUploadCount/$kMaxConcurrentUploads active)');
-      
+
       _activeUploadCount++;
       _processIndividualUpload(item, access);
     });
@@ -399,7 +437,7 @@ class UploadQueueState extends ChangeNotifier {
   Future<void> _processIndividualUpload(PendingUpload item, String accessToken) async {
     try {
       debugPrint('[UploadQueue] Starting individual upload processing for ${item.operation.name} at ${item.coord}');
-      
+
       // Stage 1: Create changeset
       await _processCreateChangeset(item, accessToken);
       if (item.uploadState == UploadState.error) return;
@@ -408,7 +446,7 @@ class UploadQueueState extends ChangeNotifier {
       bool nodeOperationCompleted = false;
       while (!nodeOperationCompleted && !item.hasChangesetExpired && item.uploadState != UploadState.error) {
         await _processNodeOperation(item, accessToken);
-        
+
         if (item.uploadState == UploadState.closingChangeset) {
           // Node operation succeeded
           nodeOperationCompleted = true;
@@ -425,11 +463,11 @@ class UploadQueueState extends ChangeNotifier {
 
       if (!nodeOperationCompleted) return; // Failed or expired
 
-      // Stage 3: Close changeset with retry logic  
+      // Stage 3: Close changeset with retry logic
       bool changesetClosed = false;
       while (!changesetClosed && !item.hasChangesetExpired && item.uploadState != UploadState.error) {
         await _processChangesetClose(item, accessToken);
-        
+
         if (item.uploadState == UploadState.complete) {
           // Changeset close succeeded
           changesetClosed = true;
@@ -443,7 +481,7 @@ class UploadQueueState extends ChangeNotifier {
           return;
         }
       }
-      
+
       if (!changesetClosed && item.hasChangesetExpired) {
         // Trust OSM auto-close if we ran out of time
         debugPrint('[UploadQueue] Upload completed but changeset close timed out - trusting OSM auto-close');
@@ -451,7 +489,6 @@ class UploadQueueState extends ChangeNotifier {
           _markAsCompleting(item, submittedNodeId: item.submittedNodeId!);
         }
       }
-      
     } catch (e) {
       debugPrint('[UploadQueue] Unexpected error in individual upload processing: $e');
       item.setError('Unexpected error: $e');
@@ -469,24 +506,24 @@ class UploadQueueState extends ChangeNotifier {
     item.markAsCreatingChangeset();
     _saveQueue();
     notifyListeners(); // Show "Creating changeset..." immediately
-    
+
     if (item.uploadMode == UploadMode.simulate) {
       // Simulate successful upload without calling real API
       debugPrint('[UploadQueue] Simulating changeset creation (no real API call)');
       await Future.delayed(const Duration(milliseconds: 500)); // Simulate network delay
-      
+
       // Move to node operation phase
       item.markChangesetCreated('simulate-changeset-${DateTime.now().millisecondsSinceEpoch}');
       _saveQueue();
       notifyListeners();
       return;
     }
-    
+
     // Real changeset creation
     debugPrint('[UploadQueue] Creating changeset for ${item.operation.name} operation');
     final up = Uploader(access, (nodeId) {}, (errorMessage) {}, uploadMode: item.uploadMode);
     final result = await up.createChangeset(item);
-    
+
     if (result.success) {
       // Changeset created successfully - move to node operation phase
       debugPrint('[UploadQueue] Changeset ${result.changesetId} created successfully');
@@ -498,7 +535,7 @@ class UploadQueueState extends ChangeNotifier {
       item.attempts++;
       _saveQueue();
       notifyListeners(); // Show attempt count immediately
-      
+
       if (item.attempts >= 3) {
         item.setError(result.errorMessage ?? 'Changeset creation failed after 3 attempts');
         _saveQueue();
@@ -531,14 +568,14 @@ class UploadQueueState extends ChangeNotifier {
       notifyListeners();
       return;
     }
-    
+
     debugPrint('[UploadQueue] Processing node operation with changeset ${item.changesetId} (attempt ${item.nodeSubmissionAttempts + 1})');
-    
+
     if (item.uploadMode == UploadMode.simulate) {
       // Simulate successful node operation without calling real API
       debugPrint('[UploadQueue] Simulating node operation (no real API call)');
       await Future.delayed(const Duration(milliseconds: 500)); // Simulate network delay
-      
+
       // Store appropriate simulated node ID based on operation type
       if (item.operation == UploadOperation.modify) {
         // For edits, keep the original node ID (same as production behavior)
@@ -552,21 +589,21 @@ class UploadQueueState extends ChangeNotifier {
       notifyListeners();
       return;
     }
-    
+
     // Real node operation
     final up = Uploader(access, (nodeId) {
-      // This callback is called when node operation succeeds
-      item.submittedNodeId = nodeId;
-    }, (errorMessage) {
-      // Error handling is done below
-    }, uploadMode: item.uploadMode);
-    
+        // This callback is called when node operation succeeds
+        item.submittedNodeId = nodeId;
+      }, (errorMessage) {
+        // Error handling is done below
+      }, uploadMode: item.uploadMode);
+
     final result = await up.performNodeOperation(item, item.changesetId!);
-    
+
     item.incrementNodeSubmissionAttempts(); // Record this attempt
     _saveQueue();
     notifyListeners(); // Show attempt count immediately
-    
+
     if (result.success) {
       // Node operation succeeded - move to changeset close phase
       debugPrint('[UploadQueue] Node operation succeeded after ${item.nodeSubmissionAttempts} attempts, node ID: ${result.nodeId}');
@@ -577,7 +614,7 @@ class UploadQueueState extends ChangeNotifier {
     } else {
       // Node operation failed - will retry within 59-minute window
       debugPrint('[UploadQueue] Node operation failed (attempt ${item.nodeSubmissionAttempts}): ${result.errorMessage}');
-      
+
       // Check if we have time for another retry
       if (item.hasChangesetExpired) {
         debugPrint('[UploadQueue] Changeset expired during retry, marking as failed');
@@ -610,34 +647,34 @@ class UploadQueueState extends ChangeNotifier {
       _markAsCompleting(item, submittedNodeId: item.submittedNodeId!);
       return;
     }
-    
+
     debugPrint('[UploadQueue] Attempting to close changeset ${item.changesetId} (attempt ${item.changesetCloseAttempts + 1})');
-    
+
     if (item.uploadMode == UploadMode.simulate) {
       // Simulate successful changeset close without calling real API
       debugPrint('[UploadQueue] Simulating changeset close (no real API call)');
       await Future.delayed(const Duration(milliseconds: 300)); // Simulate network delay
-      
+
       // Mark as complete
       _markAsCompleting(item, submittedNodeId: item.submittedNodeId!);
       return;
     }
-    
+
     // Real changeset close
     final up = Uploader(access, (nodeId) {}, (errorMessage) {}, uploadMode: item.uploadMode);
     final result = await up.closeChangeset(item.changesetId!);
-    
+
     item.incrementChangesetCloseAttempts(); // This records the attempt time
     _saveQueue();
     notifyListeners(); // Show attempt count immediately
-    
+
     if (result.success) {
       // Changeset closed successfully
       debugPrint('[UploadQueue] Changeset close succeeded after ${item.changesetCloseAttempts} attempts');
       _markAsCompleting(item, submittedNodeId: item.submittedNodeId!);
       // _markAsCompleting handles its own save/notify
     } else if (result.changesetNotFound) {
-      // Changeset not found - this suggests the upload may not have worked, start over with full retry  
+      // Changeset not found - this suggests the upload may not have worked, start over with full retry
       debugPrint('[UploadQueue] Changeset not found during close, marking for full retry');
       item.setError(result.errorMessage ?? 'Changeset not found');
       _saveQueue();
@@ -660,11 +697,11 @@ class UploadQueueState extends ChangeNotifier {
   // Mark an item as completing (shows checkmark) and schedule removal after 1 second
   void _markAsCompleting(PendingUpload item, {int? submittedNodeId, int? simulatedNodeId}) {
     item.markAsComplete();
-    
+
     // Store the submitted node ID for cleanup purposes
     if (submittedNodeId != null) {
       item.submittedNodeId = submittedNodeId;
-      
+
       if (item.isDeletion) {
         debugPrint('[UploadQueue] Deletion successful, removing node ID: $submittedNodeId from cache');
         _handleSuccessfulDeletion(item);
@@ -674,7 +711,7 @@ class UploadQueueState extends ChangeNotifier {
         _updateCacheWithRealNodeId(item, submittedNodeId);
       }
     } else if (simulatedNodeId != null && item.uploadMode == UploadMode.simulate) {
-      // For simulate mode, use a fake but positive ID 
+      // For simulate mode, use a fake but positive ID
       item.submittedNodeId = simulatedNodeId;
       if (item.isDeletion) {
         debugPrint('[UploadQueue] Simulated deletion, removing fake node ID: $simulatedNodeId from cache');
@@ -685,10 +722,10 @@ class UploadQueueState extends ChangeNotifier {
         _updateCacheWithRealNodeId(item, simulatedNodeId);
       }
     }
-    
+
     _saveQueue();
     notifyListeners();
-    
+
     // Remove the item after 1 second
     Timer(const Duration(seconds: 1), () {
       _queue.remove(item);
@@ -696,26 +733,26 @@ class UploadQueueState extends ChangeNotifier {
       notifyListeners();
     });
   }
-  
+
   // Update the cache to use the real OSM node ID instead of temporary ID
   void _updateCacheWithRealNodeId(PendingUpload item, int realNodeId) {
     // Create the node with real ID and clean tags (remove temp markers)
     final tags = item.getCombinedTags();
-    
+
     final realNode = OsmNode(
       id: realNodeId,
       coord: item.coord,
       tags: tags, // Clean tags without _pending_upload markers
     );
-    
+
     // Add/update the cache with the real node
     _nodeCache.addOrUpdate([realNode]);
-    
+
     // Clean up the specific temp node for this upload
     if (item.tempNodeId != null) {
       _nodeCache.removeTempNodeById(item.tempNodeId!);
     }
-    
+
     // For modify operations, clean up the original node's _pending_edit marker
     // For extract operations, we don't modify the original node so leave it unchanged
     if (item.isEdit && item.originalNodeId != null) {
@@ -723,7 +760,7 @@ class UploadQueueState extends ChangeNotifier {
       // The next Overpass fetch will provide the authoritative data anyway
       _nodeCache.removePendingEditMarker(item.originalNodeId!);
     }
-    
+
     // Notify node provider to update the map
     NodeProviderWithCache.instance.notifyListeners();
   }
@@ -733,7 +770,7 @@ class UploadQueueState extends ChangeNotifier {
     if (item.originalNodeId != null) {
       // Remove the node from cache entirely
       _nodeCache.removeNodeById(item.originalNodeId!);
-      
+
       // Notify node provider to update the map
       NodeProviderWithCache.instance.notifyListeners();
     }

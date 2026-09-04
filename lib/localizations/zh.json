@@ -47,6 +47,7 @@
     "download": "下载",
     "settings": "设置",
     "edit": "编辑",
+    "verify": "验证",
     "delete": "删除",
     "cancel": "取消",
     "ok": "确定",
@@ -112,6 +113,7 @@
     "advancedSettingsSubtitle": "性能、警报和地图提供商设置",
     "proximityAlerts": "邻近警报",
     "keepScreenAwake": "保持屏幕常亮",
+    "dataFreshness": "数据新鲜度",
     "networkStatusIndicator": "网络状态指示器",
     "hideZoomControls": "隐藏缩放控件",
     "enableOfflineFeatures": "启用离线功能",
@@ -143,6 +145,12 @@
     "openSettings": "打开设置",
     "blockedTitle": "通知已被阻止",
     "blockedMessage": "DeFlock 的通知已关闭。请在系统设置中启用，以接收邻近提醒。"
+  },
+  "staleness": {
+    "showIndicator": "显示过期节点指示器",
+    "showIndicatorExplanation": "高亮显示最近未检查的节点",
+    "threshold": "视为过期的天数",
+    "daysCount": "{} 天"
   },
   "node": {
     "title": "节点 #{}",

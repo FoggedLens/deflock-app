@@ -51,7 +51,7 @@ class _EditNodeSheetState extends State<EditNodeSheet> {
         _showTutorial = !hasCompleted;
         _isCheckingTutorial = false;
       });
-      
+
       // If tutorial should be shown, register callback with AppState
       if (_showTutorial) {
         final appState = context.read<AppState>();
@@ -73,7 +73,7 @@ class _EditNodeSheetState extends State<EditNodeSheet> {
   void dispose() {
     // Remove listener
     NodeDataManager().removeListener(_onCacheUpdated);
-    
+
     // Clear tutorial callback when widget is disposed
     if (_showTutorial) {
       try {
@@ -116,11 +116,11 @@ class _EditNodeSheetState extends State<EditNodeSheet> {
   void _checkProximityOnly(BuildContext context, AppState appState, LocalizationService locService) {
     // Check for nearby nodes within the configured distance, excluding the node being edited
     final nearbyNodes = MapDataProvider().findNodesWithinDistance(
-      widget.session.target, 
+      widget.session.target,
       kNodeProximityWarningDistance,
       excludeNodeId: widget.session.originalNode.id,
     );
-    
+
     if (nearbyNodes.isNotEmpty) {
       // Show proximity warning dialog
       showDialog<void>(
@@ -168,20 +168,21 @@ class _EditNodeSheetState extends State<EditNodeSheet> {
     );
   }
 
-  Widget _buildDirectionControls(BuildContext context, AppState appState, EditNodeSession session, LocalizationService locService) {
+  Widget _buildDirectionControls(BuildContext context, AppState appState, EditNodeSession session, LocalizationService
+locService) {
     final requiresDirection = session.profile != null && session.profile!.requiresDirection;
     final is360Fov = session.profile?.fov == 360;
     final hasDirections = session.directions.isNotEmpty;
     final enableDirectionControls = requiresDirection && !is360Fov && hasDirections;
     final enableAddButton = requiresDirection && !is360Fov;
-    
+
     // Force direction to 0 when FOV is 360 (omnidirectional)
     if (is360Fov && session.directionDegrees != 0) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         appState.updateEditSession(directionDeg: 0);
       });
     }
-    
+
     // Format direction display text with bold for current direction
     String directionsText = '';
     if (requiresDirection && hasDirections) {
@@ -200,31 +201,33 @@ class _EditNodeSheetState extends State<EditNodeSheet> {
     return Column(
       children: [
         ListTile(
-          title: requiresDirection 
-            ? RichText(
-                text: TextSpan(
-                  style: Theme.of(context).textTheme.titleMedium,
-                  children: [
-                    const TextSpan(text: 'Directions: '),
-                    if (directionsText.isNotEmpty)
-                      ...directionsText.split('**').asMap().entries.map((entry) {
-                        final isEven = entry.key % 2 == 0;
-                        return TextSpan(
-                          text: entry.value,
-                          style: TextStyle(
-                            fontWeight: isEven ? FontWeight.normal : FontWeight.bold,
-                          ),
-                        );
-                      })
-                    else
-                      const TextSpan(
-                        text: 'None',
-                        style: TextStyle(fontStyle: FontStyle.italic, color: Colors.grey),
-                      ),
-                  ],
-                ),
-              )
-            : Text(locService.t('editNode.direction', params: [session.directionDegrees.round().toString()])),
+          title: requiresDirection
+              ? RichText(
+                  text: TextSpan(
+                    style: Theme.of(context).textTheme.titleMedium,
+                    children: [
+                      const TextSpan(text: 'Directions: '),
+                      if (directionsText.isNotEmpty)
+                        ...directionsText.split('**').asMap().entries.map((
+                          entry,
+                        ) {
+                          final isEven = entry.key % 2 == 0;
+                          return TextSpan(
+                            text: entry.value,
+                            style: TextStyle(
+                              fontWeight: isEven ? FontWeight.normal : FontWeight.bold,
+                            ),
+                          );
+                        })
+                      else
+                        const TextSpan(
+                          text: 'None',
+                          style: TextStyle(fontStyle: FontStyle.italic, color: Colors.grey),
+                        ),
+                    ],
+                  ),
+                )
+              : Text(locService.t('editNode.direction', params: [session.directionDegrees.round().toString()])),
           subtitle: Row(
             children: [
               // Slider takes most of the space
@@ -243,15 +246,14 @@ class _EditNodeSheetState extends State<EditNodeSheet> {
               // Remove button
               IconButton(
                 icon: Icon(
-                  Icons.remove, 
+                  Icons.remove,
                   size: 20,
                   color: enableDirectionControls && appState.canRemoveDirection ? null : Theme.of(context).disabledColor,
                 ),
                 onPressed: enableDirectionControls && appState.canRemoveDirection
-                    ? () => appState.removeDirection() 
-                    : null,
-                tooltip: requiresDirection 
-                    ? (hasDirections 
+                    ? () => appState.removeDirection() : null,
+                tooltip: requiresDirection
+                    ? (hasDirections
                         ? (appState.canRemoveDirection ? 'Remove current direction' : 'Cannot remove - minimum reached')
                         : 'No directions to remove')
                     : 'Direction not required for this profile',
@@ -261,13 +263,13 @@ class _EditNodeSheetState extends State<EditNodeSheet> {
               // Add button
               IconButton(
                 icon: Icon(
-                  Icons.add, 
+                  Icons.add,
                   size: 20,
                   color: enableAddButton && session.directions.length < 8 ? null : Theme.of(context).disabledColor,
                 ),
                 onPressed: enableAddButton && session.directions.length < 8 ? () => appState.addDirection() : null,
-                tooltip: requiresDirection 
-                    ? (session.directions.length >= 8 ? 'Maximum 8 directions allowed' : 'Add new direction') 
+                tooltip: requiresDirection
+                    ? (session.directions.length >= 8 ? 'Maximum 8 directions allowed' : 'Add new direction')
                     : 'Direction not required for this profile',
                 padding: EdgeInsets.zero,
                 constraints: const BoxConstraints(minWidth: kDirectionButtonMinWidth, minHeight: kDirectionButtonMinHeight),
@@ -275,17 +277,17 @@ class _EditNodeSheetState extends State<EditNodeSheet> {
               // Cycle button
               IconButton(
                 icon: Icon(
-                  Icons.repeat, 
+                  Icons.repeat,
                   size: 20,
                   color: enableDirectionControls && session.directions.length > 1 ? null : Theme.of(context).disabledColor,
                 ),
-                onPressed: enableDirectionControls && session.directions.length > 1 
-                    ? () => appState.cycleDirection() 
+                onPressed: enableDirectionControls && session.directions.length > 1
+                    ? () => appState.cycleDirection()
                     : null,
-                tooltip: requiresDirection 
-                    ? (hasDirections 
-                        ? (session.directions.length > 1 ? 'Cycle through directions' : 'Only one direction')
-                        : 'No directions to cycle') 
+                tooltip: requiresDirection
+                    ? (hasDirections
+                          ? (session.directions.length > 1 ? 'Cycle through directions' : 'Only one direction')
+                          : 'No directions to cycle')
                     : 'Direction not required for this profile',
                 padding: EdgeInsets.zero,
                 constraints: const BoxConstraints(minWidth: kDirectionButtonMinWidth, minHeight: kDirectionButtonMinHeight),
@@ -364,24 +366,24 @@ class _EditNodeSheetState extends State<EditNodeSheet> {
           LatLng(nodeCoord.latitude + bufferDegrees, nodeCoord.longitude + bufferDegrees),
         );
         hasGoodCoverage = MapDataProvider().hasGoodCoverageFor(targetBounds);
-        
+
         // If strict coverage check fails, fall back to checking if we have any nodes nearby
         // This handles the timing issue where cache might not be marked as "covered" yet
         if (!hasGoodCoverage) {
           final nearbyNodes = MapDataProvider().findNodesWithinDistance(
-            nodeCoord, 
+            nodeCoord,
             200.0, // 200m radius - if we have nodes nearby, we likely have good data
           );
           hasGoodCoverage = nearbyNodes.isNotEmpty;
         }
-        
-        final allowSubmit = kEnableNodeEdits && 
-            appState.isLoggedIn && 
-            submittableProfiles.isNotEmpty && 
-            session.profile != null && 
+
+        final allowSubmit = kEnableNodeEdits &&
+            appState.isLoggedIn &&
+            submittableProfiles.isNotEmpty &&
+            session.profile != null &&
             session.profile!.isSubmittable &&
             hasGoodCoverage;
-        
+
         void navigateToLogin() {
           Navigator.pushNamed(context, '/settings/osm-account');
         }
@@ -417,228 +419,228 @@ class _EditNodeSheetState extends State<EditNodeSheet> {
           fit: StackFit.loose,
           children: [
             Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const SizedBox(height: 12),
-              Container(
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade400,
-                  borderRadius: BorderRadius.circular(2),
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const SizedBox(height: 12),
+                Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade400,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
                 ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                locService.t('editNode.title', params: [session.originalNode.id.toString()]),
-                style: Theme.of(context).textTheme.titleMedium,
-              ),
-              const SizedBox(height: 16),
-              ListTile(
-                title: Text(locService.t('editNode.profile')),
-                trailing: _buildProfileDropdown(context, appState, session, submittableProfiles, locService),
-              ),
-              // Direction controls
-              _buildDirectionControls(context, appState, session, locService),
+                const SizedBox(height: 8),
+                Text(
+                  locService.t('editNode.title', params: [session.originalNode.id.toString()]),
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+                const SizedBox(height: 16),
+                ListTile(
+                  title: Text(locService.t('editNode.profile')),
+                  trailing: _buildProfileDropdown(context, appState, session, submittableProfiles, locService),
+                ),
+                // Direction controls
+                _buildDirectionControls(context, appState, session, locService),
 
-              // Constraint message for nodes that cannot be moved
-              if (session.originalNode.isConstrained)
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-                  child: Column(
-                    children: [
-                      // Extract from way checkbox (only show if enabled in dev config)
-                      if (kEnableNodeExtraction) ...[
-                        CheckboxListTile(
-                          title: Text(locService.t('editNode.extractFromWay')),
-                          subtitle: Text(locService.t('editNode.extractFromWaySubtitle')),
-                          value: session.extractFromWay,
-                          onChanged: (value) {
-                            appState.updateEditSession(extractFromWay: value);
-                          },
-                          controlAffinity: ListTileControlAffinity.leading,
-                          contentPadding: EdgeInsets.zero,
-                        ),
-                        const SizedBox(height: 8),
-                      ],
-                      // Constraint info message (only show if extract is not checked or not enabled)
-                      if (!kEnableNodeExtraction || !session.extractFromWay) ...[
+                // Constraint message for nodes that cannot be moved
+                if (session.originalNode.isConstrained)
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+                    child: Column(
+                      children: [
+                        // Extract from way checkbox (only show if enabled in dev config)
+                        if (kEnableNodeExtraction) ...[
+                          CheckboxListTile(
+                            title: Text(locService.t('editNode.extractFromWay')),
+                            subtitle: Text(locService.t('editNode.extractFromWaySubtitle')),
+                            value: session.extractFromWay,
+                            onChanged: (value) {
+                              appState.updateEditSession(extractFromWay: value);
+                            },
+                            controlAffinity: ListTileControlAffinity.leading,
+                            contentPadding: EdgeInsets.zero,
+                          ),
+                          const SizedBox(height: 8),
+                        ],
+                        // Constraint info message (only show if extract is not checked or not enabled)
+                        if (!kEnableNodeExtraction ||
+                            !session.extractFromWay) ...[
+                          Row(
+                            children: [
+                              const Icon(Icons.info_outline, size: 20),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  locService.t('editNode.cannotMoveConstrainedNode'),
+                                  style: Theme.of(context).textTheme.bodyMedium,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+                        ],
                         Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
                           children: [
-                            const Icon(Icons.info_outline, size: 20),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: Text(
-                                locService.t('editNode.cannotMoveConstrainedNode'),
-                                style: Theme.of(context).textTheme.bodyMedium,
+                            OutlinedButton.icon(
+                              onPressed: () => _openAdvancedEdit(context),
+                              icon: const Icon(Icons.open_in_new, size: 16),
+                              label: Text(locService.t('actions.useAdvancedEditor')),
+                              style: OutlinedButton.styleFrom(
+                                minimumSize: const Size(0, 32),
                               ),
                             ),
                           ],
                         ),
-                        const SizedBox(height: 8),
                       ],
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          OutlinedButton.icon(
-                            onPressed: () => _openAdvancedEdit(context),
-                            icon: const Icon(Icons.open_in_new, size: 16),
-                            label: Text(locService.t('actions.useAdvancedEditor')),
-                            style: OutlinedButton.styleFrom(
-                              minimumSize: const Size(0, 32),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
+                    ),
                   ),
-                ),
 
-              if (!kEnableNodeEdits)
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.construction, color: Colors.orange, size: 20),
-                      const SizedBox(width: 6),
-                      Expanded(
-                        child: Text(
-                          locService.t('editNode.temporarilyDisabled'),
-                          style: const TextStyle(color: Colors.orange, fontSize: 13),
+                if (!kEnableNodeEdits)
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.construction, color: Colors.orange, size: 20),
+                        const SizedBox(width: 6),
+                        Expanded(
+                          child: Text(
+                            locService.t('editNode.temporarilyDisabled'),
+                            style: const TextStyle(color: Colors.orange, fontSize: 13),
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
-                )
-              else if (!appState.isLoggedIn)
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.info_outline, color: Colors.red, size: 20),
-                      const SizedBox(width: 6),
-                      Expanded(
-                        child: Text(
-                          locService.t('editNode.mustBeLoggedIn'),
-                          style: const TextStyle(color: Colors.red, fontSize: 13),
-                        ),
-                      ),
-                    ],
-                  ),
-                )
-              else if (submittableProfiles.isEmpty)
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.info_outline, color: Colors.red, size: 20),
-                      const SizedBox(width: 6),
-                      Expanded(
-                        child: Text(
-                          locService.t('editNode.enableSubmittableProfile'),
-                          style: const TextStyle(color: Colors.red, fontSize: 13),
-                        ),
-                      ),
-                    ],
-                  ),
-                )
-              else if (session.profile == null)
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.info_outline, color: Colors.orange, size: 20),
-                      const SizedBox(width: 6),
-                      Expanded(
-                        child: Text(
-                          locService.t('editNode.profileRequired'),
-                          style: const TextStyle(color: Colors.orange, fontSize: 13),
-                        ),
-                      ),
-                    ],
-                  ),
-                )
-              else if (!session.profile!.isSubmittable)
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.info_outline, color: Colors.orange, size: 20),
-                      const SizedBox(width: 6),
-                      Expanded(
-                        child: Text(
-                          locService.t('editNode.profileViewOnlyWarning'),
-                          style: const TextStyle(color: Colors.orange, fontSize: 13),
-                        ),
-                      ),
-                    ],
-                  ),
-                )
-              else if (!hasGoodCoverage)
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.cloud_download, color: Colors.blue, size: 20),
-                      const SizedBox(width: 6),
-                      Expanded(
-                        child: Text(
-                          locService.t('editNode.loadingAreaData'),
-                          style: const TextStyle(color: Colors.blue, fontSize: 13),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              const SizedBox(height: 8),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                child: SizedBox(
-                  width: double.infinity,
-                  child: OutlinedButton.icon(
-                    onPressed: session.profile != null ? openRefineTags : null, // Disabled when no profile selected
-                    icon: const Icon(Icons.tune),
-                    label: Text(locService.t('editNode.refineTags')),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 8),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: OutlinedButton(
-                        onPressed: cancel,
-                        child: Text(locService.cancel),
-                      ),
+                      ],
                     ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: ElevatedButton(
-                        onPressed: !appState.isLoggedIn ? navigateToLogin : (allowSubmit ? commit : null),
-                        child: Text(!appState.isLoggedIn ? locService.t('actions.logIn') : locService.t('actions.saveEdit')),
-                      ),
+                  )
+                else if (!appState.isLoggedIn)
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.info_outline, color: Colors.red, size: 20),
+                        const SizedBox(width: 6),
+                        Expanded(
+                          child: Text(
+                            locService.t('editNode.mustBeLoggedIn'),
+                            style: const TextStyle(color: Colors.red, fontSize: 13),
+                          ),
+                        ),
+                      ],
                     ),
-                  ],
+                  )
+                else if (submittableProfiles.isEmpty)
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.info_outline, color: Colors.red, size: 20),
+                        const SizedBox(width: 6),
+                        Expanded(
+                          child: Text(
+                            locService.t('editNode.enableSubmittableProfile'),
+                            style: const TextStyle(color: Colors.red, fontSize: 13),
+                          ),
+                        ),
+                      ],
+                    ),
+                  )
+                else if (session.profile == null)
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.info_outline, color: Colors.orange, size: 20),
+                        const SizedBox(width: 6),
+                        Expanded(
+                          child: Text(
+                            locService.t('editNode.profileRequired'),
+                            style: const TextStyle(color: Colors.orange, fontSize: 13),
+                          ),
+                        ),
+                      ],
+                    ),
+                  )
+                else if (!session.profile!.isSubmittable)
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.info_outline, color: Colors.orange, size: 20),
+                        const SizedBox(width: 6),
+                        Expanded(
+                          child: Text(
+                            locService.t('editNode.profileViewOnlyWarning'),
+                            style: const TextStyle(color: Colors.orange, fontSize: 13),
+                          ),
+                        ),
+                      ],
+                    ),
+                  )
+                else if (!hasGoodCoverage)
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.cloud_download, color: Colors.blue, size: 20),
+                        const SizedBox(width: 6),
+                        Expanded(
+                          child: Text(
+                            locService.t('editNode.loadingAreaData'),
+                            style: const TextStyle(color: Colors.blue, fontSize: 13),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                const SizedBox(height: 8),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  child: SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton.icon(
+                      onPressed: session.profile != null ? openRefineTags : null, // Disabled when no profile selected
+                      icon: const Icon(Icons.tune),
+                      label: Text(locService.t('editNode.refineTags')),
+                    ),
+                  ),
                 ),
-              ),
-              const SizedBox(height: 20),
-            ],
+                const SizedBox(height: 8),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed: cancel,
+                          child: Text(locService.cancel),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: ElevatedButton(
+                          onPressed: !appState.isLoggedIn ? navigateToLogin : (allowSubmit ? commit : null),
+                          child: Text(!appState.isLoggedIn ? locService.t('actions.logIn') : locService.t('actions.saveEdit')),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 20),
+              ],
             ),
 
             // Tutorial overlay - show only if tutorial should be shown and we're done checking
             if (!_isCheckingTutorial && _showTutorial)
-              Positioned.fill(
-                child: PositioningTutorialOverlay(),
-              ),
+              Positioned.fill(child: PositioningTutorialOverlay()),
           ],
         );
       },
     );
   }
 
-  Widget _buildProfileDropdown(BuildContext context, AppState appState, EditNodeSession session, List<NodeProfile> submittableProfiles, LocalizationService locService) {
+  Widget _buildProfileDropdown(BuildContext context, AppState appState, EditNodeSession session, List<NodeProfile>
+submittableProfiles, LocalizationService locService) {
     // Display name for the current profile - localize the existing tags profile
     String getDisplayName(NodeProfile? profile) {
       if (profile == null) return locService.t('editNode.selectProfile');
@@ -647,7 +649,7 @@ class _EditNodeSheetState extends State<EditNodeSheet> {
       }
       return profile.name;
     }
-    
+
     return PopupMenuButton<String>(
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -677,7 +679,7 @@ class _EditNodeSheetState extends State<EditNodeSheet> {
           child: Text(locService.t('editNode.existingTags')),
         ),
         // Divider after existing tags profile
-        if (submittableProfiles.isNotEmpty) 
+        if (submittableProfiles.isNotEmpty)
           const PopupMenuDivider(),
         // Regular profiles
         ...submittableProfiles.map(
@@ -724,7 +726,7 @@ class _EditNodeSheetState extends State<EditNodeSheet> {
 
   void _openIdentifyWebsite(BuildContext context) async {
     const url = 'https://deflock.me/identify';
-    
+
     try {
       final uri = Uri.parse(url);
       if (await canLaunchUrl(uri)) {

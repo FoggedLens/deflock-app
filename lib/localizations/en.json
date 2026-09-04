@@ -47,6 +47,7 @@
     "download": "Download",
     "settings": "Settings",
     "edit": "Edit",
+    "verify": "Verify",
     "delete": "Delete",
     "cancel": "Cancel",
     "ok": "OK",
@@ -113,6 +114,7 @@
     "proximityAlerts": "Proximity Alerts",
     "networkStatusIndicator": "Network Status Indicator",
     "keepScreenAwake": "Keep Screen Awake",
+    "dataFreshness": "Data Freshness",
     "hideZoomControls": "Hide Zoom Controls",
     "enableOfflineFeatures": "Enable Offline Features",
     "enableOfflineFeaturesTitle": "Enable offline features",
@@ -143,6 +145,12 @@
     "openSettings": "Open Settings",
     "blockedTitle": "Notifications are blocked",
     "blockedMessage": "Notifications are turned off for DeFlock. Enable them in your system settings to receive proximity alerts."
+  },
+  "staleness": {
+    "showIndicator": "Show stale node indicator",
+    "showIndicatorExplanation": "Highlight nodes that haven't been checked recently",
+    "threshold": "Consider stale after",
+    "daysCount": "{} days"
   },
   "node": {
     "title": "Node #{}",

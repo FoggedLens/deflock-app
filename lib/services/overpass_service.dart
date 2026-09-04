@@ -293,10 +293,15 @@ out;
     // Second pass: create OsmNode objects
     final nodes = nodeElements.map((element) {
       final nodeId = element['id'] as int;
+      final tags = Map<String, String>.from(element['tags'] ?? {});
+
+      if (!tags.containsKey('check_date') || (tags['check_date'] ?? '').isEmpty) {
+        tags['check_date'] = kFeatureReleaseDate.toIso8601String().split('T')[0];
+      }
       return OsmNode(
         id: nodeId,
         coord: LatLng(element['lat'], element['lon']),
-        tags: Map<String, String>.from(element['tags'] ?? {}),
+        tags: tags,
         isConstrained: constrainedNodeIds.contains(nodeId),
       );
     }).toList();
