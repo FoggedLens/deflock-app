@@ -83,7 +83,6 @@
     "enableOfflineFeaturesTitle": "Offline-Funktionen aktivieren",
     "enableOfflineFeaturesSubtitle": "Herunterladen und Nutzen von Offline-Kartenbereichen erlauben. Wenn deaktiviert, sind Offline-Modus und heruntergeladene Bereiche nicht verfügbar."
   },
-
   "keepScreenAwake": {
     "title": "Bildschirm während der App-Nutzung aktiv lassen",
     "subtitle": "Verhindert, dass sich der Bildschirm während der Nutzung der App automatisch ausschaltet"
@@ -92,7 +91,6 @@
     "title": "Zoom-Steuerung ausblenden",
     "subtitle": "Blendet die +/- Zoom-Schaltflächen und die Zoomstufen-Anzeige aus. Sie können weiterhin mit Fingergesten zoomen."
   },
-
   "proximityAlerts": {
     "getNotified": "Benachrichtigung erhalten beim Annähern an Überwachungsgeräte",
     "batteryUsage": "Verbraucht zusätzlich Batterie für kontinuierliche Standortüberwachung",
@@ -103,7 +101,13 @@
     "enableNotifications": "Benachrichtigungen Aktivieren",
     "checkingPermissions": "Berechtigungen prüfen...",
     "alertDistance": "Warnentfernung: ",
-    "rangeInfo": "Bereich: {}-{} {} (Standard: {})"
+    "rangeInfo": "Bereich: {}-{} {} (Standard: {})",
+    "backgroundServiceTitle": "Näherungswarnungen aktiv",
+    "backgroundServiceText": "Sucht nach Überwachungsgeräten in der Nähe",
+    "backgroundServiceChannel": "Überwachung von Näherungswarnungen",
+    "openSettings": "Einstellungen öffnen",
+    "blockedTitle": "Benachrichtigungen sind blockiert",
+    "blockedMessage": "Benachrichtigungen für DeFlock sind deaktiviert. Aktiviere sie in den Systemeinstellungen, um Näherungswarnungen zu erhalten."
   },
   "staleness": {
     "showIndicator": "Veraltete Knoten anzeigen",
@@ -137,9 +141,6 @@
     "viewInQueue": "In Warteschlange anzeigen",
     "deletedSuccessfully": "Dieser Knoten wurde erfolgreich von OpenStreetMap gelöscht."
   },
-
-
-
   "addNode": {
     "profile": "Profil",
     "selectProfile": "Profil auswählen...",
@@ -289,7 +290,6 @@
     "inFlightCompleteTitle": "Übermittlung Abgeschlossen",
     "inFlightCompleteMessage": "Ihre Übermittlung wurde erfolgreich abgeschlossen. Ihre Einstellung wird jetzt angewendet."
   },
-
   "tileProviders": {
     "title": "Kachel-Anbieter",
     "noProvidersConfigured": "Keine Kachel-Anbieter konfiguriert",
@@ -441,7 +441,6 @@
     "keepData": "Daten Behalten",
     "deleteData": "Daten Löschen"
   },
-
   "refineTagsSheet": {
     "title": "Tags Verfeinern",
     "operatorProfile": "Betreiber-Profil",

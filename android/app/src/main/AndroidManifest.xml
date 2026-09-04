@@ -10,6 +10,26 @@
     <!-- Notification permission for proximity alerts -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
 
+    <!-- Background location for proximity alerts. Android stops delivering
+         location to a backgrounded app within a few minutes unless it is
+         running a foreground service, so geolocator is given a
+         ForegroundNotificationConfig while proximity alerts are enabled -
+         that starts its GeolocatorLocationService (already declared by the
+         geolocator_android plugin manifest) and keeps the stream alive.
+         FOREGROUND_SERVICE_LOCATION is required from Android 14 onward.
+
+         Deliberately NOT declaring ACCESS_BACKGROUND_LOCATION: the foreground
+         service covers our case without it, and merely listing it in the
+         manifest makes geolocator append it to the very first permission
+         request - which Android 11+ silently denies, because foreground and
+         background location cannot be asked for in one prompt. That would
+         degrade first-run permissions for every user, including those who
+         never turn proximity alerts on. It also drags in the Play Store
+         background-location declaration review. -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION"/>
+    <uses-permission android:name="android.permission.WAKE_LOCK"/>
+
     <application
         android:name="${applicationName}"
         android:label="DeFlock"

@@ -17,6 +17,7 @@ class NodeProviderWithCache extends ChangeNotifier {
 
   final NodeDataManager _nodeDataManager = NodeDataManager();
   Timer? _debounceTimer;
+  Completer<void>? _activeCompleter;
 
   /// Get cached nodes for the given bounds, filtered by enabled profiles
   List<OsmNode> getCachedNodesForBounds(LatLngBounds bounds) {
@@ -34,13 +35,20 @@ class NodeProviderWithCache extends ChangeNotifier {
   }
 
   /// Fetch and update nodes for the given view, with debouncing for rapid map movement
-  void fetchAndUpdate({
+  Future<void> fetchAndUpdate({
     required LatLngBounds bounds,
     required List<NodeProfile> profiles,
     UploadMode uploadMode = UploadMode.production,
   }) {
     // Serve cached immediately
     notifyListeners();
+
+    // Prevent hanging awaits by completing the previous request if it gets cancelled
+    if (_activeCompleter != null && !_activeCompleter!.isCompleted) {
+      _activeCompleter!.complete();
+    }
+
+    _activeCompleter = Completer<void>();
 
     // Debounce rapid panning/zooming
     _debounceTimer?.cancel();
@@ -58,8 +66,15 @@ class NodeProviderWithCache extends ChangeNotifier {
       } catch (e) {
         debugPrint('[NodeProviderWithCache] Node fetch failed: $e');
         // Cache already holds whatever is available for the view
+      } finally {
+        // Ensure we only complete if it hasn't been superseded by another call
+        if (_activeCompleter != null && !_activeCompleter!.isCompleted) {
+          _activeCompleter!.complete();
+        }
       }
     });
+
+    return _activeCompleter!.future;
   }
 
   /// Clear the cache and repopulate with pending nodes from upload queue
