@@ -54,6 +54,8 @@
 	<true/>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
 	<string>This app optionally uses your location to center the map on your current position and provide proximity alerts for nearby surveillance devices. These features are entirely optional.</string>
+	<key>NSLocationAlwaysUsageDescription</key>
+	<string>This app optionally uses your location in the background so proximity alerts can warn you about nearby surveillance devices while the app is not on screen. This feature is entirely optional.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>This app optionally uses your location to show nearby cameras by centering the map on your location.</string>
 	<key>UIApplicationSceneManifest</key>
@@ -79,6 +81,16 @@
 	</dict>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<!-- Required for proximity alerts. Without the "location" background mode
+	     iOS suspends the app the moment it leaves the screen, the CoreLocation
+	     stream stops delivering, and no alert can ever fire while backgrounded.
+	     Only armed at runtime: GpsController sets
+	     allowBackgroundLocationUpdates on the stream solely while the user has
+	     proximity alerts turned on. -->
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>location</string>
+	</array>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>
