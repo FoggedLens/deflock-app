@@ -11,6 +11,7 @@ import '../../app_state.dart' show FollowMeMode;
 import '../../services/proximity_alert_service.dart';
 import '../../services/coordinate_validation.dart';
 import '../../services/localization_service.dart';
+import '../../services/location_permission_gate.dart';
 import '../../models/osm_node.dart';
 import '../../models/node_profile.dart';
 import '../../services/geo_bounds.dart';
@@ -152,7 +153,7 @@ class GpsController {
     }
 
     // Check permissions
-    final permission = await Geolocator.requestPermission();
+    final permission = await requestLocationPermissionOnce();
     debugPrint('[GpsController] Location permission result: $permission');
     
     switch (permission) {
