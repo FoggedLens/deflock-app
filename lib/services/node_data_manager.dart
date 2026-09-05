@@ -19,10 +19,23 @@ import 'offline_areas/offline_area_models.dart';
 class NodeDataManager extends ChangeNotifier {
   static final NodeDataManager _instance = NodeDataManager._();
   factory NodeDataManager() => _instance;
-  NodeDataManager._();
+  NodeDataManager._() : _overpassService = OverpassService();
 
-  final OverpassService _overpassService = OverpassService();
+  /// Testing seam: build an isolated manager with a faked Overpass client.
+  @visibleForTesting
+  NodeDataManager.forTesting({required OverpassService overpass})
+      : _overpassService = overpass;
+
+  /// Maximum number of concurrent Overpass requests, including the parent
+  /// request of a split. Overpass asks clients to use at most 2 concurrent
+  /// slots; we allow 4 so a single split round (4 quadrants) can proceed in
+  /// parallel while still bounding worst-case burst (issue #109).
+  static const int _maxConcurrentOverpass = 4;
+
+  final OverpassService _overpassService;
   final NodeSpatialCache _cache = NodeSpatialCache();
+  final _AsyncSemaphore _overpassSlots = _AsyncSemaphore(_maxConcurrentOverpass);
+
   
   // Track ongoing user-initiated requests for status reporting
   final Set<String> _userInitiatedRequests = <String>{};
@@ -239,10 +252,10 @@ class NodeDataManager extends ChangeNotifier {
       // Expand bounds slightly to reduce edge effects
       final expandedBounds = _expandBounds(bounds, 1.2);
       
-      final nodes = await _overpassService.fetchNodes(
+      final nodes = await _overpassSlots.guard(() => _overpassService.fetchNodes(
         bounds: expandedBounds,
         profiles: profiles,
-      );
+      ));
       
       // Success - cache the data for the expanded area
       _cache.markAreaAsFetched(expandedBounds, nodes);
@@ -279,7 +292,10 @@ class NodeDataManager extends ChangeNotifier {
   }
 
 
-  /// Fetch data by splitting area into quadrants
+  /// Fetch data by splitting area into quadrants. The four quadrant fetches
+  /// run concurrently (issue #109); overall Overpass concurrency is bounded
+  /// by [_overpassSlots] (see [fetchWithSplitting]), which also covers the
+  /// nested case where every quadrant splits again.
   Future<List<OsmNode>> _fetchSplitAreas(
     LatLngBounds bounds, 
     List<NodeProfile> profiles,
@@ -287,22 +303,26 @@ class NodeDataManager extends ChangeNotifier {
     bool isUserInitiated = false,
   }) async {
     final quadrants = _splitBounds(bounds);
-    final allNodes = <OsmNode>[];
     
-    for (final quadrant in quadrants) {
-      try {
-        final nodes = await fetchWithSplitting(
+    // Fetch all quadrants concurrently. Each quadrant handles its own
+    // failures: a failed quadrant logs and contributes no nodes while the
+    // remaining quadrants still complete (same semantics as the previous
+    // sequential loop, which continued past failures).
+    final results = await Future.wait(
+      quadrants.map(
+        (quadrant) => fetchWithSplitting(
           quadrant, 
           profiles, 
           splitDepth: splitDepth, 
           isUserInitiated: isUserInitiated,
-        );
-        allNodes.addAll(nodes);
-      } catch (e) {
-        debugPrint('[NodeDataManager] Quadrant fetch failed: $e');
-        // Continue with other quadrants
-      }
-    }
+        ).catchError((Object e) {
+          debugPrint('[NodeDataManager] Quadrant fetch failed: $e');
+          return <OsmNode>[];
+        }),
+      ),
+    );
+    
+    final allNodes = results.expand((nodes) => nodes).toList();
     
     debugPrint('[NodeDataManager] Split fetch complete: ${allNodes.length} total nodes');
     return allNodes;
@@ -423,4 +443,44 @@ class NodeDataManager extends ChangeNotifier {
 
   /// Get cache statistics
   String get cacheStats => _cache.stats.toString();
+}
+
+/// Counting semaphore bounding concurrent Overpass requests (issue #109).
+/// Instance-scoped (unlike the global static limiter in service_policy.dart)
+/// so a test-built manager never interacts with the singleton's slots.
+class _AsyncSemaphore {
+  final int _maxCount;
+  int _currentCount = 0;
+  final List<Completer<void>> _waiters = [];
+
+  _AsyncSemaphore(this._maxCount);
+
+  /// Run [action] with a slot held for its duration.
+  Future<T> guard<T>(Future<T> Function() action) async {
+    await acquire();
+    try {
+      return await action();
+    } finally {
+      release();
+    }
+  }
+
+  Future<void> acquire() async {
+    if (_currentCount < _maxCount) {
+      _currentCount++;
+      return;
+    }
+    final completer = Completer<void>();
+    _waiters.add(completer);
+    await completer.future;
+  }
+
+  void release() {
+    if (_waiters.isNotEmpty) {
+      final next = _waiters.removeAt(0);
+      next.complete();
+    } else if (_currentCount > 0) {
+      _currentCount--;
+    }
+  }
 }
