@@ -627,10 +627,13 @@ class _EditNodeSheetState extends State<EditNodeSheet> {
             ],
             ),
 
-            // Tutorial overlay - show only if tutorial should be shown and we're done checking
-            if (!_isCheckingTutorial && _showTutorial)
+            // Tutorial overlay - always mounted once the initial check
+            // completes (never conditionally inserted/removed - see
+            // PositioningTutorialOverlay's class doc for why), fades via
+            // its own `visible` flag instead.
+            if (!_isCheckingTutorial)
               Positioned.fill(
-                child: PositioningTutorialOverlay(),
+                child: PositioningTutorialOverlay(visible: _showTutorial),
               ),
           ],
         );
