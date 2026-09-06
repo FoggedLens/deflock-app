@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
@@ -34,6 +35,14 @@ class TileLayerManager {
   /// when a tile loads successfully.
   Duration _retryDelay = const Duration(seconds: 2);
 
+  /// Whether the device is currently considered offline.
+  ///
+  /// Set to `true` when a tile load error indicates a network/DNS failure
+  /// (e.g. [SocketException] or "Failed host lookup").  While offline, retry
+  /// delays are capped at [_maxRetryDelay] to avoid log spam and excessive
+  /// retry attempts.  Reset to `false` when a tile loads successfully.
+  bool _offline = false;
+
   static const _minRetryDelay = Duration(seconds: 2);
   static const _maxRetryDelay = Duration(seconds: 60);
 
@@ -43,6 +52,10 @@ class TileLayerManager {
   /// Current retry delay (exposed for testing).
   @visibleForTesting
   Duration get retryDelay => _retryDelay;
+
+  /// Whether the device is currently considered offline (exposed for testing).
+  @visibleForTesting
+  bool get isOffline => _offline;
 
   /// Stream of reset events (exposed for testing).
   @visibleForTesting
@@ -138,6 +151,12 @@ class TileLayerManager {
   /// Skips retry for [TileLoadCancelledException] (tile scrolled off screen)
   /// and [TileNotAvailableOfflineException] (no cached data, retrying won't
   /// help without network).
+  ///
+  /// When the error indicates the device is offline (a [SocketException] or
+  /// an error message containing "Failed host lookup"), [_offline] is set to
+  /// `true` and the "scheduling retry" debug message is only printed once —
+  /// on the transition into offline — to avoid log spam.  While offline,
+  /// [scheduleRetry] uses [_maxRetryDelay] instead of the climbing backoff.
   @visibleForTesting
   void onTileLoadError(
     TileImage tile,
@@ -150,23 +169,41 @@ class TileLayerManager {
     // Offline misses won't resolve by retrying — tile isn't cached.
     if (error is TileNotAvailableOfflineException) return;
 
-    debugPrint(
-      '[TileLayerManager] Tile error at '
-      '${tile.coordinates.z}/${tile.coordinates.x}/${tile.coordinates.y}, '
-      'scheduling retry in ${_retryDelay.inSeconds}s',
-    );
+    final bool isOfflineError = _isOfflineError(error);
+
+    // Log once when entering offline; always for online errors (avoids spam).
+    if (!isOfflineError || !_offline) {
+      debugPrint(
+        '[TileLayerManager] Tile error at '
+        '${tile.coordinates.z}/${tile.coordinates.x}/${tile.coordinates.y}, '
+        'scheduling retry in ${_retryDelay.inSeconds}s',
+      );
+    }
+
+    if (isOfflineError) _offline = true;
     scheduleRetry();
   }
+
+  /// True when [error] indicates the device is offline (DNS/socket failure).
+  bool _isOfflineError(Object error) =>
+      error is SocketException ||
+      error.toString().contains('Failed host lookup');
+
 
   /// Schedule a debounced tile reset with exponential backoff.
   ///
   /// Cancels any pending retry timer and starts a new one at the current
   /// [_retryDelay].  After the timer fires, [_retryDelay] doubles (capped
   /// at [_maxRetryDelay]).
+  ///
+  /// When [_offline] is `true`, the timer is armed with [_maxRetryDelay]
+  /// (60s) instead of the climbing [_retryDelay], so offline retries are
+  /// infrequent and don't spam logs.
   @visibleForTesting
   void scheduleRetry() {
     _retryTimer?.cancel();
-    _retryTimer = Timer(_retryDelay, () {
+    final Duration delay = _offline ? _maxRetryDelay : _retryDelay;
+    _retryTimer = Timer(delay, () {
       if (!_resetController.isClosed) {
         debugPrint('[TileLayerManager] Firing tile reset to retry failed tiles');
         _resetController.add(null);
@@ -191,6 +228,7 @@ class TileLayerManager {
   /// flutter_map has already marked as `loadError`.
   void onTileLoadSuccess() {
     _retryDelay = _minRetryDelay;
+    _offline = false;
   }
 
   /// Build tile layer widget with current provider and type.

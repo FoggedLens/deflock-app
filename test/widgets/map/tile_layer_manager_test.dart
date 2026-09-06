@@ -615,4 +615,85 @@ void main() {
       });
     });
   });
+
+  group('TileLayerManager offline detection', () {
+    late TileLayerManager manager;
+    late MockTileImage mockTile;
+
+    setUp(() {
+      manager = TileLayerManager();
+      mockTile = MockTileImage();
+      when(() => mockTile.coordinates)
+          .thenReturn(const TileCoordinates(1, 2, 3));
+    });
+
+    tearDown(() {
+      manager.dispose();
+    });
+
+    test('starts online (isOffline is false)', () {
+      expect(manager.isOffline, isFalse);
+    });
+
+    test('a SocketException marks the manager offline', () {
+      manager.onTileLoadError(
+        mockTile,
+        const SocketException('Failed host lookup: tile.openstreetmap.org'),
+        null,
+      );
+      expect(manager.isOffline, isTrue);
+    });
+
+    test('a "Failed host lookup" message marks offline (non-SocketException)', () {
+      manager.onTileLoadError(
+        mockTile,
+        const HttpException('ClientException: Failed host lookup: host'),
+        null,
+      );
+      expect(manager.isOffline, isTrue);
+    });
+
+    test('an ordinary error leaves the manager online', () {
+      manager.onTileLoadError(
+        mockTile,
+        const HttpException('tile fetch failed'),
+        null,
+      );
+      expect(manager.isOffline, isFalse);
+    });
+
+    test('onTileLoadSuccess clears offline state', () {
+      manager.onTileLoadError(
+        mockTile,
+        const SocketException('Failed host lookup: x'),
+        null,
+      );
+      expect(manager.isOffline, isTrue);
+
+      manager.onTileLoadSuccess();
+      expect(manager.isOffline, isFalse);
+    });
+
+    test('while offline, retry is capped at 60s instead of the 2s backoff', () {
+      FakeAsync().run((async) {
+        final resets = <void>[];
+        manager.resetStream.listen((_) => resets.add(null));
+
+        manager.onTileLoadError(
+          mockTile,
+          const SocketException('Failed host lookup: x'),
+          null,
+        );
+
+        // Nothing fires at the normal 2s delay — offline caps it to 60s.
+        async.elapse(const Duration(seconds: 2));
+        expect(resets, isEmpty);
+
+        // Exactly one reset fires once the 60s offline cap elapses.
+        async.elapse(const Duration(seconds: 58));
+        expect(resets, hasLength(1));
+      });
+    });
+  });
+
 }
