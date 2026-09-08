@@ -195,10 +195,10 @@ class NodeProfile {
           name: 'Flock Raven',
           tags: const {
             'man_made': 'surveillance',
-            'surveillance': 'public',
+            'surveillance': 'outdoor',
             'surveillance:type': 'gunshot_detector',
-            'brand': 'Flock Safety',
-            'brand:wikidata': 'Q108485435',
+            'manufacturer': 'Flock Safety',
+            'manufacturer:wikidata': 'Q108485435',
           },
           builtin: true,
           requiresDirection: false,

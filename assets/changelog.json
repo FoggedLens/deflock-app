@@ -1,6 +1,7 @@
 {
   "2.11.1": {
     "content": [
+      "• Fix incorrect Flock Raven tags (surveillance/manufacturer) on existing saved entries",
       "• Fix FOV-only edits not registering as a change",
       "• Notify on changeset comments and show a popup bubble on launch"
     ]

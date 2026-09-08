@@ -244,7 +244,11 @@ class ChangelogService {
     if (needsMigration(lastSeenVersion, currentVersion, '2.10.5')) {
       versionsNeedingMigration.add('2.10.5');
     }
-    
+
+    if (needsMigration(lastSeenVersion, currentVersion, '2.11.1')) {
+      versionsNeedingMigration.add('2.11.1');
+    }
+
     // Future versions can be added here
 
     // if (needsMigration(lastSeenVersion, currentVersion, '2.0.0')) {

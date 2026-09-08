@@ -868,6 +868,11 @@ class AppState extends ChangeNotifier {
     await _uploadQueueState.reloadQueue();
   }
 
+  /// Fix queued Flock Raven entries still using the old tag scheme (for migration purposes)
+  Future<bool> migrateFlockRavenQueueTags() async {
+    return _uploadQueueState.migrateFlockRavenQueueTags();
+  }
+
   // ---------- Suspected Location Methods ----------
   Future<void> setSuspectedLocationsEnabled(bool enabled) async {
     await _suspectedLocationState.setEnabled(enabled);

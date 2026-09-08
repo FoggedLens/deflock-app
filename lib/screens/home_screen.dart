@@ -238,7 +238,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       
       // Complete the version change workflow (updates last seen version)
       await ChangelogService().completeVersionChange();
-      
+
     } catch (e) {
       // Silently handle errors to avoid breaking the app launch
       debugPrint('[HomeScreen] Error checking for popup: $e');
@@ -355,6 +355,14 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       onSelectedNodeChanged: (id) => setState(() => _selectedNodeId = id),
     );
 
+    // Deleting the node rebuilds this sheet mid-close (into a "deleted"
+    // placeholder of a different height) before the close animation settles.
+    // That late MeasuredSheet measurement can arrive after `closed` has
+    // already reset the height below, leaving it stuck non-zero forever
+    // (and the location button permanently greyed out). Ignore any height
+    // updates once the sheet has actually closed.
+    bool sheetClosed = false;
+
     final controller = _scaffoldKey.currentState!.showBottomSheet(
       (ctx) => Padding(
         padding: EdgeInsets.only(
@@ -362,6 +370,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         ),
         child: MeasuredSheet(
           onHeightChanged: (height) {
+            if (sheetClosed) return;
             _sheetCoordinator.updateTagSheetHeight(
               height + MediaQuery.of(context).padding.bottom,
               () => setState(() {}),
@@ -396,6 +405,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     
     // Reset height and selection when sheet is dismissed (unless transitioning to edit)
     controller.closed.then((_) {
+      sheetClosed = true;
       if (!_sheetCoordinator.transitioningToEdit) {
         _sheetCoordinator.resetTagSheetHeight(() => setState(() {}));
         setState(() => _selectedNodeId = null);

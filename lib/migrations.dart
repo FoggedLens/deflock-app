@@ -215,6 +215,50 @@ class OneTimeMigrations {
     }
   }
 
+  /// Fix Flock Raven tags that were using the wrong surveillance scheme (v2.11.1)
+  /// Old (incorrect): 'surveillance': 'public', 'brand': 'Flock Safety', 'brand:wikidata': 'Q108485435'
+  /// New (correct): 'surveillance': 'outdoor', 'manufacturer': 'Flock Safety', 'manufacturer:wikidata': 'Q108485435'
+  static Future<void> migrate_2_11_1(AppState appState) async {
+    try {
+      // Fix the persisted profile catalog (used when creating new nodes going forward)
+      final profiles = await ProfileService().load();
+      bool profilesChanged = false;
+
+      final updatedProfiles = profiles.map((profile) {
+        final tags = profile.tags;
+        if (tags['surveillance'] == 'public' &&
+            tags['brand'] == 'Flock Safety' &&
+            tags['surveillance:type'] == 'gunshot_detector') {
+          debugPrint('[Migration] 2.11.1: Fixing Flock Raven tags on profile: ${profile.id}');
+          final newTags = Map<String, String>.from(tags);
+          final wikidata = newTags.remove('brand:wikidata');
+          newTags.remove('brand');
+          newTags['surveillance'] = 'outdoor';
+          newTags['manufacturer'] = 'Flock Safety';
+          newTags['manufacturer:wikidata'] = wikidata ?? 'Q108485435';
+          profilesChanged = true;
+          return profile.copyWith(tags: newTags);
+        }
+        return profile;
+      }).toList();
+
+      if (profilesChanged) {
+        await ProfileService().save(updatedProfiles);
+        await appState.reloadProfiles();
+      }
+
+      // Fix any not-yet-uploaded queue entries that snapshotted the old tags
+      final queueChanged = await appState.migrateFlockRavenQueueTags();
+
+      debugPrint('[Migration] 2.11.1 completed: fixed Flock Raven tags '
+          '(profiles changed=$profilesChanged, queue changed=$queueChanged)');
+    } catch (e, stackTrace) {
+      debugPrint('[Migration] 2.11.1 ERROR: Failed to fix Flock Raven tags: $e');
+      debugPrint('[Migration] 2.11.1 ERROR: Stack trace: $stackTrace');
+      // Don't rethrow - non-critical, worst case stale tags persist until manually fixed
+    }
+  }
+
   /// Get the migration function for a specific version
   static Future<void> Function(AppState)? getMigrationForVersion(String version) {
     switch (version) {
@@ -234,6 +278,8 @@ class OneTimeMigrations {
         return migrate_2_10_0;
       case '2.10.5':
         return migrate_2_10_5;
+      case '2.11.1':
+        return migrate_2_11_1;
       default:
         return null;
     }
