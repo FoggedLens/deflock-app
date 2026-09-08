@@ -118,7 +118,6 @@
     "enableOfflineFeaturesTitle": "Offline functies inschakelen",
     "enableOfflineFeaturesSubtitle": "Sta het downloaden en gebruiken van offline kaartgebieden toe. Indien uitgeschakeld, zijn offline modus en gedownloade gebieden niet beschikbaar."
   },
-
   "keepScreenAwake": {
     "title": "Houd het scherm actief tijdens het gebruik van de app",
     "subtitle": "Voorkomt dat het scherm automatisch uitschakelt tijdens het gebruik van de app"
@@ -127,7 +126,6 @@
     "title": "Zoomknoppen verbergen",
     "subtitle": "Verbergt de +/- zoomknoppen en de zoomniveau-indicator. U kunt nog steeds zoomen met knijpgebaren."
   },
-
   "proximityAlerts": {
     "getNotified": "Krijg meldingen wanneer u surveillance apparaten nadert",
     "batteryUsage": "Gebruikt extra batterij voor continue locatie monitoring",
@@ -138,7 +136,13 @@
     "enableNotifications": "Schakel Meldingen In",
     "checkingPermissions": "Toestemmingen controleren...",
     "alertDistance": "Waarschuwingsafstand: ",
-    "rangeInfo": "Bereik: {}-{} {} (standaard: {})"
+    "rangeInfo": "Bereik: {}-{} {} (standaard: {})",
+    "backgroundServiceTitle": "Nabijheidswaarschuwingen actief",
+    "backgroundServiceText": "Zoekt naar bewakingsapparatuur in de buurt",
+    "backgroundServiceChannel": "Monitoring van nabijheidswaarschuwingen",
+    "openSettings": "Instellingen openen",
+    "blockedTitle": "Meldingen zijn geblokkeerd",
+    "blockedMessage": "Meldingen zijn uitgeschakeld voor DeFlock. Schakel ze in via je systeeminstellingen om nabijheidswaarschuwingen te ontvangen."
   },
   "node": {
     "title": "Node #{}",
@@ -146,7 +150,7 @@
     "queuedForUpload": "Node in wachtrij geplaatst voor upload",
     "editQueuedForUpload": "Node bewerking in wachtrij geplaatst voor upload",
     "deleteQueuedForUpload": "Node verwijdering in wachtrij geplaatst voor upload",
-    "confirmDeleteTitle": "Verwijder Node", 
+    "confirmDeleteTitle": "Verwijder Node",
     "confirmDeleteMessage": "Weet u zeker dat u node #{} wilt verwijderen? Deze actie kan niet ongedaan worden gemaakt.",
     "deleteReasonLabel": "Reden voor Verwijdering",
     "deleteReasonSelectHint": "Selecteer...",
@@ -156,7 +160,6 @@
     "deleteReasonSpamVandalism": "Spam/vandalisme",
     "deleteReasonCustom": "Aangepast..",
     "deleteReasonHint": "Beschrijf de reden...",
-
     "mustBeLoggedInToDelete": "U moet ingelogd zijn met een OpenStreetMap-account om kaartgegevens bij te dragen.",
     "uploadPending": "Upload in behandeling",
     "uploadCreatingChangeset": "Changeset maken...",
@@ -167,8 +170,6 @@
     "viewInQueue": "Bekijk in Wachtrij",
     "deletedSuccessfully": "Deze node is succesvol verwijderd van OpenStreetMap."
   },
-
-
   "addNode": {
     "profile": "Profiel",
     "selectProfile": "Selecteer een profiel...",
@@ -318,7 +319,6 @@
     "inFlightCompleteTitle": "Indiening Voltooid",
     "inFlightCompleteMessage": "Uw indiening is succesvol afgerond. Uw instelling wordt nu toegepast."
   },
-
   "tileProviders": {
     "title": "Tile Providers",
     "noProvidersConfigured": "Geen tile providers geconfigureerd",
@@ -470,7 +470,6 @@
     "keepData": "Gegevens Behouden",
     "deleteData": "Gegevens Verwijderen"
   },
-
   "refineTagsSheet": {
     "title": "Verfijn Tags",
     "operatorProfile": "Operator Profiel",

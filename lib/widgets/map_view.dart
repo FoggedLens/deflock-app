@@ -7,6 +7,7 @@ import 'package:wakelock_plus/wakelock_plus.dart';
 
 import '../app_state.dart' show AppState, FollowMeMode;
 import '../services/offline_area_service.dart';
+import '../services/geo_bounds.dart';
 
 import '../models/osm_node.dart';
 import '../models/suspected_location.dart';
@@ -64,7 +65,7 @@ class MapView extends StatefulWidget {
   State<MapView> createState() => MapViewState();
 }
 
-class MapViewState extends State<MapView> {
+class MapViewState extends State<MapView> with WidgetsBindingObserver {
   late final AnimatedMapController _controller;
   final Debouncer _cameraDebounce = Debouncer(kDebounceCameraRefresh);
   final Debouncer _tileDebounce = Debouncer(const Duration(milliseconds: 150));
@@ -126,6 +127,8 @@ class MapViewState extends State<MapView> {
     _dataManager = MapDataManager();
     _interactionManager = MapInteractionManager();
     
+    WidgetsBinding.instance.addObserver(this);
+
     // Initialize proximity alert service
     ProximityAlertService().initialize(
       onVisualAlert: () {
@@ -186,16 +189,16 @@ class MapViewState extends State<MapView> {
         }
         return 200;
       },
-      getNearbyNodes: () {
+      getNearbyNodes: (userLocation, radiusMeters) {
         if (mounted) {
           try {
-            final LatLngBounds mapBounds;
-            try {
-              mapBounds = _controller.mapController.camera.visibleBounds;
-            } catch (_) {
-              return [];
-            }
-            return NodeProviderWithCache.instance.getCachedNodesForBounds(mapBounds);
+            // Deliberately not the map camera's visibleBounds: while the app
+            // is backgrounded the camera is frozen wherever the user left it,
+            // so a viewport lookup returns nodes from a place they may be
+            // miles from by now. Box around the live GPS position instead.
+            return NodeProviderWithCache.instance.getCachedNodesForBounds(
+              boundsAround(userLocation, radiusMeters),
+            );
           } catch (e) {
             debugPrint('[MapView] Could not get nearby nodes: $e');
             return [];
@@ -213,6 +216,16 @@ class MapViewState extends State<MapView> {
           }
         }
         return [];
+      },
+      onFetchBackgroundNodes: (bounds) async {
+        if (!mounted) return;
+        final appState = context.read<AppState>();
+
+        await NodeProviderWithCache.instance.fetchAndUpdate(
+          bounds: bounds,
+          profiles: appState.enabledProfiles,
+          uploadMode: appState.uploadMode,
+        );
       },
       onMapMovedProgrammatically: () {
         // Refresh nodes when GPS controller moves the map
@@ -232,7 +245,17 @@ class MapViewState extends State<MapView> {
 
 
   @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    // The position stream can go quiet across suspension, so pull a fresh fix
+    // rather than trusting the last one we saw before backgrounding.
+    if (state == AppLifecycleState.resumed) {
+      _gpsController.refreshLocation();
+    }
+  }
+
+  @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _cameraDebounce.dispose();
     _tileDebounce.dispose();
     _mapPositionDebounce.dispose();
@@ -328,6 +351,11 @@ class MapViewState extends State<MapView> {
 
     // Keep screen awake based on user setting
     _updateWakelock(appState.keepScreenAwake);
+
+    // Arm or drop background location delivery when the proximity alert
+    // setting is toggled. No-op when the stream already matches, same as
+    // _updateWakelock above.
+    _gpsController.updateProximityAlertsEnabled(appState.proximityAlertsEnabled);
 
     // Check if enabled profiles changed and refresh nodes if needed
     _nodeController.checkAndHandleProfileChanges(

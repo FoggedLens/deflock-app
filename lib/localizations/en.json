@@ -118,7 +118,6 @@
     "enableOfflineFeaturesTitle": "Enable offline features",
     "enableOfflineFeaturesSubtitle": "Allow downloading and using offline map areas. When disabled, offline mode and downloaded areas are unavailable."
   },
-
   "keepScreenAwake": {
     "title": "Keep screen awake while using app",
     "subtitle": "Prevents the screen from turning off automatically while using the app"
@@ -127,7 +126,6 @@
     "title": "Hide zoom controls",
     "subtitle": "Hide the +/- zoom buttons and zoom level indicator. You can still zoom with pinch gestures."
   },
-
   "proximityAlerts": {
     "getNotified": "Get notified when approaching surveillance devices",
     "batteryUsage": "Uses extra battery for continuous location monitoring",
@@ -138,7 +136,13 @@
     "enableNotifications": "Enable Notifications",
     "checkingPermissions": "Checking permissions...",
     "alertDistance": "Alert distance: ",
-    "rangeInfo": "Range: {}-{} {} (default: {})"
+    "rangeInfo": "Range: {}-{} {} (default: {})",
+    "backgroundServiceTitle": "Proximity alerts active",
+    "backgroundServiceText": "Watching for nearby surveillance devices",
+    "backgroundServiceChannel": "Proximity Alert Monitoring",
+    "openSettings": "Open Settings",
+    "blockedTitle": "Notifications are blocked",
+    "blockedMessage": "Notifications are turned off for DeFlock. Enable them in your system settings to receive proximity alerts."
   },
   "node": {
     "title": "Node #{}",
@@ -166,8 +170,6 @@
     "viewInQueue": "View in Queue",
     "deletedSuccessfully": "This node was successfully deleted from OpenStreetMap."
   },
-
-
   "addNode": {
     "profile": "Profile",
     "selectProfile": "Select a profile...",
@@ -317,7 +319,6 @@
     "inFlightCompleteTitle": "Submission Complete",
     "inFlightCompleteMessage": "Your submission finished successfully. Applying your setting now."
   },
-
   "tileProviders": {
     "title": "Tile Providers",
     "noProvidersConfigured": "No tile providers configured",
@@ -326,7 +327,7 @@
     "needsApiKey": "Needs API key",
     "editProvider": "Edit Provider",
     "addProvider": "Add Provider",
-    "deleteProvider": "Delete Provider", 
+    "deleteProvider": "Delete Provider",
     "deleteProviderConfirm": "Are you sure you want to delete \"{}\"?",
     "clearCaches": "Clear Caches",
     "clearCachesConfirm": "Clear all tile caches for \"{}\"? This will free up storage space but tiles will need to be downloaded again when viewing those areas.",
@@ -469,7 +470,6 @@
     "keepData": "Keep Data",
     "deleteData": "Delete Data"
   },
-
   "refineTagsSheet": {
     "title": "Refine Tags",
     "operatorProfile": "Operator Profile",
