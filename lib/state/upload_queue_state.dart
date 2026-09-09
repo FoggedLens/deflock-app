@@ -6,6 +6,7 @@ import 'package:latlong2/latlong.dart';
 
 import '../models/pending_upload.dart';
 import '../models/osm_node.dart';
+import '../models/node_profile.dart';
 import '../services/map_data_provider.dart';
 import '../services/direction_submission_formatter.dart';
 import '../services/uploader.dart';
