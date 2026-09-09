@@ -28,6 +28,7 @@ import 'coordinators/sheet_coordinator.dart';
 import 'coordinators/navigation_coordinator.dart';
 import 'coordinators/map_interaction_handler.dart';
 import 'package:geolocator/geolocator.dart';
+import '../services/location_permission_gate.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -177,7 +178,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         }
 
         // Request location permission (this will show system dialog if needed)
-        final permission = await Geolocator.requestPermission();
+        final permission = await requestLocationPermissionOnce();
         debugPrint('[HomeScreen] First launch location permission result: $permission');
       }
     } catch (e) {

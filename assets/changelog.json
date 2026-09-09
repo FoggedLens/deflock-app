@@ -1,4 +1,10 @@
 {
+  "2.11.1": {
+    "content": [
+      "• Fix FOV-only edits not registering as a change",
+      "• Notify on changeset comments and show a popup bubble on launch"
+    ]
+  },
   "2.11.0": {
     "content": [
       "• Further improve node loading performance",
