@@ -377,6 +377,7 @@ class _EditNodeSheetState extends State<EditNodeSheet> {
         
         final allowSubmit = kEnableNodeEdits && 
             appState.isLoggedIn && 
+            !appState.hasActiveBlock &&
             submittableProfiles.isNotEmpty && 
             session.profile != null && 
             session.profile!.isSubmittable &&
@@ -520,6 +521,22 @@ class _EditNodeSheetState extends State<EditNodeSheet> {
                       Expanded(
                         child: Text(
                           locService.t('editNode.mustBeLoggedIn'),
+                          style: const TextStyle(color: Colors.red, fontSize: 13),
+                        ),
+                      ),
+                    ],
+                  ),
+                )
+              else if (appState.hasActiveBlock)
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.block, color: Colors.red, size: 20),
+                      const SizedBox(width: 6),
+                      Expanded(
+                        child: Text(
+                          locService.t('editNode.accountBlocked'),
                           style: const TextStyle(color: Colors.red, fontSize: 13),
                         ),
                       ),

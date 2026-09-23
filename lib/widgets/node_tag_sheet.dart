@@ -184,6 +184,23 @@ class _NodeTagSheetState extends State<NodeTagSheet> {
             return;
           }
 
+          if (appState.hasActiveBlock) {
+            await showDialog<void>(
+              context: context,
+              builder: (BuildContext context) => AlertDialog(
+                title: Text(locService.t('node.confirmDeleteTitle')),
+                content: Text(locService.t('node.accountBlockedCannotDelete')),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    child: Text(locService.ok),
+                  ),
+                ],
+              ),
+            );
+            return;
+          }
+
           final result = await showDialog<({bool confirmed, String comment})>(
             context: context,
             builder: (BuildContext context) => _DeleteNodeDialog(

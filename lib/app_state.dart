@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart' show LatLngBounds;
+import 'package:url_launcher/url_launcher.dart';
 import 'services/http_client.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -23,7 +24,9 @@ import 'services/deep_link_service.dart';
 import 'widgets/node_provider_with_cache.dart';
 import 'services/profile_service.dart';
 import 'widgets/reauth_messages_dialog.dart';
+import 'widgets/active_block_dialog.dart';
 import 'dev_config.dart';
+import 'state/account_block_state.dart';
 import 'state/auth_state.dart';
 import 'state/messages_state.dart';
 import 'state/navigation_state.dart';
@@ -46,6 +49,7 @@ class AppState extends ChangeNotifier {
   static late AppState instance;
   
   // State modules
+  late final AccountBlockState _accountBlockState;
   late final AuthState _authState;
   late final MessagesState _messagesState;
   late final NavigationState _navigationState;
@@ -72,6 +76,7 @@ class AppState extends ChangeNotifier {
 
   AppState() {
     instance = this;
+    _accountBlockState = AccountBlockState();
     _authState = AuthState();
     _messagesState = MessagesState();
     _navigationState = NavigationState();
@@ -84,6 +89,7 @@ class AppState extends ChangeNotifier {
     _uploadQueueState = UploadQueueState();
     
     // Set up state change listeners
+    _accountBlockState.addListener(_onStateChanged);
     _authState.addListener(_onStateChanged);
     _messagesState.addListener(_onStateChanged);
     _navigationState.addListener(_onStateChanged);
@@ -179,6 +185,9 @@ class AppState extends ChangeNotifier {
   bool get hasUnreadChangesetComments => _messagesState.hasUnreadChangesetComments;
   bool get hasUnreadNotifications => _messagesState.hasUnreadNotifications;
   bool get isCheckingMessages => _messagesState.isChecking;
+
+  // Account block state
+  bool get hasActiveBlock => _accountBlockState.isBlocked;
   
   // Tile provider state
   List<TileProvider> get tileProviders => _settingsState.tileProviders;
@@ -195,6 +204,10 @@ class AppState extends ChangeNotifier {
   /// changeset). Used to gate enabling offline mode / pausing the upload
   /// queue so in-flight submissions can finish first.
   bool get hasInFlightUploads => pendingUploads.any((u) => u.isActivelyProcessing);
+
+  /// True if queue processing is currently paused because an active-block
+  /// check found the user's account blocked.
+  bool get isQueuePausedDueToBlock => _uploadQueueState.isPausedDueToBlock;
 
 
   // Suspected location state
@@ -245,15 +258,17 @@ class AppState extends ChangeNotifier {
     await _suspectedLocationState.init(offlineMode: _settingsState.offlineMode);
     await _uploadQueueState.init();
     await _authState.init(_settingsState.uploadMode);
+    await _accountBlockState.init(_settingsState.uploadMode);
     
     // Set up callback to repopulate pending nodes after cache clears
     NodeProviderWithCache.instance.setOnCacheClearedCallback(() {
       _uploadQueueState.repopulateCacheFromQueue();
     });
     
-    // Check for messages on app launch if user is already logged in
+    // Check for messages and active blocks on app launch if user is already logged in
     if (isLoggedIn) {
       checkMessages();
+      checkActiveBlock();
     }
     
     // Note: Re-auth check will be triggered from home screen after init
@@ -300,16 +315,18 @@ class AppState extends ChangeNotifier {
   // ---------- Auth Methods ----------
   Future<void> login() async {
     await _authState.login();
-    // Check for messages after successful login
+    // Check for messages and active blocks after successful login
     if (isLoggedIn) {
       checkMessages();
+      checkActiveBlock();
     }
   }
 
   Future<void> logout() async {
     await _authState.logout();
-    // Clear message state when logging out
+    // Clear message and block state when logging out
     clearMessages();
+    _accountBlockState.clear();
   }
 
   Future<void> refreshAuthState() async {
@@ -318,14 +335,65 @@ class AppState extends ChangeNotifier {
 
   Future<void> forceLogin() async {
     await _authState.forceLogin();
-    // Check for messages after successful login
+    // Check for messages and active blocks after successful login
     if (isLoggedIn) {
       checkMessages();
+      checkActiveBlock();
     }
   }
 
-  Future<bool> validateToken() async {
-    return await _authState.validateToken();
+  // ---------- Account Block Methods ----------
+
+  /// Silently check whether the user currently has an active OSM block.
+  /// Returns the conclusive result (true/false), or null if the check was
+  /// inconclusive (offline, error, not logged in, simulate mode).
+  Future<bool?> checkActiveBlock() async {
+    final accessToken = await _authState.getAccessToken();
+    final result = await _accountBlockState.check(
+      accessToken: accessToken,
+      uploadMode: uploadMode,
+    );
+    // If the block was just lifted, resume queue processing.
+    if (result == false && isQueuePausedDueToBlock) {
+      _startUploader();
+    }
+    return result;
+  }
+
+  /// Check for an active block and, if found, show [ActiveBlockDialog].
+  Future<void> checkAndPromptForActiveBlock(BuildContext context) async {
+    final result = await checkActiveBlock();
+    if (result == true) {
+      if (!context.mounted) return;
+      _showActiveBlockDialog(context);
+    }
+  }
+
+  void _showActiveBlockDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => ActiveBlockDialog(
+        onViewMessages: () async {
+          final url = Uri.parse(getMessagesUrl());
+          await launchUrl(url, mode: LaunchMode.externalApplication);
+        },
+        onDismiss: () {
+          // Just dismiss - will show again on the next check that finds a block.
+        },
+      ),
+    );
+  }
+
+  /// Test the OSM connection using the same endpoint as the active-block
+  /// check. A conclusive result (blocked or not) means the credentials are
+  /// valid; null means the connection/credentials failed. Also surfaces the
+  /// [ActiveBlockDialog] if the user turns out to be blocked.
+  Future<bool> testConnection(BuildContext context) async {
+    final result = await checkActiveBlock();
+    if (result == true) {
+      if (context.mounted) _showActiveBlockDialog(context);
+    }
+    return result != null;
   }
   
   // ---------- Messages Methods ----------
@@ -783,9 +851,12 @@ class AppState extends ChangeNotifier {
     
     // Clear and re-check messages for new mode
     clearMessages();
+    // Load the persisted block state for the new mode, then re-check it
+    await _accountBlockState.init(mode);
     if (isLoggedIn) {
       // Don't await - let it run in background
       checkMessages();
+      checkActiveBlock();
       
       // Note: Re-auth check will be triggered from the settings screen after mode change
     }
@@ -958,12 +1029,14 @@ class AppState extends ChangeNotifier {
       pauseQueueProcessing: pauseQueueProcessing,
       uploadMode: uploadMode,
       getAccessToken: _authState.getAccessToken,
+      checkActiveBlock: checkActiveBlock,
     );
   }
 
   @override
   void dispose() {
     _messageCheckTimer?.cancel();
+    _accountBlockState.removeListener(_onStateChanged);
     _authState.removeListener(_onStateChanged);
     _messagesState.removeListener(_onStateChanged);
     _navigationState.removeListener(_onStateChanged);

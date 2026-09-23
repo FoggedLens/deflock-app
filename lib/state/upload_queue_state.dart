@@ -20,11 +20,13 @@ class UploadQueueState extends ChangeNotifier {
   final List<PendingUpload> _queue = [];
   Timer? _uploadTimer;
   int _activeUploadCount = 0;
+  bool _isPausedDueToBlock = false;
 
   // Getters
   int get pendingCount => _queue.length;
   List<PendingUpload> get pendingUploads => List.unmodifiable(_queue);
   int get activeUploadCount => _activeUploadCount;
+  bool get isPausedDueToBlock => _isPausedDueToBlock;
 
   // Initialize by loading queue from storage and repopulate cache with pending nodes
   Future<void> init() async {
@@ -326,8 +328,10 @@ class UploadQueueState extends ChangeNotifier {
     required bool pauseQueueProcessing,
     required UploadMode uploadMode,
     required Future<String?> Function() getAccessToken,
+    required Future<bool?> Function() checkActiveBlock,
   }) {
     _uploadTimer?.cancel();
+    _isPausedDueToBlock = false;
 
     // No uploads if queue is empty, offline mode is enabled, or queue processing is paused
     if (_queue.isEmpty || offlineMode || pauseQueueProcessing) return;
@@ -385,6 +389,16 @@ class UploadQueueState extends ChangeNotifier {
       // Retrieve access token
       final access = await getAccessToken();
       if (access == null) return; // not logged in
+
+      // Don't start new uploads if the user has an active OSM block.
+      // Leave the item pending - it'll be retried next time the uploader starts.
+      if (await checkActiveBlock() == true) {
+        debugPrint('[UploadQueue] Active block detected, pausing queue processing');
+        _isPausedDueToBlock = true;
+        _uploadTimer?.cancel();
+        notifyListeners();
+        return;
+      }
 
       // Start processing the next pending upload
       final item = pendingItems.first;

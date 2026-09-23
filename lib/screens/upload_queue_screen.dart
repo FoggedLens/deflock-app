@@ -111,7 +111,7 @@ class UploadQueueScreen extends StatelessWidget {
         final appState = context.watch<AppState>();
         
         // Check if queue processing is paused
-        final isQueuePaused = appState.offlineMode || appState.pauseQueueProcessing;
+        final isQueuePaused = appState.offlineMode || appState.pauseQueueProcessing || appState.isQueuePausedDueToBlock;
         
         return Scaffold(
           appBar: AppBar(
@@ -151,9 +151,11 @@ class UploadQueueScreen extends StatelessWidget {
                               ),
                             ),
                             Text(
-                              appState.offlineMode 
-                                  ? locService.t('queue.pausedDueToOffline')
-                                  : locService.t('queue.pausedByUser'),
+                              appState.isQueuePausedDueToBlock
+                                  ? locService.t('queue.pausedDueToBlock')
+                                  : appState.offlineMode
+                                      ? locService.t('queue.pausedDueToOffline')
+                                      : locService.t('queue.pausedByUser'),
                               style: TextStyle(
                                 fontSize: 12,
                                 color: Colors.orange.shade700,

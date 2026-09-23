@@ -37,7 +37,7 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
+class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, WidgetsBindingObserver {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final GlobalKey<MapViewState> _mapViewKey = GlobalKey<MapViewState>();
   late final AnimatedMapController _mapController;
@@ -62,6 +62,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _mapController = AnimatedMapController(vsync: this);
     _sheetCoordinator = SheetCoordinator();
     _navigationCoordinator = NavigationCoordinator();
@@ -71,9 +72,22 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     DeepLinkService().onNodeDeepLink = null;
     _mapController.dispose();
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    // Re-check for an active OSM block when the user returns to the app,
+    // in case they resolved it (or got blocked) while away.
+    if (state == AppLifecycleState.resumed) {
+      final appState = context.read<AppState>();
+      if (appState.isLoggedIn) {
+        appState.checkAndPromptForActiveBlock(context);
+      }
+    }
   }
 
   String _getFollowMeTooltip(FollowMeMode mode) {
@@ -474,6 +488,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         _checkForPopup();
         // Check if re-authentication is needed for message notifications
         appState.checkAndPromptReauthForMessages(context);
+        // Check for an active OSM block on app launch
+        if (appState.isLoggedIn) {
+          appState.checkAndPromptForActiveBlock(context);
+        }
       });
     }
 
@@ -544,7 +562,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 return IconButton(
                   tooltip: LocalizationService.instance.settings,
                   icon: Badge(
-                    isLabelVisible: appState.hasUnreadNotifications,
+                    isLabelVisible: appState.hasActiveBlock || appState.hasUnreadNotifications,
+                    backgroundColor: appState.hasActiveBlock ? Colors.red : null,
+                    label: appState.hasActiveBlock ? const Icon(Icons.block, size: 10, color: Colors.white) : null,
                     child: const Icon(Icons.settings),
                   ),
                   onPressed: () => Navigator.pushNamed(context, '/settings'),

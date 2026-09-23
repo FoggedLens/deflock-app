@@ -53,7 +53,7 @@ class AuthSection extends StatelessWidget {
                 title: Text(locService.t('auth.testConnection')),
                 subtitle: Text(locService.t('auth.testConnectionSubtitle')),
                 onTap: () async {
-                  final isValid = await appState.validateToken();
+                  final isValid = await appState.testConnection(context);
                   if (context.mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(

@@ -118,7 +118,9 @@ class SettingsScreen extends StatelessWidget {
     
     return ListTile(
       leading: Badge(
-        isLabelVisible: appState.hasUnreadNotifications,
+        isLabelVisible: appState.hasActiveBlock || appState.hasUnreadNotifications,
+        backgroundColor: appState.hasActiveBlock ? Colors.red : null,
+        label: appState.hasActiveBlock ? const Icon(Icons.block, size: 10, color: Colors.white) : null,
         child: const Icon(Icons.account_circle),
       ),
       title: Text(locService.t('auth.osmAccountTitle')),

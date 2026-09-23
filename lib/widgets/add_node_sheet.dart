@@ -421,6 +421,7 @@ class _AddNodeSheetState extends State<AddNodeSheet> {
         }
         
         final allowSubmit = appState.isLoggedIn && 
+            !appState.hasActiveBlock &&
             submittableProfiles.isNotEmpty && 
             session.profile != null && 
             session.profile!.isSubmittable &&
@@ -487,6 +488,22 @@ class _AddNodeSheetState extends State<AddNodeSheet> {
                       Expanded(
                         child: Text(
                           locService.t('addNode.mustBeLoggedIn'),
+                          style: const TextStyle(color: Colors.red, fontSize: 13),
+                        ),
+                      ),
+                    ],
+                  ),
+                )
+              else if (appState.hasActiveBlock)
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.block, color: Colors.red, size: 20),
+                      const SizedBox(width: 6),
+                      Expanded(
+                        child: Text(
+                          locService.t('addNode.accountBlocked'),
                           style: const TextStyle(color: Colors.red, fontSize: 13),
                         ),
                       ),
