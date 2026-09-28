@@ -63,10 +63,12 @@ class EditNodeChangeDetector {
   ) {
     final original = Map<String, String>.from(originalTags)
       ..remove('direction')
-      ..remove('camera:direction');
+      ..remove('camera:direction')
+      ..remove('check_date');
     final submitted = Map<String, String>.from(submittedTags)
       ..remove('direction')
-      ..remove('camera:direction');
+      ..remove('camera:direction')
+      ..remove('check_date');
 
     if (original.length != submitted.length) return false;
     for (final entry in original.entries) {

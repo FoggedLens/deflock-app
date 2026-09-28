@@ -58,7 +58,8 @@ Future<List<OsmNode>> _loadAreaNodes(OfflineArea area) async {
     try {
       final str = await fileToLoad.readAsString();
       final jsonList = jsonDecode(str) as List;
-      return jsonList.map((e) => OsmNode.fromJson(e)).toList();
+      final nodes = jsonList.map((e) => OsmNode.fromJson(e)).toList();
+      return nodes;
     } catch (e) {
       debugPrint('[_loadAreaNodes] Error loading nodes from ${fileToLoad.path}: $e');
     }

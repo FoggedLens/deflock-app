@@ -141,6 +141,9 @@ class _RefineTagsSheetState extends State<RefineTagsSheet> {
     
     // Skip internal cache tags
     if (key.startsWith('_')) return true;
+
+    // Skip check_date - handled automatically by the app on each upload
+    if (key == 'check_date') return true;
     
     return false;
   }

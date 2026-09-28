@@ -24,10 +24,10 @@ class NodeProviderWithCache extends ChangeNotifier {
     // Use the same cache instance as NodeDataManager
     final allNodes = NodeSpatialCache().getNodesFor(bounds);
     final enabledProfiles = AppState.instance.enabledProfiles;
-    
+
     // If no profiles are enabled, show no nodes
     if (enabledProfiles.isEmpty) return [];
-    
+
     // Filter nodes to only show those matching enabled profiles
     return allNodes.where((node) {
       return _matchesAnyProfile(node, enabledProfiles);
@@ -114,11 +114,18 @@ class NodeProviderWithCache extends ChangeNotifier {
 
   /// Check if a node matches a specific profile (all non-empty profile tags must match)
   bool _nodeMatchesProfile(OsmNode node, NodeProfile profile) {
+
     for (final entry in profile.tags.entries) {
       // Skip empty values - they are used for refinement UI, not matching
       if (entry.value.trim().isEmpty) continue;
-      
-      if (node.tags[entry.key] != entry.value) return false;
+
+      final key = entry.key;
+      final expectedValue = entry.value;
+
+      // Match bare key
+      final directMatch = node.tags[key] == expectedValue;
+
+      if (!directMatch) return false;
     }
     return true;
   }

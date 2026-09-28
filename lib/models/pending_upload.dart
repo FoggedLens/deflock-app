@@ -7,13 +7,13 @@ import '../dev_config.dart';
 
 enum UploadOperation { create, modify, delete, extract }
 
-enum UploadState { 
-  pending,           // Not started yet
+enum UploadState {
+  pending, // Not started yet
   creatingChangeset, // Creating changeset
-  uploading,         // Node operation (create/modify/delete)
-  closingChangeset,  // Closing changeset
-  error,             // Upload failed (needs user retry) OR changeset not found
-  complete           // Everything done
+  uploading, // Node operation (create/modify/delete)
+  closingChangeset, // Closing changeset
+  error, // Upload failed (needs user retry) OR changeset not found
+  complete, // Everything done
 }
 
 class PendingUpload {
@@ -70,32 +70,33 @@ class PendingUpload {
        assert(
          (operation == UploadOperation.create && originalNodeId == null) ||
          (operation == UploadOperation.create) || (originalNodeId != null),
-         'originalNodeId must be null for create operations and non-null for modify/delete/extract operations'
+         'originalNodeId must be null for create operations and non-null for modify/delete/extract operations',
        ),
        assert(
          (operation == UploadOperation.delete) || (profile != null),
-         'profile is required for create, modify, and extract operations'
+         'profile is required for create, modify, and extract operations',
        );
 
   // True if this is an edit of an existing node, false if it's a new node
   bool get isEdit => operation == UploadOperation.modify;
-  
+
   // True if this is a deletion of an existing node
   bool get isDeletion => operation == UploadOperation.delete;
-  
+
   // True if this is an extract operation (new node with tags from constrained node)
   bool get isExtraction => operation == UploadOperation.extract;
-  
+
   // New state-based helpers
   bool get needsUserRetry => uploadState == UploadState.error;
-  bool get isActivelyProcessing => uploadState == UploadState.creatingChangeset || uploadState == UploadState.uploading || uploadState == UploadState.closingChangeset;
+  bool get isActivelyProcessing => uploadState == UploadState.creatingChangeset || uploadState == UploadState.uploading ||
+uploadState == UploadState.closingChangeset;
   bool get isComplete => uploadState == UploadState.complete;
   bool get isPending => uploadState == UploadState.pending;
   bool get isCreatingChangeset => uploadState == UploadState.creatingChangeset;
   bool get isUploading => uploadState == UploadState.uploading;
   bool get isClosingChangeset => uploadState == UploadState.closingChangeset;
-  
-  // Calculate time until OSM auto-closes changeset (for UI display)  
+
+  // Calculate time until OSM auto-closes changeset (for UI display)
   // This uses nodeOperationCompletedAt (when changeset was created) as the reference
   Duration? get timeUntilAutoClose {
     if (nodeOperationCompletedAt == null) return null;
@@ -103,32 +104,32 @@ class PendingUpload {
     final remaining = kChangesetAutoCloseTimeout - elapsed;
     return remaining.isNegative ? Duration.zero : remaining;
   }
-  
+
   // Check if the 59-minute window has expired (for phases 2 & 3)
   // This uses nodeOperationCompletedAt (when changeset was created) as the reference
   bool get hasChangesetExpired {
     if (nodeOperationCompletedAt == null) return false;
     return DateTime.now().difference(nodeOperationCompletedAt!) >= kChangesetAutoCloseTimeout;
   }
-  
+
   // Legacy method name for backward compatibility
   bool get shouldGiveUpOnChangeset => hasChangesetExpired;
-  
+
   // Calculate next retry delay for changeset close using exponential backoff
   Duration get nextChangesetCloseRetryDelay {
     final delay = Duration(
-      milliseconds: (kChangesetCloseInitialRetryDelay.inMilliseconds * 
-                     math.pow(kChangesetCloseBackoffMultiplier, changesetCloseAttempts)).round()
+      milliseconds: (kChangesetCloseInitialRetryDelay.inMilliseconds *
+                  math.pow(kChangesetCloseBackoffMultiplier, changesetCloseAttempts)).round()
     );
-    return delay > kChangesetCloseMaxRetryDelay 
-      ? kChangesetCloseMaxRetryDelay 
+    return delay > kChangesetCloseMaxRetryDelay
+      ? kChangesetCloseMaxRetryDelay
       : delay;
   }
 
   // Check if it's time to retry changeset close
   bool get isReadyForChangesetCloseRetry {
     if (lastChangesetCloseAttemptAt == null) return true; // First attempt
-    
+
     final nextRetryTime = lastChangesetCloseAttemptAt!.add(nextChangesetCloseRetryDelay);
     return DateTime.now().isAfter(nextRetryTime);
   }
@@ -211,18 +212,18 @@ class PendingUpload {
   // Calculate next retry delay for node submission using exponential backoff
   Duration get nextNodeSubmissionRetryDelay {
     final delay = Duration(
-      milliseconds: (kChangesetCloseInitialRetryDelay.inMilliseconds * 
-                     math.pow(kChangesetCloseBackoffMultiplier, nodeSubmissionAttempts)).round()
+      milliseconds: (kChangesetCloseInitialRetryDelay.inMilliseconds *
+                  math.pow(kChangesetCloseBackoffMultiplier, nodeSubmissionAttempts)).round()
     );
-    return delay > kChangesetCloseMaxRetryDelay 
-      ? kChangesetCloseMaxRetryDelay 
+    return delay > kChangesetCloseMaxRetryDelay
+      ? kChangesetCloseMaxRetryDelay
       : delay;
   }
 
   // Check if it's time to retry node submission
   bool get isReadyForNodeSubmissionRetry {
     if (lastNodeSubmissionAttemptAt == null) return true; // First attempt
-    
+
     final nextRetryTime = lastNodeSubmissionAttemptAt!.add(nextNodeSubmissionRetryDelay);
     return DateTime.now().isAfter(nextRetryTime);
   }
@@ -233,15 +234,15 @@ class PendingUpload {
     if (operation == UploadOperation.delete || profile == null) {
       return {};
     }
-    
+
     final tags = Map<String, String>.from(profile!.tags);
-    
+
     // Add additional existing tags first (these have lower precedence)
     tags.addAll(additionalExistingTags);
-    
+
     // Apply profile tags again to ensure they take precedence over additional existing tags
     tags.addAll(profile!.tags);
-    
+
     // Apply refined tags (these fill in empty values from the profile)
     for (final entry in refinedTags.entries) {
       // Only apply refined tags if the profile tag value is empty
@@ -249,12 +250,12 @@ class PendingUpload {
         tags[entry.key] = entry.value;
       }
     }
-    
+
     // Add operator profile tags (they override everything if there are conflicts)
     if (operatorProfile != null) {
       tags.addAll(operatorProfile!.tags);
     }
-    
+
     // Add direction if required
     if (profile!.requiresDirection) {
       if (direction is String) {
@@ -265,92 +266,102 @@ class PendingUpload {
         tags['direction'] = '0';
       }
     }
-    
+
+    // Add current check_date tag for all operations except delete (still there)
+    if (operation != UploadOperation.delete) {
+      tags['check_date'] = DateTime.now()
+          .toIso8601String()
+          .split('T')
+          .first;
+    }
+
     // Filter out any tags that are still empty after refinement
     // Empty tags in profiles are fine for refinement UI, but shouldn't be submitted to OSM
     tags.removeWhere((key, value) => value.trim().isEmpty);
-    
+
     return tags;
   }
 
   Map<String, dynamic> toJson() => {
-        'lat': coord.latitude,
-        'lon': coord.longitude,
-        'dir': direction,
-        'profile': profile?.toJson(),
-        'operatorProfile': operatorProfile?.toJson(),
-        'refinedTags': refinedTags,
-        'additionalExistingTags': additionalExistingTags,
-        'changesetComment': changesetComment,
-        'uploadMode': uploadMode.index,
-        'operation': operation.index,
-        'originalNodeId': originalNodeId,
-        'submittedNodeId': submittedNodeId,
-        'tempNodeId': tempNodeId,
-        'attempts': attempts,
-        'error': error,
-        'errorMessage': errorMessage,
-        'completing': completing,
-        'uploadState': uploadState.index,
-        'changesetId': changesetId,
-        'nodeOperationCompletedAt': nodeOperationCompletedAt?.millisecondsSinceEpoch,
-        'changesetCloseAttempts': changesetCloseAttempts,
-        'lastChangesetCloseAttemptAt': lastChangesetCloseAttemptAt?.millisecondsSinceEpoch,
-        'nodeSubmissionAttempts': nodeSubmissionAttempts,
-        'lastNodeSubmissionAttemptAt': lastNodeSubmissionAttemptAt?.millisecondsSinceEpoch,
-      };
+    'lat': coord.latitude,
+    'lon': coord.longitude,
+    'dir': direction,
+    'profile': profile?.toJson(),
+    'operatorProfile': operatorProfile?.toJson(),
+    'refinedTags': refinedTags,
+    'additionalExistingTags': additionalExistingTags,
+    'changesetComment': changesetComment,
+    'uploadMode': uploadMode.index,
+    'operation': operation.index,
+    'originalNodeId': originalNodeId,
+    'submittedNodeId': submittedNodeId,
+    'tempNodeId': tempNodeId,
+    'attempts': attempts,
+    'error': error,
+    'errorMessage': errorMessage,
+    'completing': completing,
+    'uploadState': uploadState.index,
+    'changesetId': changesetId,
+    'nodeOperationCompletedAt': nodeOperationCompletedAt?.millisecondsSinceEpoch,
+    'changesetCloseAttempts': changesetCloseAttempts,
+    'lastChangesetCloseAttemptAt': lastChangesetCloseAttemptAt?.millisecondsSinceEpoch,
+    'nodeSubmissionAttempts': nodeSubmissionAttempts,
+    'lastNodeSubmissionAttemptAt': lastNodeSubmissionAttemptAt?.millisecondsSinceEpoch,
+  };
 
   factory PendingUpload.fromJson(Map<String, dynamic> j) => PendingUpload(
-        coord: LatLng(j['lat'], j['lon']),
-        direction: j['dir'],
-        profile: j['profile'] is Map<String, dynamic>
-            ? NodeProfile.fromJson(j['profile'])
-            : null, // Profile is optional for deletions
-        operatorProfile: j['operatorProfile'] != null
-            ? OperatorProfile.fromJson(j['operatorProfile'])
-            : null,
-        refinedTags: j['refinedTags'] != null 
-            ? Map<String, String>.from(j['refinedTags'])
-            : {}, // Default empty map for legacy entries
-        additionalExistingTags: j['additionalExistingTags'] != null 
-            ? Map<String, String>.from(j['additionalExistingTags'])
-            : {}, // Default empty map for legacy entries
-        changesetComment: j['changesetComment'] ?? _generateLegacyComment(j), // Default for legacy entries
-        uploadMode: j['uploadMode'] != null 
-            ? UploadMode.values[j['uploadMode']] 
-            : UploadMode.production, // Default for legacy entries
-        operation: j['operation'] != null
-            ? UploadOperation.values[j['operation']]
-            : (j['originalNodeId'] != null ? UploadOperation.modify : UploadOperation.create), // Legacy compatibility
-        originalNodeId: j['originalNodeId'],
-        submittedNodeId: j['submittedNodeId'],
-        tempNodeId: j['tempNodeId'],
-        attempts: j['attempts'] ?? 0,
-        error: j['error'] ?? false,
-        errorMessage: j['errorMessage'], // Can be null for legacy entries
-        completing: j['completing'] ?? false, // Default to false for legacy entries
-        uploadState: j['uploadState'] != null
-            ? UploadState.values[j['uploadState']]
-            : _migrateFromLegacyFields(j), // Migrate from legacy error/completing fields
-        changesetId: j['changesetId'],
-        nodeOperationCompletedAt: j['nodeOperationCompletedAt'] != null
-            ? DateTime.fromMillisecondsSinceEpoch(j['nodeOperationCompletedAt'])
-            : null,
-        changesetCloseAttempts: j['changesetCloseAttempts'] ?? 0,
-        lastChangesetCloseAttemptAt: j['lastChangesetCloseAttemptAt'] != null
-            ? DateTime.fromMillisecondsSinceEpoch(j['lastChangesetCloseAttemptAt'])
-            : null,
-        nodeSubmissionAttempts: j['nodeSubmissionAttempts'] ?? 0,
-        lastNodeSubmissionAttemptAt: j['lastNodeSubmissionAttemptAt'] != null
-            ? DateTime.fromMillisecondsSinceEpoch(j['lastNodeSubmissionAttemptAt'])
-            : null,
-      );
+    coord: LatLng(j['lat'], j['lon']),
+    direction: j['dir'],
+    profile: j['profile'] is Map<String, dynamic>
+        ? NodeProfile.fromJson(j['profile'])
+        : null, // Profile is optional for deletions
+    operatorProfile: j['operatorProfile'] != null
+        ? OperatorProfile.fromJson(j['operatorProfile'])
+        : null,
+    refinedTags: j['refinedTags'] != null
+        ? Map<String, String>.from(j['refinedTags'])
+        : {}, // Default empty map for legacy entries
+    additionalExistingTags: j['additionalExistingTags'] != null
+        ? Map<String, String>.from(j['additionalExistingTags'])
+        : {}, // Default empty map for legacy entries
+    changesetComment: j['changesetComment'] ?? _generateLegacyComment(j), // Default for legacy entries
+    uploadMode: j['uploadMode'] != null
+        ? UploadMode.values[j['uploadMode']]
+        : UploadMode.production, // Default for legacy entries
+    operation: j['operation'] != null
+        ? UploadOperation.values[j['operation']]
+        : (j['originalNodeId'] != null ? UploadOperation.modify : UploadOperation.create), // Legacy compatibility
+    originalNodeId: j['originalNodeId'],
+    submittedNodeId: j['submittedNodeId'],
+    tempNodeId: j['tempNodeId'],
+    attempts: j['attempts'] ?? 0,
+    error: j['error'] ?? false,
+    errorMessage: j['errorMessage'], // Can be null for legacy entries
+    completing: j['completing'] ?? false, // Default to false for legacy entries
+    uploadState: j['uploadState'] != null
+        ? UploadState.values[j['uploadState']]
+        : _migrateFromLegacyFields(
+            j,
+          ), // Migrate from legacy error/completing fields
+    changesetId: j['changesetId'],
+    nodeOperationCompletedAt: j['nodeOperationCompletedAt'] != null
+        ? DateTime.fromMillisecondsSinceEpoch(j['nodeOperationCompletedAt'])
+        : null,
+    changesetCloseAttempts: j['changesetCloseAttempts'] ?? 0,
+    lastChangesetCloseAttemptAt: j['lastChangesetCloseAttemptAt'] != null
+        ? DateTime.fromMillisecondsSinceEpoch(j['lastChangesetCloseAttemptAt'])
+        : null,
+    nodeSubmissionAttempts: j['nodeSubmissionAttempts'] ?? 0,
+    lastNodeSubmissionAttemptAt: j['lastNodeSubmissionAttemptAt'] != null
+        ? DateTime.fromMillisecondsSinceEpoch(j['lastNodeSubmissionAttemptAt'])
+        : null,
+  );
 
   // Helper to migrate legacy queue items to new state system
   static UploadState _migrateFromLegacyFields(Map<String, dynamic> j) {
     final error = j['error'] ?? false;
     final completing = j['completing'] ?? false;
-    
+
     if (completing) return UploadState.complete;
     if (error) return UploadState.error;
     return UploadState.pending;
@@ -361,9 +372,9 @@ class PendingUpload {
     final operation = j['operation'] != null
         ? UploadOperation.values[j['operation']]
         : (j['originalNodeId'] != null ? UploadOperation.modify : UploadOperation.create);
-    
+
     final profileName = j['profile']?['name'] ?? 'surveillance';
-    
+
     switch (operation) {
       case UploadOperation.create:
         return 'Add $profileName surveillance node';
@@ -376,4 +387,3 @@ class PendingUpload {
     }
   }
 }
-

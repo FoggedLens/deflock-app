@@ -293,10 +293,12 @@ out;
     // Second pass: create OsmNode objects
     final nodes = nodeElements.map((element) {
       final nodeId = element['id'] as int;
+      final tags = Map<String, String>.from(element['tags'] ?? {});
+
       return OsmNode(
         id: nodeId,
         coord: LatLng(element['lat'], element['lon']),
-        tags: Map<String, String>.from(element['tags'] ?? {}),
+        tags: tags,
         isConstrained: constrainedNodeIds.contains(nodeId),
       );
     }).toList();
