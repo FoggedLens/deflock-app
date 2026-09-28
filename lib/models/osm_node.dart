@@ -31,10 +31,6 @@ class OsmNode {
       });
     }
 
-    if (!tags.containsKey('check_date') || (tags['check_date'] ?? '').isEmpty) {
-      tags['check_date'] = kFeatureReleaseDate.toIso8601String().split('T')[0];
-    }
-
     return OsmNode(
       id: json['id'] is int ? json['id'] as int : int.tryParse(json['id'].toString()) ?? 0,
       coord: LatLng((json['lat'] as num).toDouble(), (json['lon'] as num).toDouble()),
