@@ -58,7 +58,13 @@ class NodeSpatialCache {
           id: node.id,
           coord: node.coord,
           tags: mergedTags,
-          isConstrained: node.isConstrained,
+          // Once a node is known to be constrained (part of a way/relation),
+          // keep treating it as constrained. Callers that build a fresh
+          // OsmNode for cache updates (e.g. after an edit upload succeeds)
+          // don't have way/relation data and default to false, so blindly
+          // taking the incoming value would "unconstrain" the node until
+          // the next Overpass fetch.
+          isConstrained: existing.isConstrained || node.isConstrained,
         );
       } else {
         _nodes[node.id] = node;

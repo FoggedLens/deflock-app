@@ -30,7 +30,9 @@ class NodeCache {
           id: node.id,
           coord: node.coord,
           tags: mergedTags,
-          isConstrained: node.isConstrained, // Preserve constraint information
+          // Once a node is known to be constrained, keep it that way - see
+          // NodeSpatialCache.addOrUpdateNodes for the full explanation.
+          isConstrained: existing.isConstrained || node.isConstrained,
         );
       } else {
         _nodes[node.id] = node;
