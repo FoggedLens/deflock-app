@@ -17,11 +17,12 @@ class _OSMAccountScreenState extends State<OSMAccountScreen> {
   @override
   void initState() {
     super.initState();
-    // Check for messages when screen loads
+    // Check for messages and active blocks when screen loads
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final appState = context.read<AppState>();
       if (appState.isLoggedIn) {
         appState.checkMessages();
+        appState.checkAndPromptForActiveBlock(context);
       }
     });
   }
@@ -74,22 +75,51 @@ class _OSMAccountScreenState extends State<OSMAccountScreen> {
                           }
                         } else {
                           // Start login flow - the user will be redirected to browser
-                          await appState.forceLogin();
+                          await appState.forceLogin(context: context);
                           
-                          // Don't show immediate feedback - the UI will update automatically
-                          // when the OAuth callback completes and notifyListeners() is called
+                          // Don't show immediate feedback on success - the UI will update
+                          // automatically when the OAuth callback completes and
+                          // notifyListeners() is called. Failures are surfaced directly
+                          // by forceLogin() via a snackbar/dialog.
                         }
                       },
                     ),
                     
                     if (appState.isLoggedIn) ...[
+                      // Active block warning - shown whenever a check has
+                      // found the user's OSM account currently blocked.
+                      if (appState.hasActiveBlock) ...[
+                        const Divider(),
+                        ListTile(
+                          leading: Badge(
+                            isLabelVisible: true,
+                            backgroundColor: Colors.red,
+                            child: const Icon(Icons.block, color: Colors.red),
+                          ),
+                          title: Text(locService.t('auth.activeBlockTitle')),
+                          subtitle: Text(locService.t('auth.activeBlockMessage')),
+                          trailing: const Icon(Icons.open_in_new),
+                          onTap: () async {
+                            final url = Uri.parse(appState.getBlockDetailsUrl());
+                            if (await canLaunchUrl(url)) {
+                              await launchUrl(url, mode: LaunchMode.externalApplication);
+                            } else {
+                              if (context.mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text(locService.t('advancedEdit.couldNotOpenOSMWebsite'))),
+                                );
+                              }
+                            }
+                          },
+                        ),
+                      ],
                       const Divider(),
                       ListTile(
                         leading: const Icon(Icons.wifi_protected_setup),
                         title: Text(locService.t('auth.testConnection')),
                         subtitle: Text(locService.t('auth.testConnectionSubtitle')),
                         onTap: () async {
-                          final isValid = await appState.validateToken();
+                          final isValid = await appState.testConnection(context);
                           if (context.mounted) {
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(

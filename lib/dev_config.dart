@@ -49,6 +49,16 @@ double topPositionWithSafeArea(double baseTop, EdgeInsets safeArea) {
   return baseTop + safeArea.top;
 }
 
+// Whether to proactively check blocks/active *before* attempting to fetch
+// the username during login. Current OSM behavior: user/details returns 403
+// for blocked accounts, so we check blocks/active first (it's documented as
+// accessible even while blocked) to detect this reliably instead of getting
+// an unexplained 403. Flip to false once OSM allows user/details to succeed
+// for blocked accounts too, so login can complete normally and rely on the
+// regular checkActiveBlock() triggers (launch/resume/queue/test connection)
+// to surface the block warning instead.
+const bool kCheckBlockBeforeUsernameFetch = true;
+
 // Client name for OSM uploads ("created_by" tag)
 const String kClientName = 'DeFlock';
 // Note: Version is now dynamically retrieved from VersionService
