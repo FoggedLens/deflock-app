@@ -9,6 +9,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 /// Handles PKCE OAuth login with OpenStreetMap.
 import '../keys.dart';
+import '../dev_config.dart';
 import '../app_state.dart' show UploadMode;
 import 'http_client.dart';
 import 'osm_block_service.dart';
@@ -131,27 +132,49 @@ class AuthService {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString(_tokenKey, tokenJson); // Save token for current mode
 
-      // Check for an active block *before* fetching the username or anything
-      // else. A blocked account's OAuth token exchange succeeds normally,
-      // but nearly every other authenticated endpoint (including
-      // user/details) returns 403. The blocks/active endpoint is explicitly
-      // documented as accessible even while blocked, so checking it first
-      // lets us detect this case reliably instead of getting a mysterious
-      // 403 from _fetchUsername with no way to tell why.
-      final isBlocked = await _blockService.checkActiveBlock(
-        accessToken: token.accessToken,
-        uploadMode: _mode,
-      );
-      if (isBlocked == true) {
-        debugPrint('AuthService: Login succeeded but account has an active block');
-        throw AccountBlockedException();
+      if (kCheckBlockBeforeUsernameFetch) {
+        // Check for an active block *before* fetching the username or
+        // anything else. As of writing, a blocked account's OAuth token
+        // exchange succeeds normally, but nearly every other authenticated
+        // endpoint (including user/details) returns 403. The blocks/active
+        // endpoint is explicitly documented as accessible even while
+        // blocked, so checking it first lets us detect this case reliably
+        // instead of getting a mysterious 403 from _fetchUsername with no
+        // way to tell why.
+        final isBlocked = await _blockService.checkActiveBlock(
+          accessToken: token.accessToken,
+          uploadMode: _mode,
+        );
+        if (isBlocked == true) {
+          debugPrint('AuthService: Login succeeded but account has an active block');
+          throw AccountBlockedException();
+        }
       }
 
-      // Fetching the username can still fail for other reasons even though
-      // the OAuth token exchange succeeded. Don't swallow that - the token
-      // is already saved, so the caller needs to know the login isn't
-      // actually usable rather than silently treating it as "not logged in".
-      _displayName = await _fetchUsername(token.accessToken!);
+      // Fetching the username can still fail even though the OAuth token
+      // exchange succeeded (e.g. if OSM ever allows this call to succeed for
+      // blocked accounts, kCheckBlockBeforeUsernameFetch would be false and
+      // we'd only find out here). Don't swallow that - the token is already
+      // saved, so the caller needs to know the login isn't actually usable
+      // rather than silently treating it as "not logged in".
+      try {
+        _displayName = await _fetchUsername(token.accessToken!);
+      } on AuthApiException {
+        // When we skipped the proactive check above, a 403 here could still
+        // mean the account is blocked - check blocks/active now so we can
+        // report that specifically instead of a generic auth failure.
+        if (!kCheckBlockBeforeUsernameFetch) {
+          final isBlocked = await _blockService.checkActiveBlock(
+            accessToken: token.accessToken,
+            uploadMode: _mode,
+          );
+          if (isBlocked == true) {
+            debugPrint('AuthService: user/details failed and account has an active block');
+            throw AccountBlockedException();
+          }
+        }
+        rethrow;
+      }
       return _displayName;
     } on AccountBlockedException {
       rethrow;
