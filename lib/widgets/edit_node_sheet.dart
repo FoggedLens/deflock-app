@@ -28,6 +28,7 @@ class EditNodeSheet extends StatefulWidget {
 }
 
 class _EditNodeSheetState extends State<EditNodeSheet> {
+  int _directionEdits = 0;
   bool _showTutorial = false;
   bool _isCheckingTutorial = true;
 
@@ -208,11 +209,33 @@ class _EditNodeSheetState extends State<EditNodeSheet> {
                     const TextSpan(text: 'Directions: '),
                     if (directionsText.isNotEmpty)
                       ...directionsText.split('**').asMap().entries.map((entry) {
-                        final isEven = entry.key % 2 == 0;
-                        return TextSpan(
-                          text: entry.value,
-                          style: TextStyle(
-                            fontWeight: isEven ? FontWeight.normal : FontWeight.bold,
+                        if (entry.key % 2 == 0) return TextSpan(text: entry.value);
+                        // The current direction is typeable. Keyed on the value and
+                        // an edit counter so it resyncs and drops rejected text.
+                        return WidgetSpan(
+                          alignment: PlaceholderAlignment.middle,
+                          child: SizedBox(
+                            width: 64,
+                            child: TextFormField(
+                              key: ValueKey('$_directionEdits:${session.directionDegrees.round()}'),
+                              initialValue: session.directionDegrees.round().toString(),
+                              enabled: enableDirectionControls,
+                              keyboardType: TextInputType.number,
+                              textAlign: TextAlign.center,
+                              style: Theme.of(context).textTheme.titleMedium,
+                              decoration: const InputDecoration(
+                                isDense: true,
+                                contentPadding: EdgeInsets.symmetric(vertical: 4, horizontal: 4),
+                                border: OutlineInputBorder(),
+                              ),
+                              onFieldSubmitted: (value) {
+                                final degrees = int.tryParse(value);
+                                if (degrees != null && degrees >= 0 && degrees <= 359) {
+                                  appState.updateEditSession(directionDeg: degrees.toDouble());
+                                }
+                                setState(() => _directionEdits++);
+                              },
+                            ),
                           ),
                         );
                       })
