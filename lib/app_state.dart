@@ -319,7 +319,9 @@ class AppState extends ChangeNotifier {
     try {
       await _authState.login();
     } catch (e) {
-      await _handleLoginFailure(e, context);
+      await _recordLoginFailure(e);
+      if (context == null || !context.mounted) return;
+      _showLoginFailureUi(e, context);
       return;
     }
     // Check for messages and active blocks after successful login
@@ -344,7 +346,9 @@ class AppState extends ChangeNotifier {
     try {
       await _authState.forceLogin();
     } catch (e) {
-      await _handleLoginFailure(e, context);
+      await _recordLoginFailure(e);
+      if (context == null || !context.mounted) return;
+      _showLoginFailureUi(e, context);
       return;
     }
     // Check for messages and active blocks after successful login
@@ -354,11 +358,9 @@ class AppState extends ChangeNotifier {
     }
   }
 
-  /// Handle a login/forceLogin failure. The OAuth token exchange can succeed
-  /// while a subsequent step still fails (e.g. an active block, or any
-  /// other API error) - either way, the user must be told something went
-  /// wrong instead of the login silently doing nothing.
-  Future<void> _handleLoginFailure(Object error, BuildContext? context) async {
+  /// Record any state changes resulting from a login/forceLogin failure.
+  /// Never touches the UI - safe to call before a BuildContext mounted check.
+  Future<void> _recordLoginFailure(Object error) async {
     debugPrint('AppState: Login failed: $error');
     if (error is AccountBlockedException) {
       // We got a conclusive answer straight from the API during login, so
@@ -367,19 +369,23 @@ class AppState extends ChangeNotifier {
         accessToken: await _authState.getAccessToken(),
         uploadMode: uploadMode,
       );
-      if (context != null && context.mounted) {
-        _showActiveBlockDialog(context);
-      }
+    }
+  }
+
+  /// Show the appropriate UI for a login/forceLogin failure. Callers must
+  /// check `context.mounted` immediately before calling this (no further
+  /// awaits in between) since it's used synchronously here.
+  void _showLoginFailureUi(Object error, BuildContext context) {
+    if (error is AccountBlockedException) {
+      _showActiveBlockDialog(context);
       return;
     }
-    if (context != null && context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(LocalizationService.instance.t('auth.loginFailed')),
-          backgroundColor: Colors.red,
-        ),
-      );
-    }
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(LocalizationService.instance.t('auth.loginFailed')),
+        backgroundColor: Colors.red,
+      ),
+    );
   }
 
   // ---------- Account Block Methods ----------
