@@ -53,7 +53,7 @@ AppState (Coordinator)
     ↕️
 State Modules (AuthState, ProfileState, etc.)
     ↕️
-Services (MapDataProvider, NodeCache, Uploader)
+Services (MapDataProvider, NodeDataManager, NodeSpatialCache, Uploader)
     ↕️
 External APIs (OSM, Overpass, Tile providers)
 ```
@@ -926,7 +926,8 @@ lib/
 ├── services/            # Business logic
 │   ├── map_data_provider.dart
 │   ├── uploader.dart
-│   └── node_cache.dart
+│   ├── node_data_manager.dart
+│   └── node_spatial_cache.dart
 ├── state/               # State management
 │   ├── app_state.dart
 │   ├── auth_state.dart

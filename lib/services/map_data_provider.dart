@@ -123,7 +123,7 @@ class MapDataProvider {
     _nodeDataManager.addOrUpdateNodes(nodes);
   }
 
-  /// NodeCache compatibility - alias for addOrUpdateNodes
+  /// Alias for addOrUpdateNodes (shorter name used by the upload queue)
   void addOrUpdate(List<OsmNode> nodes) {
     addOrUpdateNodes(nodes);
   }
@@ -151,7 +151,7 @@ class MapDataProvider {
     );
   }
 
-  /// NodeCache compatibility methods for upload queue
+  /// Pending-upload helpers used by the upload queue.
   /// These all delegate to the singleton cache to ensure consistency
   OsmNode? getNodeById(int nodeId) => NodeSpatialCache().getNodeById(nodeId);
   void removePendingEditMarker(int nodeId) => NodeSpatialCache().removePendingEditMarker(nodeId);

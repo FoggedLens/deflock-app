@@ -375,7 +375,7 @@ class NodeDataManager extends ChangeNotifier {
     );
   }
 
-  /// NodeCache compatibility methods
+  /// Pending-upload helpers used by the upload queue.
   OsmNode? getNodeById(int nodeId) => _cache.getNodeById(nodeId);
   void removePendingEditMarker(int nodeId) => _cache.removePendingEditMarker(nodeId);
   void removePendingDeletionMarker(int nodeId) => _cache.removePendingDeletionMarker(nodeId);
