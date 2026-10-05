@@ -214,6 +214,7 @@
     "tapToLogout": "Zum Abmelden antippen",
     "requiredToSubmit": "Erforderlich, um Kameradaten zu übertragen",
     "loggedOut": "Abgemeldet",
+    "loginFailed": "Anmeldung fehlgeschlagen. Bitte versuchen Sie es erneut.",
     "testConnection": "Verbindung Testen",
     "testConnectionSubtitle": "OSM-Anmeldedaten überprüfen",
     "connectionOK": "Verbindung OK - Anmeldedaten sind gültig",
@@ -247,7 +248,8 @@
     "unreadNotificationsMessage": "Sie haben ungelesene OSM-Nachrichten und/oder neue Kommentare zu Ihren Changesets.",
     "unreadNotificationsView": "Jetzt ansehen",
     "activeBlockTitle": "Ihr OSM-Konto hat eine aktive Sperre",
-    "activeBlockMessage": "Es scheint, dass Ihr OpenStreetMap-Konto derzeit gesperrt ist und keine Beiträge einreichen kann. Bitte lesen Sie die Nachricht, die Sie erhalten haben sollten, um zu erfahren, warum und was Sie tun können, um das Problem zu beheben."
+    "activeBlockMessage": "Ihr OpenStreetMap-Konto ist derzeit gesperrt und kann keine Beiträge einreichen. Sie sollten eine Nachricht mit weiteren Details erhalten haben; bitte prüfen Sie Ihren OSM-Posteingang, um mehr zu erfahren.",
+    "viewBlockDetails": "Sperrdetails ansehen"
   },
   "queue": {
     "title": "Upload-Warteschlange",

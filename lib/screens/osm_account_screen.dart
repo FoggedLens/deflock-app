@@ -75,10 +75,12 @@ class _OSMAccountScreenState extends State<OSMAccountScreen> {
                           }
                         } else {
                           // Start login flow - the user will be redirected to browser
-                          await appState.forceLogin();
+                          await appState.forceLogin(context: context);
                           
-                          // Don't show immediate feedback - the UI will update automatically
-                          // when the OAuth callback completes and notifyListeners() is called
+                          // Don't show immediate feedback on success - the UI will update
+                          // automatically when the OAuth callback completes and
+                          // notifyListeners() is called. Failures are surfaced directly
+                          // by forceLogin() via a snackbar/dialog.
                         }
                       },
                     ),
@@ -98,7 +100,7 @@ class _OSMAccountScreenState extends State<OSMAccountScreen> {
                           subtitle: Text(locService.t('auth.activeBlockMessage')),
                           trailing: const Icon(Icons.open_in_new),
                           onTap: () async {
-                            final url = Uri.parse(appState.getMessagesUrl());
+                            final url = Uri.parse(appState.getBlockDetailsUrl());
                             if (await canLaunchUrl(url)) {
                               await launchUrl(url, mode: LaunchMode.externalApplication);
                             } else {

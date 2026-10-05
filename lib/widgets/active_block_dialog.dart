@@ -5,12 +5,12 @@ import '../services/localization_service.dart';
 /// active block. Unlike the unread-notifications dialog, this has no
 /// "don't show again" option and is shown every time a check finds a block.
 class ActiveBlockDialog extends StatelessWidget {
-  final VoidCallback onViewMessages;
+  final VoidCallback onViewDetails;
   final VoidCallback onDismiss;
 
   const ActiveBlockDialog({
     super.key,
-    required this.onViewMessages,
+    required this.onViewDetails,
     required this.onDismiss,
   });
 
@@ -43,10 +43,10 @@ class ActiveBlockDialog extends StatelessWidget {
         FilledButton.icon(
           onPressed: () {
             Navigator.of(context).pop();
-            onViewMessages();
+            onViewDetails();
           },
-          icon: const Icon(Icons.message, size: 18),
-          label: Text(locService.t('auth.viewMessages')),
+          icon: const Icon(Icons.open_in_new, size: 18),
+          label: Text(locService.t('auth.viewBlockDetails')),
         ),
       ],
     );

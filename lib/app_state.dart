@@ -21,6 +21,8 @@ import 'services/tile_preview_service.dart';
 import 'services/changelog_service.dart';
 import 'services/operator_profile_service.dart';
 import 'services/deep_link_service.dart';
+import 'services/auth_service.dart' show AccountBlockedException;
+import 'services/localization_service.dart';
 import 'widgets/node_provider_with_cache.dart';
 import 'services/profile_service.dart';
 import 'widgets/reauth_messages_dialog.dart';
@@ -313,8 +315,13 @@ class AppState extends ChangeNotifier {
   }
 
   // ---------- Auth Methods ----------
-  Future<void> login() async {
-    await _authState.login();
+  Future<void> login({BuildContext? context}) async {
+    try {
+      await _authState.login();
+    } catch (e) {
+      await _handleLoginFailure(e, context);
+      return;
+    }
     // Check for messages and active blocks after successful login
     if (isLoggedIn) {
       checkMessages();
@@ -333,12 +340,45 @@ class AppState extends ChangeNotifier {
     await _authState.refreshAuthState();
   }
 
-  Future<void> forceLogin() async {
-    await _authState.forceLogin();
+  Future<void> forceLogin({BuildContext? context}) async {
+    try {
+      await _authState.forceLogin();
+    } catch (e) {
+      await _handleLoginFailure(e, context);
+      return;
+    }
     // Check for messages and active blocks after successful login
     if (isLoggedIn) {
       checkMessages();
       checkActiveBlock();
+    }
+  }
+
+  /// Handle a login/forceLogin failure. The OAuth token exchange can succeed
+  /// while a subsequent step still fails (e.g. an active block, or any
+  /// other API error) - either way, the user must be told something went
+  /// wrong instead of the login silently doing nothing.
+  Future<void> _handleLoginFailure(Object error, BuildContext? context) async {
+    debugPrint('AppState: Login failed: $error');
+    if (error is AccountBlockedException) {
+      // We got a conclusive answer straight from the API during login, so
+      // record it like any other successful check.
+      await _accountBlockState.check(
+        accessToken: await _authState.getAccessToken(),
+        uploadMode: uploadMode,
+      );
+      if (context != null && context.mounted) {
+        _showActiveBlockDialog(context);
+      }
+      return;
+    }
+    if (context != null && context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(LocalizationService.instance.t('auth.loginFailed')),
+          backgroundColor: Colors.red,
+        ),
+      );
     }
   }
 
@@ -373,8 +413,8 @@ class AppState extends ChangeNotifier {
     showDialog(
       context: context,
       builder: (context) => ActiveBlockDialog(
-        onViewMessages: () async {
-          final url = Uri.parse(getMessagesUrl());
+        onViewDetails: () async {
+          final url = Uri.parse(getBlockDetailsUrl());
           await launchUrl(url, mode: LaunchMode.externalApplication);
         },
         onDismiss: () {
@@ -409,6 +449,18 @@ class AppState extends ChangeNotifier {
   
   String getMessagesUrl() {
     return _messagesState.getMessagesUrl(uploadMode);
+  }
+
+  /// URL to view the current user's block details on OSM's website, or -
+  /// if the username isn't known for some reason - the messages inbox,
+  /// since OSM also sends a message when a block is issued.
+  String getBlockDetailsUrl() {
+    if (username.isEmpty) return getMessagesUrl();
+    final host = switch (uploadMode) {
+      UploadMode.sandbox => 'https://master.apis.dev.openstreetmap.org',
+      UploadMode.production || UploadMode.simulate => 'https://www.openstreetmap.org',
+    };
+    return '$host/user/${Uri.encodeComponent(username)}/blocks';
   }
   
   /// URL of the specific changeset with unread comments, on OSM's website,

@@ -251,6 +251,7 @@
     "tapToLogout": "Tik om uit te loggen",
     "requiredToSubmit": "Vereist om camera gegevens in te dienen",
     "loggedOut": "Uitgelogd",
+    "loginFailed": "Inloggen mislukt. Probeer het opnieuw.",
     "testConnection": "Test Verbinding",
     "testConnectionSubtitle": "Verifieer dat OSM credentials werken",
     "connectionOK": "Verbinding OK - credentials zijn geldig",
@@ -284,7 +285,8 @@
     "unreadNotificationsMessage": "U heeft ongelezen OSM-berichten en/of nieuwe opmerkingen op uw changesets.",
     "unreadNotificationsView": "Nu Bekijken",
     "activeBlockTitle": "Uw OSM-account heeft een actieve blokkade",
-    "activeBlockMessage": "Het lijkt erop dat uw OpenStreetMap-account een actieve blokkade heeft en momenteel geen inzendingen kan doen. Lees het bericht dat u zou moeten hebben ontvangen om te weten waarom en wat u kunt doen om dit op te lossen."
+    "activeBlockMessage": "Uw OpenStreetMap-account heeft momenteel een actieve blokkade en kan geen inzendingen doen. U zou een bericht met meer details moeten hebben ontvangen; controleer uw OSM-inbox voor meer informatie.",
+    "viewBlockDetails": "Blokkadedetails Bekijken"
   },
   "queue": {
     "title": "Upload Wachtrij",

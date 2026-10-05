@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:developer';
 
 import 'package:flutter/foundation.dart';
+import 'package:http/http.dart' as http;
 import 'package:oauth2_client/oauth2_client.dart';
 import 'package:oauth2_client/oauth2_helper.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -10,6 +11,32 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../keys.dart';
 import '../app_state.dart' show UploadMode;
 import 'http_client.dart';
+import 'osm_block_service.dart';
+
+/// Thrown when the OAuth token exchange succeeds but a subsequent
+/// authenticated API call (e.g. fetching the username) fails. Carries the
+/// HTTP status code so callers can distinguish e.g. a 403 (often indicating
+/// an active account block) from other failures.
+class AuthApiException implements Exception {
+  final String message;
+  final int? statusCode;
+  final String? body;
+
+  AuthApiException(this.message, {this.statusCode, this.body});
+
+  @override
+  String toString() => 'AuthApiException: $message (status: $statusCode)';
+}
+
+/// Thrown when the OAuth token exchange succeeds but the account turns out
+/// to have an active OSM DWG block. Detected by checking the
+/// `user/blocks/active` endpoint (which is accessible even while blocked)
+/// immediately after obtaining the token, before attempting any other
+/// authenticated call that would otherwise fail with a 403.
+class AccountBlockedException implements Exception {
+  @override
+  String toString() => 'AccountBlockedException: account has an active OSM block';
+}
 
 class AuthService {
   // Both client IDs from keys.dart
@@ -18,8 +45,10 @@ class AuthService {
   late OAuth2Helper _helper;
   String? _displayName;
   UploadMode _mode = UploadMode.production;
+  final OSMBlockService _blockService;
 
-  AuthService({UploadMode mode = UploadMode.production}) {
+  AuthService({UploadMode mode = UploadMode.production, OSMBlockService? blockService})
+      : _blockService = blockService ?? OSMBlockService() {
     setUploadMode(mode);
   }
 
@@ -87,8 +116,12 @@ class AuthService {
     try {
       final token = await _helper.getToken();
       if (token.accessToken == null) {
+        debugPrint('AuthService: OAuth error: token null or missing accessToken (status: ${token.httpStatusCode}, error: ${token.error})');
         log('OAuth error: token null or missing accessToken');
-        return null;
+        throw AuthApiException(
+          'OAuth token exchange did not return an access token',
+          statusCode: token.httpStatusCode,
+        );
       }
       final tokenMap = {
         'accessToken': token.accessToken,
@@ -97,8 +130,33 @@ class AuthService {
       final tokenJson = jsonEncode(tokenMap);
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString(_tokenKey, tokenJson); // Save token for current mode
+
+      // Check for an active block *before* fetching the username or anything
+      // else. A blocked account's OAuth token exchange succeeds normally,
+      // but nearly every other authenticated endpoint (including
+      // user/details) returns 403. The blocks/active endpoint is explicitly
+      // documented as accessible even while blocked, so checking it first
+      // lets us detect this case reliably instead of getting a mysterious
+      // 403 from _fetchUsername with no way to tell why.
+      final isBlocked = await _blockService.checkActiveBlock(
+        accessToken: token.accessToken,
+        uploadMode: _mode,
+      );
+      if (isBlocked == true) {
+        debugPrint('AuthService: Login succeeded but account has an active block');
+        throw AccountBlockedException();
+      }
+
+      // Fetching the username can still fail for other reasons even though
+      // the OAuth token exchange succeeded. Don't swallow that - the token
+      // is already saved, so the caller needs to know the login isn't
+      // actually usable rather than silently treating it as "not logged in".
       _displayName = await _fetchUsername(token.accessToken!);
       return _displayName;
+    } on AccountBlockedException {
+      rethrow;
+    } on AuthApiException {
+      rethrow;
     } catch (e) {
       debugPrint('AuthService: OAuth login failed: $e');
       log('OAuth login failed: $e');
@@ -184,24 +242,37 @@ class AuthService {
   final _client = UserAgentClient();
 
   Future<String?> _fetchUsername(String accessToken) async {
+    final http.Response resp;
     try {
-      final resp = await _client.get(
+      resp = await _client.get(
         Uri.parse('$_apiHost/api/0.6/user/details.json'),
         headers: {'Authorization': 'Bearer $accessToken'},
       );
-      
-      if (resp.statusCode != 200) {
-        log('fetchUsername response ${resp.statusCode}: ${resp.body}');
-        return null;
-      }
-      final userData = jsonDecode(resp.body);
-      final displayName = userData['user']?['display_name'];
-      return displayName;
     } catch (e) {
+      // Network-level failure (no connection, timeout, etc.) - not
+      // indicative of a block, just a connectivity problem.
       debugPrint('AuthService: Error fetching username: $e');
       log('Error fetching username: $e');
-      return null;
+      rethrow;
     }
+
+    if (resp.statusCode != 200) {
+      // A non-200 here (very commonly 403) after a successful OAuth token
+      // exchange is a strong signal of an active account block. Surface it
+      // loudly via debugPrint (visible in a normal release/profile console,
+      // unlike dart:developer's log()) and throw instead of silently
+      // returning null, so the caller can show a real error to the user.
+      debugPrint('AuthService: fetchUsername failed - HTTP ${resp.statusCode}: ${resp.body}');
+      log('fetchUsername response ${resp.statusCode}: ${resp.body}');
+      throw AuthApiException(
+        'Failed to fetch user details after login',
+        statusCode: resp.statusCode,
+        body: resp.body,
+      );
+    }
+    final userData = jsonDecode(resp.body);
+    final displayName = userData['user']?['display_name'];
+    return displayName;
   }
 }
 

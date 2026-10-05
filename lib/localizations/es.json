@@ -251,6 +251,7 @@
     "tapToLogout": "Toque para cerrar sesión",
     "requiredToSubmit": "Requerido para enviar datos de cámaras",
     "loggedOut": "Sesión cerrada",
+    "loginFailed": "Error al iniciar sesión. Inténtelo de nuevo.",
     "testConnection": "Probar Conexión",
     "testConnectionSubtitle": "Verificar que las credenciales de OSM funcionen",
     "connectionOK": "Conexión OK - las credenciales son válidas",
@@ -284,7 +285,8 @@
     "unreadNotificationsMessage": "Tienes mensajes de OSM sin leer y/o nuevos comentarios en tus changesets.",
     "unreadNotificationsView": "Ver Ahora",
     "activeBlockTitle": "Su cuenta de OSM tiene un bloqueo activo",
-    "activeBlockMessage": "Parece que su cuenta de OpenStreetMap tiene un bloqueo activo y actualmente no puede realizar envíos. Lea el mensaje que debería haber recibido para saber por qué y qué puede hacer para resolverlo."
+    "activeBlockMessage": "Su cuenta de OpenStreetMap tiene actualmente un bloqueo activo y no puede realizar envíos. Debería haber recibido un mensaje con más detalles; revise su bandeja de entrada de OSM para obtener más información.",
+    "viewBlockDetails": "Ver Detalles del Bloqueo"
   },
   "queue": {
     "title": "Cola de Subida",

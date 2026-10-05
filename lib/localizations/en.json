@@ -251,6 +251,7 @@
     "tapToLogout": "Tap to logout",
     "requiredToSubmit": "Required to submit camera data",
     "loggedOut": "Logged out",
+    "loginFailed": "Login failed. Please try again.",
     "testConnection": "Test Connection",
     "testConnectionSubtitle": "Verify OSM credentials are working",
     "connectionOK": "Connection OK - credentials are valid",
@@ -284,7 +285,8 @@
     "unreadNotificationsMessage": "You have unread OSM messages and/or new comments on your changesets.",
     "unreadNotificationsView": "View Now",
     "activeBlockTitle": "Your OSM Account Has an Active Block",
-    "activeBlockMessage": "It seems your OpenStreetMap account has an active block, and is currently restricted from making submissions. Please read the message you should have received to learn why, and what you can do to resolve it."
+    "activeBlockMessage": "Your OpenStreetMap account currently has an active block and is restricted from making submissions. You should have received a message with more details; please check your OSM inbox to learn more.",
+    "viewBlockDetails": "View Block Details"
   },
   "queue": {
     "title": "Upload Queue",

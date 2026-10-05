@@ -251,6 +251,7 @@
     "tapToLogout": "Appuyer pour se déconnecter",
     "requiredToSubmit": "Requis pour soumettre des données de caméras",
     "loggedOut": "Déconnecté",
+    "loginFailed": "Échec de la connexion. Veuillez réessayer.",
     "testConnection": "Tester Connexion",
     "testConnectionSubtitle": "Vérifier que les identifiants OSM fonctionnent",
     "connectionOK": "Connexion OK - les identifiants sont valides",
@@ -284,7 +285,8 @@
     "unreadNotificationsMessage": "Vous avez des messages OSM non lus et/ou de nouveaux commentaires sur vos changesets.",
     "unreadNotificationsView": "Voir Maintenant",
     "activeBlockTitle": "Votre compte OSM a un blocage actif",
-    "activeBlockMessage": "Il semble que votre compte OpenStreetMap ait un blocage actif et ne puisse actuellement pas effectuer de soumissions. Veuillez lire le message que vous devriez avoir reçu pour savoir pourquoi et ce que vous pouvez faire pour y remédier."
+    "activeBlockMessage": "Votre compte OpenStreetMap a actuellement un blocage actif et ne peut pas effectuer de soumissions. Vous devriez avoir reçu un message avec plus de détails ; veuillez consulter votre boîte de réception OSM pour en savoir plus.",
+    "viewBlockDetails": "Voir les Détails du Blocage"
   },
   "queue": {
     "title": "File de Téléchargement",

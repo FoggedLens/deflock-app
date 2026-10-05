@@ -28,11 +28,16 @@ class AuthState extends ChangeNotifier {
   Future<void> login() async {
     try {
       _username = await _auth.login();
+      notifyListeners();
     } catch (e) {
       debugPrint("AuthState: Login error: $e");
       _username = null;
+      notifyListeners();
+      // Don't swallow this - the caller (AppState) needs to know login
+      // failed so it can tell the user, rather than silently staying
+      // logged out with no explanation.
+      rethrow;
     }
-    notifyListeners();
   }
 
   Future<void> logout() async {
@@ -58,11 +63,16 @@ class AuthState extends ChangeNotifier {
   Future<void> forceLogin() async {
     try {
       _username = await _auth.forceLogin();
+      notifyListeners();
     } catch (e) {
       debugPrint("AuthState: Forced login error: $e");
       _username = null;
+      notifyListeners();
+      // Don't swallow this - the caller (AppState) needs to know login
+      // failed so it can tell the user, rather than silently staying
+      // logged out with no explanation.
+      rethrow;
     }
-    notifyListeners();
   }
 
   Future<bool> validateToken() async {

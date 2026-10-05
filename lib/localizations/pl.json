@@ -251,6 +251,7 @@
     "tapToLogout": "Stuknij aby się wylogować",
     "requiredToSubmit": "Wymagane do zgłaszania danych kamer",
     "loggedOut": "Wylogowany",
+    "loginFailed": "Logowanie nie powiodło się. Spróbuj ponownie.",
     "testConnection": "Testuj Połączenie",
     "testConnectionSubtitle": "Sprawdź czy dane logowania OSM działają",
     "connectionOK": "Połączenie OK - dane logowania są ważne",
@@ -284,7 +285,8 @@
     "unreadNotificationsMessage": "Masz nieprzeczytane wiadomości OSM i/lub nowe komentarze do Twoich zestawów zmian.",
     "unreadNotificationsView": "Zobacz Teraz",
     "activeBlockTitle": "Twoje konto OSM ma aktywną blokadę",
-    "activeBlockMessage": "Wygląda na to, że Twoje konto OpenStreetMap ma aktywną blokadę i obecnie nie może dokonywać zgłoszeń. Przeczytaj wiadomość, którą powinieneś był otrzymać, aby dowiedzieć się dlaczego i co możesz zrobić, aby to rozwiązać."
+    "activeBlockMessage": "Twoje konto OpenStreetMap ma obecnie aktywną blokadę i nie może dokonywać zgłoszeń. Powinieneś był otrzymać wiadomość z dalszymi szczegółami; sprawdź swoją skrzynkę odbiorczą OSM, aby dowiedzieć się więcej.",
+    "viewBlockDetails": "Zobacz Szczegóły Blokady"
   },
   "queue": {
     "title": "Kolejka Przesyłania",
