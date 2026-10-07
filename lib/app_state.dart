@@ -434,7 +434,11 @@ class AppState extends ChangeNotifier {
   /// check. A conclusive result (blocked or not) means the credentials are
   /// valid; null means the connection/credentials failed. Also surfaces the
   /// [ActiveBlockDialog] if the user turns out to be blocked.
+  ///
+  /// Simulate mode has no real account to check against, so there's nothing
+  /// to test - it always reports success.
   Future<bool> testConnection(BuildContext context) async {
+    if (uploadMode == UploadMode.simulate) return true;
     final result = await checkActiveBlock();
     if (result == true) {
       if (context.mounted) _showActiveBlockDialog(context);
